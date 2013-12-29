@@ -1,0 +1,4 @@
+C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\LogAnalyzerCommon\bin\Debug\LogAnalyzerCommon.dll
+C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\LogAnalyzerCommon\bin\Debug\LogAnalyzerCommon.pdb
+C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\LogAnalyzerCommon\obj\Debug\LogAnalyzerCommon.dll
+C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\LogAnalyzerCommon\obj\Debug\LogAnalyzerCommon.pdb

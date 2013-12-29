@@ -1,0 +1,7 @@
+C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Cabrillo\bin\Debug\Cabrillo.dll
+C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Cabrillo\bin\Debug\Cabrillo.pdb
+C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Cabrillo\obj\Debug\Cabrillo.csprojResolveAssemblyReference.cache
+C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Cabrillo\obj\Debug\Cabrillo.dll
+C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Cabrillo\obj\Debug\Cabrillo.pdb
+C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Cabrillo\bin\Debug\LogAnalyzerCommon.dll
+C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Cabrillo\bin\Debug\LogAnalyzerCommon.pdb
