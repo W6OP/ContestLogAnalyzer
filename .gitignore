@@ -27,3 +27,6 @@ obj/
 [Rr]elease*/
 _ReSharper*/
 [Tt]est[Rr]esult*
+Cabrillo/obj/Debug/Cabrillo.csprojResolveAssemblyReference.cache
+Cabrillo/obj/Debug/Cabrillo.csproj.FileListAbsolute.txt
+ContestLogAnalyzer/obj/Debug/ContestLogAnalyzer.csproj.FileListAbsolute.txt

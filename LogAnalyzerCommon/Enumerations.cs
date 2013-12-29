@@ -191,6 +191,8 @@ namespace W6OP.ContestLogAnalyzer
         CQ_WW_RTTY,
         [Description("CQ-WW-SSB")]
         CQ_WW_SSB,
+        [Description("CW OPEN")]
+        CW_OPEN,
         [Description("DARC-WAEDC-CW")]
         DARC_WAEDC_CW,
         [Description("DARC-WAEDC-RTTY")]
