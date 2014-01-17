@@ -32,6 +32,9 @@ namespace ContestLogAnalyzer
         private string _LogFolder = null;
         //private List<string> _LogFileList;
 
+        /// <summary>
+        /// this.BeginInvoke(new Action<string, MessageType>(this.DisplayMessageForm), fullFileName, messageType);
+        /// </summary>
         public MainForm()
         {
             InitializeComponent();
@@ -44,6 +47,8 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void MainForm_Load(object sender, EventArgs e)
         {
+            //string guidString = Guid.NewGuid().ToString();
+
             _LogFolder = TextBoxLogFolder.Text;
         }
 

@@ -90,6 +90,16 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(TargetDir)$(TargetName).exe" ..\..\..\Deploy
+copy "$(TargetDir)$(TargetName).exe.config" ..\..\..\Deploy
+copy "$(TargetDir)$(TargetName).pdb" ..\..\..\Deploy
+copy "$(TargetDir)/Cabrillo.dll" ..\..\..\Deploy
+copy "$(TargetDir)/Cabrillo.pdb" ..\..\..\Deploy
+copy "$(TargetDir)/LogAnalyzerCommon.dll" ..\..\..\Deploy
+copy "$(TargetDir)/LogAnalyzerCommon.pdb" ..\..\..\Deploy
+</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

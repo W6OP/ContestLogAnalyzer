@@ -1,12 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?define ProductVersion = "1.0.12"?>
+<?define ProductUpgradeCode = "e7d24a3a-1258-402f-8cbc-8a4a603f6542"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="ContestLogAnalzerSetup" Language="1033" Version="1.0.0.0" Manufacturer="" UpgradeCode="e7d24a3a-1258-402f-8cbc-8a4a603f6542">
+	<Product Id="*" Name="Contest Log Analzer" Language="1033" Version="$(var.ProductVersion)" Manufacturer="W6OP" UpgradeCode="$(var.ProductUpgradeCode)">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
+    <!-- http://zumalifeguard.wikia.com/wiki/WiX_Examples -->
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-		<MediaTemplate />
+    <Condition Message="You need to be an administrator to install this product.">
+      Privileged
+    </Condition>
+    <Condition Message="A newer version of this software is already installed.">NOT NEWERVERSIONDETECTED</Condition>
+    <MediaTemplate EmbedCab="yes" />
 
-		<Feature Id="ProductFeature" Title="ContestLogAnalzerSetup" Level="1">
+    <!--<Icon Id="ProductIcon" SourceFile="C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\DXAConsole\DXAConsole\Images\DXAConsole.ico"/>-->
+    <!--<Property Id="ARPPRODUCTICON" Value="ProductIcon"/>-->
+    <Property Id="ARPHELPLINK" Value="http://w6op.com"/>
+    <UIRef Id="WixUI_Mondo" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <Upgrade Id="$(var.ProductUpgradeCode)">
+      <UpgradeVersion Minimum="$(var.ProductVersion)" OnlyDetect="yes" Property="NEWERVERSIONDETECTED"/>
+      <UpgradeVersion Minimum="0.0.0" Maximum="$(var.ProductVersion)" IncludeMinimum="yes" IncludeMaximum="no"
+                      Property="OLDERVERSIONBEINGUPGRADED"/>
+    </Upgrade>
+
+    <PropertyRef Id="NETFRAMEWORK45"/>
+    <Condition Message="This application requires .NET Framework 4.5.1. Please install the .NET Framework then run this installer again.">
+      <![CDATA[Installed OR NETFRAMEWORK45]]>
+    </Condition>
+    
+    
+		<Feature Id="ProductFeature" Title="ContestLogAnalzer" Level="1" Description='Setup program for the W6OP Contest Log Analyzer.' ConfigurableDirectory='INSTALLFOLDER'>
 			<ComponentGroupRef Id="ProductComponents" />
 		</Feature>
 	</Product>
@@ -14,17 +38,22 @@
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFilesFolder">
-				<Directory Id="INSTALLFOLDER" Name="ContestLogAnalzerSetup" />
+        <Directory Id="W6OP" Name="W6OP">
+				  <Directory Id="INSTALLFOLDER" Name="Contest Log Analzer" />
+        </Directory>
 			</Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="W6OP"/>
+      </Directory>
 		</Directory>
 	</Fragment>
 
 	<Fragment>
 		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
 			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
-			<!-- <Component Id="ProductComponent"> -->
-				<!-- TODO: Insert files, registry keys, and other resources here. -->
-			<!-- </Component> -->
+		 <Component Id="ProductComponent" Guid="9e3766f5-495f-4390-b295-16f88beda9e1">         
+       <File Id='ContestLogAnalyzer' Name='ContestLogAnalyzer.exe' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\ContestLogAnalyzer.exe' KeyPath='yes'></File>
+			 </Component> 
 		</ComponentGroup>
 	</Fragment>
 </Wix>
