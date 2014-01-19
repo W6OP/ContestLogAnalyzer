@@ -83,7 +83,7 @@ namespace ContestLogAnalyzer
         #region Start Log Analysis
 
         /// <summary>
-        /// 
+        /// Handle the click event for the ButtonAnalyzeLog button.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -102,7 +102,8 @@ namespace ContestLogAnalyzer
         IEnumerable<System.IO.FileInfo> _LogFileList;
 
         /// <summary>
-        /// 
+        /// Create a list of all of the log files in the working folder. Once the list is
+        /// filled pass the list on to another thread.
         /// </summary>
         private void BuildFileList()
         {

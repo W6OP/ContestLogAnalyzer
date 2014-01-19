@@ -11,6 +11,17 @@ namespace W6OP.ContestLogAnalyzer
     /// </summary>
     public class LogHeader
     {
+        /// <summary>
+        /// Indicates if the log has passed validation and can be analysed.
+        /// </summary>
+        private bool _LogIsValid;
+        public bool LogIsValid
+        {
+            get { return _LogIsValid; }
+            set { _LogIsValid = value; }
+        }
+
+
         private string _Version;
         public string Version
         {
