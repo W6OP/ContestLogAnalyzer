@@ -145,7 +145,7 @@ namespace ContestLogAnalyzer
         }
 
         /// <summary>
-        /// See if there is a header and a footer - CHECK READING FILE FROM PREFIX LIST ON HAIDA
+        /// See if there is a header and a footer - CHECK HOW TO READ FILE WITH LINQ FROM PREFIX LIST ON HAIDA
         /// Read the header
         /// 
         /// </summary>
