@@ -25,7 +25,7 @@ namespace ContestLogAnalyzer
     /// </summary>
     public partial class MainForm : Form
     {
-        private ContestLog _ContestLog;
+        private List<ContestLog> _ContestLogs;
         private LogHeader _LogHeader;
         private QSO _QSO;
 
@@ -91,6 +91,7 @@ namespace ContestLogAnalyzer
         {
             if (!String.IsNullOrEmpty(_LogFolder))
             {
+                _ContestLogs = new List<ContestLog>();
                 BuildFileList();
             }
             else
@@ -125,6 +126,7 @@ namespace ContestLogAnalyzer
 
             fileCount = fileList.Cast<object>().Count();
 
+            Cursor = Cursors.WaitCursor;
             BackgroundWorkerAnalyze.RunWorkerAsync(fileCount);
         }
 
@@ -150,27 +152,47 @@ namespace ContestLogAnalyzer
         /// 
         /// </summary>
         /// <param name="fileInfo"></param>
-        private void AnalyzeLogs(FileInfo fileInfo)
+        private void BuildContestLog(FileInfo fileInfo)
         {
+            ContestLog log = new ContestLog();
             string fullName = fileInfo.FullName;
+            string version = null;
 
             if (File.Exists(fullName))
             {
-                _ContestLog = new ContestLog();
                 _LogHeader = new LogHeader();
                 _QSO = new QSO();
 
                 List<string> lineList = File.ReadAllLines(fullName).Select(i => i.ToString()).ToList();
 
-                BuildHeader(lineList);
-                _ContestLog.LogHeader = _LogHeader;
+                 version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim();
+
+                 if (version == "2.0")
+                 {
+                     //BuildHeaderV2(lineList);
+                 }
+                 else if(version == "3.0")
+                 {
+                     BuildHeaderV3(lineList, fullName);
+                 }
+                 else
+                 {
+                     // handle unsupported version
+                 }
+
+                
+                log.LogHeader = _LogHeader;
 
                 // Find DUPES in list
                 //http://stackoverflow.com/questions/454601/how-to-count-duplicates-in-list-with-linq
 
                 // this statement says to copy all QSO lines
                 lineList = lineList.Where(x => x.IndexOf("QSO:", 0) != -1).ToList();
-                CollectQSOs(lineList);
+               List<QSO> qsoList = CollectQSOs(lineList);
+
+               log.QSOCollection = qsoList;
+
+               _ContestLogs.Add(log);
 
             }
         }
@@ -185,63 +207,144 @@ namespace ContestLogAnalyzer
         /// </summary>
         /// <param name="lineList"></param>
         /// <param name="match"></param>
-        private void BuildHeader(List<string> lineList)
+        private void BuildHeaderV3(List<string> lineList, string logFileName)
         {
-            // Merge the data sources using a named type. 
-            // var could be used instead of an explicit type.
-            IEnumerable<LogHeader> logHeader =
-                from line in lineList
-                select new LogHeader()
-                {
-                    Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
-                    Location = lineList.Where(l => l.StartsWith("LOCATION:")).FirstOrDefault().Substring(9).Trim(),
-                    CallSign = lineList.Where(l => l.StartsWith("CALLSIGN:")).FirstOrDefault().Substring(9).Trim().ToUpper(),
-                    Operator = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY-OPERATOR:")).FirstOrDefault().Substring(18).Trim().ToUpper()),
-                    Assisted = Utility.GetValueFromDescription<CategoryAssisted>(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).FirstOrDefault().Substring(18).Trim().ToUpper()),
-                    Band = Utility.GetValueFromDescription<CategoryBand>(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).FirstOrDefault().Substring(14).Trim().ToUpper()),
-                    Power = Utility.GetValueFromDescription<CategoryPower>(lineList.Where(l => l.StartsWith("CATEGORY-POWER:")).FirstOrDefault().Substring(15).Trim().ToUpper()),
-                    Mode = Utility.GetValueFromDescription<CategoryMode>(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).FirstOrDefault().Substring(14).Trim().ToUpper()),
-                    Station = Utility.GetValueFromDescription<CategoryStation>(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).FirstOrDefault().Substring(17).Trim().ToUpper()),
-                    Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).FirstOrDefault().Substring(21).Trim().ToUpper()),
-                    ClaimedScore = Convert.ToInt32(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).FirstOrDefault().Substring(14).Trim()),
-                    Club = lineList.Where(l => l.StartsWith("CLUB:")).FirstOrDefault().Substring(5).Trim(),
-                    Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
-                    CreatedBy = lineList.Where(l => l.StartsWith("CREATED-BY:")).FirstOrDefault().Substring(11).Trim(),
-                    PrimaryName = lineList.Where(l => l.StartsWith("NAME:")).FirstOrDefault().Substring(5).Trim(),
-                    // need to work on address
-                    Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
-                    SoapBox = lineList.Where(l => l.StartsWith("SOAPBOX:")).FirstOrDefault().Substring(7).Trim()
-                };
+            try
+            {
+                // MAY HAVE TO LOOK AT VERSION OF LOG AND FORK
 
-            _LogHeader = logHeader.FirstOrDefault();
+
+                // Merge the data sources using a named type. 
+                // var could be used instead of an explicit type.
+                IEnumerable<LogHeader> logHeader =
+                    from line in lineList
+                    select new LogHeader()
+                    {
+                        LogFileName = logFileName,
+                        Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
+                        Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: Unknown").First().Substring(9).Trim(),
+                        OperatorCallSign = lineList.Where(l => l.StartsWith("CALLSIGN:")).FirstOrDefault().Substring(9).Trim().ToUpper(),
+                        OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY-OPERATOR:")).DefaultIfEmpty("CATEGORY-OPERATOR: UNKNOWN").First().Substring(18).Trim().ToUpper()),
+                        // this is for when the CATEGORY-ASSISTED: is missing or has no value
+                        Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: UNKNOWN").First(), 18, "UNKNOWN")),   //.Substring(18).Trim().ToUpper()),
+                        Band = Utility.GetValueFromDescription<CategoryBand>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).DefaultIfEmpty("CATEGORY-BAND: ALL").First(), 14, "ALL")),
+                        Power = Utility.GetValueFromDescription<CategoryPower>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-POWER:")).DefaultIfEmpty("CATEGORY-POWER: UNKNOWN").First(), 15, "UNKNOWN")),
+                        Mode = Utility.GetValueFromDescription<CategoryMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
+                        Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
+                        Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
+                        ClaimedScore = Convert.ToInt32(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First(), 14, "0")),
+                        Club = CheckForNull(lineList.Where(l => l.StartsWith("CLUB:")).DefaultIfEmpty("CLUB: NONE").First(), 5, "NONE"),
+                        Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
+                        CreatedBy = CheckForNull(lineList.Where(l => l.StartsWith("CREATED-BY:")).DefaultIfEmpty("CREATED-BY: NONE").First(), 11, "NONE"),
+                        PrimaryName = CheckForNull(lineList.Where(l => l.StartsWith("NAME:")).DefaultIfEmpty("NAME: NONE").First(), 5, "NONE"),
+                        NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent")).DefaultIfEmpty("Name Sent NONE").First(), 10, "NONE"),
+                        // need to work on address
+                        Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
+                        //SoapBox = lineList.Where(l => l.StartsWith("SOAPBOX:")).FirstOrDefault().Substring(7).Trim()
+                    };
+
+                _LogHeader = logHeader.FirstOrDefault();
+
+                string b = "";
+            }
+            catch (Exception ex)
+            {
+                string a = ex.Message;
+            }
         }
 
-        private void CollectQSOs(List<string> lineList)
+        private string CheckForNull(string s, Int32 len, string defaultValue)
         {
-            List<QSO> qsoList;
+            // k3ggh
 
-            //var list = lineList.GroupBy(x => x.Split(' ')[1])
-            //   .ToList();
 
+            if(s.Trim().Length <= len){
+                return defaultValue;
+            }
+
+            return s.Substring(len).Trim().ToUpper();
+        }
+
+        private void BuildHeaderV2(List<string> lineList)
+        {
+            try
+            {
+              
+                // LATER NEED TO EXAMINE ALL OF THE HEADERS AND FIX THE "UNKOWN" ENTRIES
+
+                // Merge the data sources using a named type. 
+                // var could be used instead of an explicit type.
+                IEnumerable<LogHeader> logHeader =
+                    from line in lineList
+                    select new LogHeader()
+                    {
+                        Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
+                        Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: Unknown").First().Substring(9).Trim(),
+                        OperatorCallSign = lineList.Where(l => l.StartsWith("CALLSIGN:")).FirstOrDefault().Substring(9).Trim().ToUpper(),
+                        OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY-OPERATOR:")).FirstOrDefault().Substring(18).Trim().ToUpper()),
+                        Assisted = Utility.GetValueFromDescription<CategoryAssisted>(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: UNKNOWN").First().Substring(18).Trim().ToUpper()),
+                        //Band = Utility.GetValueFromDescription<CategoryBand>(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).FirstOrDefault().Substring(14).Trim().ToUpper()),
+                        //Power = Utility.GetValueFromDescription<CategoryPower>(lineList.Where(l => l.StartsWith("CATEGORY-POWER:")).FirstOrDefault().Substring(15).Trim().ToUpper()),
+                        //Mode = Utility.GetValueFromDescription<CategoryMode>(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).FirstOrDefault().Substring(14).Trim().ToUpper()),
+                        //Station = Utility.GetValueFromDescription<CategoryStation>(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).FirstOrDefault().Substring(17).Trim().ToUpper()),
+                        //Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).FirstOrDefault().Substring(21).Trim().ToUpper()),
+                        //ClaimedScore = Convert.ToInt32(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).FirstOrDefault().Substring(14).Trim()),
+                        //Club = lineList.Where(l => l.StartsWith("CLUB:")).FirstOrDefault().Substring(5).Trim(),
+                        //Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
+                        //CreatedBy = lineList.Where(l => l.StartsWith("CREATED-BY:")).FirstOrDefault().Substring(11).Trim(),
+                        //PrimaryName = lineList.Where(l => l.StartsWith("NAME:")).FirstOrDefault().Substring(5).Trim(),
+                        //NameSent = lineList.Where(l => l.StartsWith("Name Sent")).FirstOrDefault().Substring(10).Trim(),
+                        // need to work on address
+                        //Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
+                        //SoapBox = lineList.Where(l => l.StartsWith("SOAPBOX:")).FirstOrDefault().Substring(7).Trim()
+                    };
+
+                _LogHeader = logHeader.FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                string a = ex.Message;
+            }
+        }
+        
+
+        /// <summary>
+        /// http://msdn.microsoft.com/en-us/library/bb513866.aspx
+        /// </summary>
+        /// <param name="lineList"></param>
+        /// <returns></returns>
+        private List<QSO> CollectQSOs(List<string> lineList)
+        {
+            List<QSO> qsoList = null; ;
+
+            try
+            {
             IEnumerable<QSO> qso =
                  from line in lineList
+                 let splitName = line.Split(' ')
                  select new QSO()
                  {
-                     Frequency = lineList.GroupBy(x => x.Split(' ')[1]).ToString(),
-                     Mode = lineList.GroupBy(x => x.Split(' ')[2]).ToString(),
-                     QsoDate = lineList.GroupBy(x => x.Split(' ')[3]).ToString(),
-                     QsoTime = lineList.GroupBy(x => x.Split(' ')[4]).ToString(),
-                     OperatorCall = lineList.GroupBy(x => x.Split(' ')[5]).ToString(),
-                     OperatorSerialNumber = lineList.GroupBy(x => x.Split(' ')[6]).ToString(),
-                     OperatorName = lineList.GroupBy(x => x.Split(' ')[7]).ToString(),
-                     ContactCall = lineList.GroupBy(x => x.Split(' ')[8]).ToString(),
-                     ContactSerialNumber = lineList.GroupBy(x => x.Split(' ')[9]).ToString(),
-                     ContactName = lineList.GroupBy(x => x.Split(' ')[10]).ToString()
+                     Frequency = splitName[1],  //lineList.GroupBy(x => x.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries)).ToString(),
+                     Mode = splitName[2],//lineList.GroupBy(x => x.Split(' ')[2]).ToString(),
+                     QsoDate = splitName[3],//lineList.GroupBy(x => x.Split(' ')[3]).ToString(),
+                     QsoTime = splitName[4],    //lineList.GroupBy(x => x.Split(' ')[4]).ToString(),
+                     OperatorCall = splitName[5],    //lineList.GroupBy(x => x.Split(' ')[5]).ToString(),
+                     OperatorSerialNumber = splitName[6],    //lineList.GroupBy(x => x.Split(' ')[6]).ToString(),
+                     OperatorName = splitName[7],    //lineList.GroupBy(x => x.Split(' ')[7]).ToString(),
+                     ContactCall = splitName[8],    //lineList.GroupBy(x => x.Split(' ')[8]).ToString(),
+                     ContactSerialNumber = splitName[9],    //lineList.GroupBy(x => x.Split(' ')[9]).ToString(),
+                     ContactName = splitName[10],    //lineList.GroupBy(x => x.Split(' ')[10]).ToString()
                  };
 
             qsoList = qso.ToList();
+                
+            }
+            catch (Exception ex)
+            {
+                string a = ex.Message;
+            }
 
-            string a = "";
+            return qsoList;
             //QSO: 14027 CW 2013-08-31 0005 W0BR 1 BOB W4BQF 10 TOM
         }
 
@@ -261,7 +364,7 @@ namespace ContestLogAnalyzer
             foreach (FileInfo fileInfo in _LogFileList)
             {
                 //fileFullName = fileInfo.FullName;
-                AnalyzeLogs(fileInfo);
+                BuildContestLog(fileInfo);
             }
         }
 
@@ -282,12 +385,106 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void BackgroundWorkerAnalyze_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-
+            string a = "";
+            Cursor = Cursors.Default;
         }
 
         #endregion
 
+        /// <summary>
+        /// Open first log
+        /// get first QSO
+        /// get Contact call sign
+        /// see if it is in any other logs
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void button1_Click(object sender, EventArgs e)
+        {
+            SeachForMatchingLogs();
+        }
 
+        /// <summary>
+        /// This will probably go on another thread.
+        /// Start processing individual logs.
+        /// First we will find all of the logs that have this operators call sign and add a pointer
+        /// to them in this log.
+        /// </summary>
+        private void SeachForMatchingLogs()
+        {
+            string call = null;
+            //Int32 band = 0;
+
+            foreach (ContestLog log in _ContestLogs)
+            {
+
+                call = log.LogHeader.OperatorCallSign;
+                UpdateListView(log.LogHeader.OperatorCallSign);
+
+                List<ContestLog> logList = _ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == call)).ToList();
+                log.MatchingLogs.Add(log);
+                //SearchForLogs(call);
+            }
+        }
+
+        /// <summary>
+        /// http://stackoverflow.com/questions/721395/linq-question-querying-nested-collections
+        /// http://stackoverflow.com/questions/15996168/linq-query-to-filter-items-by-criteria-from-multiple-lists
+        /// </summary>
+        /// <param name="call"></param>
+        /// <param name="qso"></param>
+        private void SearchForLogs(string call)
+        {
+            List<QSO> qsoList = null;
+
+            try
+            {
+                //List<QSO> logList = _ContestLogs.SelectMany(q => q.QSOCollection).Where(a => a.ContactCall == call).ToList();
+                // get list of logs this call sign is in
+                List<ContestLog> logList = _ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == call)).ToList();
+
+
+                foreach (ContestLog log in logList)
+                {
+                    //UpdateListView(log.LogHeader.OperatorCallSign);
+
+                    // this works
+                    //qsoList = log.QSOCollection.Where(a => a.ContactCall == call).ToList();
+                }
+                
+                //List<QSO> qsoList = logList.Where(q => q.QSOCollection)
+                //var asd = question.Where(q => q.Answers.Any(a => a.Name == "SomeName"))
+                   
+                string c = "";
+            }
+            catch (Exception ex)
+            {
+                string b = ex.Message;
+            }
+        }
+
+        #region Update ListView
+
+        private void UpdateListView(string message)
+        {
+            if (InvokeRequired)
+            {
+                this.BeginInvoke(new Action<string>(this.UpdateListView), message);
+                return;
+            }
+
+            ListViewItem item = new ListViewItem(message);
+            listView1.Items.Insert(0, item);
+        }
+
+
+        #endregion
+
+         //if (InvokeRequired)
+         //   {
+         //       this.BeginInvoke(new Action<string, DXAFileType>(this.MoveFileToBackupDirectory), uploadFile, fileType);
+         //       return;
+         //   }
 
     } // end class
 }

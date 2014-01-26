@@ -30,3 +30,5 @@ _ReSharper*/
 Cabrillo/obj/Debug/Cabrillo.csprojResolveAssemblyReference.cache
 Cabrillo/obj/Debug/Cabrillo.csproj.FileListAbsolute.txt
 ContestLogAnalyzer/obj/Debug/ContestLogAnalyzer.csproj.FileListAbsolute.txt
+LogAnalyzerCommon/obj/Debug/LogAnalyzerCommon.csproj.FileListAbsolute.txt
+ContestLogAnalyzer/obj/Debug/ContestLogAnalyzer.csproj.GenerateResource.Cache

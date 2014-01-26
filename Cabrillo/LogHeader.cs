@@ -14,11 +14,18 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Indicates if the log has passed validation and can be analysed.
         /// </summary>
-        private bool _LogIsValid;
-        public bool LogIsValid
+        private bool _HeaderIsValid;
+        public bool HeaderIsValid
         {
-            get { return _LogIsValid; }
-            set { _LogIsValid = value; }
+            get { return _HeaderIsValid; }
+            set { _HeaderIsValid = value; }
+        }
+
+        private string _LogFileName;
+        public string LogFileName
+        {
+            get { return _LogFileName; }
+            set { _LogFileName = value; }
         }
 
 
@@ -29,11 +36,11 @@ namespace W6OP.ContestLogAnalyzer
             set { _Version = value; }
         }
 
-        private string _CallSign;
-        public string CallSign
+        private string _OperatorCallSign;
+        public string OperatorCallSign
         {
-            get { return _CallSign; }
-            set { _CallSign = value; }
+            get { return _OperatorCallSign; }
+            set { _OperatorCallSign = value; }
         }
 
         private CategoryAssisted _Assisted;
@@ -57,11 +64,11 @@ namespace W6OP.ContestLogAnalyzer
             set { _Mode = value; }
         }
 
-        private CategoryOperator _Operator;
-        public CategoryOperator Operator
+        private CategoryOperator _OperatorCategory;
+        public CategoryOperator OperatorCategory
         {
-            get { return _Operator; }
-            set { _Operator = value; }
+            get { return _OperatorCategory; }
+            set { _OperatorCategory = value; }
         }
 
         private CategoryPower _Power;
@@ -147,6 +154,13 @@ namespace W6OP.ContestLogAnalyzer
         {
             get { return _PrimaryName; }
             set { _PrimaryName = value; }
+        }
+
+        private string _NameSent;
+        public string NameSent
+        {
+            get { return _NameSent; }
+            set { _NameSent = value; }
         }
 
         private Address _PostalAddress;

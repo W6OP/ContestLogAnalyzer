@@ -39,6 +39,8 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.BackgroundWorkerAnalyze = new System.ComponentModel.BackgroundWorker();
+            this.button1 = new System.Windows.Forms.Button();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SuspendLayout();
             // 
             // LogFolderBrowserDialog
@@ -61,7 +63,7 @@
             this.TextBoxLogFolder.Name = "TextBoxLogFolder";
             this.TextBoxLogFolder.Size = new System.Drawing.Size(394, 23);
             this.TextBoxLogFolder.TabIndex = 1;
-            this.TextBoxLogFolder.Text = "C:\\Users\\pbourget\\Documents\\2013_Session1";
+            this.TextBoxLogFolder.Text = "C:\\Users\\pbourget\\Documents\\2013_Session1\\Clean";
             // 
             // ButtonSelectFolder
             // 
@@ -86,7 +88,7 @@
             // 
             // ButtonValidateHeader
             // 
-            this.ButtonValidateHeader.Location = new System.Drawing.Point(369, 253);
+            this.ButtonValidateHeader.Location = new System.Drawing.Point(24, 305);
             this.ButtonValidateHeader.Name = "ButtonValidateHeader";
             this.ButtonValidateHeader.Size = new System.Drawing.Size(119, 23);
             this.ButtonValidateHeader.TabIndex = 4;
@@ -97,6 +99,9 @@
             // listView1
             // 
             this.listView1.BackColor = System.Drawing.SystemColors.Info;
+            this.listView1.CheckBoxes = true;
+            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1});
             this.listView1.Location = new System.Drawing.Point(516, 47);
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(415, 282);
@@ -139,12 +144,28 @@
             this.BackgroundWorkerAnalyze.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorkerAnalyze_ProgressChanged);
             this.BackgroundWorkerAnalyze.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerAnalyze_RunWorkerCompleted);
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(24, 276);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(119, 23);
+            this.button1.TabIndex = 9;
+            this.button1.Text = "Check First Log";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Text = "Processed";
+            this.columnHeader1.Width = 200;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
             this.ClientSize = new System.Drawing.Size(943, 348);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.label2);
@@ -177,6 +198,8 @@
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label3;
         private System.ComponentModel.BackgroundWorker BackgroundWorkerAnalyze;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ColumnHeader columnHeader1;
     }
 }
 

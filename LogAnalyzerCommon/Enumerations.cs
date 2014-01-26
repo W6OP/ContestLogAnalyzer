@@ -7,12 +7,22 @@ using System.Threading.Tasks;
 
 namespace W6OP.ContestLogAnalyzer
 {
+    public enum RejectReason
+    {
+        [Description("The band does not match")]
+        Band,
+        OpName,
+        Other
+    }
+
     public enum CategoryAssisted
     {
         [Description("ASSISTED")]
         Assisted,
         [Description("NON-ASSISTED")]
-        NonAssisted
+        NonAssisted,
+         [Description("UNKNOWN")]
+        Uknown
     }
 
     /// <summary>
@@ -80,25 +90,32 @@ namespace W6OP.ContestLogAnalyzer
     {
         SSB,
         CW,
+        DIGI,
         RTTY,
         MIXED
     }
 
+    //SINGLE-OP ALL LOW CW
     public enum CategoryOperator
     {
         [Description("SINGLE-OP")]
         SingleOp,
+        [Description("SINGLE-OP ALL LOW CW")]
+        SingleOpLowCW,
         [Description("MULTI-OP")]
         MultiOp,
         [Description("CHECKLOG")]
-        CheckLog
+        CheckLog,
+        [Description("UNKNOWN")]
+        Uknown
     }
 
     public enum CategoryPower
     {
         HIGH,
         LOW,
-        QRP
+        QRP,
+        UNKNOWN
     }
 
     public enum CategoryStation
@@ -109,7 +126,8 @@ namespace W6OP.ContestLogAnalyzer
         ROVER,
         EXPEDITION,
         HQ,
-        SCHOOL
+        SCHOOL,
+        UNKNOWN
     }
 
     public enum CategoryTime
@@ -128,7 +146,8 @@ namespace W6OP.ContestLogAnalyzer
         TWO,
         LIMITED,
         UNLIMITED,
-        SWL
+        SWL,
+        UNKNOWN
     }
 
     public enum CategoryOverlay
@@ -145,8 +164,18 @@ namespace W6OP.ContestLogAnalyzer
         Over50,
     }
 
+    //[AttributeUsage(AllowMultiple = true)]
     public enum ContestName
     {
+        //[Description("CW OPEN")]
+        [ContestDescription("CWOPS-OPEN", "CW-OPEN", "CWOPEN", "CW OPEN")]
+        CW_OPEN,
+        //[Description("CWOPS-OPEN")]
+        //CW_OPEN2,
+        //[Description("CW-OPEN")]
+        //CW_OPEN3,
+        //[Description("CWOPEN")]
+        //CW_OPEN4,
         [Description("AP-SPRINT")]
         AP_SPRINT,
         [Description("ARRL-10")]
@@ -191,8 +220,6 @@ namespace W6OP.ContestLogAnalyzer
         CQ_WW_RTTY,
         [Description("CQ-WW-SSB")]
         CQ_WW_SSB,
-        [Description("CW OPEN")]
-        CW_OPEN,
         [Description("DARC-WAEDC-CW")]
         DARC_WAEDC_CW,
         [Description("DARC-WAEDC-RTTY")]
@@ -235,5 +262,29 @@ namespace W6OP.ContestLogAnalyzer
 
     public class Enumerations
     {
+    } // end class
+
+    //https://www.horizonmb.com/threads/137828-Storing-additional-data-in-enums
+    /// <summary>
+    /// Extension class to allow multiple desctription on enumerations.
+    /// </summary>
+    [AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
+    public class ContestDescription :Attribute
+    {
+        //Some people prefer to have a privataly declared variable to return and set, but this works fine for demonstration purposes
+        public string ContestNameOne { get; set; }
+        public string ContestNameTwo { get; set; }
+        public string ContestNameThree { get; set; }
+        public string ContestNameFour { get; set; }
+
+        //The values certainly do not all have to be strings
+        public ContestDescription(string nameOne, string nameTwo, string nameThree, string nameFour)
+        {
+            ContestNameOne = nameOne;
+            ContestNameTwo = nameTwo;
+            ContestNameThree = nameThree;
+            ContestNameFour = nameFour;
+        }
+
     } // end class
 }
