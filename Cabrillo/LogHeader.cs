@@ -190,6 +190,8 @@ namespace W6OP.ContestLogAnalyzer
             get { return _SoapBox; }
             set { _SoapBox = value; }
         }
+
+      
        
     } // end class
 }

@@ -8,5 +8,7 @@ namespace ScoreEngine
 {
     public class Class1
     {
+
+        // DON'T SCORE CHECKLOGS
     }
 }

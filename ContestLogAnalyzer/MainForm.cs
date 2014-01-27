@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using W6OP.ContestLogAnalyzer;
@@ -191,7 +192,11 @@ namespace ContestLogAnalyzer
                List<QSO> qsoList = CollectQSOs(lineList);
 
                log.QSOCollection = qsoList;
-
+               log.LogIsValid = true;
+               if (log.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
+               {
+                   log.IsCheckLog = true;
+               }
                _ContestLogs.Add(log);
 
             }
@@ -333,7 +338,8 @@ namespace ContestLogAnalyzer
                      OperatorName = splitName[7],    //lineList.GroupBy(x => x.Split(' ')[7]).ToString(),
                      ContactCall = splitName[8],    //lineList.GroupBy(x => x.Split(' ')[8]).ToString(),
                      ContactSerialNumber = splitName[9],    //lineList.GroupBy(x => x.Split(' ')[9]).ToString(),
-                     ContactName = splitName[10],    //lineList.GroupBy(x => x.Split(' ')[10]).ToString()
+                     ContactName = splitName[10],   //lineList.GroupBy(x => x.Split(' ')[10]).ToString()
+                     CallIsValid = CheckCallSignFormat(splitName[5])
                  };
 
             qsoList = qso.ToList();
@@ -345,10 +351,28 @@ namespace ContestLogAnalyzer
             }
 
             return qsoList;
+
+            
             //QSO: 14027 CW 2013-08-31 0005 W0BR 1 BOB W4BQF 10 TOM
         }
 
+        /// <summary>
+        /// Quick check to see if a call sign is formatted correctly.
+        /// </summary>
+        /// <param name="call"></param>
+        /// <returns></returns>
+        private bool CheckCallSignFormat(string call)
+        {
+            string regex = @"^([A-Z]{1,2}|[0-9][A-Z])([0-9])([A-Z]{1,3})$";
+            bool match = false;
 
+            if (Regex.IsMatch(call.ToUpper(), regex, RegexOptions.IgnoreCase))
+            {
+                match = true;
+            }
+
+            return match;
+        }
 
         #endregion
 
@@ -413,19 +437,51 @@ namespace ContestLogAnalyzer
         private void SeachForMatchingLogs()
         {
             string call = null;
-            //Int32 band = 0;
 
             foreach (ContestLog log in _ContestLogs)
             {
-
                 call = log.LogHeader.OperatorCallSign;
                 UpdateListView(log.LogHeader.OperatorCallSign);
 
                 List<ContestLog> logList = _ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == call)).ToList();
                 log.MatchingLogs.Add(log);
-                //SearchForLogs(call);
+            }
+
+            // now I have logs ready to process
+            ProcessContestLogs();
+        }
+
+        /// <summary>
+        /// Open first log.
+        /// look at first QSO.
+        /// Do we already have a reference to it in our matching log collection, may have multiple
+        /// if we have multiple, check band and sent?
+        /// If it is in our matching collection, look in the log it belongs to for sent/recv. S/N, Band, etc - did we already do this?
+        /// Does it show up in any other logs? Good check to see if it is a valid callsign
+        /// Build a collection of totaly unique calls
+        /// </summary>
+        private void ProcessContestLogs()
+        {
+            List<QSO> qsoList = null;
+            string call = null;
+
+            foreach (ContestLog log in _ContestLogs)
+            {
+                call = log.LogHeader.OperatorCallSign;
+                qsoList = log.QSOCollection.Where(a => a.ContactCall == call).ToList();
+
+                //foreach (QSO qso in qsoList)
+                //{
+                //    if (!CheckCallSignFormat(qso.ContactCall))
+                //    {
+                //        qso.CallIsValid = false;
+                //    }
+                //}
+
             }
         }
+
+       
 
         /// <summary>
         /// http://stackoverflow.com/questions/721395/linq-question-querying-nested-collections
@@ -449,7 +505,7 @@ namespace ContestLogAnalyzer
                     //UpdateListView(log.LogHeader.OperatorCallSign);
 
                     // this works
-                    //qsoList = log.QSOCollection.Where(a => a.ContactCall == call).ToList();
+                    qsoList = log.QSOCollection.Where(a => a.ContactCall == call).ToList();
                 }
                 
                 //List<QSO> qsoList = logList.Where(q => q.QSOCollection)

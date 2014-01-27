@@ -21,7 +21,7 @@ namespace W6OP.ContestLogAnalyzer
        // some way to find similar calls
 
 
-        private bool _QSOIsValid;
+        private bool _QSOIsValid = true;
         public bool QSOIsValid
         {
             get { return _QSOIsValid; }
@@ -42,6 +42,20 @@ namespace W6OP.ContestLogAnalyzer
             set { _QSOIsDupe = value; }
         }
 
+        private bool _CallIsValid;
+        public bool CallIsValid
+        {
+            get { return _CallIsValid; }
+            set 
+            { 
+                _CallIsValid = value;
+                if (_CallIsValid == false)
+                {
+                    _QSOIsValid = false;
+                    _RejectReason = "Invalid call sign.";
+                }
+            }
+        }
 
        private string _Frequency;
        public string Frequency
