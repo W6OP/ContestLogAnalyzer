@@ -15,7 +15,14 @@ namespace W6OP.ContestLogAnalyzer
         public LogHeader LogHeader
         {
             get { return _LogHeader; }
-            set { _LogHeader = value; }
+            set 
+            { 
+                _LogHeader = value;
+                if (_LogHeader.OperatorCategory == CategoryOperator.CheckLog)
+                {
+                    _LogIsCheckLog = true;
+                }
+            }
         }
 
         /// <summary>
@@ -51,6 +58,14 @@ namespace W6OP.ContestLogAnalyzer
             get { return _IsCheckLog; }
             set { _IsCheckLog = value; }
         }
+
+        private bool _LogIsCheckLog;
+        public bool LogIsCheckLog
+        {
+            get { return _LogIsCheckLog; }
+            set { _LogIsCheckLog = value; }
+        }
+
 
         private Int32 _ClaimedScore;
         public Int32 ClaimedScore

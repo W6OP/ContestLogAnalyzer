@@ -28,6 +28,9 @@ namespace W6OP.ContestLogAnalyzer
             set { _QSOIsValid = value; }
         }
 
+       /// <summary>
+       /// Later make this RejectReasonDescription and have an enum for RejectReason
+       /// </summary>
         private string _RejectReason;
         public string RejectReason
         {
@@ -102,11 +105,11 @@ namespace W6OP.ContestLogAnalyzer
         }
        ///// ////////////////////////////////////////////////////
 
-        private string _OperatorSerialNumber;
-        public string OperatorSerialNumber
+        private Int32 _SentSerialNumber;
+        public Int32 SentSerialNumber
         {
-            get { return _OperatorSerialNumber; }
-            set { _OperatorSerialNumber = value; }
+            get { return _SentSerialNumber; }
+            set { _SentSerialNumber = value; }
         }
 
         private string _OperatorCall;
@@ -117,18 +120,17 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         private string _OperatorName;
-
         public string OperatorName
         {
             get { return _OperatorName; }
             set { _OperatorName = value; }
         }
 
-        private string _ContactSerialNumber;
-        public string ContactSerialNumber
+        private Int32 _ReceivedSerialNumber;
+        public Int32 ReceivedSerialNumber
         {
-            get { return _ContactSerialNumber; }
-            set { _ContactSerialNumber = value; }
+            get { return _ReceivedSerialNumber; }
+            set { _ReceivedSerialNumber = value; }
         }
 
         private string _ContactCall;

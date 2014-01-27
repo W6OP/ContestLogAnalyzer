@@ -166,22 +166,23 @@ namespace ContestLogAnalyzer
 
                 List<string> lineList = File.ReadAllLines(fullName).Select(i => i.ToString()).ToList();
 
-                 version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim();
+                version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim();
 
-                 if (version == "2.0")
-                 {
-                     //BuildHeaderV2(lineList);
-                 }
-                 else if(version == "3.0")
-                 {
-                     BuildHeaderV3(lineList, fullName);
-                 }
-                 else
-                 {
-                     // handle unsupported version
-                 }
+                if (version == "2.0")
+                {
+                    //BuildHeaderV2(lineList);
+                    return;
+                }
+                else if (version == "3.0")
+                {
+                    BuildHeaderV3(lineList, fullName);
+                }
+                else
+                {
+                    // handle unsupported version
+                }
 
-                
+
                 log.LogHeader = _LogHeader;
 
                 // Find DUPES in list
@@ -189,15 +190,15 @@ namespace ContestLogAnalyzer
 
                 // this statement says to copy all QSO lines
                 lineList = lineList.Where(x => x.IndexOf("QSO:", 0) != -1).ToList();
-               List<QSO> qsoList = CollectQSOs(lineList);
+                List<QSO> qsoList = CollectQSOs(lineList);
 
-               log.QSOCollection = qsoList;
-               log.LogIsValid = true;
-               if (log.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
-               {
-                   log.IsCheckLog = true;
-               }
-               _ContestLogs.Add(log);
+                log.QSOCollection = qsoList;
+                log.LogIsValid = true;
+                if (log.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
+                {
+                    log.IsCheckLog = true;
+                }
+                _ContestLogs.Add(log);
 
             }
         }
@@ -228,7 +229,7 @@ namespace ContestLogAnalyzer
                         LogFileName = logFileName,
                         Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
                         Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: Unknown").First().Substring(9).Trim(),
-                        OperatorCallSign = lineList.Where(l => l.StartsWith("CALLSIGN:")).FirstOrDefault().Substring(9).Trim().ToUpper(),
+                        OperatorCallSign = CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN"),
                         OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY-OPERATOR:")).DefaultIfEmpty("CATEGORY-OPERATOR: UNKNOWN").First().Substring(18).Trim().ToUpper()),
                         // this is for when the CATEGORY-ASSISTED: is missing or has no value
                         Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: UNKNOWN").First(), 18, "UNKNOWN")),   //.Substring(18).Trim().ToUpper()),
@@ -258,12 +259,17 @@ namespace ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="len"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
         private string CheckForNull(string s, Int32 len, string defaultValue)
         {
-            // k3ggh
-
-
-            if(s.Trim().Length <= len){
+            if (s.Trim().Length <= len)
+            {
                 return defaultValue;
             }
 
@@ -274,7 +280,7 @@ namespace ContestLogAnalyzer
         {
             try
             {
-              
+
                 // LATER NEED TO EXAMINE ALL OF THE HEADERS AND FIX THE "UNKOWN" ENTRIES
 
                 // Merge the data sources using a named type. 
@@ -311,7 +317,7 @@ namespace ContestLogAnalyzer
                 string a = ex.Message;
             }
         }
-        
+
 
         /// <summary>
         /// http://msdn.microsoft.com/en-us/library/bb513866.aspx
@@ -324,26 +330,26 @@ namespace ContestLogAnalyzer
 
             try
             {
-            IEnumerable<QSO> qso =
-                 from line in lineList
-                 let splitName = line.Split(' ')
-                 select new QSO()
-                 {
-                     Frequency = splitName[1],  //lineList.GroupBy(x => x.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries)).ToString(),
-                     Mode = splitName[2],//lineList.GroupBy(x => x.Split(' ')[2]).ToString(),
-                     QsoDate = splitName[3],//lineList.GroupBy(x => x.Split(' ')[3]).ToString(),
-                     QsoTime = splitName[4],    //lineList.GroupBy(x => x.Split(' ')[4]).ToString(),
-                     OperatorCall = splitName[5],    //lineList.GroupBy(x => x.Split(' ')[5]).ToString(),
-                     OperatorSerialNumber = splitName[6],    //lineList.GroupBy(x => x.Split(' ')[6]).ToString(),
-                     OperatorName = splitName[7],    //lineList.GroupBy(x => x.Split(' ')[7]).ToString(),
-                     ContactCall = splitName[8],    //lineList.GroupBy(x => x.Split(' ')[8]).ToString(),
-                     ContactSerialNumber = splitName[9],    //lineList.GroupBy(x => x.Split(' ')[9]).ToString(),
-                     ContactName = splitName[10],   //lineList.GroupBy(x => x.Split(' ')[10]).ToString()
-                     CallIsValid = CheckCallSignFormat(splitName[5])
-                 };
+                IEnumerable<QSO> qso =
+                     from line in lineList
+                     let splitName = line.Split(' ')
+                     select new QSO()
+                     {
+                         Frequency = splitName[1],  //lineList.GroupBy(x => x.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries)).ToString(),
+                         Mode = splitName[2],//lineList.GroupBy(x => x.Split(' ')[2]).ToString(),
+                         QsoDate = splitName[3],//lineList.GroupBy(x => x.Split(' ')[3]).ToString(),
+                         QsoTime = splitName[4],    //lineList.GroupBy(x => x.Split(' ')[4]).ToString(),
+                         OperatorCall = splitName[5],    //lineList.GroupBy(x => x.Split(' ')[5]).ToString(),
+                         SentSerialNumber = ConvertSerialNumber(splitName[6]),    //lineList.GroupBy(x => x.Split(' ')[6]).ToString(),
+                         OperatorName = splitName[7],    //lineList.GroupBy(x => x.Split(' ')[7]).ToString(),
+                         ContactCall = splitName[8],    //lineList.GroupBy(x => x.Split(' ')[8]).ToString(),
+                         ReceivedSerialNumber = ConvertSerialNumber(splitName[9]),  //lineList.GroupBy(x => x.Split(' ')[9]).ToString(),
+                         ContactName = splitName[10],   //lineList.GroupBy(x => x.Split(' ')[10]).ToString()
+                         CallIsValid = CheckCallSignFormat(splitName[5])
+                     };
 
-            qsoList = qso.ToList();
-                
+                qsoList = qso.ToList();
+
             }
             catch (Exception ex)
             {
@@ -352,8 +358,31 @@ namespace ContestLogAnalyzer
 
             return qsoList;
 
-            
+
             //QSO: 14027 CW 2013-08-31 0005 W0BR 1 BOB W4BQF 10 TOM
+        }
+
+        /// <summary>
+        /// Convert a string to an Int32. Also extract a number from a string as a serial
+        /// number may be O39 instead of 039.
+        /// </summary>
+        /// <param name="serialNumber"></param>
+        /// <returns></returns>
+        private Int32 ConvertSerialNumber(string serialNumber)
+        {
+            Int32 number = 0; // indicates invalid serial number
+
+            try
+            {
+                serialNumber = Regex.Match(serialNumber, @"\d+").Value; ;
+                number = Convert.ToInt32(serialNumber);
+            }
+            catch (Exception ex)
+            {
+                string a = ex.Message;
+            }
+
+            return number;
         }
 
         /// <summary>
@@ -387,7 +416,6 @@ namespace ContestLogAnalyzer
         {
             foreach (FileInfo fileInfo in _LogFileList)
             {
-                //fileFullName = fileInfo.FullName;
                 BuildContestLog(fileInfo);
             }
         }
@@ -425,7 +453,7 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void button1_Click(object sender, EventArgs e)
         {
-            SeachForMatchingLogs();
+            SearchForMatchingLogs();
         }
 
         /// <summary>
@@ -434,17 +462,17 @@ namespace ContestLogAnalyzer
         /// First we will find all of the logs that have this operators call sign and add a pointer
         /// to them in this log.
         /// </summary>
-        private void SeachForMatchingLogs()
+        private void SearchForMatchingLogs()
         {
             string call = null;
 
             foreach (ContestLog log in _ContestLogs)
             {
                 call = log.LogHeader.OperatorCallSign;
-                UpdateListView(log.LogHeader.OperatorCallSign);
+                UpdateListView(call);
 
-                List<ContestLog> logList = _ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == call)).ToList();
-                log.MatchingLogs.Add(log);
+                log.MatchingLogs = _ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == call)).ToList();
+
             }
 
             // now I have logs ready to process
@@ -463,25 +491,73 @@ namespace ContestLogAnalyzer
         private void ProcessContestLogs()
         {
             List<QSO> qsoList = null;
+            List<QSO> qsos = null;
             string call = null;
 
             foreach (ContestLog log in _ContestLogs)
             {
-                call = log.LogHeader.OperatorCallSign;
-                qsoList = log.QSOCollection.Where(a => a.ContactCall == call).ToList();
-
-                //foreach (QSO qso in qsoList)
-                //{
-                //    if (!CheckCallSignFormat(qso.ContactCall))
-                //    {
-                //        qso.CallIsValid = false;
-                //    }
-                //}
-
+                if (!log.LogIsCheckLog)
+                {
+                    call = log.LogHeader.OperatorCallSign;
+                    AnalyzeQSOs(log);
+                    //qsos = log.MatchingLogs
+                    qsoList = log.QSOCollection.Where(a => a.ContactCall == call).ToList();
+                }
             }
         }
 
-       
+        /// <summary>
+        /// Look at the QSOs and see if they are valid
+        /// need all the QSOs from two lists
+        /// the qsos that match between the two logs
+        /// </summary>
+        /// <param name="log"></param>
+        private void AnalyzeQSOs(ContestLog log)
+        {
+            List<QSO> qsoList;
+            List<QSO> matchList = null;
+            string logOwnerCall = log.LogHeader.OperatorCallSign;
+            string operatorCall = null;
+            string sentName = null;
+            Int32 sent = 0;
+            Int32 received = 0;
+            Int32 band = 0;
+            bool valid = true;
+
+
+            foreach (ContestLog contestLog in log.MatchingLogs)
+            {
+                // list of Qs from the other guy
+                qsoList = contestLog.QSOCollection.Where(a => a.ContactCall == logOwnerCall).ToList();
+                // now query this guys log for matches
+                foreach (QSO qso in qsoList)
+                {
+                    operatorCall = qso.OperatorCall;
+                    sent = qso.SentSerialNumber;
+                    received = qso.ReceivedSerialNumber;
+                    band = qso.Band;
+                    sentName = qso.OperatorName; // check on this
+                    valid = true;
+
+                    // could there be more than one returned?
+                    matchList = log.QSOCollection.Where(a => a.ContactCall == operatorCall && a.SentSerialNumber == received && a.Band == band && a.ContactName == sentName).ToList<QSO>();
+                    foreach (QSO q in matchList)
+                    {
+                        q.QSOIsValid = valid;
+                        valid = false;
+                        if (!q.QSOIsValid)
+                        {
+                            // later expand this with more information
+                            q.RejectReason = "Dupe";
+                        }
+                    }
+                    string z = "";
+                }
+            }
+
+        }
+
+
 
         /// <summary>
         /// http://stackoverflow.com/questions/721395/linq-question-querying-nested-collections
@@ -507,10 +583,10 @@ namespace ContestLogAnalyzer
                     // this works
                     qsoList = log.QSOCollection.Where(a => a.ContactCall == call).ToList();
                 }
-                
+
                 //List<QSO> qsoList = logList.Where(q => q.QSOCollection)
                 //var asd = question.Where(q => q.Answers.Any(a => a.Name == "SomeName"))
-                   
+
                 string c = "";
             }
             catch (Exception ex)
@@ -536,11 +612,11 @@ namespace ContestLogAnalyzer
 
         #endregion
 
-         //if (InvokeRequired)
-         //   {
-         //       this.BeginInvoke(new Action<string, DXAFileType>(this.MoveFileToBackupDirectory), uploadFile, fileType);
-         //       return;
-         //   }
+        //if (InvokeRequired)
+        //   {
+        //       this.BeginInvoke(new Action<string, DXAFileType>(this.MoveFileToBackupDirectory), uploadFile, fileType);
+        //       return;
+        //   }
 
     } // end class
 }
