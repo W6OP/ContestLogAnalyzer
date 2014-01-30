@@ -21,11 +21,11 @@ namespace W6OP.ContestLogAnalyzer
        // some way to find similar calls
 
 
-        private bool _QSOIsValid = true;
-        public bool QSOIsValid
+        private QSOStatus _Status = QSOStatus.InvalidQSO;
+        public QSOStatus Status
         {
-            get { return _QSOIsValid; }
-            set { _QSOIsValid = value; }
+            get { return _Status; }
+            set { _Status = value; }
         }
 
        /// <summary>
@@ -54,7 +54,7 @@ namespace W6OP.ContestLogAnalyzer
                 _CallIsValid = value;
                 if (_CallIsValid == false)
                 {
-                    _QSOIsValid = false;
+                    _Status = QSOStatus.InvalidQSO;
                     _RejectReason = "Invalid call sign.";
                 }
             }

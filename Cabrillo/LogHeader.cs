@@ -40,7 +40,8 @@ namespace W6OP.ContestLogAnalyzer
         public string OperatorCallSign
         {
             get { return _OperatorCallSign; }
-            set { _OperatorCallSign = value; }
+            set 
+            { _OperatorCallSign = value; }
         }
 
         private CategoryAssisted _Assisted;

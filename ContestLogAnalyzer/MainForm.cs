@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -193,7 +194,7 @@ namespace ContestLogAnalyzer
                 List<QSO> qsoList = CollectQSOs(lineList);
 
                 log.QSOCollection = qsoList;
-                log.LogIsValid = true;
+                log.IsValidLog = true;
                 if (log.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
                 {
                     log.IsCheckLog = true;
@@ -371,7 +372,7 @@ namespace ContestLogAnalyzer
         private Int32 ConvertSerialNumber(string serialNumber)
         {
             Int32 number = 0; // indicates invalid serial number
-
+         
             try
             {
                 serialNumber = Regex.Match(serialNumber, @"\d+").Value; ;
@@ -459,20 +460,21 @@ namespace ContestLogAnalyzer
         /// <summary>
         /// This will probably go on another thread.
         /// Start processing individual logs.
-        /// First we will find all of the logs that have this operators call sign and add a pointer
-        /// to them in this log.
+        /// Find all of the logs that have the log owners call sign in them.
+        /// Find all the logs that do not have a reference to this log.
+        /// Now each log is self contained and can be operated on without opening other files.
         /// </summary>
         private void SearchForMatchingLogs()
         {
             string call = null;
 
-            foreach (ContestLog log in _ContestLogs)
+            foreach (ContestLog contestLog in _ContestLogs)
             {
-                call = log.LogHeader.OperatorCallSign;
+                call = contestLog.LogHeader.OperatorCallSign;
                 UpdateListView(call);
 
-                log.MatchingLogs = _ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == call)).ToList();
-
+                //contestLog.MatchLogs = _ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == call)).ToList();
+                //contestLog.OtherLogs = _ContestLogs.Where(q => q.QSOCollection.All(a => a.ContactCall != call)).ToList();
             }
 
             // now I have logs ready to process
@@ -490,24 +492,107 @@ namespace ContestLogAnalyzer
         /// </summary>
         private void ProcessContestLogs()
         {
-            List<QSO> qsoList = null;
+            List<QSO> matchingQsoList = null; // all the QSOs where the call sign matches
             List<QSO> qsos = null;
             string call = null;
+            Int32 count = 0;
 
-            foreach (ContestLog log in _ContestLogs)
+            foreach (ContestLog contestLog in _ContestLogs)
             {
-                if (!log.LogIsCheckLog)
-                {
-                    call = log.LogHeader.OperatorCallSign;
-                    AnalyzeQSOs(log);
-                    //qsos = log.MatchingLogs
-                    qsoList = log.QSOCollection.Where(a => a.ContactCall == call).ToList();
+                if (!contestLog.IsCheckLog)
+                {                 
+                    count = CollectLogs(contestLog, count);
                 }
             }
+
+            // now I should every log with it's matching QSOs, QSOs to be checked and all the other logs with a reference
+            string h = "";
         }
 
         /// <summary>
-        /// Look at the QSOs and see if they are valid
+        /// We want to find out if a QSO is valid.
+        /// Look at the first QSO in the log and see if it is in any other logs
+        /// If it is already valid, skip it
+        /// If it is, Then see if all the pieces match
+        /// If they do, mark both QSOs as valid
+        /// </summary>
+        /// <param name="contestLog"></param>
+        private Int32 CollectLogs(ContestLog contestLog, Int32 count)
+        {
+            //List<ContestLog> tempLog = new List<ContestLog>();
+            string operatorCall = null;
+            string sentName = null;
+            Int32 sent = 0;
+            Int32 received = 0;
+            Int32 band = 0;
+            Int32 qsoCount = 0;
+            Int32 reviewCount = 0;
+
+
+            foreach (QSO qso in contestLog.QSOCollection)
+            {
+                // query all the other logs for a match
+                // if there is a match, mark each QSO as valid.
+                if (qso.Status == QSOStatus.InvalidQSO)
+                {
+                    operatorCall = qso.OperatorCall;
+                    sent = qso.SentSerialNumber;
+                    received = qso.ReceivedSerialNumber;
+                    band = qso.Band;
+                    sentName = qso.OperatorName;
+
+                   
+
+                    contestLog.MatchLogs.AddRange(_ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.ReceivedSerialNumber == sent && a.Band == band && a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO)).ToList()); // && a.IsValidQSO == false
+                    // some of these will be marked valid as we go along and need to be removed from this collection
+                    contestLog.ReviewLogs.AddRange(_ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && (a.ReceivedSerialNumber != sent || a.Band == band || a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO))).ToList());
+                    contestLog.OtherLogs.AddRange(_ContestLogs.Where(q => q.QSOCollection.All(a => a.ContactCall != operatorCall)).ToList());
+
+
+                    // really here, need to determine if the matching log count went up, if it did, mark the QSO as valid
+                    if (contestLog.MatchLogs.Count > qsoCount)
+                    {
+                        qso.Status = QSOStatus.ValidQSO;
+                        qsoCount++;
+                        count++;
+                    }
+
+                    if (contestLog.ReviewLogs.Count > reviewCount)
+                    {
+                        qso.Status = QSOStatus.ReviewQSO;
+                        reviewCount++;
+                    }
+
+                    if (contestLog.MatchLogs.Count > qsoCount && contestLog.ReviewLogs.Count > reviewCount)
+                    {
+                        string g = "";
+                    }
+
+                }
+            }
+
+            // now cleanup - THIS NEEDS TO BE CHECKED TO SEE IF IT WORKS
+            if (contestLog.ReviewLogs.Count > 0)
+            {
+                foreach (ContestLog log in contestLog.ReviewLogs)
+                {
+                    Int32 asd = log.QSOCollection.Count;
+                    log.QSOCollection.RemoveAll(x => x.Status == QSOStatus.ValidQSO);
+                    if (log.QSOCollection.Count > 0)
+                    {
+                        // mark the QSOs as Status.Review
+                        string x = "";
+                    }
+                }
+            }
+
+            return count;
+        }
+
+    
+
+        /// <summary>
+        /// Look at the QSOs and see if they are valid - how do you know?
         /// need all the QSOs from two lists
         /// the qsos that match between the two logs
         /// </summary>
@@ -516,19 +601,35 @@ namespace ContestLogAnalyzer
         {
             List<QSO> qsoList;
             List<QSO> matchList = null;
+            List<QSO> totalList = null;
+            List<QSO> exceptionList = null;
+            Hashtable callTable = new Hashtable();
             string logOwnerCall = log.LogHeader.OperatorCallSign;
             string operatorCall = null;
             string sentName = null;
             Int32 sent = 0;
             Int32 received = 0;
             Int32 band = 0;
-            bool valid = true;
+            Int32 matchCount = 0;
+            QSOStatus valid = QSOStatus.ValidQSO;
 
 
-            foreach (ContestLog contestLog in log.MatchingLogs)
+            foreach (ContestLog contestLog in log.MatchLogs)
             {
-                // list of Qs from the other guy
+                //operatorCall = qso.OperatorCall;
+                //sent = qso.SentSerialNumber;
+                //received = qso.ReceivedSerialNumber;
+                //band = qso.Band;
+                //sentName = qso.OperatorName;
+
+                // list of QSOs from the other guy where 
                 qsoList = contestLog.QSOCollection.Where(a => a.ContactCall == logOwnerCall).ToList();
+
+
+                //matchList = contestLog.QSOCollection.Where(a => a.ContactCall == operatorCall && a.SentSerialNumber == received && a.Band == band && a.ContactName == sentName).ToList<QSO>();
+
+                return;
+                //totalList = contestLog.QSOCollection.Where(a => a.ContactCall == logOwnerCall && a.SentSerialNumber == received && a.Band == band && a.ContactName == sentName).ToList<QSO>();
                 // now query this guys log for matches
                 foreach (QSO qso in qsoList)
                 {
@@ -537,24 +638,29 @@ namespace ContestLogAnalyzer
                     received = qso.ReceivedSerialNumber;
                     band = qso.Band;
                     sentName = qso.OperatorName; // check on this
-                    valid = true;
+                    valid = QSOStatus.ValidQSO;
 
+                    //totalList = log.QSOCollection.Where(a => a.ContactCall == operatorCall).ToList<QSO>();
                     // could there be more than one returned?
                     matchList = log.QSOCollection.Where(a => a.ContactCall == operatorCall && a.SentSerialNumber == received && a.Band == band && a.ContactName == sentName).ToList<QSO>();
                     foreach (QSO q in matchList)
                     {
-                        q.QSOIsValid = valid;
-                        valid = false;
-                        if (!q.QSOIsValid)
+                        q.Status = QSOStatus.ValidQSO;
+                        valid = QSOStatus.InvalidQSO;
+                        if (q.Status == QSOStatus.InvalidQSO)
                         {
                             // later expand this with more information
                             q.RejectReason = "Dupe";
                         }
                     }
-                    string z = "";
+
+                    //// see if there are any QSOs that need correction or looking at
+                    //if (totalList.Count != matchList.Count)
+                    //{
+                    //    exceptionList = totalList.Except(qsoList).ToList<QSO>();
+                    //}
                 }
             }
-
         }
 
 
@@ -595,6 +701,13 @@ namespace ContestLogAnalyzer
             }
         }
 
+        /*
+         * http://stackoverflow.com/questions/14893924/for-vs-linq-performance-vs-future
+            int matchIndex = array.Select((r, i) => new { value = r, index = i })
+                         .Where(t => t.value == matchString)
+                         .Select(s => s.index).First();
+         */
+
         #region Update ListView
 
         private void UpdateListView(string message)
@@ -620,3 +733,26 @@ namespace ContestLogAnalyzer
 
     } // end class
 }
+
+
+/*
+  tempLog = _ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.ReceivedSerialNumber == sent && a.Band == band && a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO)).ToList();
+                    if (tempLog != null && tempLog.Count > 0)
+                    {
+                        contestLog.MatchLogs.AddRange(tempLog);
+                    }
+
+                    // some of these will be marked valid as we go along and need to be removed from this collection
+                    tempLog = _ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && (a.ReceivedSerialNumber != sent || a.Band == band || a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO))).ToList();
+                    if (tempLog != null && tempLog.Count > 0)
+                    {
+                        contestLog.ReviewLogs.AddRange(tempLog);
+                    }
+
+                    tempLog = _ContestLogs.Where(q => q.QSOCollection.All(a => a.ContactCall != operatorCall)).ToList();
+                    if (tempLog != null && tempLog.Count > 0)
+                    {
+                        contestLog.OtherLogs.AddRange(tempLog);
+                    }
+
+ */

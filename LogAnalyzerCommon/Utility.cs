@@ -116,5 +116,13 @@ namespace W6OP.ContestLogAnalyzer
 
             return band;
         }
+
+        public static TCollection MakeRigCollectionSimple<TCollection, TItem>(this IEnumerable<TItem> items, TCollection collection)
+            where TCollection : ICollection<TItem>
+            {
+                foreach (var myObj in items)
+                    collection.Add(myObj);
+                return collection;
+            }
     } // end class
 }

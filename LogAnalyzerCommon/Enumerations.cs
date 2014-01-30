@@ -12,7 +12,15 @@ namespace W6OP.ContestLogAnalyzer
         [Description("The band does not match")]
         Band,
         OpName,
+        Sent,
         Other
+    }
+
+    public enum QSOStatus
+    {
+        ValidQSO,
+        InvalidQSO,
+        ReviewQSO
     }
 
     public enum CategoryAssisted
