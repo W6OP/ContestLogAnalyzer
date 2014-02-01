@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ContestLogAnalyzer")]
+[assembly: AssemblyTitle("ScoreEngine")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("W6OP")]
-[assembly: AssemblyProduct("ContestLogAnalyzer")]
-[assembly: AssemblyCopyright("Copyright ©  2013")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("ScoreEngine")]
+[assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("519729bc-e9c9-44f8-80b1-514293dd3a9c")]
+[assembly: Guid("6e017ff5-b58a-4b04-9505-e9c99e7a64cd")]
 
 // Version information for an assembly consists of the following four values:
 //

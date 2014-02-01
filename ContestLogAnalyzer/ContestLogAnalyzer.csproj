@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -79,7 +80,27 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Cabrillo\Cabrillo.csproj">
+      <Project>{d5621e76-8801-41df-b90b-609796f3042c}</Project>
+      <Name>Cabrillo</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LogAnalyzerCommon\LogAnalyzerCommon.csproj">
+      <Project>{b033bebd-9c13-4ead-909a-5348cbdc3f30}</Project>
+      <Name>LogAnalyzerCommon</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(TargetDir)$(TargetName).exe" ..\..\..\Deploy
+copy "$(TargetDir)$(TargetName).exe.config" ..\..\..\Deploy
+copy "$(TargetDir)$(TargetName).pdb" ..\..\..\Deploy
+copy "$(TargetDir)/Cabrillo.dll" ..\..\..\Deploy
+copy "$(TargetDir)/Cabrillo.pdb" ..\..\..\Deploy
+copy "$(TargetDir)/LogAnalyzerCommon.dll" ..\..\..\Deploy
+copy "$(TargetDir)/LogAnalyzerCommon.pdb" ..\..\..\Deploy
+</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
