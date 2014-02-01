@@ -17,7 +17,8 @@ namespace ContestLogAnalyzer
     /// Load first file. 
     /// Look for header and footer.
     /// Validate header.
-    /// Load QSOs. Actually I will have to compare all logs so probably just validate headers and footers on all logs first.
+    /// Load QSOs. Actually I will have to compare all logs so probably just validate headers and 
+    /// footers on all logs first.
     /// Validate QSOs.
     /// Calculate score.
     /// </summary>
@@ -78,7 +79,7 @@ namespace ContestLogAnalyzer
         }
 
         /// <summary>
-        /// 
+        /// Get a list of all of the log files.
         /// </summary>
         private void BuildFileList()
         {
