@@ -89,6 +89,10 @@
       <Project>{b033bebd-9c13-4ead-909a-5348cbdc3f30}</Project>
       <Name>LogAnalyzerCommon</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ScoreEngine\ScoreEngine.csproj">
+      <Project>{93049529-661f-4bda-b057-7ba5e07d158f}</Project>
+      <Name>ScoreEngine</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

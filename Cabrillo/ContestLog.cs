@@ -42,6 +42,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     _IsCheckLog = true;
                 }
+                _ClaimedScore = LogHeader.ClaimedScore;
             }
         }
 
@@ -153,6 +154,19 @@ namespace W6OP.ContestLogAnalyzer
         {
             get { return _ActualScore; }
             set { _ActualScore = value; }
+        }
+
+        private Int32 _Multipliers;
+        public Int32 Multipliers
+        {
+            get { return _Multipliers; }
+            set 
+            { 
+                _Multipliers = value;
+                // this actuall needs to be a link query - where QSO.IsValid
+                Int32 count = QSOCollection.Where(q =>  q.Status == QSOStatus.ValidQSO).ToList().Count();
+                _ActualScore = _Multipliers * count;
+            }
         }
 
     } // end class
