@@ -13,9 +13,9 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public ContestLog()
         {
-            _MatchLogs = new List<ContestLog>();
-            _ReviewLogs = new List<ContestLog>();
-            _OtherLogs = new List<ContestLog>();
+            //_MatchLogs = new List<ContestLog>();
+            //_ReviewLogs = new List<ContestLog>();
+            //_OtherLogs = new List<ContestLog>();
         }
 
         /// <summary>
@@ -86,8 +86,8 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// A list of all of the logs that have a reference to the call represented by this log.
         /// </summary>
-        private List<ContestLog> _MatchLogs;
-        public List<ContestLog> MatchLogs
+        private Dictionary<string, ContestLog> _MatchLogs;
+        public Dictionary<string, ContestLog> MatchLogs
         {
             get { return _MatchLogs; }
             set { _MatchLogs = value; }
@@ -96,8 +96,8 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// List of logs that do not have a QSO with this operator.
         /// </summary>
-        private List<ContestLog> _OtherLogs;
-        public List<ContestLog> OtherLogs
+        private Dictionary<string, ContestLog> _OtherLogs;
+        public Dictionary<string, ContestLog> OtherLogs
         {
             get { return _OtherLogs; }
             set { _OtherLogs = value; }
@@ -106,8 +106,8 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Logs that need review.
         /// </summary>
-        private List<ContestLog> _ReviewLogs;
-        public List<ContestLog> ReviewLogs
+        private Dictionary<string, ContestLog> _ReviewLogs;
+        public Dictionary<string, ContestLog> ReviewLogs
         {
             get { return _ReviewLogs; }
             set { _ReviewLogs = value; }
