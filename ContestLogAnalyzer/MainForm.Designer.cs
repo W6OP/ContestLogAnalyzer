@@ -32,15 +32,14 @@
             this.label1 = new System.Windows.Forms.Label();
             this.TextBoxLogFolder = new System.Windows.Forms.TextBox();
             this.ButtonSelectFolder = new System.Windows.Forms.Button();
-            this.ButtonAnalyzeLog = new System.Windows.Forms.Button();
-            this.ButtonValidateHeader = new System.Windows.Forms.Button();
+            this.ButtonLoadLogs = new System.Windows.Forms.Button();
             this.listView1 = new System.Windows.Forms.ListView();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.label2 = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.BackgroundWorkerAnalyze = new System.ComponentModel.BackgroundWorker();
-            this.button1 = new System.Windows.Forms.Button();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ButtonStartAnalysis = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // LogFolderBrowserDialog
@@ -76,25 +75,15 @@
             this.ButtonSelectFolder.UseVisualStyleBackColor = true;
             this.ButtonSelectFolder.Click += new System.EventHandler(this.ButtonSelectFolder_Click);
             // 
-            // ButtonAnalyzeLog
+            // ButtonLoadLogs
             // 
-            this.ButtonAnalyzeLog.Location = new System.Drawing.Point(369, 305);
-            this.ButtonAnalyzeLog.Name = "ButtonAnalyzeLog";
-            this.ButtonAnalyzeLog.Size = new System.Drawing.Size(119, 23);
-            this.ButtonAnalyzeLog.TabIndex = 3;
-            this.ButtonAnalyzeLog.Text = "Start Log Analysis";
-            this.ButtonAnalyzeLog.UseVisualStyleBackColor = true;
-            this.ButtonAnalyzeLog.Click += new System.EventHandler(this.ButtonAnalyzeLog_Click);
-            // 
-            // ButtonValidateHeader
-            // 
-            this.ButtonValidateHeader.Location = new System.Drawing.Point(24, 305);
-            this.ButtonValidateHeader.Name = "ButtonValidateHeader";
-            this.ButtonValidateHeader.Size = new System.Drawing.Size(119, 23);
-            this.ButtonValidateHeader.TabIndex = 4;
-            this.ButtonValidateHeader.Text = "Validate Headers";
-            this.ButtonValidateHeader.UseVisualStyleBackColor = true;
-            this.ButtonValidateHeader.Click += new System.EventHandler(this.ButtonValidateHeader_Click);
+            this.ButtonLoadLogs.Location = new System.Drawing.Point(24, 147);
+            this.ButtonLoadLogs.Name = "ButtonLoadLogs";
+            this.ButtonLoadLogs.Size = new System.Drawing.Size(119, 23);
+            this.ButtonLoadLogs.TabIndex = 3;
+            this.ButtonLoadLogs.Text = "Load Contest Logs";
+            this.ButtonLoadLogs.UseVisualStyleBackColor = true;
+            this.ButtonLoadLogs.Click += new System.EventHandler(this.ButtonLoadLogs_Click);
             // 
             // listView1
             // 
@@ -108,6 +97,11 @@
             this.listView1.TabIndex = 5;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Text = "Processed";
+            this.columnHeader1.Width = 200;
             // 
             // label2
             // 
@@ -144,20 +138,16 @@
             this.BackgroundWorkerAnalyze.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorkerAnalyze_ProgressChanged);
             this.BackgroundWorkerAnalyze.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerAnalyze_RunWorkerCompleted);
             // 
-            // button1
+            // ButtonStartAnalysis
             // 
-            this.button1.Location = new System.Drawing.Point(24, 276);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(119, 23);
-            this.button1.TabIndex = 9;
-            this.button1.Text = "Check First Log";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // columnHeader1
-            // 
-            this.columnHeader1.Text = "Processed";
-            this.columnHeader1.Width = 200;
+            this.ButtonStartAnalysis.Enabled = false;
+            this.ButtonStartAnalysis.Location = new System.Drawing.Point(159, 147);
+            this.ButtonStartAnalysis.Name = "ButtonStartAnalysis";
+            this.ButtonStartAnalysis.Size = new System.Drawing.Size(119, 23);
+            this.ButtonStartAnalysis.TabIndex = 9;
+            this.ButtonStartAnalysis.Text = "Start Log Analysis";
+            this.ButtonStartAnalysis.UseVisualStyleBackColor = true;
+            this.ButtonStartAnalysis.Click += new System.EventHandler(this.ButtonStartAnalysis_Click);
             // 
             // MainForm
             // 
@@ -165,13 +155,12 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
             this.ClientSize = new System.Drawing.Size(943, 348);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.ButtonStartAnalysis);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.listView1);
-            this.Controls.Add(this.ButtonValidateHeader);
-            this.Controls.Add(this.ButtonAnalyzeLog);
+            this.Controls.Add(this.ButtonLoadLogs);
             this.Controls.Add(this.ButtonSelectFolder);
             this.Controls.Add(this.TextBoxLogFolder);
             this.Controls.Add(this.label1);
@@ -191,14 +180,13 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox TextBoxLogFolder;
         private System.Windows.Forms.Button ButtonSelectFolder;
-        private System.Windows.Forms.Button ButtonAnalyzeLog;
-        private System.Windows.Forms.Button ButtonValidateHeader;
+        private System.Windows.Forms.Button ButtonLoadLogs;
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label3;
         private System.ComponentModel.BackgroundWorker BackgroundWorkerAnalyze;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button ButtonStartAnalysis;
         private System.Windows.Forms.ColumnHeader columnHeader1;
     }
 }
