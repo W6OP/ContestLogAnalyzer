@@ -464,10 +464,42 @@ namespace ContestLogAnalyzer
             UpdateListView("", true);
             PreProcessContestLogs();
 
+            FindLogsToReview();
+
             // now score each log
             ScoreLogs();
         }
 
+        /// <summary>
+        /// I have a collection of logs where some the QSOs match and another collection
+        /// where they don't match at all. Now I need a collection of QSOs that need review.
+        /// These will be logs where at least one QSO is marked InValid.
+        /// </summary>
+        private void FindLogsToReview()
+        {
+            List<QSO> reviewLogs = new List<QSO>();
+            Dictionary<string,QSO> review;   // = new List<QSO>();
+
+            // This gives me a list of all the QSOs in the Contest Log collection that need reviewing
+            reviewLogs = _ContestLogs.SelectMany(q => q.QSOCollection).Where(a => a.Status == QSOStatus.InvalidQSO).ToList();
+
+            // this eleiminates the dupes - needs testing
+            review = reviewLogs
+              .GroupBy(p => p.OperatorCall, StringComparer.OrdinalIgnoreCase)
+              .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+            
+            
+            
+            //var seasonSpots = from s in _ContestLogs
+            //                  where s.QSOCollection != null
+            //                  where QSO(s.QSOCollection)
+            //                  select s.;
+        }
+
+        /// <summary>
+        /// Start scoring the logs.
+        /// </summary>
         private void ScoreLogs()
         {
             CWOpen cwOpen = new CWOpen();
@@ -575,14 +607,14 @@ namespace ContestLogAnalyzer
 
                     }
 
-                    if (reviewLogs.Count > reviewCount)
-                    {
-                        if (qso.Status != QSOStatus.ValidQSO)
-                        {
-                            qso.Status = QSOStatus.ReviewQSO;
-                            reviewCount++;
-                        }
-                    }
+                    //if (reviewLogs.Count > reviewCount)
+                    //{
+                    //    if (qso.Status != QSOStatus.ValidQSO)
+                    //    {
+                    //        qso.Status = QSOStatus.ReviewQSO;
+                    //        reviewCount++;
+                    //    }
+                    //}
 
                     if (otherLogs.Count > otherCount)
                     {
@@ -628,9 +660,9 @@ namespace ContestLogAnalyzer
                 //}
             
 
-            contestLog.ReviewLogs = reviewLogs
-               .GroupBy(p => p.LogOwner, StringComparer.OrdinalIgnoreCase)
-                   .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            //contestLog.ReviewLogs = reviewLogs
+            //   .GroupBy(p => p.LogOwner, StringComparer.OrdinalIgnoreCase)
+            //       .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
 
             // this also contains the LogOwner's log so I want to remove it in a bit
