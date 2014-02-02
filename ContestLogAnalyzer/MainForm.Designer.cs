@@ -38,8 +38,11 @@
             this.label2 = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.BackgroundWorkerAnalyze = new System.ComponentModel.BackgroundWorker();
+            this.BackgroundWorkerLoadLogs = new System.ComponentModel.BackgroundWorker();
             this.ButtonStartAnalysis = new System.Windows.Forms.Button();
+            this.ButtonScoreLogs = new System.Windows.Forms.Button();
+            this.BackgroundWorkerScoreLogs = new System.ComponentModel.BackgroundWorker();
+            this.BackgroundWorkerAnalzeLogs = new System.ComponentModel.BackgroundWorker();
             this.SuspendLayout();
             // 
             // LogFolderBrowserDialog
@@ -130,18 +133,16 @@
             this.label3.TabIndex = 8;
             this.label3.Text = "Select Contest";
             // 
-            // BackgroundWorkerAnalyze
+            // BackgroundWorkerLoadLogs
             // 
-            this.BackgroundWorkerAnalyze.WorkerReportsProgress = true;
-            this.BackgroundWorkerAnalyze.WorkerSupportsCancellation = true;
-            this.BackgroundWorkerAnalyze.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerAnalyze_DoWork);
-            this.BackgroundWorkerAnalyze.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorkerAnalyze_ProgressChanged);
-            this.BackgroundWorkerAnalyze.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerAnalyze_RunWorkerCompleted);
+            this.BackgroundWorkerLoadLogs.WorkerSupportsCancellation = true;
+            this.BackgroundWorkerLoadLogs.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerLoadLogs_DoWork);
+            this.BackgroundWorkerLoadLogs.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerLoadLogs_RunWorkerCompleted);
             // 
             // ButtonStartAnalysis
             // 
             this.ButtonStartAnalysis.Enabled = false;
-            this.ButtonStartAnalysis.Location = new System.Drawing.Point(159, 147);
+            this.ButtonStartAnalysis.Location = new System.Drawing.Point(149, 147);
             this.ButtonStartAnalysis.Name = "ButtonStartAnalysis";
             this.ButtonStartAnalysis.Size = new System.Drawing.Size(119, 23);
             this.ButtonStartAnalysis.TabIndex = 9;
@@ -149,12 +150,36 @@
             this.ButtonStartAnalysis.UseVisualStyleBackColor = true;
             this.ButtonStartAnalysis.Click += new System.EventHandler(this.ButtonStartAnalysis_Click);
             // 
+            // ButtonScoreLogs
+            // 
+            this.ButtonScoreLogs.Enabled = false;
+            this.ButtonScoreLogs.Location = new System.Drawing.Point(274, 147);
+            this.ButtonScoreLogs.Name = "ButtonScoreLogs";
+            this.ButtonScoreLogs.Size = new System.Drawing.Size(119, 23);
+            this.ButtonScoreLogs.TabIndex = 10;
+            this.ButtonScoreLogs.Text = "Score Contest Logs";
+            this.ButtonScoreLogs.UseVisualStyleBackColor = true;
+            this.ButtonScoreLogs.Click += new System.EventHandler(this.ButtonScoreLogs_Click);
+            // 
+            // BackgroundWorkerScoreLogs
+            // 
+            this.BackgroundWorkerScoreLogs.WorkerSupportsCancellation = true;
+            this.BackgroundWorkerScoreLogs.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerScoreLogs_DoWork);
+            this.BackgroundWorkerScoreLogs.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerScoreLogs_RunWorkerCompleted);
+            // 
+            // BackgroundWorkerAnalzeLogs
+            // 
+            this.BackgroundWorkerAnalzeLogs.WorkerSupportsCancellation = true;
+            this.BackgroundWorkerAnalzeLogs.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerAnalyzeLogs_DoWork);
+            this.BackgroundWorkerAnalzeLogs.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerAnalyzeLogs_RunWorkerCompleted);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
             this.ClientSize = new System.Drawing.Size(943, 348);
+            this.Controls.Add(this.ButtonScoreLogs);
             this.Controls.Add(this.ButtonStartAnalysis);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.comboBox1);
@@ -185,9 +210,12 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label3;
-        private System.ComponentModel.BackgroundWorker BackgroundWorkerAnalyze;
+        private System.ComponentModel.BackgroundWorker BackgroundWorkerLoadLogs;
         private System.Windows.Forms.Button ButtonStartAnalysis;
         private System.Windows.Forms.ColumnHeader columnHeader1;
+        private System.Windows.Forms.Button ButtonScoreLogs;
+        private System.ComponentModel.BackgroundWorker BackgroundWorkerScoreLogs;
+        private System.ComponentModel.BackgroundWorker BackgroundWorkerAnalzeLogs;
     }
 }
 
