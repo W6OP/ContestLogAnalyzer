@@ -51,9 +51,15 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void MainForm_Load(object sender, EventArgs e)
         {
-            //string guidString = Guid.NewGuid().ToString();
-
             _LogFolder = TextBoxLogFolder.Text;
+
+            ComboBoxSelectContest.DataSource = Enum.GetValues(typeof(ContestName))
+                .Cast<ContestName>()
+                .Select(p => new { Key = (int)p, Value = p.ToString() })
+                .ToList();
+
+            ComboBoxSelectContest.DisplayMember = "Value";
+            ComboBoxSelectContest.ValueMember = "Key";
         }
 
 
@@ -105,10 +111,13 @@ namespace ContestLogAnalyzer
         private void LoadLogFiles()
         {
             Int32 fileCount = 0;
+            ContestLog contestLog = null;
 
             try
             {
-                UpdateListView("", true);
+                UpdateListViewLoad("", true, contestLog);
+                UpdateListViewAnalysis("", "", true);
+                UpdateListViewScore("", "","", true);
 
                 if (_LogProcessor == null)
                 {
@@ -121,7 +130,7 @@ namespace ContestLogAnalyzer
                     _ContestLogs = new List<ContestLog>();
                     fileCount = _LogProcessor.BuildFileList(out _LogFileList);
 
-                    UpdateListView(fileCount.ToString() + " logs were loaded.", false);
+                    UpdateListViewLoad(fileCount.ToString() + " logs were loaded.", false, contestLog);
                     ButtonStartAnalysis.Enabled = true;
 
                     Cursor = Cursors.WaitCursor;
@@ -138,12 +147,12 @@ namespace ContestLogAnalyzer
             }
         }
 
-        private void _LogProcessor_OnProgressUpdate(string value)
+        private void _LogProcessor_OnProgressUpdate(string value, ContestLog contestLog)
         {
-            UpdateListView(value, false);
+            //ContestLog contestLog = null;
+
+            UpdateListViewLoad(value, false, contestLog);
         }
-
-
 
         #region Background Worker Load Logs
 
@@ -167,13 +176,15 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void BackgroundWorkerLoadLogs_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            ContestLog contestLog = null;
+
             if (e.Error != null)
             {
-                UpdateListView(e.Error.Message, false);
+                UpdateListViewLoad(e.Error.Message, false, contestLog);
             }
             else
             {
-                UpdateListView("Logs completed loaded.", false);
+                UpdateListViewLoad("Logs completed loaded.", false, contestLog);
                 Cursor = Cursors.Default;
             }
         }
@@ -191,7 +202,7 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonStartAnalysis_Click(object sender, EventArgs e)
         {
-            UpdateListView("", true);
+            UpdateListViewAnalysis("","", true);
 
             if (_LogAnalyser == null)
             {
@@ -216,9 +227,9 @@ namespace ContestLogAnalyzer
         /// Update the list view with the call sign last processed.
         /// </summary>
         /// <param name="value"></param>
-        private void _LogAnalyser_OnProgressUpdate(string value)
+        private void _LogAnalyser_OnProgressUpdate(string value, string count)
         {
-            UpdateListView(value, false);
+            UpdateListViewAnalysis(value, count, false);
         }
 
         /// <summary>
@@ -230,18 +241,77 @@ namespace ContestLogAnalyzer
         {
             if (e.Error != null)
             {
-                UpdateListView(e.Error.Message, false);
+                UpdateListViewAnalysis(e.Error.Message, "", false);
             }
             else
             {
-                UpdateListView("Log analysis completed!", false);
+                UpdateListViewAnalysis("Log analysis completed!", "", false);
                 Cursor = Cursors.Default;
                 ButtonScoreLogs.Enabled = true; // might be cross thread
             }
         }
 
 
+        #region Score Logs
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ButtonScoreLogs_Click(object sender, EventArgs e)
+        {
+            if (_CWOpen == null)
+            {
+                _CWOpen = new CWOpen();
+                _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
+            }
+
+            UpdateListViewScore("", "", "", true);
+
+            Cursor = Cursors.WaitCursor;
+
+            // now score each log
+            BackgroundWorkerScoreLogs.RunWorkerAsync();
+        }
+
+        private void _CWOpen_OnProgressUpdate(string logOwner, string claimed, string actual)
+        {
+            UpdateListViewScore(logOwner, claimed, actual, false);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BackgroundWorkerScoreLogs_DoWork(object sender, DoWorkEventArgs e)
+        {
+            _CWOpen.ScoreContestLogs(_ContestLogs);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BackgroundWorkerScoreLogs_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                UpdateListViewScore(e.Error.Message, "", "", false);
+            }
+            else
+            {
+                UpdateListViewScore("Log scoring complete.", "", "", false);
+            }
+
+            Cursor = Cursors.Default;
+        }
+
+        #endregion
 
 
 
@@ -333,91 +403,123 @@ namespace ContestLogAnalyzer
                          .Select(s => s.index).First();
          */
 
-        #region Update ListView
+        #region Update ListViews
 
-        private void UpdateListView(string message, bool clear)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="clear"></param>
+        private void UpdateListViewLoad(string message, bool clear, ContestLog contestLog)
         {
             if (InvokeRequired)
             {
-                this.BeginInvoke(new Action<string, bool>(this.UpdateListView), message, clear);
+                this.BeginInvoke(new Action<string, bool, ContestLog>(this.UpdateListViewLoad), message, clear, contestLog);
                 return;
             }
 
             if (clear)
             {
-                listView1.Items.Clear();
+                ListViewLoad.Items.Clear();
             }
             else
             {
                 ListViewItem item = new ListViewItem(message);
-                listView1.Items.Insert(0, item);
+                item.Tag = contestLog;
+                ListViewLoad.Items.Insert(0, item);
             }
         }
 
-
-        #endregion
-
-        #region Score Logs
-
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ButtonScoreLogs_Click(object sender, EventArgs e)
+        /// <param name="message"></param>
+        /// <param name="clear"></param>
+        private void UpdateListViewAnalysis(string message, string count, bool clear)
         {
-            if (_CWOpen == null)
+            if (InvokeRequired)
             {
-                _CWOpen = new CWOpen();
-                _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
+                this.BeginInvoke(new Action<string, string, bool>(this.UpdateListViewAnalysis), message, count, clear);
+                return;
             }
 
-            UpdateListView("", true);
-
-            Cursor = Cursors.WaitCursor;
-
-            // now score each log
-            BackgroundWorkerScoreLogs.RunWorkerAsync();
-        }
-
-        private void _CWOpen_OnProgressUpdate(string value)
-        {
-            UpdateListView(value, false);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void BackgroundWorkerScoreLogs_DoWork(object sender, DoWorkEventArgs e)
-        {
-            _CWOpen.ScoreContestLogs(_ContestLogs);
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void BackgroundWorkerScoreLogs_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Error != null)
+            if (clear)
             {
-                UpdateListView(e.Error.Message, false);
+                ListViewAnalysis.Items.Clear();
             }
             else
             {
-                UpdateListView("Log scoring complete.", false);
+                ListViewItem item = new ListViewItem(message);
+                item.SubItems.Add(count);
+                ListViewAnalysis.Items.Insert(0, item);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="logOwner"></param>
+        /// <param name="clear"></param>
+        private void UpdateListViewScore(string logOwner, string claimed, string actual, bool clear)
+        {
+            if (InvokeRequired)
+            {
+                this.BeginInvoke(new Action<string, string, string, bool>(this.UpdateListViewScore), logOwner, claimed, actual, clear);
+                return;
             }
 
-            Cursor = Cursors.Default;
+            if (clear)
+            {
+                ListViewScore.Items.Clear();
+            }
+            else
+            {
+                ListViewItem item = new ListViewItem(logOwner);
+                item.SubItems.Add(claimed);
+                item.SubItems.Add(actual);
+                ListViewScore.Items.Insert(0, item);
+            }
         }
 
         #endregion
 
+        #region ListView Click Handling
+
+        private void ListViewLoad_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            ListView listView = (ListView)sender;
+
+            ListView.SelectedListViewItemCollection items = listView.SelectedItems;
+            ListViewItem item = items[0];
+
+            if (item.Tag != null)
+            {
+                ContestLog contestLog = (ContestLog)item.Tag;
+                LogViewForm form = new LogViewForm(contestLog);
+                form.Show();
+            }
+        }
+
+        private void ListViewScore_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            // pop up form with all of the statistics on it
+            // only allow one form to show at a time
+
+        }
+
+        private void ListViewAnalysis_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            // popup form with all of the log entries
+            // mark ones to review in blue
+            // allow changes to be made and saved
+            // allow multiple forms so thay can be compared
+        }
+
+
+     
+        #endregion
+
+       
 
 
 

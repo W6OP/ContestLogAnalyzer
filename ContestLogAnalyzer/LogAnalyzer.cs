@@ -8,7 +8,7 @@ namespace W6OP.ContestLogAnalyzer
 {
    public class LogAnalyzer
     {
-        public delegate void ProgressUpdate(string value);
+        public delegate void ProgressUpdate(string value, string count);
         public event ProgressUpdate OnProgressUpdate;
 
        /// <summary>
@@ -49,7 +49,7 @@ namespace W6OP.ContestLogAnalyzer
                // ReportProgress with Callsign
                if (OnProgressUpdate != null)
                {
-                   OnProgressUpdate(call);
+                   OnProgressUpdate(call, contestLog.QSOCollection.Count.ToString());
                }
 
                if (!contestLog.IsCheckLog)

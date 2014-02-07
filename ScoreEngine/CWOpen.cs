@@ -8,7 +8,7 @@ namespace W6OP.ContestLogAnalyzer
 {
     public class CWOpen
     {
-        public delegate void ProgressUpdate(string value);
+        public delegate void ProgressUpdate(string logOwner, string claimed, string actual);
         public event ProgressUpdate OnProgressUpdate;
 
         public CWOpen()
@@ -25,7 +25,7 @@ namespace W6OP.ContestLogAnalyzer
                 // ReportProgress with Callsign
                 if (OnProgressUpdate != null)
                 {
-                    OnProgressUpdate(contestLog.LogOwner + " - " + contestLog.ActualScore.ToString());
+                    OnProgressUpdate(contestLog.LogOwner, contestLog.ClaimedScore.ToString(), contestLog.ActualScore.ToString());
                 }
             }
 

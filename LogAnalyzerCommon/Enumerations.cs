@@ -11,7 +11,9 @@ namespace W6OP.ContestLogAnalyzer
     {
         [Description("The band does not match")]
         Band,
+        [Description("The operator name does not match")]
         OpName,
+        [Description("The sent serial number does not match")]
         Sent,
         Other
     }

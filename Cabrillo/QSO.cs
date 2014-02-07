@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace W6OP.ContestLogAnalyzer
 {
-   public class QSO
+    public class QSO
     {
         /// <summary>
         /// Constructor.

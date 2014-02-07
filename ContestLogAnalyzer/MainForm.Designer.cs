@@ -33,16 +33,22 @@
             this.TextBoxLogFolder = new System.Windows.Forms.TextBox();
             this.ButtonSelectFolder = new System.Windows.Forms.Button();
             this.ButtonLoadLogs = new System.Windows.Forms.Button();
-            this.listView1 = new System.Windows.Forms.ListView();
+            this.ListViewLoad = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.label2 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.ComboBoxSelectContest = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.BackgroundWorkerLoadLogs = new System.ComponentModel.BackgroundWorker();
             this.ButtonStartAnalysis = new System.Windows.Forms.Button();
             this.ButtonScoreLogs = new System.Windows.Forms.Button();
             this.BackgroundWorkerScoreLogs = new System.ComponentModel.BackgroundWorker();
             this.BackgroundWorkerAnalzeLogs = new System.ComponentModel.BackgroundWorker();
+            this.ListViewAnalysis = new System.Windows.Forms.ListView();
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ListViewScore = new System.Windows.Forms.ListView();
+            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SuspendLayout();
             // 
             // LogFolderBrowserDialog
@@ -53,7 +59,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 76);
+            this.label1.Location = new System.Drawing.Point(21, 68);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(97, 15);
             this.label1.TabIndex = 0;
@@ -61,7 +67,7 @@
             // 
             // TextBoxLogFolder
             // 
-            this.TextBoxLogFolder.Location = new System.Drawing.Point(12, 94);
+            this.TextBoxLogFolder.Location = new System.Drawing.Point(24, 86);
             this.TextBoxLogFolder.Name = "TextBoxLogFolder";
             this.TextBoxLogFolder.Size = new System.Drawing.Size(394, 23);
             this.TextBoxLogFolder.TabIndex = 1;
@@ -69,7 +75,7 @@
             // 
             // ButtonSelectFolder
             // 
-            this.ButtonSelectFolder.Location = new System.Drawing.Point(412, 93);
+            this.ButtonSelectFolder.Location = new System.Drawing.Point(424, 86);
             this.ButtonSelectFolder.Name = "ButtonSelectFolder";
             this.ButtonSelectFolder.Size = new System.Drawing.Size(31, 23);
             this.ButtonSelectFolder.TabIndex = 2;
@@ -80,7 +86,7 @@
             // 
             // ButtonLoadLogs
             // 
-            this.ButtonLoadLogs.Location = new System.Drawing.Point(24, 147);
+            this.ButtonLoadLogs.Location = new System.Drawing.Point(24, 124);
             this.ButtonLoadLogs.Name = "ButtonLoadLogs";
             this.ButtonLoadLogs.Size = new System.Drawing.Size(119, 23);
             this.ButtonLoadLogs.TabIndex = 3;
@@ -88,46 +94,38 @@
             this.ButtonLoadLogs.UseVisualStyleBackColor = true;
             this.ButtonLoadLogs.Click += new System.EventHandler(this.ButtonLoadLogs_Click);
             // 
-            // listView1
+            // ListViewLoad
             // 
-            this.listView1.BackColor = System.Drawing.SystemColors.Info;
-            this.listView1.CheckBoxes = true;
-            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.ListViewLoad.BackColor = System.Drawing.SystemColors.Info;
+            this.ListViewLoad.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1});
-            this.listView1.Location = new System.Drawing.Point(516, 47);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(415, 282);
-            this.listView1.TabIndex = 5;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
+            this.ListViewLoad.GridLines = true;
+            this.ListViewLoad.Location = new System.Drawing.Point(24, 163);
+            this.ListViewLoad.Name = "ListViewLoad";
+            this.ListViewLoad.Size = new System.Drawing.Size(257, 554);
+            this.ListViewLoad.TabIndex = 5;
+            this.ListViewLoad.UseCompatibleStateImageBehavior = false;
+            this.ListViewLoad.View = System.Windows.Forms.View.Details;
+            this.ListViewLoad.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ListViewLoad_MouseDoubleClick);
             // 
             // columnHeader1
             // 
             this.columnHeader1.Text = "Processed";
-            this.columnHeader1.Width = 200;
+            this.columnHeader1.Width = 140;
             // 
-            // label2
+            // ComboBoxSelectContest
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(513, 28);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(270, 15);
-            this.label2.TabIndex = 6;
-            this.label2.Text = "List log and status and score as we process them ?";
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(12, 47);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(255, 23);
-            this.comboBox1.TabIndex = 7;
+            this.ComboBoxSelectContest.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ComboBoxSelectContest.FormattingEnabled = true;
+            this.ComboBoxSelectContest.Location = new System.Drawing.Point(24, 36);
+            this.ComboBoxSelectContest.Name = "ComboBoxSelectContest";
+            this.ComboBoxSelectContest.Size = new System.Drawing.Size(131, 23);
+            this.ComboBoxSelectContest.TabIndex = 7;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 28);
+            this.label3.Location = new System.Drawing.Point(21, 18);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(82, 15);
             this.label3.TabIndex = 8;
@@ -142,7 +140,7 @@
             // ButtonStartAnalysis
             // 
             this.ButtonStartAnalysis.Enabled = false;
-            this.ButtonStartAnalysis.Location = new System.Drawing.Point(149, 147);
+            this.ButtonStartAnalysis.Location = new System.Drawing.Point(162, 124);
             this.ButtonStartAnalysis.Name = "ButtonStartAnalysis";
             this.ButtonStartAnalysis.Size = new System.Drawing.Size(119, 23);
             this.ButtonStartAnalysis.TabIndex = 9;
@@ -153,7 +151,7 @@
             // ButtonScoreLogs
             // 
             this.ButtonScoreLogs.Enabled = false;
-            this.ButtonScoreLogs.Location = new System.Drawing.Point(274, 147);
+            this.ButtonScoreLogs.Location = new System.Drawing.Point(299, 124);
             this.ButtonScoreLogs.Name = "ButtonScoreLogs";
             this.ButtonScoreLogs.Size = new System.Drawing.Size(119, 23);
             this.ButtonScoreLogs.TabIndex = 10;
@@ -173,18 +171,73 @@
             this.BackgroundWorkerAnalzeLogs.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerAnalyzeLogs_DoWork);
             this.BackgroundWorkerAnalzeLogs.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerAnalyzeLogs_RunWorkerCompleted);
             // 
+            // ListViewAnalysis
+            // 
+            this.ListViewAnalysis.BackColor = System.Drawing.SystemColors.Info;
+            this.ListViewAnalysis.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader2,
+            this.columnHeader6});
+            this.ListViewAnalysis.GridLines = true;
+            this.ListViewAnalysis.Location = new System.Drawing.Point(299, 163);
+            this.ListViewAnalysis.Name = "ListViewAnalysis";
+            this.ListViewAnalysis.Size = new System.Drawing.Size(257, 554);
+            this.ListViewAnalysis.TabIndex = 11;
+            this.ListViewAnalysis.UseCompatibleStateImageBehavior = false;
+            this.ListViewAnalysis.View = System.Windows.Forms.View.Details;
+            this.ListViewAnalysis.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ListViewAnalysis_MouseDoubleClick);
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.Text = "Processed";
+            this.columnHeader2.Width = 140;
+            // 
+            // ListViewScore
+            // 
+            this.ListViewScore.BackColor = System.Drawing.SystemColors.Info;
+            this.ListViewScore.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader3,
+            this.columnHeader4,
+            this.columnHeader5});
+            this.ListViewScore.GridLines = true;
+            this.ListViewScore.Location = new System.Drawing.Point(574, 163);
+            this.ListViewScore.Name = "ListViewScore";
+            this.ListViewScore.Size = new System.Drawing.Size(278, 554);
+            this.ListViewScore.TabIndex = 12;
+            this.ListViewScore.UseCompatibleStateImageBehavior = false;
+            this.ListViewScore.View = System.Windows.Forms.View.Details;
+            this.ListViewScore.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ListViewScore_MouseDoubleClick);
+            // 
+            // columnHeader3
+            // 
+            this.columnHeader3.Text = "Processed";
+            this.columnHeader3.Width = 140;
+            // 
+            // columnHeader4
+            // 
+            this.columnHeader4.Text = "Claimed";
+            // 
+            // columnHeader5
+            // 
+            this.columnHeader5.Text = "Actual";
+            // 
+            // columnHeader6
+            // 
+            this.columnHeader6.Text = "QSO Count";
+            this.columnHeader6.Width = 150;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
-            this.ClientSize = new System.Drawing.Size(943, 348);
+            this.ClientSize = new System.Drawing.Size(879, 729);
+            this.Controls.Add(this.ListViewScore);
+            this.Controls.Add(this.ListViewAnalysis);
             this.Controls.Add(this.ButtonScoreLogs);
             this.Controls.Add(this.ButtonStartAnalysis);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.comboBox1);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.listView1);
+            this.Controls.Add(this.ComboBoxSelectContest);
+            this.Controls.Add(this.ListViewLoad);
             this.Controls.Add(this.ButtonLoadLogs);
             this.Controls.Add(this.ButtonSelectFolder);
             this.Controls.Add(this.TextBoxLogFolder);
@@ -206,9 +259,8 @@
         private System.Windows.Forms.TextBox TextBoxLogFolder;
         private System.Windows.Forms.Button ButtonSelectFolder;
         private System.Windows.Forms.Button ButtonLoadLogs;
-        private System.Windows.Forms.ListView listView1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ListView ListViewLoad;
+        private System.Windows.Forms.ComboBox ComboBoxSelectContest;
         private System.Windows.Forms.Label label3;
         private System.ComponentModel.BackgroundWorker BackgroundWorkerLoadLogs;
         private System.Windows.Forms.Button ButtonStartAnalysis;
@@ -216,6 +268,13 @@
         private System.Windows.Forms.Button ButtonScoreLogs;
         private System.ComponentModel.BackgroundWorker BackgroundWorkerScoreLogs;
         private System.ComponentModel.BackgroundWorker BackgroundWorkerAnalzeLogs;
+        private System.Windows.Forms.ListView ListViewAnalysis;
+        private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.ListView ListViewScore;
+        private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.ColumnHeader columnHeader4;
+        private System.Windows.Forms.ColumnHeader columnHeader5;
+        private System.Windows.Forms.ColumnHeader columnHeader6;
     }
 }
 

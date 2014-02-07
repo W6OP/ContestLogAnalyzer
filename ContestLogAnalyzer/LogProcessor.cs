@@ -10,7 +10,7 @@ namespace W6OP.ContestLogAnalyzer
 {
     public class LogProcessor
     {
-        public delegate void ProgressUpdate(string value);
+        public delegate void ProgressUpdate(string value, ContestLog contestLog);
         public event ProgressUpdate OnProgressUpdate;
 
         private string _LogFolder;
@@ -108,7 +108,7 @@ namespace W6OP.ContestLogAnalyzer
                     // ReportProgress with Callsign
                     if (OnProgressUpdate != null)
                     {
-                        OnProgressUpdate(fileInfo.Name + " has been loaded.");
+                        OnProgressUpdate(fileInfo.Name, log);
                     }
                 }
             }
