@@ -115,6 +115,7 @@ namespace ContestLogAnalyzer
 
             try
             {
+                ProgressBarLoad.Maximum = 0;
                 UpdateListViewLoad("", true, contestLog);
                 UpdateListViewAnalysis("", "", true);
                 UpdateListViewScore("", "","", true);
@@ -129,6 +130,7 @@ namespace ContestLogAnalyzer
                 {
                     _ContestLogs = new List<ContestLog>();
                     fileCount = _LogProcessor.BuildFileList(out _LogFileList);
+                    ProgressBarLoad.Maximum = fileCount;
 
                     UpdateListViewLoad(fileCount.ToString() + " logs were loaded.", false, contestLog);
                     ButtonStartAnalysis.Enabled = true;
@@ -147,13 +149,6 @@ namespace ContestLogAnalyzer
             }
         }
 
-        private void _LogProcessor_OnProgressUpdate(string value, ContestLog contestLog)
-        {
-            //ContestLog contestLog = null;
-
-            UpdateListViewLoad(value, false, contestLog);
-        }
-
         #region Background Worker Load Logs
 
         /// <summary>
@@ -168,6 +163,14 @@ namespace ContestLogAnalyzer
                 _LogProcessor.BuildContestLog(fileInfo, _ContestLogs);
             }
         }
+
+        private void _LogProcessor_OnProgressUpdate(string value, ContestLog contestLog, Int32 progress)
+        {
+            UpdateListViewLoad(value, false, contestLog);
+            UpdateProgress(progress);
+        }
+
+      
 
         /// <summary>
         /// 
@@ -202,7 +205,17 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonStartAnalysis_Click(object sender, EventArgs e)
         {
-            UpdateListViewAnalysis("","", true);
+            AnalyzeLogs();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void AnalyzeLogs()
+        {
+            UpdateListViewAnalysis("", "", true);
+            ProgressBarLoad.Maximum = 0;
+            ProgressBarLoad.Maximum = _ContestLogs.Count;
 
             if (_LogAnalyser == null)
             {
@@ -227,9 +240,10 @@ namespace ContestLogAnalyzer
         /// Update the list view with the call sign last processed.
         /// </summary>
         /// <param name="value"></param>
-        private void _LogAnalyser_OnProgressUpdate(string value, string count)
+        private void _LogAnalyser_OnProgressUpdate(string value, string qsoCount, Int32 progress)
         {
-            UpdateListViewAnalysis(value, count, false);
+            UpdateListViewAnalysis(value, qsoCount, false);
+            UpdateProgress(progress);
         }
 
         /// <summary>
@@ -479,6 +493,33 @@ namespace ContestLogAnalyzer
                 item.SubItems.Add(actual);
                 ListViewScore.Items.Insert(0, item);
             }
+        }
+
+        /// <summary>
+        /// Increment the progress bar.
+        /// </summary>
+        /// <param name="count"></param>
+        private void UpdateProgress(int count)
+        {
+            if (InvokeRequired)
+            {
+                this.BeginInvoke(new Action<Int32>(this.UpdateProgress), count);
+                return;
+            }
+
+            // hack to get smooth progress bar
+            if (ProgressBarLoad.Maximum >= ProgressBarLoad.Value + 2)
+            {
+                ProgressBarLoad.Value = ProgressBarLoad.Value + 2;
+                ProgressBarLoad.Value = ProgressBarLoad.Value - 1;
+            }
+            else
+            {
+                ProgressBarLoad.PerformStep();
+            }
+
+            //Application.DoEvents();
+            LabelProgress.Text = count.ToString();
         }
 
         #endregion

@@ -49,6 +49,8 @@
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ProgressBarLoad = new System.Windows.Forms.ProgressBar();
+            this.LabelProgress = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // LogFolderBrowserDialog
@@ -223,14 +225,33 @@
             // columnHeader6
             // 
             this.columnHeader6.Text = "QSO Count";
-            this.columnHeader6.Width = 150;
+            this.columnHeader6.Width = 78;
+            // 
+            // ProgressBarLoad
+            // 
+            this.ProgressBarLoad.Location = new System.Drawing.Point(424, 124);
+            this.ProgressBarLoad.Name = "ProgressBarLoad";
+            this.ProgressBarLoad.Size = new System.Drawing.Size(428, 23);
+            this.ProgressBarLoad.Step = 1;
+            this.ProgressBarLoad.TabIndex = 13;
+            // 
+            // LabelProgress
+            // 
+            this.LabelProgress.AutoSize = true;
+            this.LabelProgress.Location = new System.Drawing.Point(493, 105);
+            this.LabelProgress.Name = "LabelProgress";
+            this.LabelProgress.Size = new System.Drawing.Size(38, 15);
+            this.LabelProgress.TabIndex = 14;
+            this.LabelProgress.Text = "label2";
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
-            this.ClientSize = new System.Drawing.Size(879, 729);
+            this.ClientSize = new System.Drawing.Size(884, 729);
+            this.Controls.Add(this.LabelProgress);
+            this.Controls.Add(this.ProgressBarLoad);
             this.Controls.Add(this.ListViewScore);
             this.Controls.Add(this.ListViewAnalysis);
             this.Controls.Add(this.ButtonScoreLogs);
@@ -275,6 +296,8 @@
         private System.Windows.Forms.ColumnHeader columnHeader4;
         private System.Windows.Forms.ColumnHeader columnHeader5;
         private System.Windows.Forms.ColumnHeader columnHeader6;
+        private System.Windows.Forms.ProgressBar ProgressBarLoad;
+        private System.Windows.Forms.Label LabelProgress;
     }
 }
 

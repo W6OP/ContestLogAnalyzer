@@ -10,7 +10,7 @@ namespace W6OP.ContestLogAnalyzer
 {
     public class LogProcessor
     {
-        public delegate void ProgressUpdate(string value, ContestLog contestLog);
+        public delegate void ProgressUpdate(string value, ContestLog contestLog, Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
 
         private string _LogFolder;
@@ -63,9 +63,10 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="fileInfo"></param>
         public void BuildContestLog(FileInfo fileInfo, List<ContestLog> contestLogs)
         {
-            ContestLog log = new ContestLog();
+            ContestLog contestLog = new ContestLog();
             string fullName = fileInfo.FullName;
             string version = null;
+            Int32 progress = 0;
 
             try
             {
@@ -77,11 +78,11 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (version == "2.0")
                     {
-                        log.LogHeader = BuildHeaderV2(lineList, fullName);
+                        contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
                     }
                     else if (version == "3.0")
                     {
-                        log.LogHeader = BuildHeaderV3(lineList, fullName);
+                        contestLog.LogHeader = BuildHeaderV3(lineList, fullName);
                     }
                     else
                     {
@@ -94,21 +95,21 @@ namespace W6OP.ContestLogAnalyzer
 
                     // this statement says to copy all QSO lines
                     lineList = lineList.Where(x => x.IndexOf("QSO:", 0) != -1).ToList();
-                    log.QSOCollection = CollectQSOs(lineList);
+                    contestLog.QSOCollection = CollectQSOs(lineList);
 
                     //log.QSOCollection = qsoList;
-                    log.IsValidLog = true;
-                    if (log.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
+                    contestLog.IsValidLog = true;
+                    if (contestLog.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
                     {
-                        log.IsCheckLog = true;
+                        contestLog.IsCheckLog = true;
                     }
 
-                    contestLogs.Add(log);
+                    contestLogs.Add(contestLog);
+                    progress = contestLogs.Count;
 
-                    // ReportProgress with Callsign
                     if (OnProgressUpdate != null)
                     {
-                        OnProgressUpdate(fileInfo.Name, log);
+                        OnProgressUpdate(fileInfo.Name, contestLog, progress);
                     }
                 }
             }

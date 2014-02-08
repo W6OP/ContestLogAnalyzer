@@ -8,7 +8,7 @@ namespace W6OP.ContestLogAnalyzer
 {
    public class LogAnalyzer
     {
-        public delegate void ProgressUpdate(string value, string count);
+        public delegate void ProgressUpdate(string value, string qsoCount, Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
 
        /// <summary>
@@ -40,16 +40,17 @@ namespace W6OP.ContestLogAnalyzer
        {
            string call = null;
            Int32 count = 0; // QSOs processed?
+           Int32 progress = 0;
 
            foreach (ContestLog contestLog in contestLogList)
            {
                call = contestLog.LogOwner;
-               //UpdateListView(call, false);
+               progress++;
                
                // ReportProgress with Callsign
                if (OnProgressUpdate != null)
                {
-                   OnProgressUpdate(call, contestLog.QSOCollection.Count.ToString());
+                   OnProgressUpdate(call, contestLog.QSOCollection.Count.ToString(), progress);
                }
 
                if (!contestLog.IsCheckLog)
@@ -59,8 +60,6 @@ namespace W6OP.ContestLogAnalyzer
            }
 
            // now I should every log with it's matching QSOs, QSOs to be checked and all the other logs with a reference
-           string h = "";
-
            FindLogsToReview(contestLogList);
        }
 
