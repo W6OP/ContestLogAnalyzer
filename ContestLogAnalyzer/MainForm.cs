@@ -35,6 +35,7 @@ namespace ContestLogAnalyzer
 
         private string _LogFolder = null;
 
+        #region Load and Initialize
 
         /// <summary>
         /// this.BeginInvoke(new Action<string, MessageType>(this.DisplayMessageForm), fullFileName, messageType);
@@ -62,11 +63,12 @@ namespace ContestLogAnalyzer
             ComboBoxSelectContest.ValueMember = "Key";
         }
 
+        #endregion
 
         #region Select Log folder
 
         /// <summary>
-        /// 
+        /// Handle the ButtonSelectFolder click event.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -91,10 +93,10 @@ namespace ContestLogAnalyzer
 
         #endregion
 
-
+        #region Load Log Files
 
         /// <summary>
-        /// Handle the click event for the ButtonAnalyzeLog button.
+        /// Handle the click event for the ButtonLoadLogs button.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -103,7 +105,6 @@ namespace ContestLogAnalyzer
             LoadLogFiles();
         }
 
-
         /// <summary>
         /// Get a list and count of the files to be uploaded. Pass them off to another thread
         /// to preprocess the logs.
@@ -111,14 +112,14 @@ namespace ContestLogAnalyzer
         private void LoadLogFiles()
         {
             Int32 fileCount = 0;
-            ContestLog contestLog = null;
 
             try
             {
                 ProgressBarLoad.Maximum = 0;
-                UpdateListViewLoad("", true, contestLog);
+                UpdateListViewLoad("", "",  true);
                 UpdateListViewAnalysis("", "", true);
                 UpdateListViewScore("", "","", true);
+                ButtonStartAnalysis.Enabled = false;
 
                 if (_LogProcessor == null)
                 {
@@ -132,8 +133,7 @@ namespace ContestLogAnalyzer
                     fileCount = _LogProcessor.BuildFileList(out _LogFileList);
                     ProgressBarLoad.Maximum = fileCount;
 
-                    UpdateListViewLoad(fileCount.ToString() + " logs were loaded.", false, contestLog);
-                    ButtonStartAnalysis.Enabled = true;
+                    UpdateListViewLoad(fileCount.ToString() + " logs available.", "", false);
 
                     Cursor = Cursors.WaitCursor;
                     BackgroundWorkerLoadLogs.RunWorkerAsync(fileCount);
@@ -143,57 +143,70 @@ namespace ContestLogAnalyzer
                     MessageBox.Show("You must select a folder containing log files.", "Missing Folder Name", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show("Load or Preprocess Log Error", "Load and Preprocess Logs", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-            }
-        }
-
-        #region Background Worker Load Logs
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void BackgroundWorkerLoadLogs_DoWork(object sender, DoWorkEventArgs e)
-        {
-            foreach (FileInfo fileInfo in _LogFileList)
-            {
-                _LogProcessor.BuildContestLog(fileInfo, _ContestLogs);
-            }
-        }
-
-        private void _LogProcessor_OnProgressUpdate(string value, ContestLog contestLog, Int32 progress)
-        {
-            UpdateListViewLoad(value, false, contestLog);
-            UpdateProgress(progress);
-        }
-
-      
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void BackgroundWorkerLoadLogs_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            ContestLog contestLog = null;
-
-            if (e.Error != null)
-            {
-                UpdateListViewLoad(e.Error.Message, false, contestLog);
-            }
-            else
-            {
-                UpdateListViewLoad("Logs completed loaded.", false, contestLog);
-                Cursor = Cursors.Default;
+                MessageBox.Show("Load or Pre-process Log Error", "Load and Pre-process Logs", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
         #endregion
 
+        #region Background Worker Load Logs
+
+        /// <summary>
+        /// Sart building the log objects.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BackgroundWorkerLoadLogs_DoWork(object sender, DoWorkEventArgs e)
+        {
+            string fileName = null;
+
+            foreach (FileInfo fileInfo in _LogFileList)
+            {
+                fileName = _LogProcessor.BuildContestLog(fileInfo, _ContestLogs);
+                if (fileName != null)
+                {
+                    UpdateListViewLoad(fileName, "Load failed", false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Update the progress bar.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="progress"></param>
+        private void _LogProcessor_OnProgressUpdate(Int32 progress)
+        {
+            UpdateProgress(progress);
+        }
+
+        /// <summary>
+        /// When the background worker has completed, update the status and progress.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BackgroundWorkerLoadLogs_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                UpdateListViewLoad(e.Error.Message, "", false);
+            }
+            else
+            {
+                UpdateListViewLoad(_ContestLogs.Count.ToString() + " logs loaded.", "",  false);
+                Cursor = Cursors.Default;
+            }
+
+            ProgressBarLoad.Maximum = _ContestLogs.Count;
+            UpdateProgress(_ContestLogs.Count);
+            EnableControl(true);
+        }
+
+        #endregion
+
+        #region Start Log Analysis
 
         /// <summary>
         /// Open first log
@@ -209,7 +222,7 @@ namespace ContestLogAnalyzer
         }
 
         /// <summary>
-        /// 
+        /// Clear the ListView and Reset the progress bar.
         /// </summary>
         private void AnalyzeLogs()
         {
@@ -225,6 +238,10 @@ namespace ContestLogAnalyzer
 
             BackgroundWorkerAnalzeLogs.RunWorkerAsync();
         }
+
+        #endregion
+
+        #region BackGround Worker Analyze Logs
 
         /// <summary>
         /// 
@@ -265,6 +282,7 @@ namespace ContestLogAnalyzer
             }
         }
 
+        #endregion
 
         #region Score Logs
 
@@ -424,11 +442,11 @@ namespace ContestLogAnalyzer
         /// </summary>
         /// <param name="message"></param>
         /// <param name="clear"></param>
-        private void UpdateListViewLoad(string message, bool clear, ContestLog contestLog)
+        private void UpdateListViewLoad(string message, string status, bool clear)
         {
             if (InvokeRequired)
             {
-                this.BeginInvoke(new Action<string, bool, ContestLog>(this.UpdateListViewLoad), message, clear, contestLog);
+                this.BeginInvoke(new Action<string, string, bool>(this.UpdateListViewLoad), message, status, clear);
                 return;
             }
 
@@ -439,7 +457,8 @@ namespace ContestLogAnalyzer
             else
             {
                 ListViewItem item = new ListViewItem(message);
-                item.Tag = contestLog;
+                //item.Tag = contestLog;
+                item.SubItems.Add(status);
                 ListViewLoad.Items.Insert(0, item);
             }
         }
@@ -520,6 +539,20 @@ namespace ContestLogAnalyzer
 
             //Application.DoEvents();
             LabelProgress.Text = count.ToString();
+        }
+
+        /// <summary>
+        /// General method for preventing cross thread calls.
+        /// </summary>
+        private void EnableControl(bool clear)
+        {
+            if (InvokeRequired)
+            {
+                this.BeginInvoke(new Action<bool>(this.EnableControl), clear);
+                return;
+            }
+
+            ButtonStartAnalysis.Enabled = clear;
         }
 
         #endregion

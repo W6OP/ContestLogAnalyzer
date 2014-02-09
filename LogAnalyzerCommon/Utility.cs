@@ -119,10 +119,27 @@ namespace W6OP.ContestLogAnalyzer
 
         public static TCollection MakeRigCollectionSimple<TCollection, TItem>(this IEnumerable<TItem> items, TCollection collection)
             where TCollection : ICollection<TItem>
-            {
-                foreach (var myObj in items)
-                    collection.Add(myObj);
-                return collection;
-            }
+        {
+            foreach (var myObj in items)
+                collection.Add(myObj);
+            return collection;
+        }
+
+
+        /// <summary>
+        /// http://stackoverflow.com/questions/3595583/can-i-use-linq-to-strip-repeating-spaces-from-a-string
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string RemoveRepeatedSpaces(string s)
+        {
+            StringBuilder sb = new StringBuilder(s.Length);
+            char lastChar = '\0';
+            foreach (char c in s)
+                if (c != ' ' || lastChar != ' ')
+                    sb.Append(lastChar = c);
+            return sb.ToString();
+        }
     } // end class
 }

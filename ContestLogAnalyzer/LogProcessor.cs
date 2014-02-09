@@ -8,10 +8,13 @@ using System.Threading.Tasks;
 
 namespace W6OP.ContestLogAnalyzer
 {
+    public delegate void ErrorRaised(string error);
+
     public class LogProcessor
     {
-        public delegate void ProgressUpdate(string value, ContestLog contestLog, Int32 progress);
+        public delegate void ProgressUpdate(Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
+        public event ErrorRaised OnErrorRaised;
 
         private string _LogFolder;
 
@@ -35,8 +38,6 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public Int32 BuildFileList(out IEnumerable<System.IO.FileInfo> logFileList)
         {
-
-
             // Take a snapshot of the file system. http://msdn.microsoft.com/en-us/library/bb546159.aspx
             DirectoryInfo dir = new DirectoryInfo(_LogFolder);
 
@@ -57,14 +58,14 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// See if there is a header and a footer
-        /// Read the header
-        /// 
+        /// load and process the header.
         /// </summary>
         /// <param name="fileInfo"></param>
-        public void BuildContestLog(FileInfo fileInfo, List<ContestLog> contestLogs)
+        public string BuildContestLog(FileInfo fileInfo, List<ContestLog> contestLogs)
         {
             ContestLog contestLog = new ContestLog();
             string fullName = fileInfo.FullName;
+            string badLog = null;
             string version = null;
             Int32 progress = 0;
 
@@ -76,18 +77,19 @@ namespace W6OP.ContestLogAnalyzer
 
                     version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim();
 
-                    if (version == "2.0")
-                    {
-                        contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
-                    }
-                    else if (version == "3.0")
-                    {
-                        contestLog.LogHeader = BuildHeaderV3(lineList, fullName);
-                    }
-                    else
-                    {
-                        // handle unsupported version
-                    }
+                    //if (version == "2.0")
+                    //{
+                    //    contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
+                    //}
+                    //else if (version == "3.0")
+                    //{
+                    contestLog.LogHeader = BuildHeaderV3(lineList, fullName);
+                    //}
+                    //else
+                    //{
+                    //    // handle unsupported version
+                    //    badLog = fileInfo.Name;
+                    //}
 
 
                     // Find DUPES in list
@@ -97,8 +99,17 @@ namespace W6OP.ContestLogAnalyzer
                     lineList = lineList.Where(x => x.IndexOf("QSO:", 0) != -1).ToList();
                     contestLog.QSOCollection = CollectQSOs(lineList);
 
-                    //log.QSOCollection = qsoList;
-                    contestLog.IsValidLog = true;
+                    if (contestLog.QSOCollection == null)
+                    {
+                        contestLog.IsValidLog = false;
+                        throw new Exception(fileInfo.Name); // don't want this added to collection
+                        // maybe have _InvalidLogs collection
+                    }
+                    else
+                    {
+                        contestLog.IsValidLog = true;
+                    }
+                   
                     if (contestLog.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
                     {
                         contestLog.IsCheckLog = true;
@@ -109,14 +120,16 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (OnProgressUpdate != null)
                     {
-                        OnProgressUpdate(fileInfo.Name, contestLog, progress);
+                        OnProgressUpdate(progress);
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                string a = ex.Message;
+                badLog = fileInfo.Name;
             }
+
+            return badLog;
         }
 
         /// <summary>
@@ -249,25 +262,35 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private List<QSO> CollectQSOs(List<string> lineList)
         {
-            List<QSO> qsoList = null; ;
+            List<QSO> qsoList = null;
+            List<string> temp = new List<string>();
 
             try
             {
+                // first clean up QSOs - sometimes there are extra spaces
+                // later lets make a more elegant solution
+                foreach (string line in lineList)
+                {
+                    temp.Add(Utility.RemoveRepeatedSpaces(line));
+                }
+
+                lineList = temp;
+
                 IEnumerable<QSO> qso =
                      from line in lineList
                      let splitName = line.Split(' ')
                      select new QSO()
                      {
-                         Frequency = splitName[1],  //lineList.GroupBy(x => x.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries)).ToString(),
-                         Mode = splitName[2],//lineList.GroupBy(x => x.Split(' ')[2]).ToString(),
-                         QsoDate = splitName[3],//lineList.GroupBy(x => x.Split(' ')[3]).ToString(),
-                         QsoTime = splitName[4],    //lineList.GroupBy(x => x.Split(' ')[4]).ToString(),
-                         OperatorCall = splitName[5],    //lineList.GroupBy(x => x.Split(' ')[5]).ToString(),
-                         SentSerialNumber = ConvertSerialNumber(splitName[6]),    //lineList.GroupBy(x => x.Split(' ')[6]).ToString(),
-                         OperatorName = splitName[7],    //lineList.GroupBy(x => x.Split(' ')[7]).ToString(),
-                         ContactCall = splitName[8],    //lineList.GroupBy(x => x.Split(' ')[8]).ToString(),
-                         ReceivedSerialNumber = ConvertSerialNumber(splitName[9]),  //lineList.GroupBy(x => x.Split(' ')[9]).ToString(),
-                         ContactName = splitName[10],   //lineList.GroupBy(x => x.Split(' ')[10]).ToString()
+                         Frequency = splitName[1], 
+                         Mode = splitName[2],
+                         QsoDate = splitName[3],
+                         QsoTime = splitName[4],   
+                         OperatorCall = splitName[5],    
+                         SentSerialNumber = ConvertSerialNumber(splitName[6]),    
+                         OperatorName = splitName[7],   
+                         ContactCall = splitName[8],    
+                         ReceivedSerialNumber = ConvertSerialNumber(splitName[9]), 
+                         ContactName = splitName[10],  
                          CallIsValid = CheckCallSignFormat(splitName[5])
                      };
 
@@ -276,13 +299,15 @@ namespace W6OP.ContestLogAnalyzer
             }
             catch (Exception ex)
             {
-                string a = ex.Message;
+                if (OnErrorRaised != null)
+                {
+                    // send log name to look at later
+                    OnErrorRaised(ex.Message);
+                }
             }
 
             return qsoList;
 
-
-            //QSO: 14027 CW 2013-08-31 0005 W0BR 1 BOB W4BQF 10 TOM
         }
 
         /// <summary>
@@ -329,6 +354,6 @@ namespace W6OP.ContestLogAnalyzer
         #endregion
 
 
-       
+
     } // end class
 }
