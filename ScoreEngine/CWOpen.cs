@@ -28,7 +28,6 @@ namespace W6OP.ContestLogAnalyzer
                     OnProgressUpdate(contestLog.LogOwner, contestLog.ClaimedScore.ToString(), contestLog.ActualScore.ToString());
                 }
             }
-
         }
 
         /// <summary>
