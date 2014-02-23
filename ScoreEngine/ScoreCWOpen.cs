@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace W6OP.ContestLogAnalyzer
 {
-    public class CWOpen
+    public class ScoreCWOpen
     {
         public delegate void ProgressUpdate(string logOwner, string claimed, string actual);
         public event ProgressUpdate OnProgressUpdate;
 
-        public CWOpen()
+        public ScoreCWOpen()
         {
             // matchingLogs.AddRange(_ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.ReceivedSerialNumber == sent && a.Band == band && a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO)).ToList()); // && a.IsValidQSO == false
             // DON'T SCORE CHECKLOGS

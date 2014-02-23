@@ -31,7 +31,7 @@ namespace ContestLogAnalyzer
         IEnumerable<System.IO.FileInfo> _LogFileList;
         LogProcessor _LogProcessor;
         LogAnalyzer _LogAnalyser;
-        CWOpen _CWOpen;
+        ScoreCWOpen _CWOpen;
 
         private string _LogFolder = null;
 
@@ -295,7 +295,7 @@ namespace ContestLogAnalyzer
         {
             if (_CWOpen == null)
             {
-                _CWOpen = new CWOpen();
+                _CWOpen = new ScoreCWOpen();
                 _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
             }
 

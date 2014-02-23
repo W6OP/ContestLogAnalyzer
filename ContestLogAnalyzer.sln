@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogAnalyzerCommon", "LogAna
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScoreEngine", "ScoreEngine\ScoreEngine.csproj", "{93049529-661F-4BDA-B057-7BA5E07D158F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalysisEngine", "AnalysisEngine\AnalysisEngine.csproj", "{32EFD3E7-8D94-44BA-940F-E0F807EDCA99}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,16 @@ Global
 		{93049529-661F-4BDA-B057-7BA5E07D158F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{93049529-661F-4BDA-B057-7BA5E07D158F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{93049529-661F-4BDA-B057-7BA5E07D158F}.Release|x86.ActiveCfg = Release|Any CPU
+		{32EFD3E7-8D94-44BA-940F-E0F807EDCA99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32EFD3E7-8D94-44BA-940F-E0F807EDCA99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32EFD3E7-8D94-44BA-940F-E0F807EDCA99}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{32EFD3E7-8D94-44BA-940F-E0F807EDCA99}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{32EFD3E7-8D94-44BA-940F-E0F807EDCA99}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{32EFD3E7-8D94-44BA-940F-E0F807EDCA99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32EFD3E7-8D94-44BA-940F-E0F807EDCA99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32EFD3E7-8D94-44BA-940F-E0F807EDCA99}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{32EFD3E7-8D94-44BA-940F-E0F807EDCA99}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{32EFD3E7-8D94-44BA-940F-E0F807EDCA99}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
