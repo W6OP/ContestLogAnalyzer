@@ -154,7 +154,7 @@ namespace ContestLogAnalyzer
         #region Background Worker Load Logs
 
         /// <summary>
-        /// Sart building the log objects.
+        /// Start building the log objects.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -592,6 +592,21 @@ namespace ContestLogAnalyzer
 
      
         #endregion
+
+        private void ListViewScore_DoubleClick(object sender, EventArgs e)
+        {
+            List<ContestLog> logList = new List<ContestLog>();
+            string callsign = null;
+
+            if (ListViewScore.SelectedItems.Count > 0)
+            {
+                callsign = ListViewScore.SelectedItems[0].Text;
+                logList = _ContestLogs.Where(a => a.LogOwner == callsign).ToList();
+
+                QSOForm form = new QSOForm(logList);
+                form.Show();
+            }
+        }
 
        
 

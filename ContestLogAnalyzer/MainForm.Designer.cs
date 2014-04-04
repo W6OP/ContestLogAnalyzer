@@ -35,6 +35,7 @@
             this.ButtonLoadLogs = new System.Windows.Forms.Button();
             this.ListViewLoad = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ComboBoxSelectContest = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.BackgroundWorkerLoadLogs = new System.ComponentModel.BackgroundWorker();
@@ -51,7 +52,6 @@
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ProgressBarLoad = new System.Windows.Forms.ProgressBar();
             this.LabelProgress = new System.Windows.Forms.Label();
-            this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SuspendLayout();
             // 
             // LogFolderBrowserDialog
@@ -116,6 +116,11 @@
             // 
             this.columnHeader1.Text = "Processed";
             this.columnHeader1.Width = 140;
+            // 
+            // columnHeader7
+            // 
+            this.columnHeader7.Text = "Status";
+            this.columnHeader7.Width = 111;
             // 
             // ComboBoxSelectContest
             // 
@@ -209,11 +214,13 @@
             this.columnHeader5});
             this.ListViewScore.GridLines = true;
             this.ListViewScore.Location = new System.Drawing.Point(574, 163);
+            this.ListViewScore.MultiSelect = false;
             this.ListViewScore.Name = "ListViewScore";
             this.ListViewScore.Size = new System.Drawing.Size(278, 554);
             this.ListViewScore.TabIndex = 12;
             this.ListViewScore.UseCompatibleStateImageBehavior = false;
             this.ListViewScore.View = System.Windows.Forms.View.Details;
+            this.ListViewScore.DoubleClick += new System.EventHandler(this.ListViewScore_DoubleClick);
             this.ListViewScore.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ListViewScore_MouseDoubleClick);
             // 
             // columnHeader3
@@ -245,11 +252,6 @@
             this.LabelProgress.Size = new System.Drawing.Size(38, 15);
             this.LabelProgress.TabIndex = 14;
             this.LabelProgress.Text = "label2";
-            // 
-            // columnHeader7
-            // 
-            this.columnHeader7.Text = "Status";
-            this.columnHeader7.Width = 111;
             // 
             // MainForm
             // 
