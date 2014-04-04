@@ -69,6 +69,12 @@
     <Compile Include="QSOControl.Designer.cs">
       <DependentUpon>QSOControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="QSOForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="QSOForm.Designer.cs">
+      <DependentUpon>QSOForm.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="LogViewForm.resx">
       <DependentUpon>LogViewForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -88,6 +94,10 @@
     <EmbeddedResource Include="QSOControl.resx">
       <DependentUpon>QSOControl.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="QSOForm.resx">
+      <DependentUpon>QSOForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="Properties\DataSources\QSO.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
