@@ -99,6 +99,8 @@
             // 
             // ListViewLoad
             // 
+            this.ListViewLoad.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.ListViewLoad.BackColor = System.Drawing.SystemColors.Info;
             this.ListViewLoad.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
@@ -106,7 +108,7 @@
             this.ListViewLoad.GridLines = true;
             this.ListViewLoad.Location = new System.Drawing.Point(24, 163);
             this.ListViewLoad.Name = "ListViewLoad";
-            this.ListViewLoad.Size = new System.Drawing.Size(257, 554);
+            this.ListViewLoad.Size = new System.Drawing.Size(425, 554);
             this.ListViewLoad.TabIndex = 5;
             this.ListViewLoad.UseCompatibleStateImageBehavior = false;
             this.ListViewLoad.View = System.Windows.Forms.View.Details;
@@ -120,7 +122,7 @@
             // columnHeader7
             // 
             this.columnHeader7.Text = "Status";
-            this.columnHeader7.Width = 111;
+            this.columnHeader7.Width = 380;
             // 
             // ComboBoxSelectContest
             // 
@@ -182,12 +184,14 @@
             // 
             // ListViewAnalysis
             // 
+            this.ListViewAnalysis.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.ListViewAnalysis.BackColor = System.Drawing.SystemColors.Info;
             this.ListViewAnalysis.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader2,
             this.columnHeader6});
             this.ListViewAnalysis.GridLines = true;
-            this.ListViewAnalysis.Location = new System.Drawing.Point(299, 163);
+            this.ListViewAnalysis.Location = new System.Drawing.Point(455, 163);
             this.ListViewAnalysis.Name = "ListViewAnalysis";
             this.ListViewAnalysis.Size = new System.Drawing.Size(257, 554);
             this.ListViewAnalysis.TabIndex = 11;
@@ -207,13 +211,15 @@
             // 
             // ListViewScore
             // 
+            this.ListViewScore.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.ListViewScore.BackColor = System.Drawing.SystemColors.Info;
             this.ListViewScore.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader3,
             this.columnHeader4,
             this.columnHeader5});
             this.ListViewScore.GridLines = true;
-            this.ListViewScore.Location = new System.Drawing.Point(574, 163);
+            this.ListViewScore.Location = new System.Drawing.Point(718, 163);
             this.ListViewScore.MultiSelect = false;
             this.ListViewScore.Name = "ListViewScore";
             this.ListViewScore.Size = new System.Drawing.Size(278, 554);
@@ -258,7 +264,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
-            this.ClientSize = new System.Drawing.Size(884, 729);
+            this.ClientSize = new System.Drawing.Size(1008, 729);
             this.Controls.Add(this.LabelProgress);
             this.Controls.Add(this.ProgressBarLoad);
             this.Controls.Add(this.ListViewScore);

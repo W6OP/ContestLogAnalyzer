@@ -16,7 +16,13 @@ namespace W6OP.ContestLogAnalyzer
         public delegate void ProgressUpdate(Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
         public event ErrorRaised OnErrorRaised;
-
+        
+        private string _FailReason = null;
+        public string FailReason
+        {
+            get { return _FailReason; }
+            set { _FailReason = value; }
+        }
         private string _LogFolder;
 
         /// <summary>
@@ -66,9 +72,11 @@ namespace W6OP.ContestLogAnalyzer
         {
             ContestLog contestLog = new ContestLog();
             string fullName = fileInfo.FullName;
-            string badLog = null;
+            string logFileName = null;
             //string version = null;
             Int32 progress = 0;
+
+            _FailReason = "";
 
             try
             {
@@ -79,7 +87,18 @@ namespace W6OP.ContestLogAnalyzer
                     //version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim();
 
                     contestLog.LogHeader = BuildHeaderV3(lineList, fullName);
-                  
+
+                    if (AnalyzeHeader(contestLog) == true)
+                    {
+                        contestLog.LogHeader.HeaderIsValid = true;
+                    }
+                    else
+                    {
+                        _FailReason = "Unable to build valid header.";
+                        contestLog.IsValidLog = false;
+                        throw new Exception(fileInfo.Name); // don't want this added to collection
+                    }
+                   
                     // Find DUPES in list
                     //http://stackoverflow.com/questions/454601/how-to-count-duplicates-in-list-with-linq
 
@@ -89,6 +108,8 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (contestLog.QSOCollection == null)
                     {
+                        // AnalyzeHeader(contestLog)
+                        _FailReason = "QSO collection is null";
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
                         // maybe have _InvalidLogs collection
@@ -112,12 +133,43 @@ namespace W6OP.ContestLogAnalyzer
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                badLog = fileInfo.Name;
+                logFileName = fileInfo.Name;
             }
 
-            return badLog;
+            return logFileName;
+        }
+
+        private bool AnalyzeHeader(ContestLog contestLog)
+        {
+            bool headerIsValid = true;
+
+            if (contestLog.LogHeader.OperatorCallSign == "UNKNOWN")
+            {
+                return false;
+            }
+
+            if (contestLog.LogHeader.OperatorCategory == CategoryOperator.Uknown)
+            {
+                return false;
+            }
+
+            if (contestLog.LogHeader.Assisted == CategoryAssisted.Uknown)
+            {
+                return false;
+            }
+
+            if (contestLog.LogHeader.PrimaryName == "UNKNOWN" || contestLog.LogHeader.PrimaryName == "[BLANK]")
+            {
+                return false;
+            }
+            if (contestLog.LogHeader.NameSent == "UNKNOWN" || contestLog.LogHeader.NameSent == "[BLANK]")
+            {
+                return false;
+            }
+
+            return headerIsValid;
         }
 
         /// <summary>
@@ -191,58 +243,6 @@ namespace W6OP.ContestLogAnalyzer
             return s.Substring(len).Trim().ToUpper();
         }
 
-
-        /// <summary>
-        /// While this works I may want to leave out fields that are unsupported.
-        /// Or just consolidate into the V3 method since it is identical at the moment.
-        /// </summary>
-        /// <param name="lineList"></param>
-        /// <param name="logFileName"></param>
-        //private LogHeader BuildHeaderV2(List<string> lineList, string logFileName)
-        //{
-        //    //try
-        //    //{
-
-        //    // LATER NEED TO EXAMINE ALL OF THE HEADERS AND FIX THE "UNKOWN" ENTRIES
-
-        //    // Merge the data sources using a named type. 
-        //    // var could be used instead of an explicit type.
-        //    IEnumerable<LogHeader> logHeader =
-        //        from line in lineList
-        //        select new LogHeader()
-        //        {
-        //            LogFileName = logFileName,
-        //            Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
-        //            Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: Unknown").First().Substring(9).Trim(),
-        //            OperatorCallSign = CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN"),
-        //            OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY-OPERATOR:")).DefaultIfEmpty("CATEGORY-OPERATOR: UNKNOWN").First().Substring(18).Trim().ToUpper()),
-        //            // this is for when the CATEGORY-ASSISTED: is missing or has no value
-        //            Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: UNKNOWN").First(), 18, "UNKNOWN")),   //.Substring(18).Trim().ToUpper()),
-        //            Band = Utility.GetValueFromDescription<CategoryBand>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).DefaultIfEmpty("CATEGORY-BAND: ALL").First(), 14, "ALL")),
-        //            Power = Utility.GetValueFromDescription<CategoryPower>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-POWER:")).DefaultIfEmpty("CATEGORY-POWER: UNKNOWN").First(), 15, "UNKNOWN")),
-        //            Mode = Utility.GetValueFromDescription<CategoryMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
-        //            Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
-        //            Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
-        //            ClaimedScore = Convert.ToInt32(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First(), 14, "0")),
-        //            Club = CheckForNull(lineList.Where(l => l.StartsWith("CLUB:")).DefaultIfEmpty("CLUB: NONE").First(), 5, "NONE"),
-        //            Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
-        //            CreatedBy = CheckForNull(lineList.Where(l => l.StartsWith("CREATED-BY:")).DefaultIfEmpty("CREATED-BY: NONE").First(), 11, "NONE"),
-        //            PrimaryName = CheckForNull(lineList.Where(l => l.StartsWith("NAME:")).DefaultIfEmpty("NAME: NONE").First(), 5, "NONE"),
-        //            NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent")).DefaultIfEmpty("Name Sent NONE").First(), 10, "NONE"),
-        //            // need to work on address
-        //            Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
-        //            //SoapBox = lineList.Where(l => l.StartsWith("SOAPBOX:")).FirstOrDefault().Substring(7).Trim()
-        //        };
-
-        //    return logHeader.FirstOrDefault();
-        //    //}
-        //    //catch (Exception ex)
-        //    //{
-        //    //    string a = ex.Message;
-        //    //}
-        //}
-
-
         /// <summary>
         /// http://msdn.microsoft.com/en-us/library/bb513866.aspx
         /// </summary>
@@ -315,7 +315,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             catch (Exception ex)
             {
-                string a = ex.Message;
+                number = 0;
             }
 
             return number;

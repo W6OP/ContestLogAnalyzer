@@ -167,7 +167,7 @@ namespace ContestLogAnalyzer
                 fileName = _LogProcessor.BuildContestLog(fileInfo, _ContestLogs);
                 if (fileName != null)
                 {
-                    UpdateListViewLoad(fileName, "Load failed", false);
+                    UpdateListViewLoad(fileName, "Load failed." + " - " + _LogProcessor.FailReason, false);
                 }
             }
         }

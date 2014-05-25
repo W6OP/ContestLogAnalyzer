@@ -19,6 +19,17 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
+        /// Comments I add while I am anlyzing the logs. May be from when I first load
+        /// or anywhere along the line.
+        /// </summary>
+        private List<string> _AnalyzerComments;
+        public List<string> AnalyzerComments
+        {
+            get { return _AnalyzerComments; }
+            set { _AnalyzerComments = value; }
+        }
+
+        /// <summary>
         /// Call sign of the log owner.
         /// </summary>
         private string _LogOwner;
