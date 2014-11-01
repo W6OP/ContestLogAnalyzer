@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace W6OP.ContestLogAnalyzer
 {
+    [Serializable()]
     public class QSO
     {
         /// <summary>
@@ -20,8 +21,7 @@ namespace W6OP.ContestLogAnalyzer
        // need way to track totally unique calls
        // some way to find similar calls
 
-
-        private QSOStatus _Status = QSOStatus.InvalidQSO;
+        private QSOStatus _Status = QSOStatus.ValidQSO;
         public QSOStatus Status
         {
             get { return _Status; }
@@ -38,14 +38,22 @@ namespace W6OP.ContestLogAnalyzer
             set { _RejectReason = value; }
         }
 
-        private bool _QSOIsDupe;
+        private bool _QSOIsDupe = false;
         public bool QSOIsDupe
         {
             get { return _QSOIsDupe; }
-            set { _QSOIsDupe = value; }
+            set 
+            { 
+                _QSOIsDupe = value;
+                if (_QSOIsDupe == true)
+                {
+                    _Status = QSOStatus.InvalidQSO;
+                    _RejectReason = "Duplicate QSO.";
+                }
+            }
         }
 
-        private bool _CallIsValid;
+        private bool _CallIsValid = true;
         public bool CallIsValid
         {
             get { return _CallIsValid; }
@@ -78,6 +86,7 @@ namespace W6OP.ContestLogAnalyzer
            set { _Band = value; }
        }
 
+        // this should be an enum
         private string _Mode;
         public string Mode
         {

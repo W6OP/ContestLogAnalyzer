@@ -13,9 +13,6 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public ContestLog()
         {
-            //_MatchLogs = new List<ContestLog>();
-            //_ReviewLogs = new List<ContestLog>();
-            //_OtherLogs = new List<ContestLog>();
         }
 
         /// <summary>

@@ -24,7 +24,11 @@ namespace W6OP.ContestLogAnalyzer
             set { _FailReason = value; }
         }
         private string _LogFolder;
-
+        public string LogFolder
+        {
+            get { return _LogFolder; }
+            set { _LogFolder = value; }
+        }
         /// <summary>
         /// Default constructor.
         /// </summary>
@@ -32,12 +36,6 @@ namespace W6OP.ContestLogAnalyzer
         {
 
         }
-
-        public LogProcessor(string logFolder)
-        {
-            this._LogFolder = logFolder;
-        }
-
 
         /// <summary>
         /// Create a list of all of the log files in the working folder. Once the list is
@@ -73,10 +71,10 @@ namespace W6OP.ContestLogAnalyzer
             ContestLog contestLog = new ContestLog();
             string fullName = fileInfo.FullName;
             string logFileName = null;
-            //string version = null;
+            string reason = "Unable to build valid header."; ;
             Int32 progress = 0;
 
-            _FailReason = "";
+            _FailReason = reason;
 
             try
             {
@@ -88,13 +86,13 @@ namespace W6OP.ContestLogAnalyzer
 
                     contestLog.LogHeader = BuildHeaderV3(lineList, fullName);
 
-                    if (AnalyzeHeader(contestLog) == true)
+                    if (AnalyzeHeader(contestLog, out reason) == true)
                     {
                         contestLog.LogHeader.HeaderIsValid = true;
                     }
                     else
                     {
-                        _FailReason = "Unable to build valid header.";
+                        _FailReason = reason;
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
                     }
@@ -108,7 +106,6 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (contestLog.QSOCollection == null)
                     {
-                        // AnalyzeHeader(contestLog)
                         _FailReason = "QSO collection is null";
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
@@ -141,31 +138,43 @@ namespace W6OP.ContestLogAnalyzer
             return logFileName;
         }
 
-        private bool AnalyzeHeader(ContestLog contestLog)
+        /// <summary>
+        /// Check to see if a subset of fields in the header are valid.
+        /// </summary>
+        /// <param name="contestLog"></param>
+        /// <param name="reason"></param>
+        /// <returns></returns>
+        private bool AnalyzeHeader(ContestLog contestLog, out string reason)
         {
             bool headerIsValid = true;
+            reason = "Unable to build valid header.";
 
             if (contestLog.LogHeader.OperatorCallSign == "UNKNOWN")
             {
+                reason = "Invalid operator callsign";
                 return false;
             }
 
             if (contestLog.LogHeader.OperatorCategory == CategoryOperator.Uknown)
             {
+                reason = "Invalid operator category";
                 return false;
             }
 
             if (contestLog.LogHeader.Assisted == CategoryAssisted.Uknown)
             {
+                reason = "Invalid assisted value";
                 return false;
             }
 
             if (contestLog.LogHeader.PrimaryName == "UNKNOWN" || contestLog.LogHeader.PrimaryName == "[BLANK]")
             {
+                reason = "Invalid primary name";
                 return false;
             }
             if (contestLog.LogHeader.NameSent == "UNKNOWN" || contestLog.LogHeader.NameSent == "[BLANK]")
             {
+                reason = "Invalid name sent";
                 return false;
             }
 
@@ -195,10 +204,11 @@ namespace W6OP.ContestLogAnalyzer
                 from line in lineList
                 select new LogHeader()
                 {
+                    // NEED StringComparer.CurrentCultureIgnoreCase ???
                     LogFileName = logFileName,
                     Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
                     Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: Unknown").First().Substring(9).Trim(),
-                    OperatorCallSign = CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN"),
+                    OperatorCallSign = CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN").ToUpper(),
                     OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY-OPERATOR:")).DefaultIfEmpty("CATEGORY-OPERATOR: UNKNOWN").First().Substring(18).Trim().ToUpper()),
                     // this is for when the CATEGORY-ASSISTED: is missing or has no value
                     Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: UNKNOWN").First(), 18, "UNKNOWN")),   //.Substring(18).Trim().ToUpper()),
@@ -244,6 +254,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
+        /// Clean up the individual lines and create a QSO collection.
         /// http://msdn.microsoft.com/en-us/library/bb513866.aspx
         /// </summary>
         /// <param name="lineList"></param>
@@ -269,6 +280,7 @@ namespace W6OP.ContestLogAnalyzer
                      let splitName = line.Split(' ')
                      select new QSO()
                      {
+                         // maybe .toUpper() will be needed
                          Frequency = splitName[1], 
                          Mode = splitName[2],
                          QsoDate = splitName[3],
@@ -284,6 +296,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 qsoList = qso.ToList();
 
+                MarkDuplicateQSOs(qsoList);
             }
             catch (Exception ex)
             {
@@ -295,8 +308,52 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return qsoList;
-
         }
+
+        /// <summary>
+        /// http://stackoverflow.com/questions/16197290/checking-for-duplicates-in-a-list-of-objects-c-sharp
+        /// Find duplicate QSOs in a log and mark the as dupes
+        /// </summary>
+        /// <param name="qsoList"></param>
+        private void MarkDuplicateQSOs(List<QSO> qsoList)
+        {
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.ContactName, x.QsoDate, x.QsoTime, x.Band })
+             .Where(g => g.Count() > 1)
+             .Select(y => y.Key)
+             .ToList();
+
+            foreach (var duplicate in query)
+            {
+                List<QSO> dupeList = qsoList.Where(item => item.ContactCall == duplicate.ContactCall && item.ContactName == duplicate.ContactName && item.QsoDate == duplicate.QsoDate && item.Band == duplicate.Band).ToList();
+                // now set dupe flag in each QSO
+                foreach (QSO qso in dupeList)
+                {
+                    qso.QSOIsDupe = true;
+                    //System.Xml.Serialization.XmlSerializer writer = new System.Xml.Serialization.XmlSerializer(typeof(QSO));
+
+                    //System.IO.StreamWriter file = new System.IO.StreamWriter(
+                    //    @"c:\temp\contestLog.xml");
+                    //writer.Serialize(file, qso);
+                    //file.Close();
+                }
+            }   
+            
+            
+        }
+
+        /*
+         *  http://stackoverflow.com/questions/18547354/c-sharp-linq-find-duplicates-in-list
+         * var dupes = qsoList.GroupBy(x => new { x.ContactCall, x.ContactName, x.QsoDate, x.QsoTime,x.Band })
+                   .Where(x => x.Skip(1).Any()).ToArray();
+
+                if (dupes.Any())
+                {
+                    foreach (var dupeList in dupes)
+                    {
+
+                    }
+                }
+         */
 
         /// <summary>
         /// Convert a string to an Int32. Also extract a number from a string as a serial
@@ -331,6 +388,8 @@ namespace W6OP.ContestLogAnalyzer
             string regex = @"^([A-Z]{1,2}|[0-9][A-Z])([0-9])([A-Z]{1,3})$";
             bool match = false;
 
+
+            // should this pass "DR50RRDXA" it does not currently
             if (Regex.IsMatch(call.ToUpper(), regex, RegexOptions.IgnoreCase))
             {
                 match = true;

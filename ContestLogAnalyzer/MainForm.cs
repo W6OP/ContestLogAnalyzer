@@ -102,6 +102,7 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonLoadLogs_Click(object sender, EventArgs e)
         {
+            TabControlMain.SelectTab(TabPageLogStatus);
             LoadLogFiles();
         }
 
@@ -123,25 +124,24 @@ namespace ContestLogAnalyzer
 
                 if (_LogProcessor == null)
                 {
-                    _LogProcessor = new LogProcessor(_LogFolder);
+                    _LogProcessor = new LogProcessor();
                     _LogProcessor.OnProgressUpdate += _LogProcessor_OnProgressUpdate;
                 }
 
-                if (!String.IsNullOrEmpty(_LogFolder))
+                if (String.IsNullOrEmpty(_LogFolder))
                 {
-                    _ContestLogs = new List<ContestLog>();
-                    fileCount = _LogProcessor.BuildFileList(out _LogFileList);
-                    ProgressBarLoad.Maximum = fileCount;
-
-                    UpdateListViewLoad(fileCount.ToString() + " logs available.", "", false);
-
-                    Cursor = Cursors.WaitCursor;
-                    BackgroundWorkerLoadLogs.RunWorkerAsync(fileCount);
+                    ButtonSelectFolder.PerformClick();
                 }
-                else
-                {
-                    MessageBox.Show("You must select a folder containing log files.", "Missing Folder Name", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                }
+
+                _LogProcessor.LogFolder = _LogFolder;
+                _ContestLogs = new List<ContestLog>();
+                fileCount = _LogProcessor.BuildFileList(out _LogFileList);
+                ProgressBarLoad.Maximum = fileCount;
+
+                UpdateListViewLoad(fileCount.ToString() + " logs available.", "", false);
+
+                Cursor = Cursors.WaitCursor;
+                BackgroundWorkerLoadLogs.RunWorkerAsync(fileCount);
             }
             catch (Exception)
             {
@@ -218,6 +218,7 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonStartAnalysis_Click(object sender, EventArgs e)
         {
+            TabControlMain.SelectTab(TabPageAnalysis);
             AnalyzeLogs();
         }
 
@@ -235,7 +236,7 @@ namespace ContestLogAnalyzer
                 _LogAnalyser = new LogAnalyzer();
                 _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
             }
-
+            
             BackgroundWorkerAnalzeLogs.RunWorkerAsync();
         }
 
@@ -295,6 +296,7 @@ namespace ContestLogAnalyzer
         {
             if (_CWOpen == null)
             {
+                TabControlMain.SelectTab(TabPageScoring);
                 _CWOpen = new ScoreCWOpen();
                 _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
             }

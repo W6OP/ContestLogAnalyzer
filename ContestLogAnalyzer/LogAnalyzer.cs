@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,12 +12,15 @@ namespace W6OP.ContestLogAnalyzer
         public delegate void ProgressUpdate(string value, string qsoCount, Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
 
+        //private SortedDictionary<string, string> _CallTable;
+
         /// <summary>
         /// Default constructor.
         /// </summary>
         public LogAnalyzer()
         {
-
+            // need case insensitive BOB and Bob
+            //_CallTable = new SortedDictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
         }
 
         /// <summary>
@@ -89,6 +93,14 @@ namespace W6OP.ContestLogAnalyzer
 
             foreach (QSO qso in contestLog.QSOCollection)
             {
+
+                //if (!_CallTable.ContainsKey(qso.ContactCall.ToString() + qso.ContactName.ToString()))
+                //{
+                //    // Chas and Chuck same guy, also AJ and Anthony
+                //    _CallTable.Add(qso.ContactCall.ToString() + qso.ContactName.ToString(), qso.ContactCall.ToString() + " - " + qso.ContactName);
+                //}
+                
+
                 // query all the other logs for a match
                 // if there is a match, mark each QSO as valid.
                 if (qso.Status == QSOStatus.InvalidQSO)
@@ -107,15 +119,19 @@ namespace W6OP.ContestLogAnalyzer
                     //List<ContestLog> list = _ContestLogs.Where(q => q.QSOCollection.Any(a =>  a.Band == band)).ToList();
 
                     // need to add way to check if log is valid
-                    matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO)).ToList()); // && a.IsValidQSO == false
+                    //matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO)).ToList()); // && a.IsValidQSO == false
+                   // case insensitive
+                    matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => String.Equals(a.ContactCall, operatorCall, StringComparison.CurrentCultureIgnoreCase) && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && String.Equals(a.ContactName, sentName, StringComparison.CurrentCultureIgnoreCase) && a.Status == QSOStatus.InvalidQSO)).ToList()); // && a.IsValidQSO == false
 
+                    //StringComparer.CurrentCultureIgnoreCase
 
                     // some of these will be marked valid as we go along and need to be removed from this collection
                     //reviewLogs.AddRange(_ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && (a.ReceivedSerialNumber != sentSerialNumber || a.Band == band || a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO))).ToList());
                     // logs where there was no match at all - exclude this logs owner too
 
-                    otherLogs.AddRange(contestLogList.Where(q => q.QSOCollection.All(a => a.ContactCall != operatorCall && a.OperatorCall != operatorCall)).ToList());
-
+                    // StringComparison.CurrentCultureIgnoreCase
+                    //otherLogs.AddRange(contestLogList.Where(q => q.QSOCollection.All(a => a.ContactCall != operatorCall && a.OperatorCall != operatorCall)).ToList());
+                    otherLogs.AddRange(contestLogList.Where(q => q.QSOCollection.All(a => !String.Equals(a.ContactCall, operatorCall, StringComparison.CurrentCultureIgnoreCase) && !String.Equals(a.OperatorCall, operatorCall, StringComparison.CurrentCultureIgnoreCase))).ToList());
 
                     // need to determine if the matching log count went up, if it did, mark the QSO as valid
                     if (matchingLogs.Count > qsoCount)
@@ -206,7 +222,7 @@ namespace W6OP.ContestLogAnalyzer
             // This gives me a list of all the QSOs in the Contest Log collection that need reviewing
             reviewQsoList = contestLogList.SelectMany(q => q.QSOCollection).Where(a => a.Status == QSOStatus.InvalidQSO).ToList();
 
-            // this eleiminates the dupes - needs testing
+            // this eliminates the dupes - needs testing
             review = reviewQsoList
               .GroupBy(p => p.OperatorCall, StringComparer.OrdinalIgnoreCase)
               .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?define ProductVersion = "1.0.12"?>
+<?define ProductVersion = "1.0.16"?>
 <?define ProductUpgradeCode = "e7d24a3a-1258-402f-8cbc-8a4a603f6542"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Product Id="*" Name="Contest Log Analzer" Language="1033" Version="$(var.ProductVersion)" Manufacturer="W6OP" UpgradeCode="$(var.ProductUpgradeCode)">
@@ -32,6 +32,7 @@
     
 		<Feature Id="ProductFeature" Title="ContestLogAnalzer" Level="1" Description='Setup program for the W6OP Contest Log Analyzer.' ConfigurableDirectory='INSTALLFOLDER'>
 			<ComponentGroupRef Id="ProductComponents" />
+     <ComponentRef Id="ApplicationShortcut" />
 		</Feature>
 	</Product>
 
@@ -52,8 +53,28 @@
 		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
 			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
 		 <Component Id="ProductComponent" Guid="9e3766f5-495f-4390-b295-16f88beda9e1">         
-       <File Id='ContestLogAnalyzer' Name='ContestLogAnalyzer.exe' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\ContestLogAnalyzer.exe' KeyPath='yes'></File>
+      <File Id='ContestLogAnalyzer' Name='ContestLogAnalyzer.exe' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\ContestLogAnalyzer.exe' KeyPath='yes'></File>
+       <!--<File Id='ContestLogAnalyzer.config' Name='ContestLogAnalyzer.exe.config' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\ContestLogAnalyzer.exec.onfig' KeyPath='no'></File>-->
+      <File Id='LogAnalyzerCommon' Name='LogAnalyzerCommon.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\LogAnalyzerCommon.dll' KeyPath='no'></File>
+      <!--<File Id='AnalysisEngine' Name='AnalysisEngine.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\AnalysisEngine.dll' KeyPath='no'></File>-->
+     <File Id='Cabrillo' Name='Cabrillo.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\Cabrillo.dll' KeyPath='no'></File>
+     <File Id='ScoreEngine' Name='ScoreEngine.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\ScoreEngine.dll' KeyPath='no'></File>
 			 </Component> 
 		</ComponentGroup>
 	</Fragment>
+
+<!-- Ignore warning about mismatched component reference -->
+  <Fragment Id="ShortcutLocation">
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="C9568446-1E62-462B-99CC-BE016D3C29D1">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+                  Name="Contest Log Analyzer"
+                  Description="Contest Log Analyzer"
+                  Target="[#ContestLogAnalyzer]"
+                  WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+  </Fragment>
 </Wix>

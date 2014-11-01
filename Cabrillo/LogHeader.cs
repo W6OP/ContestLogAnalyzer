@@ -9,6 +9,7 @@ namespace W6OP.ContestLogAnalyzer
     /// <summary>
     /// Represents the header of a Cabrillo log file.
     /// </summary>
+    [Serializable()]
     public class LogHeader
     {
         /// <summary>

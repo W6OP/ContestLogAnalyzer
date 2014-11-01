@@ -25,6 +25,8 @@ namespace W6OP.ContestLogAnalyzer
                 // ReportProgress with Callsign
                 if (OnProgressUpdate != null)
                 {
+                    // ADD IF THE LOG NEEDS REVIEW AND SET IN LISTBOX IN RED
+                    // probably make a little collection here to pass dupe and other info
                     OnProgressUpdate(contestLog.LogOwner, contestLog.ClaimedScore.ToString(), contestLog.ActualScore.ToString());
                 }
             }
@@ -39,6 +41,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             Int32 uniqueCount = 0;
 
+            // need to subtract dupes and invalid logs
             uniqueCount = contestLog.QSOCollection
                 .GroupBy(p=> p.ContactCall, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase).Count();
