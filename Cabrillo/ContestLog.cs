@@ -19,22 +19,40 @@ namespace W6OP.ContestLogAnalyzer
         /// Comments I add while I am anlyzing the logs. May be from when I first load
         /// or anywhere along the line.
         /// </summary>
-        private List<string> _AnalyzerComments;
-        public List<string> AnalyzerComments
-        {
-            get { return _AnalyzerComments; }
-            set { _AnalyzerComments = value; }
-        }
+        public List<string> AnalyzerComments { get; set; }
+        //private List<string> _AnalyzerComments;
+        //public List<string> AnalyzerComments
+        //{
+        //    get { return _AnalyzerComments; }
+        //    set { _AnalyzerComments = value; }
+        //}
 
         /// <summary>
         /// Call sign of the log owner.
         /// </summary>
-        private string _LogOwner;
-        public string LogOwner
-        {
-            get { return _LogOwner; }
-            set { _LogOwner = value; }
-        }
+        public string LogOwner { get; set; }
+        //private string _LogOwner;
+        //public string LogOwner
+        //{
+        //    get { return _LogOwner; }
+        //    set { _LogOwner = value; }
+        //}
+
+        /// <summary>
+        /// Call sign of the operator.
+        /// </summary>
+        public string Operator { get; set; }
+
+        /// <summary>
+        /// Name of the operator.
+        /// </summary>
+        public string OperatorName { get; set; }
+
+        /// <summary>
+        /// Call sign of station.
+        /// </summary>
+        public string Station { get; set; }
+
         /// <summary>
         /// The header for this log.
         /// </summary>
@@ -45,7 +63,7 @@ namespace W6OP.ContestLogAnalyzer
             set 
             { 
                 _LogHeader = value;
-                _LogOwner = _LogHeader.OperatorCallSign;
+                LogOwner = _LogHeader.OperatorCallSign;
                 if (_LogHeader.OperatorCategory == CategoryOperator.CheckLog)
                 {
                     _IsCheckLog = true;

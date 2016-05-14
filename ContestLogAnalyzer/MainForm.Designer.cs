@@ -50,6 +50,9 @@
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader10 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ProgressBarLoad = new System.Windows.Forms.ProgressBar();
             this.LabelProgress = new System.Windows.Forms.Label();
             this.TabControlMain = new System.Windows.Forms.TabControl();
@@ -198,7 +201,7 @@
             this.ListViewAnalysis.GridLines = true;
             this.ListViewAnalysis.Location = new System.Drawing.Point(3, 3);
             this.ListViewAnalysis.Name = "ListViewAnalysis";
-            this.ListViewAnalysis.Size = new System.Drawing.Size(958, 374);
+            this.ListViewAnalysis.Size = new System.Drawing.Size(949, 520);
             this.ListViewAnalysis.TabIndex = 11;
             this.ListViewAnalysis.UseCompatibleStateImageBehavior = false;
             this.ListViewAnalysis.View = System.Windows.Forms.View.Details;
@@ -220,8 +223,12 @@
             this.ListViewScore.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader3,
             this.columnHeader4,
-            this.columnHeader5});
+            this.columnHeader5,
+            this.columnHeader8,
+            this.columnHeader9,
+            this.columnHeader10});
             this.ListViewScore.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ListViewScore.FullRowSelect = true;
             this.ListViewScore.GridLines = true;
             this.ListViewScore.Location = new System.Drawing.Point(0, 0);
             this.ListViewScore.MultiSelect = false;
@@ -235,16 +242,30 @@
             // 
             // columnHeader3
             // 
-            this.columnHeader3.Text = "Processed";
-            this.columnHeader3.Width = 140;
+            this.columnHeader3.Text = "Call";
+            this.columnHeader3.Width = 75;
             // 
             // columnHeader4
             // 
-            this.columnHeader4.Text = "Claimed";
+            this.columnHeader4.Text = "Operator";
+            this.columnHeader4.Width = 70;
             // 
             // columnHeader5
             // 
-            this.columnHeader5.Text = "Actual";
+            this.columnHeader5.Text = "Station";
+            this.columnHeader5.Width = 75;
+            // 
+            // columnHeader8
+            // 
+            this.columnHeader8.Text = "Name";
+            // 
+            // columnHeader9
+            // 
+            this.columnHeader9.Text = "Claimed";
+            // 
+            // columnHeader10
+            // 
+            this.columnHeader10.Text = "Actual";
             // 
             // ProgressBarLoad
             // 
@@ -291,7 +312,7 @@
             this.TabPageAnalysis.Location = new System.Drawing.Point(4, 24);
             this.TabPageAnalysis.Name = "TabPageAnalysis";
             this.TabPageAnalysis.Padding = new System.Windows.Forms.Padding(3);
-            this.TabPageAnalysis.Size = new System.Drawing.Size(964, 380);
+            this.TabPageAnalysis.Size = new System.Drawing.Size(955, 526);
             this.TabPageAnalysis.TabIndex = 1;
             this.TabPageAnalysis.Text = "Analysis";
             this.TabPageAnalysis.UseVisualStyleBackColor = true;
@@ -367,6 +388,9 @@
         private System.Windows.Forms.TabPage TabPageLogStatus;
         private System.Windows.Forms.TabPage TabPageAnalysis;
         private System.Windows.Forms.TabPage TabPageScoring;
+        private System.Windows.Forms.ColumnHeader columnHeader8;
+        private System.Windows.Forms.ColumnHeader columnHeader9;
+        private System.Windows.Forms.ColumnHeader columnHeader10;
     }
 }
 

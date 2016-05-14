@@ -8,7 +8,7 @@ namespace W6OP.ContestLogAnalyzer
 {
     public class ScoreCWOpen
     {
-        public delegate void ProgressUpdate(string logOwner, string claimed, string actual);
+        public delegate void ProgressUpdate(ContestLog contestLog);
         public event ProgressUpdate OnProgressUpdate;
 
         public ScoreCWOpen()
@@ -19,16 +19,18 @@ namespace W6OP.ContestLogAnalyzer
 
         public void ScoreContestLogs(List<ContestLog> contestLogList)
         {
-            foreach (ContestLog contestLog in contestLogList)
+
+            List<ContestLog> newcontestLogList = contestLogList.OrderByDescending(o => o.LogOwner).ToList();
+
+            //contestLogList.Sort((x, y) => string.Compare(x.LogOwner, y.LogOwner));
+
+            foreach (ContestLog contestLog in newcontestLogList)
             {
                 CalculateScore(contestLog);
                 // ReportProgress with Callsign
-                if (OnProgressUpdate != null)
-                {
-                    // ADD IF THE LOG NEEDS REVIEW AND SET IN LISTBOX IN RED
-                    // probably make a little collection here to pass dupe and other info
-                    OnProgressUpdate(contestLog.LogOwner, contestLog.ClaimedScore.ToString(), contestLog.ActualScore.ToString());
-                }
+                // ADD IF THE LOG NEEDS REVIEW AND SET IN LISTBOX IN RED
+                // probably make a little collection here to pass dupe and other info
+                OnProgressUpdate?.Invoke(contestLog);
             }
         }
 

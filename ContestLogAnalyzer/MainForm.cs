@@ -27,13 +27,21 @@ namespace ContestLogAnalyzer
     /// </summary>
     public partial class MainForm : Form
     {
-        private List<ContestLog> _ContestLogs;
-        IEnumerable<System.IO.FileInfo> _LogFileList;
-        LogProcessor _LogProcessor;
-        LogAnalyzer _LogAnalyser;
-        ScoreCWOpen _CWOpen;
+        // Constants to define the folders required by the application
+        private const string LOG_ANALYSER_WORKING_FOLDER_PATH = @"W6OP\LogAnalyser\Working";
+        private const string LOG_ANALYSER_INSPECT_FOLDER_PATH = @"W6OP\LogAnalyser\Inspect";
 
-        private string _LogFolder = null;
+        // set the actual folders to use
+        private string _WorkingFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_WORKING_FOLDER_PATH);
+        private string _InspectFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_INSPECT_FOLDER_PATH);
+
+        private List<ContestLog> _ContestLogs;
+        private IEnumerable<System.IO.FileInfo> _LogFileList;
+        private LogProcessor _LogProcessor;
+        private LogAnalyzer _LogAnalyser;
+        private ScoreCWOpen _CWOpen;
+
+        private string _LogSourceFolder = null;
 
         #region Load and Initialize
 
@@ -52,7 +60,7 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void MainForm_Load(object sender, EventArgs e)
         {
-            _LogFolder = TextBoxLogFolder.Text;
+            _LogSourceFolder = TextBoxLogFolder.Text;
 
             ComboBoxSelectContest.DataSource = Enum.GetValues(typeof(ContestName))
                 .Cast<ContestName>()
@@ -61,6 +69,16 @@ namespace ContestLogAnalyzer
 
             ComboBoxSelectContest.DisplayMember = "Value";
             ComboBoxSelectContest.ValueMember = "Key";
+
+            if (!Directory.Exists(_WorkingFolder))
+            {
+                Directory.CreateDirectory(_WorkingFolder);
+            }
+
+            if (!Directory.Exists(_InspectFolder))
+            {
+                Directory.CreateDirectory(_InspectFolder);
+            }
         }
 
         #endregion
@@ -74,20 +92,20 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonSelectFolder_Click(object sender, EventArgs e)
         {
-            SelectWorkingFolder();
+            SelectLogFileSourceFolder();
         }
 
         /// <summary>
         /// Launch the folder browser dialog to select the folder the logs reside in.
         /// </summary>
-        private void SelectWorkingFolder()
+        private void SelectLogFileSourceFolder()
         {
             LogFolderBrowserDialog.ShowDialog();
 
             if (!String.IsNullOrEmpty(LogFolderBrowserDialog.SelectedPath))
             {
-                _LogFolder = LogFolderBrowserDialog.SelectedPath;
-                TextBoxLogFolder.Text = _LogFolder;
+                _LogSourceFolder = LogFolderBrowserDialog.SelectedPath;
+                TextBoxLogFolder.Text = _LogSourceFolder;
             }
         }
 
@@ -103,7 +121,61 @@ namespace ContestLogAnalyzer
         private void ButtonLoadLogs_Click(object sender, EventArgs e)
         {
             TabControlMain.SelectTab(TabPageLogStatus);
+            _LogFileList = null;
+
+            if (_LogProcessor == null)
+            {
+                _LogProcessor = new LogProcessor();
+                _LogProcessor.OnProgressUpdate += _LogProcessor_OnProgressUpdate;
+            }
+
+
+            if (String.IsNullOrEmpty(_LogSourceFolder))
+            {
+                ButtonSelectFolder.PerformClick();
+            }
+
+
+            if (_LogSourceFolder != _WorkingFolder)
+            {
+                _LogProcessor.LogFolder = _LogSourceFolder;
+                CopyLogFilesToWorkingFolder();
+            }
+
+            _LogProcessor.LogFolder = _WorkingFolder;
+            _LogProcessor.InspectionFolder = _InspectFolder;
+
             LoadLogFiles();
+        }
+
+        /// <summary>
+        /// Copy all of the log files from he source folder to the working folder.
+        /// </summary>
+        private void CopyLogFilesToWorkingFolder()
+        {
+            string fileName = null;
+            int fileCount = 0;
+
+            try
+            {
+                fileCount = _LogProcessor.BuildFileList(out _LogFileList);
+
+                if (fileCount > 0)
+                {
+                    foreach (FileInfo fileInfo in _LogFileList)
+                    {
+                        fileName = fileInfo.Name;
+                        if (fileName != null)
+                        {
+                            File.Copy(fileInfo.FullName, Path.Combine(_WorkingFolder, fileName), true);
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message, "File Copy Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -119,23 +191,38 @@ namespace ContestLogAnalyzer
                 ProgressBarLoad.Maximum = 0;
                 UpdateListViewLoad("", "",  true);
                 UpdateListViewAnalysis("", "", true);
-                UpdateListViewScore("", "","", true);
+                UpdateListViewScore(new ContestLog(), true);
                 ButtonStartAnalysis.Enabled = false;
 
-                if (_LogProcessor == null)
-                {
-                    _LogProcessor = new LogProcessor();
-                    _LogProcessor.OnProgressUpdate += _LogProcessor_OnProgressUpdate;
-                }
+                //if (_LogProcessor == null)
+                //{
+                //    _LogProcessor = new LogProcessor();
+                //    _LogProcessor.OnProgressUpdate += _LogProcessor_OnProgressUpdate;
+                //}
 
-                if (String.IsNullOrEmpty(_LogFolder))
-                {
-                    ButtonSelectFolder.PerformClick();
-                }
+                //if (String.IsNullOrEmpty(_LogFolder))
+                //{
+                //    ButtonSelectFolder.PerformClick();
+                //}
 
-                _LogProcessor.LogFolder = _LogFolder;
+                //_LogProcessor.LogFolder = _LogFolder;
                 _ContestLogs = new List<ContestLog>();
-                fileCount = _LogProcessor.BuildFileList(out _LogFileList);
+
+                if (_LogFileList == null)
+                {
+                    // this and the previous iteration need to be combined
+                    fileCount = _LogProcessor.BuildFileList(out _LogFileList);
+                }
+
+                if (_LogFileList.Cast<object>().Count() == 0)
+                {
+                    fileCount = _LogProcessor.BuildFileList(out _LogFileList);
+                }
+                else
+                {
+                    fileCount = _LogFileList.Cast<object>().Count();
+                }
+                
                 ProgressBarLoad.Maximum = fileCount;
 
                 UpdateListViewLoad(fileCount.ToString() + " logs available.", "", false);
@@ -168,6 +255,7 @@ namespace ContestLogAnalyzer
                 if (fileName != null)
                 {
                     UpdateListViewLoad(fileName, "Load failed." + " - " + _LogProcessor.FailReason, false);
+                    //File.Move(fileInfo.FullName, Path.Combine(_InspectFolder, fileName));
                 }
             }
         }
@@ -301,7 +389,7 @@ namespace ContestLogAnalyzer
                 _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
             }
 
-            UpdateListViewScore("", "", "", true);
+            UpdateListViewScore(new ContestLog(), true);
 
             Cursor = Cursors.WaitCursor;
 
@@ -309,9 +397,10 @@ namespace ContestLogAnalyzer
             BackgroundWorkerScoreLogs.RunWorkerAsync();
         }
 
-        private void _CWOpen_OnProgressUpdate(string logOwner, string claimed, string actual)
+        private void _CWOpen_OnProgressUpdate(ContestLog contestLog)
         {
-            UpdateListViewScore(logOwner, claimed, actual, false);
+            //contestLog.LogOwner, contestLog.ClaimedScore.ToString(), contestLog.ActualScore.ToString()
+            UpdateListViewScore(contestLog, false);
         }
 
 
@@ -335,11 +424,11 @@ namespace ContestLogAnalyzer
         {
             if (e.Error != null)
             {
-                UpdateListViewScore(e.Error.Message, "", "", false);
+                UpdateListViewScore(e.Error.Message,  false);
             }
             else
             {
-                UpdateListViewScore("Log scoring complete.", "", "", false);
+                UpdateListViewScore("Log scoring complete.",  false);
             }
 
             Cursor = Cursors.Default;
@@ -495,11 +584,11 @@ namespace ContestLogAnalyzer
         /// </summary>
         /// <param name="logOwner"></param>
         /// <param name="clear"></param>
-        private void UpdateListViewScore(string logOwner, string claimed, string actual, bool clear)
+        private void UpdateListViewScore(ContestLog contestLog, bool clear)
         {
             if (InvokeRequired)
             {
-                this.BeginInvoke(new Action<string, string, string, bool>(this.UpdateListViewScore), logOwner, claimed, actual, clear);
+                this.BeginInvoke(new Action<ContestLog, bool>(this.UpdateListViewScore), contestLog, clear);
                 return;
             }
 
@@ -509,10 +598,44 @@ namespace ContestLogAnalyzer
             }
             else
             {
-                ListViewItem item = new ListViewItem(logOwner);
-                item.SubItems.Add(claimed);
-                item.SubItems.Add(actual);
+                // .LogOwner, contestLog.ClaimedScore.ToString(), contestLog.ActualScore.ToString()
+                ListViewItem item = new ListViewItem(contestLog.LogOwner);
+                item.SubItems.Add(contestLog.LogOwner);
+                item.SubItems.Add("");
+
+
+
+                item.SubItems.Add("");
+                item.SubItems.Add("");
+                item.SubItems.Add(contestLog.ClaimedScore.ToString());
                 ListViewScore.Items.Insert(0, item);
+            }
+        }
+
+        private void UpdateListViewScore(string message, bool clear)
+        {
+            if (InvokeRequired)
+            {
+                this.BeginInvoke(new Action<string, bool>(this.UpdateListViewScore), message, clear);
+                return;
+            }
+
+            if (clear)
+            {
+                ListViewScore.Items.Clear();
+            }
+            else
+            {
+                // .LogOwner, contestLog.ClaimedScore.ToString(), contestLog.ActualScore.ToString()
+                ListViewItem item = new ListViewItem(message);
+                //item.SubItems.Add(contestLog.Operator);
+                //item.SubItems.Add(contestLog.;
+
+
+
+                //item.SubItems.Add(claimed);
+                //item.SubItems.Add(actual);
+                //ListViewScore.Items.Insert(0, item);
             }
         }
 
