@@ -39,8 +39,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnalyzeCWOpen.cs" />
+    <Compile Include="LogAnalyzer.cs" />
+    <Compile Include="LogProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Cabrillo\Cabrillo.csproj">
+      <Project>{d5621e76-8801-41df-b90b-609796f3042c}</Project>
+      <Name>Cabrillo</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LogAnalyzerCommon\LogAnalyzerCommon.csproj">
+      <Project>{b033bebd-9c13-4ead-909a-5348cbdc3f30}</Project>
+      <Name>LogAnalyzerCommon</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

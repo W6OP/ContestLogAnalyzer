@@ -47,8 +47,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LogAnalyzer.cs" />
-    <Compile Include="LogProcessor.cs" />
+    <Compile Include="LogAnalyzerOld.cs" />
+    <Compile Include="LogProcessorOld.cs" />
     <Compile Include="LogViewForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -112,6 +112,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AnalysisEngine\AnalysisEngine.csproj">
+      <Project>{32efd3e7-8d94-44ba-940f-e0f807edca99}</Project>
+      <Name>AnalysisEngine</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Cabrillo\Cabrillo.csproj">
       <Project>{d5621e76-8801-41df-b90b-609796f3042c}</Project>
       <Name>Cabrillo</Name>

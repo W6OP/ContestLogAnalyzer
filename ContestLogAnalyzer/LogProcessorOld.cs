@@ -11,7 +11,7 @@ namespace W6OP.ContestLogAnalyzer
 {
     public delegate void ErrorRaised(string error);
 
-    public class LogProcessor
+    public class LogProcessorOld
     {
         public delegate void ProgressUpdate(Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
@@ -41,7 +41,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public LogProcessor()
+        public LogProcessorOld()
         {
 
         }

@@ -99,7 +99,7 @@ namespace W6OP.ContestLogAnalyzer
                 //    // Chas and Chuck same guy, also AJ and Anthony
                 //    _CallTable.Add(qso.ContactCall.ToString() + qso.ContactName.ToString(), qso.ContactCall.ToString() + " - " + qso.ContactName);
                 //}
-                
+
 
                 // query all the other logs for a match
                 // if there is a match, mark each QSO as valid.
@@ -120,7 +120,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     // need to add way to check if log is valid
                     //matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO)).ToList()); // && a.IsValidQSO == false
-                   // case insensitive
+                    // case insensitive
                     matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => String.Equals(a.ContactCall, operatorCall, StringComparison.CurrentCultureIgnoreCase) && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && String.Equals(a.ContactName, sentName, StringComparison.CurrentCultureIgnoreCase) && a.Status == QSOStatus.InvalidQSO)).ToList()); // && a.IsValidQSO == false
 
                     //StringComparer.CurrentCultureIgnoreCase
