@@ -36,7 +36,8 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// Look at the matching logs first.
-        /// Get the number of unique calls in the log.
+        /// Get the number of unique calls in the log. These are multipliers
+        /// Really need to find the first instance of any call, not just uniques
         /// </summary>
         /// <returns></returns>
         private void CalculateScore(ContestLog contestLog)
@@ -49,8 +50,6 @@ namespace W6OP.ContestLogAnalyzer
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase).Count();
 
             contestLog.Multipliers = uniqueCount;
-           
-            //return contestLog;
         }
     } // end class
 }
