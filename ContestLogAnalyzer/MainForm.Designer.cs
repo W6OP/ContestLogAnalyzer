@@ -59,6 +59,8 @@
             this.TabPageLogStatus = new System.Windows.Forms.TabPage();
             this.TabPageAnalysis = new System.Windows.Forms.TabPage();
             this.TabPageScoring = new System.Windows.Forms.TabPage();
+            this.ComboBoxSelectSession = new System.Windows.Forms.ComboBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.TabControlMain.SuspendLayout();
             this.TabPageLogStatus.SuspendLayout();
             this.TabPageAnalysis.SuspendLayout();
@@ -327,12 +329,36 @@
             this.TabPageScoring.Text = "Scoring";
             this.TabPageScoring.UseVisualStyleBackColor = true;
             // 
+            // ComboBoxSelectSession
+            // 
+            this.ComboBoxSelectSession.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ComboBoxSelectSession.FormattingEnabled = true;
+            this.ComboBoxSelectSession.Items.AddRange(new object[] {
+            "Session 1",
+            "Session 2",
+            "Session 3"});
+            this.ComboBoxSelectSession.Location = new System.Drawing.Point(162, 36);
+            this.ComboBoxSelectSession.Name = "ComboBoxSelectSession";
+            this.ComboBoxSelectSession.Size = new System.Drawing.Size(90, 23);
+            this.ComboBoxSelectSession.TabIndex = 16;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(159, 18);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(80, 15);
+            this.label2.TabIndex = 17;
+            this.label2.Text = "Select Session";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
             this.ClientSize = new System.Drawing.Size(1008, 729);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.ComboBoxSelectSession);
             this.Controls.Add(this.TabControlMain);
             this.Controls.Add(this.LabelProgress);
             this.Controls.Add(this.ProgressBarLoad);
@@ -391,6 +417,8 @@
         private System.Windows.Forms.ColumnHeader columnHeader8;
         private System.Windows.Forms.ColumnHeader columnHeader9;
         private System.Windows.Forms.ColumnHeader columnHeader10;
+        private System.Windows.Forms.ComboBox ComboBoxSelectSession;
+        private System.Windows.Forms.Label label2;
     }
 }
 

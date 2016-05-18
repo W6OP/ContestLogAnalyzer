@@ -47,8 +47,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LogAnalyzerOld.cs" />
-    <Compile Include="LogProcessorOld.cs" />
     <Compile Include="LogViewForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -17,27 +17,12 @@ namespace W6OP.ContestLogAnalyzer
         public event ProgressUpdate OnProgressUpdate;
         public event ErrorRaised OnErrorRaised;
 
-        private string _FailReason = null;
-        public string FailReason
-        {
-            get { return _FailReason; }
-            set { _FailReason = value; }
-        }
-
-        private string _LogFolder;
-        public string LogFolder
-        {
-            get { return _LogFolder; }
-            set { _LogFolder = value; }
-        }
-
-        private string _InspectionFolder;
-        public string InspectionFolder
-        {
-            get { return _InspectionFolder; }
-            set { _InspectionFolder = value; }
-        }
-
+        public string FailReason { get; set; }
+       
+        public string LogFolder { get; set; }
+      
+        public string InspectionFolder { get; set; }
+       
         /// <summary>
         /// Default constructor.
         /// </summary>
@@ -53,7 +38,7 @@ namespace W6OP.ContestLogAnalyzer
         public Int32 BuildFileList(out IEnumerable<System.IO.FileInfo> logFileList)
         {
             // Take a snapshot of the file system. http://msdn.microsoft.com/en-us/library/bb546159.aspx
-            DirectoryInfo dir = new DirectoryInfo(_LogFolder);
+            DirectoryInfo dir = new DirectoryInfo(LogFolder);
 
             // This method assumes that the application has discovery permissions for all folders under the specified path.
             IEnumerable<FileInfo> fileList = dir.GetFiles("*_1.log", System.IO.SearchOption.TopDirectoryOnly);
@@ -87,7 +72,7 @@ namespace W6OP.ContestLogAnalyzer
             string reason = "Unable to build valid header."; ;
             Int32 progress = 0;
 
-            _FailReason = reason;
+            FailReason = reason;
 
             try
             {
@@ -123,7 +108,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        _FailReason = reason;
+                        FailReason = reason;
                         contestLog.IsValidLog = false;
 
                         // MoveFileToInpectFolder(fileName);
@@ -162,7 +147,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (contestLog.QSOCollection == null)
                     {
-                        _FailReason = "QSO collection is null";
+                        FailReason = "QSO collection is null";
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
                         // maybe have _InvalidLogs collection
@@ -203,8 +188,8 @@ namespace W6OP.ContestLogAnalyzer
             string inspectReasonFileName = null;
 
             // move the file to inspection folder
-            inspectFileName = Path.Combine(_InspectionFolder, fileName);
-            inspectReasonFileName = Path.Combine(_InspectionFolder, fileName + ".txt");
+            inspectFileName = Path.Combine(InspectionFolder, fileName);
+            inspectReasonFileName = Path.Combine(InspectionFolder, fileName + ".txt");
 
             if (File.Exists(inspectFileName))
             {
@@ -216,15 +201,15 @@ namespace W6OP.ContestLogAnalyzer
                 File.Delete(inspectReasonFileName);
             }
 
-            if (File.Exists(Path.Combine(_LogFolder, fileName)))
+            if (File.Exists(Path.Combine(LogFolder, fileName)))
             {
-                File.Move(Path.Combine(_LogFolder, fileName), inspectFileName);
+                File.Move(Path.Combine(LogFolder, fileName), inspectFileName);
             }
 
             // create a text file with the reason for the rejection
             using (StreamWriter sw = File.CreateText(inspectReasonFileName))
             {
-                sw.WriteLine(_FailReason);
+                sw.WriteLine(FailReason);
             }
         }
 

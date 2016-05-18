@@ -64,6 +64,14 @@ namespace ContestLogAnalyzer
             ComboBoxSelectContest.DisplayMember = "Value";
             ComboBoxSelectContest.ValueMember = "Key";
 
+            ComboBoxSelectSession.DataSource = Enum.GetValues(typeof(Session))
+                .Cast<Session>()
+                .Select(p => new { Key = (int)p, Value = p.ToString() })
+                .ToList();
+
+            ComboBoxSelectSession.DisplayMember = "Value";
+            ComboBoxSelectSession.ValueMember = "Key";
+
             if (!Directory.Exists(_WorkingFolder))
             {
                 Directory.CreateDirectory(_WorkingFolder);

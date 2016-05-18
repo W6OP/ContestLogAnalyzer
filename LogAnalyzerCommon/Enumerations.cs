@@ -174,6 +174,16 @@ namespace W6OP.ContestLogAnalyzer
         Over50,
     }
 
+    public enum Session
+    {
+        [Description("Session 1")]
+        Session1,
+        [Description("Session 2")]
+        Session2,
+        [Description("Session 3")]
+        Session3
+    }
+
     //[AttributeUsage(AllowMultiple = true)]
     public enum ContestName
     {
