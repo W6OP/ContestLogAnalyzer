@@ -35,11 +35,15 @@ namespace W6OP.ContestLogAnalyzer
         /// Create a list of all of the log files in the working folder. Once the list is
         /// filled pass the list on to another thread.
         /// </summary>
-        public Int32 BuildFileList(out IEnumerable<System.IO.FileInfo> logFileList)
+        public Int32 BuildFileList(Session session, out IEnumerable<System.IO.FileInfo> logFileList)
         {
             // Take a snapshot of the file system. http://msdn.microsoft.com/en-us/library/bb546159.aspx
             DirectoryInfo dir = new DirectoryInfo(LogFolder);
-            //string fileNameFormat = "*_" + session.ToString() + ".log";
+
+
+
+            // this is where  left off - TEST IT
+            string fileNameFormat = "*_" + EnumHelper.GetDescription(session) + ".log";
 
             // This method assumes that the application has discovery permissions for all folders under the specified path.
             IEnumerable<FileInfo> fileList = dir.GetFiles("*_1.log", System.IO.SearchOption.TopDirectoryOnly);
