@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -177,11 +178,11 @@ namespace W6OP.ContestLogAnalyzer
     public enum Session
     {
         [Description("Session 1")]
-        Session1,
+        Session_1 = 1,
         [Description("Session 2")]
-        Session2,
+        Session_2 = 2,
         [Description("Session 3")]
-        Session3
+        Session_3 = 3
     }
 
     //[AttributeUsage(AllowMultiple = true)]
@@ -304,6 +305,49 @@ namespace W6OP.ContestLogAnalyzer
             ContestNameTwo = nameTwo;
             ContestNameThree = nameThree;
             ContestNameFour = nameFour;
+        }
+
+    } // end class
+
+    //public static string Description(this Enum value)
+    //{
+    //    // variables  
+    //    var enumType = value.GetType();
+    //    var field = enumType.GetField(value.ToString());
+    //    var attributes = field.GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+    //    // return  
+    //    return attributes.Length == 0 ? value.ToString() : ((DescriptionAttribute)attributes[0]).Description;
+    //}
+
+
+    public class EnumHelper
+    {
+        /// <summary>
+        /// Retrieve the description on the enum, e.g.
+        /// [Description("Bright Pink")]
+        /// BrightPink = 2,
+        /// Then when you pass in the enum, it will retrieve the description
+        /// </summary>
+        /// <param name="en">The Enumeration</param>
+        /// <returns>A string representing the friendly name</returns>
+        public static string GetDescription(Enum en)
+        {
+            Type type = en.GetType();
+
+            MemberInfo[] memInfo = type.GetMember(en.ToString());
+
+            if (memInfo != null && memInfo.Length > 0)
+            {
+                object[] attrs = memInfo[0].GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+                if (attrs != null && attrs.Length > 0)
+                {
+                    return ((DescriptionAttribute)attrs[0]).Description;
+                }
+            }
+
+            return en.ToString();
         }
 
     } // end class

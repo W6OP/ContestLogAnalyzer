@@ -26,8 +26,10 @@ namespace ContestLogAnalyzer
         private const string LOG_ANALYSER_INSPECT_FOLDER_PATH = @"W6OP\LogAnalyser\Inspect";
 
         // set the actual folders to use
-        private string _WorkingFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_WORKING_FOLDER_PATH);
-        private string _InspectFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_INSPECT_FOLDER_PATH);
+        private string _BaseWorkingFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_WORKING_FOLDER_PATH);
+        private string _BaseInspectFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_INSPECT_FOLDER_PATH);
+        private string _WorkingFolder = null;
+        private string _InspectFolder = null;
 
         private List<ContestLog> _ContestLogs;
         private IEnumerable<System.IO.FileInfo> _LogFileList;
@@ -36,6 +38,7 @@ namespace ContestLogAnalyzer
         private ScoreCWOpen _CWOpen;
 
         private string _LogSourceFolder = null;
+        private Session _Session = Session.Session_1;
 
         #region Load and Initialize
 
@@ -64,13 +67,28 @@ namespace ContestLogAnalyzer
             ComboBoxSelectContest.DisplayMember = "Value";
             ComboBoxSelectContest.ValueMember = "Key";
 
-            ComboBoxSelectSession.DataSource = Enum.GetValues(typeof(Session))
-                .Cast<Session>()
-                .Select(p => new { Key = (int)p, Value = p.ToString() })
-                .ToList();
+            //ComboBoxSelectSession.DataSource = Enum.GetValues(typeof(Session))
+            //    .Cast<Session>()
+            //    .Select(p => new { Key = (int)p, Value = p.ToString() })
+            //    .ToList();
 
-            ComboBoxSelectSession.DisplayMember = "Value";
-            ComboBoxSelectSession.ValueMember = "Key";
+            //ComboBoxSelectSession.DisplayMember = "Value";
+            //ComboBoxSelectSession.ValueMember = "Key";
+
+            ComboBoxSelectSession.DataSource = Enum.GetValues(typeof(Session))
+            .Cast<Enum>()
+            .Select(value => new
+            {
+                (Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()), typeof(DescriptionAttribute)) as DescriptionAttribute).Description, value
+            })
+            .OrderBy(item => item.value)
+            .ToList();
+            ComboBoxSelectSession.DisplayMember = "Description";
+            ComboBoxSelectSession.ValueMember = "value";
+
+            // may be able to eliminate this
+            _WorkingFolder = _BaseWorkingFolder;
+            _InspectFolder = _BaseInspectFolder;
 
             if (!Directory.Exists(_WorkingFolder))
             {
@@ -122,8 +140,43 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonLoadLogs_Click(object sender, EventArgs e)
         {
+            Session currentSession = Session.Session_1;
+
             TabControlMain.SelectTab(TabPageLogStatus);
             _LogFileList = null;
+
+            ///////////////////////////////////////////////////////////////////////////
+
+            ComboBoxSelectContest.Enabled = false;
+            ComboBoxSelectSession.Enabled = false;
+
+
+            Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out currentSession);
+
+            //if (Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out _Session))
+            //{
+            //    //uint value = (uint)_Session;
+            //}
+
+            if (currentSession ==_Session){
+                _Session = currentSession;
+                _WorkingFolder = Path.Combine(_BaseWorkingFolder, EnumHelper.GetDescription(_Session));
+                _InspectFolder = Path.Combine(_BaseInspectFolder, EnumHelper.GetDescription(_Session));
+            }
+            
+
+            if (!Directory.Exists(Path.Combine(_WorkingFolder, EnumHelper.GetDescription(_Session))))
+            {
+                Directory.CreateDirectory(_WorkingFolder);
+            }
+           
+
+            if (!Directory.Exists(Path.Combine(_InspectFolder, EnumHelper.GetDescription(_Session))))
+            {
+                Directory.CreateDirectory(_InspectFolder);
+            }
+            
+            ////////////////////////////////////////////////////////////
 
             if (_LogProcessor == null)
             {
@@ -151,7 +204,7 @@ namespace ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Copy all of the log files from he source folder to the working folder.
+        /// Copy all of the log files from the source folder to the working folder.
         /// </summary>
         private void CopyLogFilesToWorkingFolder()
         {
@@ -174,7 +227,7 @@ namespace ContestLogAnalyzer
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "File Copy Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -191,28 +244,15 @@ namespace ContestLogAnalyzer
             try
             {
                 ProgressBarLoad.Maximum = 0;
-                UpdateListViewLoad("", "",  true);
+                UpdateListViewLoad("", "", true);
                 UpdateListViewAnalysis("", "", true);
                 UpdateListViewScore(new ContestLog(), true);
                 ButtonStartAnalysis.Enabled = false;
 
-                //if (_LogProcessor == null)
-                //{
-                //    _LogProcessor = new LogProcessor();
-                //    _LogProcessor.OnProgressUpdate += _LogProcessor_OnProgressUpdate;
-                //}
-
-                //if (String.IsNullOrEmpty(_LogFolder))
-                //{
-                //    ButtonSelectFolder.PerformClick();
-                //}
-
-                //_LogProcessor.LogFolder = _LogFolder;
                 _ContestLogs = new List<ContestLog>();
 
                 if (_LogFileList == null)
                 {
-                    // this and the previous iteration need to be combined
                     fileCount = _LogProcessor.BuildFileList(out _LogFileList);
                 }
 
@@ -224,7 +264,7 @@ namespace ContestLogAnalyzer
                 {
                     fileCount = _LogFileList.Cast<object>().Count();
                 }
-                
+
                 ProgressBarLoad.Maximum = fileCount;
 
                 UpdateListViewLoad(fileCount.ToString() + " logs available.", "", false);
@@ -251,14 +291,21 @@ namespace ContestLogAnalyzer
         {
             string fileName = null;
 
-            foreach (FileInfo fileInfo in _LogFileList)
+            try
             {
-                fileName = _LogProcessor.BuildContestLog(fileInfo, _ContestLogs);
-                if (fileName != null)
+                foreach (FileInfo fileInfo in _LogFileList)
                 {
-                    UpdateListViewLoad(fileName, "Load failed." + " - " + _LogProcessor.FailReason, false);
-                    //File.Move(fileInfo.FullName, Path.Combine(_InspectFolder, fileName));
+                    fileName = _LogProcessor.BuildContestLog(fileInfo, _ContestLogs);
+                    if (fileName != null)
+                    {
+                        UpdateListViewLoad(fileName, "Load failed." + " - " + _LogProcessor.FailReason, false);
+                    }
                 }
+            }
+            catch (Exception)
+            {
+                ComboBoxSelectContest.Enabled = true;
+                ComboBoxSelectSession.Enabled = true;
             }
         }
 
@@ -285,13 +332,16 @@ namespace ContestLogAnalyzer
             }
             else
             {
-                UpdateListViewLoad(_ContestLogs.Count.ToString() + " logs loaded.", "",  false);
+                UpdateListViewLoad(_ContestLogs.Count.ToString() + " logs loaded.", "", false);
                 Cursor = Cursors.Default;
             }
 
             ProgressBarLoad.Maximum = _ContestLogs.Count;
             UpdateProgress(_ContestLogs.Count);
             EnableControl(true);
+
+            ComboBoxSelectContest.Enabled = true;
+            ComboBoxSelectSession.Enabled = true;
         }
 
         #endregion
@@ -326,7 +376,7 @@ namespace ContestLogAnalyzer
                 _LogAnalyser = new LogAnalyzer();
                 _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
             }
-            
+
             BackgroundWorkerAnalzeLogs.RunWorkerAsync();
         }
 
@@ -426,11 +476,11 @@ namespace ContestLogAnalyzer
         {
             if (e.Error != null)
             {
-                UpdateListViewScore(e.Error.Message,  false);
+                UpdateListViewScore(e.Error.Message, false);
             }
             else
             {
-                UpdateListViewScore("Log scoring complete.",  false);
+                UpdateListViewScore("Log scoring complete.", false);
             }
 
             Cursor = Cursors.Default;
@@ -717,7 +767,7 @@ namespace ContestLogAnalyzer
         }
 
 
-     
+
         #endregion
 
         private void ListViewScore_DoubleClick(object sender, EventArgs e)
@@ -735,7 +785,7 @@ namespace ContestLogAnalyzer
             }
         }
 
-       
+
 
 
 

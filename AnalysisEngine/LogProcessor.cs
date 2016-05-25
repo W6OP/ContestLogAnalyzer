@@ -39,6 +39,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             // Take a snapshot of the file system. http://msdn.microsoft.com/en-us/library/bb546159.aspx
             DirectoryInfo dir = new DirectoryInfo(LogFolder);
+            //string fileNameFormat = "*_" + session.ToString() + ".log";
 
             // This method assumes that the application has discovery permissions for all folders under the specified path.
             IEnumerable<FileInfo> fileList = dir.GetFiles("*_1.log", System.IO.SearchOption.TopDirectoryOnly);
