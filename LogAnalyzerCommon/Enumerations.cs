@@ -177,6 +177,8 @@ namespace W6OP.ContestLogAnalyzer
 
     public enum Session
     {
+        [Description("No Session")]
+        Session_0 = 0,
         [Description("Session 1")]
         Session_1 = 1,
         [Description("Session 2")]

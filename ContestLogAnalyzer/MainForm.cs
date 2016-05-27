@@ -38,7 +38,7 @@ namespace ContestLogAnalyzer
         private ScoreCWOpen _CWOpen;
 
         private string _LogSourceFolder = null;
-        private Session _Session = Session.Session_1;
+        private Session _Session = Session.Session_0;
 
         #region Load and Initialize
 
@@ -87,18 +87,18 @@ namespace ContestLogAnalyzer
             ComboBoxSelectSession.ValueMember = "value";
 
             // may be able to eliminate this
-            _WorkingFolder = _BaseWorkingFolder;
-            _InspectFolder = _BaseInspectFolder;
+            //_WorkingFolder = _BaseWorkingFolder;
+            //_InspectFolder = _BaseInspectFolder;
 
-            if (!Directory.Exists(_WorkingFolder))
-            {
-                Directory.CreateDirectory(_WorkingFolder);
-            }
+            //if (!Directory.Exists(_WorkingFolder))
+            //{
+            //    Directory.CreateDirectory(_WorkingFolder);
+            //}
 
-            if (!Directory.Exists(_InspectFolder))
-            {
-                Directory.CreateDirectory(_InspectFolder);
-            }
+            //if (!Directory.Exists(_InspectFolder))
+            //{
+            //    Directory.CreateDirectory(_InspectFolder);
+            //}
         }
 
         #endregion
@@ -140,25 +140,32 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonLoadLogs_Click(object sender, EventArgs e)
         {
-            Session currentSession = Session.Session_1;
+            Session currentSession = Session.Session_0;
 
             TabControlMain.SelectTab(TabPageLogStatus);
             _LogFileList = null;
 
             ///////////////////////////////////////////////////////////////////////////
 
-            ComboBoxSelectContest.Enabled = false;
-            ComboBoxSelectSession.Enabled = false;
+           
 
-
+            // get the current session number - this is specific to CWOPEN and will need to be moved later
             Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out currentSession);
 
+            if (currentSession == Session.Session_0)
+            {
+                MessageBox.Show("You must select the session to be scored", "Invalid Session", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                return;
+            }
             //if (Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out _Session))
             //{
             //    //uint value = (uint)_Session;
             //}
 
-            if (currentSession ==_Session){
+            //ComboBoxSelectContest.Enabled = false;
+            //ComboBoxSelectSession.Enabled = false;
+
+            if (currentSession !=_Session){
                 _Session = currentSession;
                 _WorkingFolder = Path.Combine(_BaseWorkingFolder, EnumHelper.GetDescription(_Session));
                 _InspectFolder = Path.Combine(_BaseInspectFolder, EnumHelper.GetDescription(_Session));
@@ -213,7 +220,7 @@ namespace ContestLogAnalyzer
 
             try
             {
-                fileCount = _LogProcessor.BuildFileList(out _LogFileList);
+                fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
 
                 if (fileCount > 0)
                 {
@@ -253,12 +260,12 @@ namespace ContestLogAnalyzer
 
                 if (_LogFileList == null)
                 {
-                    fileCount = _LogProcessor.BuildFileList(out _LogFileList);
+                    fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
                 }
 
                 if (_LogFileList.Cast<object>().Count() == 0)
                 {
-                    fileCount = _LogProcessor.BuildFileList(out _LogFileList);
+                    fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
                 }
                 else
                 {
@@ -295,7 +302,7 @@ namespace ContestLogAnalyzer
             {
                 foreach (FileInfo fileInfo in _LogFileList)
                 {
-                    fileName = _LogProcessor.BuildContestLog(fileInfo, _ContestLogs);
+                    fileName = _LogProcessor.BuildContestLog(fileInfo, _ContestLogs, _Session);
                     if (fileName != null)
                     {
                         UpdateListViewLoad(fileName, "Load failed." + " - " + _LogProcessor.FailReason, false);

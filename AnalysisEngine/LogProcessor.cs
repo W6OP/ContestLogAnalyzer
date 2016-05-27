@@ -40,13 +40,11 @@ namespace W6OP.ContestLogAnalyzer
             // Take a snapshot of the file system. http://msdn.microsoft.com/en-us/library/bb546159.aspx
             DirectoryInfo dir = new DirectoryInfo(LogFolder);
 
-
-
-            // this is where  left off - TEST IT
-            string fileNameFormat = "*_" + EnumHelper.GetDescription(session) + ".log";
+            // this is where I left off - TEST IT
+            string fileNameFormat = "*_" + ((uint)session).ToString() + ".log";
 
             // This method assumes that the application has discovery permissions for all folders under the specified path.
-            IEnumerable<FileInfo> fileList = dir.GetFiles("*_1.log", System.IO.SearchOption.TopDirectoryOnly);
+            IEnumerable<FileInfo> fileList = dir.GetFiles(fileNameFormat, System.IO.SearchOption.TopDirectoryOnly);
 
             //Create the query
             logFileList =
@@ -65,15 +63,17 @@ namespace W6OP.ContestLogAnalyzer
         /// load and process the header.
         /// </summary>
         /// <param name="fileInfo"></param>
-        public string BuildContestLog(FileInfo fileInfo, List<ContestLog> contestLogs)
+        public string BuildContestLog(FileInfo fileInfo, List<ContestLog> contestLogs, Session session)
         {
             ContestLog contestLog = new ContestLog();
             string fullName = fileInfo.FullName;
             string fileName = fileInfo.Name;
-            //string inspectFileName = null;
-            //string inspectReasonFileName = null;
             string logFileName = null;
             string version = null;
+            //string firstQsoDate = null;
+            //string lastQsoDate = null;
+            //string firstQsoTime = null;
+            //string lastQsoTime = null;
             string reason = "Unable to build valid header."; ;
             Int32 progress = 0;
 
@@ -87,7 +87,6 @@ namespace W6OP.ContestLogAnalyzer
 
                     version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim();
 
-                    // MAY ALSO NEED TO DETERMINE SESSION
                     if (version != null && version.Length > 2)
                     {
                         if (version.Substring(0, 1) == "2")
@@ -116,30 +115,6 @@ namespace W6OP.ContestLogAnalyzer
                         FailReason = reason;
                         contestLog.IsValidLog = false;
 
-                        // MoveFileToInpectFolder(fileName);
-
-                        //// move the file to inspection folder
-                        //inspectFileName = Path.Combine(_InspectionFolder, fileName);
-                        //inspectReasonFileName = Path.Combine(_InspectionFolder, fileName + ".txt");
-
-                        //if (File.Exists(inspectFileName))
-                        //{
-                        //    File.Delete(inspectFileName);
-                        //}
-
-                        //if (File.Exists(inspectReasonFileName))
-                        //{
-                        //    File.Delete(inspectReasonFileName);
-                        //}
-
-                        //File.Move(Path.Combine(_LogFolder, fileName), inspectFileName);
-
-                        //// create a text file with the reason for the rejection
-                        //using (StreamWriter sw = File.CreateText(inspectReasonFileName))
-                        //{
-                        //    sw.WriteLine(_FailReason);
-                        //}
-
                         throw new Exception(fileName); // don't want this added to collection
                     }
 
@@ -148,7 +123,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     // this statement says to copy all QSO lines
                     lineList = lineList.Where(x => x.IndexOf("QSO:", 0) != -1).ToList();
-                    contestLog.QSOCollection = CollectQSOs(lineList);
+                    contestLog.QSOCollection = CollectQSOs(lineList, session);
 
                     if (contestLog.QSOCollection == null)
                     {
@@ -389,7 +364,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="lineList"></param>
         /// <returns></returns>
-        private List<QSO> CollectQSOs(List<string> lineList)
+        private List<QSO> CollectQSOs(List<string> lineList, Session session)
         {
             List<QSO> qsoList = null;
             List<string> temp = new List<string>();
@@ -421,7 +396,8 @@ namespace W6OP.ContestLogAnalyzer
                          ContactCall = splitName[8],
                          ReceivedSerialNumber = ConvertSerialNumber(splitName[9]),
                          ContactName = splitName[10],
-                         CallIsValid = CheckCallSignFormat(splitName[5])
+                         CallIsValid = CheckCallSignFormat(splitName[5]),
+                         SessionIsValid = CheckForvalidSession(session, splitName[3], splitName[4])
                      };
 
                 qsoList = qso.ToList();
@@ -438,6 +414,42 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return qsoList;
+        }
+
+        private bool CheckForvalidSession(Session session, string qsoDate, string qsoTime)
+        {
+            bool isValidSession = false;
+            int qsoSessionTime = Convert.ToInt16(qsoTime);
+
+            switch (session)
+            {
+                case Session.Session_1:
+                    if (qsoSessionTime >= 0 && qsoSessionTime <= 359)
+                    {
+                        isValidSession = true;
+                    }
+                        break;
+                case Session.Session_2:
+                    if (qsoSessionTime >= 1200 && qsoSessionTime <= 1559)
+                    {
+                        isValidSession = true;
+                    }
+                    break;
+                case Session.Session_3:
+                    if (qsoSessionTime >= 2000 && qsoSessionTime <= 2359)
+                    {
+                        isValidSession = true;
+                    }
+                    break;
+
+            }
+            // Session 1 is 0000 - 0359
+            // Session 2 is 1200 - 1559
+            // Session 3 is 2000 - 2359
+
+
+
+            return isValidSession;
         }
 
         /// <summary>

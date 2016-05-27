@@ -14,7 +14,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public QSO()
         {
-
+            //_SessionIsValid = ValidateSession(session);
         }
 
         // need to track how many unique calls - multipliers
@@ -59,6 +59,21 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     Status = QSOStatus.InvalidQSO;
                     RejectReason = "Invalid call sign.";
+                }
+            }
+        }
+
+        private bool _SessionIsValid = true;
+        public bool SessionIsValid
+        {
+            get { return _SessionIsValid; }
+            set
+            {
+                _SessionIsValid = value;
+                if (_SessionIsValid == false)
+                {
+                    Status = QSOStatus.InvalidQSO;
+                    RejectReason = "Invalid session date time.";
                 }
             }
         }
