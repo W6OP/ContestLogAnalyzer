@@ -10,79 +10,106 @@ namespace W6OP.ContestLogAnalyzer
     public class QSO
     {
         /// <summary>
-        /// Constructor.
+        /// Constructor. Initialize properties.
         /// </summary>
         public QSO()
         {
-            //_SessionIsValid = ValidateSession(session);
+            QSOIsDupe = false;
+            CallIsValid = true;
+            SessionIsValid = true;
         }
 
-        // need to track how many unique calls - multipliers
-        // need way to track totally unique calls
-        // some way to find similar calls
+        private Dictionary<RejectReason, QSOStatus> _RejectReasons = new Dictionary<RejectReason, QSOStatus>();
+        public Dictionary<RejectReason, QSOStatus> RejectReasons
+        {
+            get { return _RejectReasons; }
+            //set { }
+        }
 
         //private QSOStatus _Status = QSOStatus.ValidQSO;
-        public QSOStatus Status { get; set; }
-        //{
-        //    get { return _Status; }
-        //    set { _Status = value; }
-        //}
+        public QSOStatus Status { get; set; } = QSOStatus.ValidQSO;
 
         /// <summary>
-        /// Later make this RejectReasonDescription and have an enum for RejectReason
+        ///
         /// </summary>
-        public string RejectReason { get; set; }
-
-        private bool _QSOIsDupe = false;
         public bool QSOIsDupe
         {
-            get { return _QSOIsDupe; }
             set
             {
-                _QSOIsDupe = value;
-                if (_QSOIsDupe == true)
+                if (value == true)
                 {
-                    Status = QSOStatus.InvalidQSO;
-                    RejectReason = "Duplicate QSO.";
+                    if (!RejectReasons.ContainsKey(RejectReason.Duplicate))
+                    {
+                        _RejectReasons.Add(RejectReason.Duplicate, QSOStatus.InvalidQSO);
+                        Status = QSOStatus.InvalidQSO;
+                    }
+                }
+                else
+                {
+                    if (RejectReasons.ContainsKey(RejectReason.Duplicate))
+                    {
+                        RejectReasons.Remove(RejectReason.Duplicate);
+                        if (RejectReasons.Count == 0)
+                        {
+                            Status = QSOStatus.ValidQSO;
+                        }
+                    }
                 }
             }
         }
 
-        private bool _CallIsValid = true;
         public bool CallIsValid
         {
-            get { return _CallIsValid; }
+            //get { return CallIsValid; }
             set
             {
-                _CallIsValid = value;
-                if (_CallIsValid == false)
+                if (value == false)
                 {
-                    Status = QSOStatus.InvalidQSO;
-                    RejectReason = "Invalid call sign.";
+                    if (!RejectReasons.ContainsKey(RejectReason.InvalidCall))
+                    {
+                        _RejectReasons.Add(RejectReason.InvalidCall, QSOStatus.InvalidQSO);
+                        Status = QSOStatus.InvalidQSO;
+                    }
+                }
+                else
+                {
+                    if (RejectReasons.ContainsKey(RejectReason.InvalidCall))
+                    {
+                        RejectReasons.Remove(RejectReason.InvalidCall);
+                        if (RejectReasons.Count == 0)
+                        {
+                            Status = QSOStatus.ValidQSO;
+                        }
+                    }
                 }
             }
         }
 
-        private bool _SessionIsValid = true;
         public bool SessionIsValid
         {
-            get { return _SessionIsValid; }
             set
             {
-                _SessionIsValid = value;
-                if (_SessionIsValid == false)
+                if (value == false)
                 {
-                    Status = QSOStatus.InvalidQSO;
-                    RejectReason = "Invalid session date time.";
+                    if (!RejectReasons.ContainsKey(RejectReason.InvalidSession))
+                    {
+                        _RejectReasons.Add(RejectReason.InvalidSession, QSOStatus.InvalidQSO);
+                        Status = QSOStatus.InvalidQSO;
+                    }
+                }
+                else
+                {
+                    if (RejectReasons.ContainsKey(RejectReason.InvalidSession))
+                    {
+                        RejectReasons.Remove(RejectReason.InvalidSession);
+                        if (RejectReasons.Count == 0)
+                        {
+                            Status = QSOStatus.ValidQSO;
+                        }
+                    }
                 }
             }
         }
-
-        /// <summary>
-        /// Indicates this QSO is the first one worked in this session and therefore a multiplier
-        /// </summary>
-        public bool IsMultiplier { get; set; }
-
 
         private string _Frequency;
         public string Frequency
@@ -94,6 +121,11 @@ namespace W6OP.ContestLogAnalyzer
                 Band = Utility.ConvertFrequencyToBand(Convert.ToDouble(_Frequency));
             }
         }
+
+        /// <summary>
+        /// Indicates this QSO is the first one worked in this session and therefore a multiplier
+        /// </summary>
+        public bool IsMultiplier { get; set; } = false;
 
         //private Int32 _Band;
         public Int32 Band { get; set; }

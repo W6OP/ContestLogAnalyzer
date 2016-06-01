@@ -93,7 +93,8 @@ namespace W6OP.ContestLogAnalyzer
 
             foreach (QSO qso in contestLog.QSOCollection)
             {
-
+                List<QSO> qsoList = contestLog.QSOCollection.Where(q =>  q.Status == QSOStatus.InvalidQSO).ToList();
+                List<QSO> qsoList2 = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
                 //if (!_CallTable.ContainsKey(qso.ContactCall.ToString() + qso.ContactName.ToString()))
                 //{
                 //    // Chas and Chuck same guy, also AJ and Anthony
@@ -103,6 +104,14 @@ namespace W6OP.ContestLogAnalyzer
 
                 // query all the other logs for a match
                 // if there is a match, mark each QSO as valid.
+
+
+
+                // AM I ONLY CHECKING THE ONES I ALREADY MARKED INVALID HERE OR TRYING TO FIND NEW ONES TO INVALIDATE ????
+                // 
+
+
+
                 if (qso.Status == QSOStatus.InvalidQSO)
                 {
                     sentSerialNumber = qso.SentSerialNumber;
@@ -211,6 +220,8 @@ namespace W6OP.ContestLogAnalyzer
         /// I have a collection of logs where some the QSOs match and another collection
         /// where they don't match at all. Now I need a collection of QSOs that need review.
         /// These will be logs where at least one QSO is marked InValid.
+        /// 
+        /// SO WHAT AM I DOING HERE? Don't return anything or updtae anything from what I can see
         /// </summary>
         private void FindLogsToReview(List<ContestLog> contestLogList)
         {

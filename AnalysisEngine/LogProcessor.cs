@@ -127,14 +127,10 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (contestLog.QSOCollection == null)
                     {
-                        FailReason = "QSO collection is null";
+                        // may want to expand on this for a future report
+                        FailReason = "QSO collection is null"; // create enum
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
-                        // maybe have _InvalidLogs collection
-                    }
-                    else
-                    {
-                        contestLog.IsValidLog = true;
                     }
 
                     if (contestLog.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
@@ -277,7 +273,8 @@ namespace W6OP.ContestLogAnalyzer
                     NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent:")).DefaultIfEmpty("Name Sent: NONE").First(), 10, "NONE"),
                     // need to work on address
                     Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
-                    //SoapBox = lineList.Where(l => l.StartsWith("SOAPBOX:")).FirstOrDefault().Substring(7).Trim()
+                    SoapBox =  CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX: ''").First(), 7, ""),
+                    //SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).FirstOrDefault().Substring(7).Trim()),
                 };
 
 
@@ -330,7 +327,7 @@ namespace W6OP.ContestLogAnalyzer
                     NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent:")).DefaultIfEmpty("Name Sent: NONE").First(), 10, "NONE"),
                     // need to work on address
                     Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
-                    //SoapBox = lineList.Where(l => l.StartsWith("SOAPBOX:")).FirstOrDefault().Substring(7).Trim()
+                    SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX: ''").First(), 7, ""),
                 };
 
             return logHeader.FirstOrDefault();
@@ -359,7 +356,8 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Clean up the individual lines and create a QSO collection.
+        /// Clean up the individual lines and create a QSO collection. Ensure each QSO belongs to the 
+        /// specified session. Do some validation on each QSO, call sign format, session, duplicates.
         /// http://msdn.microsoft.com/en-us/library/bb513866.aspx
         /// </summary>
         /// <param name="lineList"></param>
@@ -402,20 +400,33 @@ namespace W6OP.ContestLogAnalyzer
 
                 qsoList = qso.ToList();
 
+                List<QSO> qsoList2 = qsoList.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
+                List<QSO> qsoList3 = qsoList.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+
                 MarkDuplicateQSOs(qsoList);
+
+                qsoList2 = qsoList.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
+                qsoList3 = qsoList.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
             }
             catch (Exception ex)
             {
-                if (OnErrorRaised != null)
-                {
-                    // send log name to look at later
-                    OnErrorRaised(ex.Message);
-                }
+                // send log name to look at later
+                OnErrorRaised?.Invoke(ex.Message);
             }
 
             return qsoList;
         }
 
+        /// <summary>
+        /// The Date and Time must match for the session specified.
+        /// Session 1 is 0000 - 0359
+        /// Session 2 is 1200 - 1559
+        /// Session 3 is 2000 - 2359
+        /// </summary>
+        /// <param name="session"></param>
+        /// <param name="qsoDate"></param>
+        /// <param name="qsoTime"></param>
+        /// <returns></returns>
         private bool CheckForvalidSession(Session session, string qsoDate, string qsoTime)
         {
             bool isValidSession = false;
@@ -441,48 +452,42 @@ namespace W6OP.ContestLogAnalyzer
                         isValidSession = true;
                     }
                     break;
-
+                default:
+                    isValidSession = false;
+                    break;
             }
-            // Session 1 is 0000 - 0359
-            // Session 2 is 1200 - 1559
-            // Session 3 is 2000 - 2359
-
-
-
+            
             return isValidSession;
         }
 
         /// <summary>
         /// http://stackoverflow.com/questions/16197290/checking-for-duplicates-in-a-list-of-objects-c-sharp
-        /// Find duplicate QSOs in a log and mark the as dupes
+        /// Find duplicate QSOs in a log and mark the as dupes. Be sure
+        /// to allow the first QSO, though.
         /// </summary>
         /// <param name="qsoList"></param>
         private void MarkDuplicateQSOs(List<QSO> qsoList)
         {
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.ContactName, x.QsoDate, x.QsoTime, x.Band })
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Band })
              .Where(g => g.Count() > 1)
              .Select(y => y.Key)
              .ToList();
 
             foreach (var duplicate in query)
             {
-                List<QSO> dupeList = qsoList.Where(item => item.ContactCall == duplicate.ContactCall && item.ContactName == duplicate.ContactName && item.QsoDate == duplicate.QsoDate && item.Band == duplicate.Band).ToList();
-                // now set dupe flag in each QSO
-                foreach (QSO qso in dupeList)
-                {
-                    qso.QSOIsDupe = true;
-                    //System.Xml.Serialization.XmlSerializer writer = new System.Xml.Serialization.XmlSerializer(typeof(QSO));
+                List<QSO> dupeList = qsoList.Where(item => item.ContactCall == duplicate.ContactCall && item.Band == duplicate.Band).ToList();
 
-                    //System.IO.StreamWriter file = new System.IO.StreamWriter(
-                    //    @"c:\temp\contestLog.xml");
-                    //writer.Serialize(file, qso);
-                    //file.Close();
+                if (dupeList.Any())
+                {
+                    // set all as dupes
+                    dupeList.Select(c => { c.QSOIsDupe = true; return c; }).ToList();
+                    // now reset the first one as not a dupe
+                    dupeList.First().QSOIsDupe = false;
                 }
             }
-
-
         }
 
+        //}
         /*
          *  http://stackoverflow.com/questions/18547354/c-sharp-linq-find-duplicates-in-list
          * var dupes = qsoList.GroupBy(x => new { x.ContactCall, x.ContactName, x.QsoDate, x.QsoTime,x.Band })

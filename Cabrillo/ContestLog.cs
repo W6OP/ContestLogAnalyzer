@@ -19,7 +19,7 @@ namespace W6OP.ContestLogAnalyzer
         /// Comments I add while I am anlyzing the logs. May be from when I first load
         /// or anywhere along the line.
         /// </summary>
-        public List<string> AnalyzerComments { get; set; }
+        public List<string> AnalyzerComments { get; set; } = new List<string>();
         //private List<string> _AnalyzerComments;
         //public List<string> AnalyzerComments
         //{
@@ -76,7 +76,7 @@ namespace W6OP.ContestLogAnalyzer
         /// List of all the QSOs in this log.
         /// </summary>
         //private List<QSO> _QSOCollection;
-        public List<QSO> QSOCollection { get; set; }
+        public List<QSO> QSOCollection { get; set; } = new List<QSO>();
         //{
         //    get { return _QSOCollection; }
         //    set { _QSOCollection = value; }
@@ -86,7 +86,7 @@ namespace W6OP.ContestLogAnalyzer
         /// List of QSOs from other logs that fully match QSOs in this log.
         /// </summary>
         //private List<QSO> _FullMatchQSOS;
-        public List<QSO> FullMatchQSOS { get; set; }
+        public List<QSO> FullMatchQSOS { get; set; } = new List<QSO>();
         //{
         //    get { return _FullMatchQSOS; }
         //    set { _FullMatchQSOS = value; }
@@ -96,7 +96,7 @@ namespace W6OP.ContestLogAnalyzer
         /// List of QSOs from other logs that match at least the call sign for this log.
         /// </summary>
         //private List<QSO> _PartialMatchQSOS;
-        public List<QSO> PartialMatchQSOS { get; set; }
+        public List<QSO> PartialMatchQSOS { get; set; } = new List<QSO>();
         //{
         //    get { return _PartialMatchQSOS; }
         //    set { _PartialMatchQSOS = value; }
@@ -105,7 +105,7 @@ namespace W6OP.ContestLogAnalyzer
         /// List of QSOs from other logs that do not match any QSOs in this log.
         /// </summary>
         //private List<QSO> _OtherQSOS;
-        public List<QSO> OtherQSOS { get; set; }
+        public List<QSO> OtherQSOS { get; set; } = new List<QSO>();
         //{
         //    get { return _OtherQSOS; }
         //    set { _OtherQSOS = value; }
@@ -114,7 +114,7 @@ namespace W6OP.ContestLogAnalyzer
         /// A list of all of the logs that have a reference to the call represented by this log.
         /// </summary>
         //private Dictionary<string, ContestLog> _MatchLogs;
-        public Dictionary<string, ContestLog> MatchLogs { get; set; }
+        public Dictionary<string, ContestLog> MatchLogs { get; set; } = new Dictionary<string, ContestLog>();
         //{
         //    get { return _MatchLogs; }
         //    set { _MatchLogs = value; }
@@ -124,7 +124,7 @@ namespace W6OP.ContestLogAnalyzer
         /// List of logs that do not have a QSO with this operator.
         /// </summary>
         //private Dictionary<string, ContestLog> _OtherLogs;
-        public Dictionary<string, ContestLog> OtherLogs { get; set; }
+        public Dictionary<string, ContestLog> OtherLogs { get; set; } = new Dictionary<string, ContestLog>();
         //{
         //    get { return _OtherLogs; }
         //    set { _OtherLogs = value; }
@@ -134,7 +134,7 @@ namespace W6OP.ContestLogAnalyzer
         /// Logs that need review.
         /// </summary>
         //private Dictionary<string, ContestLog> _ReviewLogs;
-        public Dictionary<string, ContestLog> ReviewLogs { get; set; }
+        public Dictionary<string, ContestLog> ReviewLogs { get; set; } = new Dictionary<string, ContestLog>();
         //{
         //    get { return _ReviewLogs; }
         //    set { _ReviewLogs = value; }
@@ -144,7 +144,7 @@ namespace W6OP.ContestLogAnalyzer
         /// Indicates the log meets the criteria necessary to be analysed.
         /// </summary>
         //private bool _IsValidLog;
-        public bool IsValidLog { get; set; }
+        public bool IsValidLog { get; set; } = true;
         //{
         //    get { return _IsValidLog; }
         //    set { _IsValidLog = value; }
@@ -186,6 +186,11 @@ namespace W6OP.ContestLogAnalyzer
                 ActualScore = _Multipliers * count;
             }
         }
+
+        /// <summary>
+        /// Holds the soap box comment the log owner made
+        /// </summary>
+        public string SoapBox { get; set; }
 
     } // end class
 }

@@ -495,10 +495,6 @@ namespace ContestLogAnalyzer
 
         #endregion
 
-
-
-
-
         /// <summary>
         /// Look at the QSOs and see if they are valid - how do you know?
         /// need all the QSOs from two lists

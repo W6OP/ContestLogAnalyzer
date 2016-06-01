@@ -16,7 +16,14 @@ namespace W6OP.ContestLogAnalyzer
         OpName,
         [Description("The sent serial number does not match")]
         Sent,
-        Other
+        [Description("This is a duplicate QSO")]
+        Duplicate,
+        [Description("The call sign is invalid")]
+        InvalidCall,
+        [Description("The session is incorrect")]
+        InvalidSession,
+        [Description("None")]
+        None
     }
 
     public enum QSOStatus
