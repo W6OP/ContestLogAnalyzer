@@ -32,6 +32,10 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
 
         /// <summary>
+        /// At this point we have already marked duplicate QSOs as invalid and
+        /// any in the wrong session or those with an incorrect call sign format invalid
+        /// any QSOs where the op name or call sign doesn't match have been maked invalid
+        /// 
         /// Open first log.
         /// look at first QSO.
         /// Do we already have a reference to it in our matching log collection, may have multiple
@@ -93,8 +97,8 @@ namespace W6OP.ContestLogAnalyzer
 
             foreach (QSO qso in contestLog.QSOCollection)
             {
-                List<QSO> qsoList = contestLog.QSOCollection.Where(q =>  q.Status == QSOStatus.InvalidQSO).ToList();
-                List<QSO> qsoList2 = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+                List<QSO> InvalidQsoList = contestLog.QSOCollection.Where(q =>  q.Status == QSOStatus.InvalidQSO).ToList();
+                List<QSO> ValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
                 //if (!_CallTable.ContainsKey(qso.ContactCall.ToString() + qso.ContactName.ToString()))
                 //{
                 //    // Chas and Chuck same guy, also AJ and Anthony

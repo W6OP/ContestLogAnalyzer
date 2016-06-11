@@ -1,4 +1,4 @@
-﻿namespace ContestLogAnalyzer
+﻿namespace W6OP.ContestLogAnalyzer
 {
     partial class MainForm
     {

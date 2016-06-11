@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>W6OP.ContestLogAnalyzer</RootNamespace>
     <AssemblyName>ContestLogAnalyzer</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -121,6 +122,10 @@
     <ProjectReference Include="..\LogAnalyzerCommon\LogAnalyzerCommon.csproj">
       <Project>{b033bebd-9c13-4ead-909a-5348cbdc3f30}</Project>
       <Name>LogAnalyzerCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PrintEngine\PrintEngine.csproj">
+      <Project>{0829f3ea-1697-4323-9fc6-e405634ecfab}</Project>
+      <Name>PrintEngine</Name>
     </ProjectReference>
     <ProjectReference Include="..\ScoreEngine\ScoreEngine.csproj">
       <Project>{93049529-661f-4bda-b057-7ba5e07d158f}</Project>

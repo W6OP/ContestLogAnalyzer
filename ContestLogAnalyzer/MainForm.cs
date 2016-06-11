@@ -5,9 +5,9 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using W6OP.ContestLogAnalyzer;
+using W6OP.PrintEngine;
 
-namespace ContestLogAnalyzer
+namespace W6OP.ContestLogAnalyzer
 {
     /// <summary>
     /// Select folder.
@@ -24,18 +24,24 @@ namespace ContestLogAnalyzer
         // Constants to define the folders required by the application
         private const string LOG_ANALYSER_WORKING_FOLDER_PATH = @"W6OP\LogAnalyser\Working";
         private const string LOG_ANALYSER_INSPECT_FOLDER_PATH = @"W6OP\LogAnalyser\Inspect";
+        private const string LOG_ANALYSER_REPORT_FOLDER_PATH = @"W6OP\LogAnalyser\Report";
 
         // set the actual folders to use
         private string _BaseWorkingFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_WORKING_FOLDER_PATH);
         private string _BaseInspectFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_INSPECT_FOLDER_PATH);
+        private string _BaseReportFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_REPORT_FOLDER_PATH);
+
         private string _WorkingFolder = null;
         private string _InspectFolder = null;
+        private string _ReportFolder = null;
 
         private List<ContestLog> _ContestLogs;
         private IEnumerable<System.IO.FileInfo> _LogFileList;
+
         private LogProcessor _LogProcessor;
         private LogAnalyzer _LogAnalyser;
         private ScoreCWOpen _CWOpen;
+        private PrintManager _PrintManager;
 
         private string _LogSourceFolder = null;
         private Session _Session = Session.Session_0;
@@ -57,7 +63,30 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void MainForm_Load(object sender, EventArgs e)
         {
-            _LogSourceFolder = TextBoxLogFolder.Text;
+            if (_LogProcessor == null)
+            {
+                _LogProcessor = new LogProcessor();
+                _LogProcessor.OnProgressUpdate += _LogProcessor_OnProgressUpdate;
+            }
+
+            if (_LogAnalyser == null)
+            {
+                _LogAnalyser = new LogAnalyzer();
+                _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
+            }
+
+            if (_CWOpen == null)
+            {
+                TabControlMain.SelectTab(TabPageScoring);
+                _CWOpen = new ScoreCWOpen();
+                _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
+            }
+
+            if (_PrintManager == null)
+            {
+                _PrintManager = new PrintManager();
+                _LogProcessor._PrintManager = _PrintManager;
+            }
 
             ComboBoxSelectContest.DataSource = Enum.GetValues(typeof(ContestName))
                 .Cast<ContestName>()
@@ -66,14 +95,6 @@ namespace ContestLogAnalyzer
 
             ComboBoxSelectContest.DisplayMember = "Value";
             ComboBoxSelectContest.ValueMember = "Key";
-
-            //ComboBoxSelectSession.DataSource = Enum.GetValues(typeof(Session))
-            //    .Cast<Session>()
-            //    .Select(p => new { Key = (int)p, Value = p.ToString() })
-            //    .ToList();
-
-            //ComboBoxSelectSession.DisplayMember = "Value";
-            //ComboBoxSelectSession.ValueMember = "Key";
 
             ComboBoxSelectSession.DataSource = Enum.GetValues(typeof(Session))
             .Cast<Enum>()
@@ -85,20 +106,6 @@ namespace ContestLogAnalyzer
             .ToList();
             ComboBoxSelectSession.DisplayMember = "Description";
             ComboBoxSelectSession.ValueMember = "value";
-
-            // may be able to eliminate this
-            //_WorkingFolder = _BaseWorkingFolder;
-            //_InspectFolder = _BaseInspectFolder;
-
-            //if (!Directory.Exists(_WorkingFolder))
-            //{
-            //    Directory.CreateDirectory(_WorkingFolder);
-            //}
-
-            //if (!Directory.Exists(_InspectFolder))
-            //{
-            //    Directory.CreateDirectory(_InspectFolder);
-            //}
         }
 
         #endregion
@@ -122,7 +129,7 @@ namespace ContestLogAnalyzer
         {
             LogFolderBrowserDialog.ShowDialog();
 
-            if (!String.IsNullOrEmpty(LogFolderBrowserDialog.SelectedPath))
+            if (!string.IsNullOrEmpty(LogFolderBrowserDialog.SelectedPath))
             {
                 _LogSourceFolder = LogFolderBrowserDialog.SelectedPath;
                 TextBoxLogFolder.Text = _LogSourceFolder;
@@ -145,10 +152,6 @@ namespace ContestLogAnalyzer
             TabControlMain.SelectTab(TabPageLogStatus);
             _LogFileList = null;
 
-            ///////////////////////////////////////////////////////////////////////////
-
-           
-
             // get the current session number - this is specific to CWOPEN and will need to be moved later
             Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out currentSession);
 
@@ -157,40 +160,28 @@ namespace ContestLogAnalyzer
                 MessageBox.Show("You must select the session to be scored", "Invalid Session", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return;
             }
-            //if (Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out _Session))
-            //{
-            //    //uint value = (uint)_Session;
-            //}
-
-            //ComboBoxSelectContest.Enabled = false;
-            //ComboBoxSelectSession.Enabled = false;
 
             if (currentSession !=_Session){
                 _Session = currentSession;
                 _WorkingFolder = Path.Combine(_BaseWorkingFolder, EnumHelper.GetDescription(_Session));
                 _InspectFolder = Path.Combine(_BaseInspectFolder, EnumHelper.GetDescription(_Session));
+                _ReportFolder = Path.Combine(_BaseReportFolder, EnumHelper.GetDescription(_Session));
             }
-            
 
             if (!Directory.Exists(Path.Combine(_WorkingFolder, EnumHelper.GetDescription(_Session))))
             {
                 Directory.CreateDirectory(_WorkingFolder);
             }
-           
 
             if (!Directory.Exists(Path.Combine(_InspectFolder, EnumHelper.GetDescription(_Session))))
             {
                 Directory.CreateDirectory(_InspectFolder);
             }
-            
-            ////////////////////////////////////////////////////////////
 
-            if (_LogProcessor == null)
+            if (!Directory.Exists(Path.Combine(_ReportFolder, EnumHelper.GetDescription(_Session))))
             {
-                _LogProcessor = new LogProcessor();
-                _LogProcessor.OnProgressUpdate += _LogProcessor_OnProgressUpdate;
+                Directory.CreateDirectory(_ReportFolder);
             }
-
 
             if (String.IsNullOrEmpty(_LogSourceFolder))
             {
@@ -200,11 +191,15 @@ namespace ContestLogAnalyzer
 
             if (_LogSourceFolder != _WorkingFolder)
             {
-                _LogProcessor.LogFolder = _LogSourceFolder;
+                _LogProcessor.LogSourceFolder = _LogSourceFolder;
                 CopyLogFilesToWorkingFolder();
             }
 
-            _LogProcessor.LogFolder = _WorkingFolder;
+            _PrintManager.InspectionFolder = _InspectFolder;
+            _PrintManager.WorkingFolder = _WorkingFolder;
+            _PrintManager.ReportFolder = _ReportFolder;
+
+            _LogProcessor.WorkingFolder = _WorkingFolder;
             _LogProcessor.InspectionFolder = _InspectFolder;
 
             LoadLogFiles();
@@ -274,7 +269,7 @@ namespace ContestLogAnalyzer
 
                 ProgressBarLoad.Maximum = fileCount;
 
-                UpdateListViewLoad(fileCount.ToString() + " logs available.", "", false);
+                UpdateListViewLoad(fileCount.ToString() + " logs total.", "", false);
 
                 Cursor = Cursors.WaitCursor;
                 BackgroundWorkerLoadLogs.RunWorkerAsync(fileCount);
@@ -378,12 +373,6 @@ namespace ContestLogAnalyzer
             ProgressBarLoad.Maximum = 0;
             ProgressBarLoad.Maximum = _ContestLogs.Count;
 
-            if (_LogAnalyser == null)
-            {
-                _LogAnalyser = new LogAnalyzer();
-                _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
-            }
-
             BackgroundWorkerAnalzeLogs.RunWorkerAsync();
         }
 
@@ -441,13 +430,6 @@ namespace ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonScoreLogs_Click(object sender, EventArgs e)
         {
-            if (_CWOpen == null)
-            {
-                TabControlMain.SelectTab(TabPageScoring);
-                _CWOpen = new ScoreCWOpen();
-                _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
-            }
-
             UpdateListViewScore(new ContestLog(), true);
 
             Cursor = Cursors.WaitCursor;

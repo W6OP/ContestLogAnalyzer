@@ -85,6 +85,32 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        public bool NameIsValid
+        {
+            set
+            {
+                if (value == false)
+                {
+                    if (!RejectReasons.ContainsKey(RejectReason.OpName))
+                    {
+                        _RejectReasons.Add(RejectReason.OpName, QSOStatus.InvalidQSO);
+                        Status = QSOStatus.InvalidQSO;
+                    }
+                }
+                else
+                {
+                    if (RejectReasons.ContainsKey(RejectReason.OpName))
+                    {
+                        RejectReasons.Remove(RejectReason.OpName);
+                        if (RejectReasons.Count == 0)
+                        {
+                            Status = QSOStatus.ValidQSO;
+                        }
+                    }
+                }
+            }
+        }
+
         public bool SessionIsValid
         {
             set

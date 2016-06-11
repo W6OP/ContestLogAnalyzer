@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using W6OP.PrintEngine;
 
 namespace W6OP.ContestLogAnalyzer
 {
@@ -17,18 +18,22 @@ namespace W6OP.ContestLogAnalyzer
         public event ProgressUpdate OnProgressUpdate;
         public event ErrorRaised OnErrorRaised;
 
+        public PrintManager _PrintManager = null;
+
         public string FailReason { get; set; }
        
-        public string LogFolder { get; set; }
+       public string LogSourceFolder { get; set; }
       
         public string InspectionFolder { get; set; }
+
+        public string WorkingFolder { get; set; }
        
         /// <summary>
         /// Default constructor.
         /// </summary>
         public LogProcessor()
         {
-
+            //_PrintManager = new PrintManager();
         }
 
         /// <summary>
@@ -38,7 +43,7 @@ namespace W6OP.ContestLogAnalyzer
         public Int32 BuildFileList(Session session, out IEnumerable<System.IO.FileInfo> logFileList)
         {
             // Take a snapshot of the file system. http://msdn.microsoft.com/en-us/library/bb546159.aspx
-            DirectoryInfo dir = new DirectoryInfo(LogFolder);
+            DirectoryInfo dir = new DirectoryInfo(LogSourceFolder);
 
             // this is where I left off - TEST IT
             string fileNameFormat = "*_" + ((uint)session).ToString() + ".log";
@@ -61,6 +66,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// See if there is a header and a footer
         /// load and process the header.
+        /// Collect all of the QSOs for each log
         /// </summary>
         /// <param name="fileInfo"></param>
         public string BuildContestLog(FileInfo fileInfo, List<ContestLog> contestLogs, Session session)
@@ -87,6 +93,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim();
 
+                    // build the header for the version of the log
                     if (version != null && version.Length > 2)
                     {
                         if (version.Substring(0, 1) == "2")
@@ -106,6 +113,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
 
 
+                    // make sure minimum amout of information is correct
                     if (contestLog.LogHeader != null && AnalyzeHeader(contestLog, out reason) == true)
                     {
                         contestLog.LogHeader.HeaderIsValid = true;
@@ -122,8 +130,9 @@ namespace W6OP.ContestLogAnalyzer
                     //http://stackoverflow.com/questions/454601/how-to-count-duplicates-in-list-with-linq
 
                     // this statement says to copy all QSO lines
+                    // read all the QSOs in and mark any that are duplicates, bad call format, incorrect session
                     lineList = lineList.Where(x => x.IndexOf("QSO:", 0) != -1).ToList();
-                    contestLog.QSOCollection = CollectQSOs(lineList, session);
+                    contestLog.QSOCollection = CollectQSOs(lineList, session, contestLog.LogHeader.NameSent, contestLog.LogHeader.OperatorCallSign);
 
                     if (contestLog.QSOCollection == null)
                     {
@@ -160,33 +169,37 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="fileInfo"></param>
         private void MoveFileToInpectFolder(string fileName)
         {
+            string logFileName = null;
             string inspectFileName = null;
-            string inspectReasonFileName = null;
-
+            
             // move the file to inspection folder
-            inspectFileName = Path.Combine(InspectionFolder, fileName);
-            inspectReasonFileName = Path.Combine(InspectionFolder, fileName + ".txt");
+            inspectFileName = Path.Combine(InspectionFolder, fileName + ".txt");
+            logFileName = Path.Combine(InspectionFolder, fileName);
+
+            if (File.Exists(logFileName))
+            {
+                File.Delete(logFileName);
+            }
 
             if (File.Exists(inspectFileName))
             {
                 File.Delete(inspectFileName);
             }
 
-            if (File.Exists(inspectReasonFileName))
+            if (File.Exists(Path.Combine(WorkingFolder, fileName)))
             {
-                File.Delete(inspectReasonFileName);
+                File.Move(Path.Combine(WorkingFolder, fileName), logFileName);
             }
 
-            if (File.Exists(Path.Combine(LogFolder, fileName)))
-            {
-                File.Move(Path.Combine(LogFolder, fileName), inspectFileName);
-            }
+
+            _PrintManager.PrintInspectionReport(fileName + ".txt", FailReason);
+
 
             // create a text file with the reason for the rejection
-            using (StreamWriter sw = File.CreateText(inspectReasonFileName))
-            {
-                sw.WriteLine(FailReason);
-            }
+            //using (StreamWriter sw = File.CreateText(inspectReasonFileName))
+            //{
+            //    sw.WriteLine(FailReason);
+            //}
         }
 
         /// <summary>
@@ -362,7 +375,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="lineList"></param>
         /// <returns></returns>
-        private List<QSO> CollectQSOs(List<string> lineList, Session session)
+        private List<QSO> CollectQSOs(List<string> lineList, Session session, string name, string call)
         {
             List<QSO> qsoList = null;
             List<string> temp = new List<string>();
@@ -400,13 +413,12 @@ namespace W6OP.ContestLogAnalyzer
 
                 qsoList = qso.ToList();
 
-                List<QSO> qsoList2 = qsoList.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
-                List<QSO> qsoList3 = qsoList.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
-
                 MarkDuplicateQSOs(qsoList);
 
-                qsoList2 = qsoList.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
-                qsoList3 = qsoList.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+                MarkIncorrectCallSigns(qsoList, call.ToUpper());
+
+                MarkIncorrectName(qsoList, name.ToUpper());
+
             }
             catch (Exception ex)
             {
@@ -415,6 +427,36 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return qsoList;
+        }
+
+        /// <summary>
+        /// Mark all QSOs that don't have the correct name sent as invalid.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        /// <param name="name"></param>
+        private void MarkIncorrectName(List<QSO> qsoList, string name)
+        {
+            List<QSO> qsos = qsoList.Where(q => q.OperatorName.ToUpper() != name).ToList();
+
+            if (qsos.Any())
+            {
+                qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Mark all QSOs where the call sign doesn't match the log call sign as invalid.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        /// <param name="call"></param>
+        private void MarkIncorrectCallSigns(List<QSO> qsoList, string call)
+        {
+            List<QSO> qsos = qsoList.Where(q => q.OperatorCall.ToUpper() != call).ToList();
+
+            if (qsos.Any())
+            {
+                qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
+            }
         }
 
         /// <summary>
@@ -463,7 +505,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// http://stackoverflow.com/questions/16197290/checking-for-duplicates-in-a-list-of-objects-c-sharp
         /// Find duplicate QSOs in a log and mark the as dupes. Be sure
-        /// to allow the first QSO, though.
+        /// to allow the first QSO to be marked as valid, though.
         /// </summary>
         /// <param name="qsoList"></param>
         private void MarkDuplicateQSOs(List<QSO> qsoList)
