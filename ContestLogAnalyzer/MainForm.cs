@@ -100,7 +100,8 @@ namespace W6OP.ContestLogAnalyzer
             .Cast<Enum>()
             .Select(value => new
             {
-                (Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()), typeof(DescriptionAttribute)) as DescriptionAttribute).Description, value
+                (Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()), typeof(DescriptionAttribute)) as DescriptionAttribute).Description,
+                value
             })
             .OrderBy(item => item.value)
             .ToList();
@@ -136,9 +137,17 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        private void ComboBoxSelectSession_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // get the current session number - this is specific to CWOPEN and will need to be moved later
+            Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out _Session);
+        }
+
         #endregion
 
         #region Load Log Files
+
+
 
         /// <summary>
         /// Handle the click event for the ButtonLoadLogs button.
@@ -147,62 +156,107 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonLoadLogs_Click(object sender, EventArgs e)
         {
-            Session currentSession = Session.Session_0;
+            //Session currentSession = Session.Session_0;
+            string session = null;
 
             TabControlMain.SelectTab(TabPageLogStatus);
             _LogFileList = null;
 
-            // get the current session number - this is specific to CWOPEN and will need to be moved later
-            Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out currentSession);
-
-            if (currentSession == Session.Session_0)
+            // check the current session number - this is specific to CWOPEN and will need to be moved later
+            if (_Session == Session.Session_0)
             {
                 MessageBox.Show("You must select the session to be scored", "Invalid Session", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return;
             }
 
-            if (currentSession !=_Session){
-                _Session = currentSession;
-                _WorkingFolder = Path.Combine(_BaseWorkingFolder, EnumHelper.GetDescription(_Session));
-                _InspectFolder = Path.Combine(_BaseInspectFolder, EnumHelper.GetDescription(_Session));
-                _ReportFolder = Path.Combine(_BaseReportFolder, EnumHelper.GetDescription(_Session));
-            }
+            session = EnumHelper.GetDescription(_Session);
+            _WorkingFolder = Path.Combine(_BaseWorkingFolder, session);
+            _InspectFolder = Path.Combine(_BaseInspectFolder, session);
+            _ReportFolder = Path.Combine(_BaseReportFolder, session);
 
-            if (!Directory.Exists(Path.Combine(_WorkingFolder, EnumHelper.GetDescription(_Session))))
+            LoadLogFiles(session);
+        }
+
+        /// <summary>
+        /// Get a list and count of the files to be uploaded. Pass them off to another thread
+        /// to preprocess the logs.
+        /// </summary>
+        private void LoadLogFiles(string session)
+        {
+            Int32 fileCount = 0;
+
+            try
             {
-                Directory.CreateDirectory(_WorkingFolder);
-            }
+                ProgressBarLoad.Maximum = 0;
+                UpdateListViewLoad("", "", true);
+                UpdateListViewAnalysis("", "", true);
+                UpdateListViewScore(new ContestLog(), true);
+                ButtonStartAnalysis.Enabled = false;
 
-            if (!Directory.Exists(Path.Combine(_InspectFolder, EnumHelper.GetDescription(_Session))))
+                _ContestLogs = new List<ContestLog>();
+
+                // create folders if necessary
+                if (!Directory.Exists(Path.Combine(_WorkingFolder, session)))
+                {
+                    Directory.CreateDirectory(_WorkingFolder);
+                }
+
+                if (!Directory.Exists(Path.Combine(_InspectFolder, session)))
+                {
+                    Directory.CreateDirectory(_InspectFolder);
+                }
+
+                if (!Directory.Exists(Path.Combine(_ReportFolder, session)))
+                {
+                    Directory.CreateDirectory(_ReportFolder);
+                }
+
+                if (String.IsNullOrEmpty(_LogSourceFolder))
+                {
+                    ButtonSelectFolder.PerformClick();
+                }
+
+                // initialize other modules
+                if (_LogSourceFolder != _WorkingFolder)
+                {
+                    _LogProcessor.LogSourceFolder = _LogSourceFolder;
+                    // copy eveything to working folder so we don't modify originals
+                    CopyLogFilesToWorkingFolder();
+                }
+
+                _PrintManager.InspectionFolder = _InspectFolder;
+                _PrintManager.WorkingFolder = _WorkingFolder;
+                _PrintManager.ReportFolder = _ReportFolder;
+
+                _LogProcessor.WorkingFolder = _WorkingFolder;
+                _LogProcessor.InspectionFolder = _InspectFolder;
+
+
+                if (_LogFileList == null)
+                {
+                    fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
+                }
+
+                if (_LogFileList.Cast<object>().Count() == 0)
+                {
+                    fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
+                }
+                else
+                {
+                    fileCount = _LogFileList.Cast<object>().Count();
+                }
+
+                ProgressBarLoad.Maximum = fileCount;
+
+                UpdateListViewLoad(fileCount.ToString() + " logs total.", "", false);
+
+                Cursor = Cursors.WaitCursor;
+                BackgroundWorkerLoadLogs.RunWorkerAsync(fileCount);
+            }
+            catch (Exception)
             {
-                Directory.CreateDirectory(_InspectFolder);
+                MessageBox.Show("Load or Pre-process Log Error", "Load and Pre-process Logs", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
-
-            if (!Directory.Exists(Path.Combine(_ReportFolder, EnumHelper.GetDescription(_Session))))
-            {
-                Directory.CreateDirectory(_ReportFolder);
-            }
-
-            if (String.IsNullOrEmpty(_LogSourceFolder))
-            {
-                ButtonSelectFolder.PerformClick();
-            }
-
-
-            if (_LogSourceFolder != _WorkingFolder)
-            {
-                _LogProcessor.LogSourceFolder = _LogSourceFolder;
-                CopyLogFilesToWorkingFolder();
-            }
-
-            _PrintManager.InspectionFolder = _InspectFolder;
-            _PrintManager.WorkingFolder = _WorkingFolder;
-            _PrintManager.ReportFolder = _ReportFolder;
-
-            _LogProcessor.WorkingFolder = _WorkingFolder;
-            _LogProcessor.InspectionFolder = _InspectFolder;
-
-            LoadLogFiles();
         }
 
         /// <summary>
@@ -232,51 +286,6 @@ namespace W6OP.ContestLogAnalyzer
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "File Copy Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        /// <summary>
-        /// Get a list and count of the files to be uploaded. Pass them off to another thread
-        /// to preprocess the logs.
-        /// </summary>
-        private void LoadLogFiles()
-        {
-            Int32 fileCount = 0;
-
-            try
-            {
-                ProgressBarLoad.Maximum = 0;
-                UpdateListViewLoad("", "", true);
-                UpdateListViewAnalysis("", "", true);
-                UpdateListViewScore(new ContestLog(), true);
-                ButtonStartAnalysis.Enabled = false;
-
-                _ContestLogs = new List<ContestLog>();
-
-                if (_LogFileList == null)
-                {
-                    fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
-                }
-
-                if (_LogFileList.Cast<object>().Count() == 0)
-                {
-                    fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
-                }
-                else
-                {
-                    fileCount = _LogFileList.Cast<object>().Count();
-                }
-
-                ProgressBarLoad.Maximum = fileCount;
-
-                UpdateListViewLoad(fileCount.ToString() + " logs total.", "", false);
-
-                Cursor = Cursors.WaitCursor;
-                BackgroundWorkerLoadLogs.RunWorkerAsync(fileCount);
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("Load or Pre-process Log Error", "Load and Pre-process Logs", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 

@@ -341,6 +341,7 @@
             this.ComboBoxSelectSession.Name = "ComboBoxSelectSession";
             this.ComboBoxSelectSession.Size = new System.Drawing.Size(90, 23);
             this.ComboBoxSelectSession.TabIndex = 16;
+            this.ComboBoxSelectSession.SelectedIndexChanged += new System.EventHandler(this.ComboBoxSelectSession_SelectedIndexChanged);
             // 
             // label2
             // 
