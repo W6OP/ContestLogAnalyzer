@@ -24,7 +24,6 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// This will probably go on another thread.
         /// Start processing individual logs.
         /// Find all of the logs that have the log owners call sign in them.
         /// Find all the logs that do not have a reference to this log.
@@ -47,20 +46,25 @@ namespace W6OP.ContestLogAnalyzer
         public void PreProcessContestLogs(List<ContestLog> contestLogList)
         {
             string call = null;
+            string name = null;
             Int32 count = 0; // QSOs processed?
             Int32 progress = 0;
 
             foreach (ContestLog contestLog in contestLogList)
             {
                 call = contestLog.LogOwner;
+                name = contestLog.LogHeader.NameSent;
 
                 progress++;
 
                 // ReportProgress with Callsign
-                if (OnProgressUpdate != null)
-                {
-                    OnProgressUpdate(call, contestLog.QSOCollection.Count.ToString(), progress);
-                }
+                OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), progress);
+
+                MarkDuplicateQSOs(contestLog.QSOCollection);
+
+                MarkIncorrectCallSigns(contestLog.QSOCollection, call);
+
+                MarkIncorrectName(contestLog.QSOCollection, name.ToUpper());
 
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
@@ -70,6 +74,63 @@ namespace W6OP.ContestLogAnalyzer
 
             // now I should every log with it's matching QSOs, QSOs to be checked and all the other logs with a reference
             FindLogsToReview(contestLogList);
+        }
+
+        /// <summary>
+        /// Mark all QSOs that don't have the correct name sent as invalid.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        /// <param name="name"></param>
+        private void MarkIncorrectName(List<QSO> qsoList, string name)
+        {
+            List<QSO> qsos = qsoList.Where(q => q.OperatorName.ToUpper() != name).ToList();
+
+            if (qsos.Any())
+            {
+                qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Mark all QSOs where the call sign doesn't match the log call sign as invalid.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        /// <param name="call"></param>
+        private void MarkIncorrectCallSigns(List<QSO> qsoList, string call)
+        {
+            List<QSO> qsos = qsoList.Where(q => q.OperatorCall.ToUpper() != call).ToList();
+
+            if (qsos.Any())
+            {
+                qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
+            }
+        }
+
+        /// <summary>
+        /// http://stackoverflow.com/questions/16197290/checking-for-duplicates-in-a-list-of-objects-c-sharp
+        /// Find duplicate QSOs in a log and mark the as dupes. Be sure
+        /// to allow the first QSO to be marked as valid, though.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        private void MarkDuplicateQSOs(List<QSO> qsoList)
+        {
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Band })
+             .Where(g => g.Count() > 1)
+             .Select(y => y.Key)
+             .ToList();
+
+            foreach (var duplicate in query)
+            {
+                List<QSO> dupeList = qsoList.Where(item => item.ContactCall == duplicate.ContactCall && item.Band == duplicate.Band).ToList();
+
+                if (dupeList.Any())
+                {
+                    // set all as dupes
+                    dupeList.Select(c => { c.QSOIsDupe = true; return c; }).ToList();
+                    // now reset the first one as not a dupe
+                    dupeList.First().QSOIsDupe = false;
+                }
+            }
         }
 
         /// <summary>
@@ -97,6 +158,11 @@ namespace W6OP.ContestLogAnalyzer
 
             foreach (QSO qso in contestLog.QSOCollection)
             {
+
+               
+
+
+
                 List<QSO> InvalidQsoList = contestLog.QSOCollection.Where(q =>  q.Status == QSOStatus.InvalidQSO).ToList();
                 List<QSO> ValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
                 //if (!_CallTable.ContainsKey(qso.ContactCall.ToString() + qso.ContactName.ToString()))

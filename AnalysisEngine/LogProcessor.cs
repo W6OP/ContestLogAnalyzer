@@ -413,11 +413,11 @@ namespace W6OP.ContestLogAnalyzer
 
                 qsoList = qso.ToList();
 
-                MarkDuplicateQSOs(qsoList);
+                //MarkDuplicateQSOs(qsoList);
 
-                MarkIncorrectCallSigns(qsoList, call.ToUpper());
+                //MarkIncorrectCallSigns(qsoList, call.ToUpper());
 
-                MarkIncorrectName(qsoList, name.ToUpper());
+                //MarkIncorrectName(qsoList, name.ToUpper());
 
             }
             catch (Exception ex)
@@ -429,35 +429,35 @@ namespace W6OP.ContestLogAnalyzer
             return qsoList;
         }
 
-        /// <summary>
-        /// Mark all QSOs that don't have the correct name sent as invalid.
-        /// </summary>
-        /// <param name="qsoList"></param>
-        /// <param name="name"></param>
-        private void MarkIncorrectName(List<QSO> qsoList, string name)
-        {
-            List<QSO> qsos = qsoList.Where(q => q.OperatorName.ToUpper() != name).ToList();
+        ///// <summary>
+        ///// Mark all QSOs that don't have the correct name sent as invalid.
+        ///// </summary>
+        ///// <param name="qsoList"></param>
+        ///// <param name="name"></param>
+        //private void MarkIncorrectName(List<QSO> qsoList, string name)
+        //{
+        //    List<QSO> qsos = qsoList.Where(q => q.OperatorName.ToUpper() != name).ToList();
 
-            if (qsos.Any())
-            {
-                qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
-            }
-        }
+        //    if (qsos.Any())
+        //    {
+        //        qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
+        //    }
+        //}
 
-        /// <summary>
-        /// Mark all QSOs where the call sign doesn't match the log call sign as invalid.
-        /// </summary>
-        /// <param name="qsoList"></param>
-        /// <param name="call"></param>
-        private void MarkIncorrectCallSigns(List<QSO> qsoList, string call)
-        {
-            List<QSO> qsos = qsoList.Where(q => q.OperatorCall.ToUpper() != call).ToList();
+        ///// <summary>
+        ///// Mark all QSOs where the call sign doesn't match the log call sign as invalid.
+        ///// </summary>
+        ///// <param name="qsoList"></param>
+        ///// <param name="call"></param>
+        //private void MarkIncorrectCallSigns(List<QSO> qsoList, string call)
+        //{
+        //    List<QSO> qsos = qsoList.Where(q => q.OperatorCall.ToUpper() != call).ToList();
 
-            if (qsos.Any())
-            {
-                qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
-            }
-        }
+        //    if (qsos.Any())
+        //    {
+        //        qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
+        //    }
+        //}
 
         /// <summary>
         /// The Date and Time must match for the session specified.
@@ -502,32 +502,32 @@ namespace W6OP.ContestLogAnalyzer
             return isValidSession;
         }
 
-        /// <summary>
-        /// http://stackoverflow.com/questions/16197290/checking-for-duplicates-in-a-list-of-objects-c-sharp
-        /// Find duplicate QSOs in a log and mark the as dupes. Be sure
-        /// to allow the first QSO to be marked as valid, though.
-        /// </summary>
-        /// <param name="qsoList"></param>
-        private void MarkDuplicateQSOs(List<QSO> qsoList)
-        {
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Band })
-             .Where(g => g.Count() > 1)
-             .Select(y => y.Key)
-             .ToList();
+        ///// <summary>
+        ///// http://stackoverflow.com/questions/16197290/checking-for-duplicates-in-a-list-of-objects-c-sharp
+        ///// Find duplicate QSOs in a log and mark the as dupes. Be sure
+        ///// to allow the first QSO to be marked as valid, though.
+        ///// </summary>
+        ///// <param name="qsoList"></param>
+        //private void MarkDuplicateQSOs(List<QSO> qsoList)
+        //{
+        //    var query = qsoList.GroupBy(x => new { x.ContactCall, x.Band })
+        //     .Where(g => g.Count() > 1)
+        //     .Select(y => y.Key)
+        //     .ToList();
 
-            foreach (var duplicate in query)
-            {
-                List<QSO> dupeList = qsoList.Where(item => item.ContactCall == duplicate.ContactCall && item.Band == duplicate.Band).ToList();
+        //    foreach (var duplicate in query)
+        //    {
+        //        List<QSO> dupeList = qsoList.Where(item => item.ContactCall == duplicate.ContactCall && item.Band == duplicate.Band).ToList();
 
-                if (dupeList.Any())
-                {
-                    // set all as dupes
-                    dupeList.Select(c => { c.QSOIsDupe = true; return c; }).ToList();
-                    // now reset the first one as not a dupe
-                    dupeList.First().QSOIsDupe = false;
-                }
-            }
-        }
+        //        if (dupeList.Any())
+        //        {
+        //            // set all as dupes
+        //            dupeList.Select(c => { c.QSOIsDupe = true; return c; }).ToList();
+        //            // now reset the first one as not a dupe
+        //            dupeList.First().QSOIsDupe = false;
+        //        }
+        //    }
+        //}
 
         //}
         /*
