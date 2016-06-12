@@ -66,6 +66,10 @@ namespace W6OP.ContestLogAnalyzer
 
                 MarkIncorrectName(contestLog.QSOCollection, name.ToUpper());
 
+                // MarkBustedCalls
+
+                MarkMultipliers(contestLog.QSOCollection);
+
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
                     count = CollateLogs(contestLogList, contestLog, count);
@@ -92,7 +96,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Mark all QSOs where the call sign doesn't match the log call sign as invalid.
+        /// Mark all QSOs where the operator call sign doesn't match the log call sign as invalid.
         /// </summary>
         /// <param name="qsoList"></param>
         /// <param name="call"></param>
@@ -134,6 +138,33 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
+        /// Find all the calls for the session. For each call see if it is valid.
+        /// If it is a valid call set it as a multiplier.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        private void MarkMultipliers(List<QSO> qsoList)
+        {
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Status })
+             .Where(g => g.Count() > 1)
+             .Select(y => y.Key)
+             .ToList();
+
+
+            // THIS NEEDS TESTING !!!
+
+            foreach (var qso in query)
+            {
+                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Status == QSOStatus.ValidQSO).ToList();
+
+                if (multiList.Any())
+                {
+                    // now set the first one as a multiplier
+                    multiList.First().IsMultiplier = true;
+                }
+            }
+        }
+
+        /// <summary>
         /// This is the first pass and I am mostly interested in collating the logs.
         /// For each QSO in the log build a collection of all of the logs that have at least one exact match.
         /// Next, build a collection of all of the logs that have a call sign match but where the other information
@@ -159,11 +190,11 @@ namespace W6OP.ContestLogAnalyzer
             foreach (QSO qso in contestLog.QSOCollection)
             {
 
-               
 
 
 
-                List<QSO> InvalidQsoList = contestLog.QSOCollection.Where(q =>  q.Status == QSOStatus.InvalidQSO).ToList();
+
+                List<QSO> InvalidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
                 List<QSO> ValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
                 //if (!_CallTable.ContainsKey(qso.ContactCall.ToString() + qso.ContactName.ToString()))
                 //{
