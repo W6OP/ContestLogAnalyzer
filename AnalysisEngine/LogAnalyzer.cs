@@ -47,11 +47,13 @@ namespace W6OP.ContestLogAnalyzer
         {
             string call = null;
             string name = null;
-            Int32 count = 0; // QSOs processed?
+            //Int32 count = 0; // QSOs processed?
             Int32 progress = 0;
+
 
             foreach (ContestLog contestLog in contestLogList)
             {
+                List<QSO> qsoList;
                 call = contestLog.LogOwner;
                 name = contestLog.LogHeader.NameSent;
 
@@ -60,24 +62,110 @@ namespace W6OP.ContestLogAnalyzer
                 // ReportProgress with Callsign
                 OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), progress);
 
-                MarkDuplicateQSOs(contestLog.QSOCollection);
-
-                MarkIncorrectCallSigns(contestLog.QSOCollection, call);
-
-                MarkIncorrectName(contestLog.QSOCollection, name.ToUpper());
-
-                // MarkBustedCalls
-
-                MarkMultipliers(contestLog.QSOCollection);
-
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
-                    count = CollateLogs(contestLogList, contestLog, count);
+                    qsoList = contestLog.QSOCollection;
+
+                    MarkDuplicateQSOs(qsoList);
+
+                    MarkIncorrectCallSigns(qsoList, call);
+
+                    MarkIncorrectName(qsoList, name.ToUpper());
+
+                    MatchQSOs(qsoList, contestLogList, call, name);
+
+                    MarkMultipliers(qsoList);
+
+
+                    // count = CollateLogs(contestLogList, contestLog, count);
+                }
+                else
+                {
+                    // what do I do now?
                 }
             }
 
             // now I should every log with it's matching QSOs, QSOs to be checked and all the other logs with a reference
             FindLogsToReview(contestLogList);
+        }
+
+        /// <summary>
+        /// This may not be the correct place for this.
+        /// Need to search the other log that matches this QSO
+        /// Check the serial number and the callsign, if either do not match then the call is busted
+        /// 
+        /// 1. Get the contact call - does a log exist? if not then not busted (for now) - could search through other logs to see if dx was worked by anyone else
+        /// Could also search all other logs using date/time and serial number and name to be more thorough
+        /// 
+        /// 2. Log exists, search for op callsign, if not found search for serial number and compare band, mode, date/time
+        ///
+        /// 
+        /// </summary>
+        /// <param name="qsoList"></param>
+        private void MatchQSOs(List<QSO> qsoList, List<ContestLog> contestLogList, string operatorCall, string sentName)
+        {
+            //List<ContestLog> matchingLogs = new List<ContestLog>();
+            ContestLog contestLog = null;
+            QSO matchQSO = null;
+
+            // only look at valid QSOs
+            List<QSO> validQsoList = qsoList.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+            foreach (QSO validQSO in validQsoList)
+            {
+                // get the log that matches this QSO
+                contestLog = (ContestLog)contestLogList.FirstOrDefault(q => q.LogOwner == validQSO.ContactCall);
+                if (contestLog != null)
+                {   // now see if a QSO matches this QSO
+                    // need date time still
+
+                    matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == validQSO.Band && q.OperatorName == validQSO.ContactName &&
+                                q.SentSerialNumber == validQSO.ReceivedSerialNumber);
+
+                    if (matchQSO != null)
+                    {
+                        // now check the date time
+                        TimeSpan ts = validQSO.QSODateTime.Subtract(matchQSO.QSODateTime);
+                        if (ts.Minutes > 5)
+                        {
+                            validQSO.Status = QSOStatus.InvalidQSO;
+                            validQSO.RejectReasons.Add(RejectReason.NoQSOMatch, QSOStatus.InvalidQSO);
+                        }
+                    }
+                    else
+                    {
+                        validQSO.Status = QSOStatus.InvalidQSO;
+                        validQSO.RejectReasons.Add(RejectReason.NoQSOMatch, QSOStatus.InvalidQSO);
+                    }
+                }
+                else
+                {
+                    // can't find a matching log
+                    // need to see if call is in any logs
+                }
+            }
+
+
+
+
+
+            // get the first QSO - lets say W1XXX
+            // look for the log for W1XXX
+            // List<QSO> validQsoList = qsoList.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+            //matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => String.Equals(a.ContactCall, operatorCall, StringComparison.CurrentCultureIgnoreCase) && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && String.Equals(a.ContactName, sentName, StringComparison.CurrentCultureIgnoreCase) && a.Status == QSOStatus.InvalidQSO)).ToList());
+
+
+            // this might be tough
+            // for each QSO I need to query every other log for an exact match of name and serial number - if match then good and quit
+            // if no match then search by serial number, band, mode, date/time? (may not be exact)
+            // if no match then search by sent name, band, mode, date/time? (may not be exact)
+
+
+            // for each QSO find the matching log
+            //foreach (ContestLog contestLog in contestLogList)
+            //{
+            //    // List<QSO> qsoList = contestLog.QSOCollection.Where(q => q.ContactCall == operatorCall && q.ReceivedSerialNumber == sent && q.Band == band && q.ContactName == sentName && q.Status == QSOStatus.InvalidQSO).ToList(); 
+            //    //matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => String.Equals(a.ContactCall, operatorCall, StringComparison.CurrentCultureIgnoreCase) && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && String.Equals(a.ContactName, sentName, StringComparison.CurrentCultureIgnoreCase) && a.Status == QSOStatus.InvalidQSO)).ToList());
+            //}
         }
 
         /// <summary>
@@ -163,6 +251,8 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
         }
+
+
 
         /// <summary>
         /// This is the first pass and I am mostly interested in collating the logs.

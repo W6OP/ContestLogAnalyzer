@@ -30,7 +30,7 @@ namespace W6OP.ContestLogAnalyzer
         public QSOStatus Status { get; set; } = QSOStatus.ValidQSO;
 
         /// <summary>
-        ///
+        ///Is this a duplicate QSO
         /// </summary>
         public bool QSOIsDupe
         {
@@ -58,6 +58,9 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// The operators call sign is invalid for this QSO
+        /// </summary>
         public bool CallIsValid
         {
             //get { return CallIsValid; }
@@ -85,6 +88,9 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// The operators name does not match for this QSO
+        /// </summary>
         public bool NameIsValid
         {
             set
@@ -111,6 +117,69 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// The call is busted - do I want a sub reason, is it call or serial number?
+        /// The calsign does not mact the call sign in the ther log
+        /// </summary>
+        public bool CallIsBusted
+        {
+            set
+            {
+                if (value == false)
+                {
+                    if (!RejectReasons.ContainsKey(RejectReason.BustedCallSign))
+                    {
+                        _RejectReasons.Add(RejectReason.BustedCallSign, QSOStatus.InvalidQSO);
+                        Status = QSOStatus.InvalidQSO;
+                    }
+                }
+                else
+                {
+                    if (RejectReasons.ContainsKey(RejectReason.BustedCallSign))
+                    {
+                        RejectReasons.Remove(RejectReason.BustedCallSign);
+                        if (RejectReasons.Count == 0)
+                        {
+                            Status = QSOStatus.ValidQSO;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// The serial number does not match the other log
+        /// </summary>
+        public bool SerialNumberIsIncorrect
+        {
+            set
+            {
+                if (value == false)
+                {
+                    if (!RejectReasons.ContainsKey(RejectReason.BustedSerialNumber))
+                    {
+                        _RejectReasons.Add(RejectReason.BustedSerialNumber, QSOStatus.InvalidQSO);
+                        Status = QSOStatus.InvalidQSO;
+                    }
+                }
+                else
+                {
+                    if (RejectReasons.ContainsKey(RejectReason.BustedSerialNumber))
+                    {
+                        RejectReasons.Remove(RejectReason.BustedSerialNumber);
+                        if (RejectReasons.Count == 0)
+                        {
+                            Status = QSOStatus.ValidQSO;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// This QSO does not belong to the current session
+        /// </summary>
         public bool SessionIsValid
         {
             set
@@ -167,6 +236,19 @@ namespace W6OP.ContestLogAnalyzer
         //    get { return _Mode; }
         //    set { _Mode = value; }
         //}
+
+        
+        private DateTime _QSODateTime;
+        public DateTime QSODateTime
+        {
+            get {
+                string qtime = QsoTime.Insert(2, ":");
+
+                DateTime.TryParse(QsoDate + " " + qtime, out _QSODateTime);
+                return _QSODateTime;
+            }
+        }
+
 
         /// <summary>
         /// This incorporates two fields, QSO Date and QSO Time

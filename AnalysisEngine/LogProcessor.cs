@@ -429,36 +429,6 @@ namespace W6OP.ContestLogAnalyzer
             return qsoList;
         }
 
-        ///// <summary>
-        ///// Mark all QSOs that don't have the correct name sent as invalid.
-        ///// </summary>
-        ///// <param name="qsoList"></param>
-        ///// <param name="name"></param>
-        //private void MarkIncorrectName(List<QSO> qsoList, string name)
-        //{
-        //    List<QSO> qsos = qsoList.Where(q => q.OperatorName.ToUpper() != name).ToList();
-
-        //    if (qsos.Any())
-        //    {
-        //        qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Mark all QSOs where the call sign doesn't match the log call sign as invalid.
-        ///// </summary>
-        ///// <param name="qsoList"></param>
-        ///// <param name="call"></param>
-        //private void MarkIncorrectCallSigns(List<QSO> qsoList, string call)
-        //{
-        //    List<QSO> qsos = qsoList.Where(q => q.OperatorCall.ToUpper() != call).ToList();
-
-        //    if (qsos.Any())
-        //    {
-        //        qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
-        //    }
-        //}
-
         /// <summary>
         /// The Date and Time must match for the session specified.
         /// Session 1 is 0000 - 0359

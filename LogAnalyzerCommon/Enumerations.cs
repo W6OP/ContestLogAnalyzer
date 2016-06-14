@@ -12,6 +12,12 @@ namespace W6OP.ContestLogAnalyzer
     {
         [Description("The band does not match")]
         Band,
+        [Description("The QSO does not match the other log")]
+        NoQSOMatch,
+        [Description("The call is a busted call")]
+        BustedCallSign,
+        [Description("The serial number is incorrect")]
+        BustedSerialNumber,
         [Description("The operator name does not match")]
         OpName,
         [Description("The sent serial number does not match")]
