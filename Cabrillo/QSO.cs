@@ -23,7 +23,6 @@ namespace W6OP.ContestLogAnalyzer
         public Dictionary<RejectReason, QSOStatus> RejectReasons
         {
             get { return _RejectReasons; }
-            //set { }
         }
 
         //private QSOStatus _Status = QSOStatus.ValidQSO;

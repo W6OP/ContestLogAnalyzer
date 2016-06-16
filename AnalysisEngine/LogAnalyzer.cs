@@ -128,6 +128,7 @@ namespace W6OP.ContestLogAnalyzer
                         if (ts.Minutes > 5)
                         {
                             validQSO.Status = QSOStatus.InvalidQSO;
+                            validQSO.ExcessTimeSpan = ts.Minutes;
                             validQSO.RejectReasons.Add(RejectReason.NoQSOMatch, QSOStatus.InvalidQSO);
                         }
                     }
