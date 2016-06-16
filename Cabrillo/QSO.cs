@@ -248,6 +248,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        public Int32 ExcessTimeSpan { get; set; }
 
         /// <summary>
         /// This incorporates two fields, QSO Date and QSO Time

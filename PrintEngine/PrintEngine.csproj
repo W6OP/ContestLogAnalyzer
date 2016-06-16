@@ -49,6 +49,10 @@
       <Project>{D5621E76-8801-41DF-B90B-609796F3042C}</Project>
       <Name>Cabrillo</Name>
     </ProjectReference>
+    <ProjectReference Include="..\LogAnalyzerCommon\LogAnalyzerCommon.csproj">
+      <Project>{b033bebd-9c13-4ead-909a-5348cbdc3f30}</Project>
+      <Name>LogAnalyzerCommon</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
