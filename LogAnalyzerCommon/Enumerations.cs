@@ -26,6 +26,8 @@ namespace W6OP.ContestLogAnalyzer
         Duplicate,
         [Description("The call sign is invalid")]
         InvalidCall,
+        [Description("The time does not match with 5 minutes")]
+        InvalidTime,
         [Description("The session is incorrect")]
         InvalidSession,
         [Description("None")]

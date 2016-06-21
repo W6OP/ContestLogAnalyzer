@@ -68,10 +68,20 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     IsCheckLog = true;
                 }
+
+                // THIS NEEDs TO BE CORRECTED
+                if (_LogHeader.OperatorCategory == CategoryOperator.SingleOp)
+                {
+                    SO2R = true;
+                }
+
                 ClaimedScore = LogHeader.ClaimedScore;
             }
         }
 
+        public int Session { get; set; }
+
+        public bool SO2R { get; set; }
         /// <summary>
         /// List of all the QSOs in this log.
         /// </summary>

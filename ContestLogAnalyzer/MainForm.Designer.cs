@@ -61,6 +61,7 @@
             this.TabPageScoring = new System.Windows.Forms.TabPage();
             this.ComboBoxSelectSession = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.ButtonPrint = new System.Windows.Forms.Button();
             this.TabControlMain.SuspendLayout();
             this.TabPageLogStatus.SuspendLayout();
             this.TabPageAnalysis.SuspendLayout();
@@ -352,12 +353,23 @@
             this.label2.TabIndex = 17;
             this.label2.Text = "Select Session";
             // 
+            // ButtonPrint
+            // 
+            this.ButtonPrint.Location = new System.Drawing.Point(496, 36);
+            this.ButtonPrint.Name = "ButtonPrint";
+            this.ButtonPrint.Size = new System.Drawing.Size(75, 23);
+            this.ButtonPrint.TabIndex = 18;
+            this.ButtonPrint.Text = "Print";
+            this.ButtonPrint.UseVisualStyleBackColor = true;
+            this.ButtonPrint.Click += new System.EventHandler(this.ButtonPrint_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
             this.ClientSize = new System.Drawing.Size(1008, 729);
+            this.Controls.Add(this.ButtonPrint);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.ComboBoxSelectSession);
             this.Controls.Add(this.TabControlMain);
@@ -420,6 +432,7 @@
         private System.Windows.Forms.ColumnHeader columnHeader10;
         private System.Windows.Forms.ComboBox ComboBoxSelectSession;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button ButtonPrint;
     }
 }
 

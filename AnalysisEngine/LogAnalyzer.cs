@@ -129,13 +129,13 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             validQSO.Status = QSOStatus.InvalidQSO;
                             validQSO.ExcessTimeSpan = ts.Minutes;
-                            validQSO.RejectReasons.Add(RejectReason.NoQSOMatch, QSOStatus.InvalidQSO);
+                            validQSO.RejectReasons.Add(RejectReason.InvalidTime, EnumHelper.GetDescription(RejectReason.InvalidTime));
                         }
                     }
                     else
                     {
                         validQSO.Status = QSOStatus.InvalidQSO;
-                        validQSO.RejectReasons.Add(RejectReason.NoQSOMatch, QSOStatus.InvalidQSO);
+                        validQSO.RejectReasons.Add(RejectReason.NoQSOMatch, EnumHelper.GetDescription(RejectReason.NoQSOMatch));
                     }
                 }
                 else

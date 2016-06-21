@@ -25,15 +25,18 @@ namespace W6OP.ContestLogAnalyzer
         private const string LOG_ANALYSER_WORKING_FOLDER_PATH = @"W6OP\LogAnalyser\Working";
         private const string LOG_ANALYSER_INSPECT_FOLDER_PATH = @"W6OP\LogAnalyser\Inspect";
         private const string LOG_ANALYSER_REPORT_FOLDER_PATH = @"W6OP\LogAnalyser\Report";
+        private const string LOG_ANALYSER_SCORE_FOLDER_PATH = @"W6OP\LogAnalyser\Score";
 
         // set the actual folders to use
         private string _BaseWorkingFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_WORKING_FOLDER_PATH);
         private string _BaseInspectFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_INSPECT_FOLDER_PATH);
         private string _BaseReportFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_REPORT_FOLDER_PATH);
+        private string _BaseScoreFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_SCORE_FOLDER_PATH);
 
         private string _WorkingFolder = null;
         private string _InspectFolder = null;
         private string _ReportFolder = null;
+        private string _ScoreFolder = null;
 
         private List<ContestLog> _ContestLogs;
         private IEnumerable<System.IO.FileInfo> _LogFileList;
@@ -173,6 +176,7 @@ namespace W6OP.ContestLogAnalyzer
             _WorkingFolder = Path.Combine(_BaseWorkingFolder, session);
             _InspectFolder = Path.Combine(_BaseInspectFolder, session);
             _ReportFolder = Path.Combine(_BaseReportFolder, session);
+            _ScoreFolder = Path.Combine(_BaseScoreFolder, session);
 
             LoadLogFiles(session);
         }
@@ -211,6 +215,11 @@ namespace W6OP.ContestLogAnalyzer
                     Directory.CreateDirectory(_ReportFolder);
                 }
 
+                if (!Directory.Exists(Path.Combine(_ScoreFolder, session)))
+                {
+                    Directory.CreateDirectory(_ScoreFolder);
+                }
+
                 if (String.IsNullOrEmpty(_LogSourceFolder))
                 {
                     ButtonSelectFolder.PerformClick();
@@ -227,6 +236,7 @@ namespace W6OP.ContestLogAnalyzer
                 _PrintManager.InspectionFolder = _InspectFolder;
                 _PrintManager.WorkingFolder = _WorkingFolder;
                 _PrintManager.ReportFolder = _ReportFolder;
+                _PrintManager.ScoreFolder = _ScoreFolder;
 
                 _LogProcessor.WorkingFolder = _WorkingFolder;
                 _LogProcessor.InspectionFolder = _InspectFolder;
@@ -439,6 +449,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonScoreLogs_Click(object sender, EventArgs e)
         {
+            TabControlMain.SelectTab(TabPageScoring);
             UpdateListViewScore(new ContestLog(), true);
 
             Cursor = Cursors.WaitCursor;
@@ -777,6 +788,16 @@ namespace W6OP.ContestLogAnalyzer
                 QSOForm form = new QSOForm(logList);
                 form.Show();
             }
+        }
+
+        private void ButtonPrint_Click(object sender, EventArgs e)
+        {
+
+            foreach (ContestLog contestLog in _ContestLogs)
+            {
+                _PrintManager.PrintRejectReport(contestLog, contestLog.LogOwner);
+            }
+            
         }
 
 
