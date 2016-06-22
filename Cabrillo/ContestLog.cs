@@ -116,66 +116,44 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         //private List<QSO> _OtherQSOS;
         public List<QSO> OtherQSOS { get; set; } = new List<QSO>();
-        //{
-        //    get { return _OtherQSOS; }
-        //    set { _OtherQSOS = value; }
-        //}
+       
         /// <summary>
         /// A list of all of the logs that have a reference to the call represented by this log.
         /// </summary>
         //private Dictionary<string, ContestLog> _MatchLogs;
         public Dictionary<string, ContestLog> MatchLogs { get; set; } = new Dictionary<string, ContestLog>();
-        //{
-        //    get { return _MatchLogs; }
-        //    set { _MatchLogs = value; }
-        //}
+       
 
         /// <summary>
         /// List of logs that do not have a QSO with this operator.
         /// </summary>
         //private Dictionary<string, ContestLog> _OtherLogs;
         public Dictionary<string, ContestLog> OtherLogs { get; set; } = new Dictionary<string, ContestLog>();
-        //{
-        //    get { return _OtherLogs; }
-        //    set { _OtherLogs = value; }
-        //}
+        
 
         /// <summary>
         /// Logs that need review.
         /// </summary>
         //private Dictionary<string, ContestLog> _ReviewLogs;
         public Dictionary<string, ContestLog> ReviewLogs { get; set; } = new Dictionary<string, ContestLog>();
-        //{
-        //    get { return _ReviewLogs; }
-        //    set { _ReviewLogs = value; }
-        //}
+       
 
         /// <summary>
         /// Indicates the log meets the criteria necessary to be analysed.
         /// </summary>
         //private bool _IsValidLog;
         public bool IsValidLog { get; set; } = true;
-        //{
-        //    get { return _IsValidLog; }
-        //    set { _IsValidLog = value; }
-        //}
+        
 
         /// <summary>
         /// Indicates this is a check log and should not be scored.
         /// </summary>
         //private bool _IsCheckLog;
         public bool IsCheckLog { get; set; }
-        //{
-        //    get { return _IsCheckLog; }
-        //    set { _IsCheckLog = value; }
-        //}
+       
 
         //private Int32 _ClaimedScore;
         public Int32 ClaimedScore { get; set; }
-        //{
-        //    get { return _ClaimedScore; }
-        //    set { _ClaimedScore = value; }
-        //}
 
         //private Int32 _ActualScore;
         public Int32 ActualScore { get; set; }
@@ -192,8 +170,8 @@ namespace W6OP.ContestLogAnalyzer
             { 
                 _Multipliers = value;
                 // IS THIS CORRECT???
-                Int32 count = QSOCollection.Where(q =>  q.Status == QSOStatus.ValidQSO).ToList().Count();
-                ActualScore = _Multipliers * count;
+                //Int32 count = QSOCollection.Where(q =>  q.Status == QSOStatus.ValidQSO).ToList().Count();
+                //ActualScore = _Multipliers * count;
             }
         }
 

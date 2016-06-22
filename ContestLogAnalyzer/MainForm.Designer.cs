@@ -51,6 +51,8 @@
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader11 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader12 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader10 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ProgressBarLoad = new System.Windows.Forms.ProgressBar();
@@ -62,6 +64,7 @@
             this.ComboBoxSelectSession = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.ButtonPrint = new System.Windows.Forms.Button();
+            this.ButtonPrintScores = new System.Windows.Forms.Button();
             this.TabControlMain.SuspendLayout();
             this.TabPageLogStatus.SuspendLayout();
             this.TabPageAnalysis.SuspendLayout();
@@ -228,6 +231,8 @@
             this.columnHeader4,
             this.columnHeader5,
             this.columnHeader8,
+            this.columnHeader11,
+            this.columnHeader12,
             this.columnHeader9,
             this.columnHeader10});
             this.ListViewScore.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -261,6 +266,14 @@
             // columnHeader8
             // 
             this.columnHeader8.Text = "Name";
+            // 
+            // columnHeader11
+            // 
+            this.columnHeader11.Text = "QSOs";
+            // 
+            // columnHeader12
+            // 
+            this.columnHeader12.Text = "Mults";
             // 
             // columnHeader9
             // 
@@ -357,11 +370,21 @@
             // 
             this.ButtonPrint.Location = new System.Drawing.Point(496, 36);
             this.ButtonPrint.Name = "ButtonPrint";
-            this.ButtonPrint.Size = new System.Drawing.Size(75, 23);
+            this.ButtonPrint.Size = new System.Drawing.Size(94, 23);
             this.ButtonPrint.TabIndex = 18;
-            this.ButtonPrint.Text = "Print";
+            this.ButtonPrint.Text = "Print Report";
             this.ButtonPrint.UseVisualStyleBackColor = true;
             this.ButtonPrint.Click += new System.EventHandler(this.ButtonPrint_Click);
+            // 
+            // ButtonPrintScores
+            // 
+            this.ButtonPrintScores.Location = new System.Drawing.Point(653, 36);
+            this.ButtonPrintScores.Name = "ButtonPrintScores";
+            this.ButtonPrintScores.Size = new System.Drawing.Size(94, 23);
+            this.ButtonPrintScores.TabIndex = 19;
+            this.ButtonPrintScores.Text = "Print Scores";
+            this.ButtonPrintScores.UseVisualStyleBackColor = true;
+            this.ButtonPrintScores.Click += new System.EventHandler(this.ButtonPrintScores_Click);
             // 
             // MainForm
             // 
@@ -369,6 +392,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
             this.ClientSize = new System.Drawing.Size(1008, 729);
+            this.Controls.Add(this.ButtonPrintScores);
             this.Controls.Add(this.ButtonPrint);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.ComboBoxSelectSession);
@@ -433,6 +457,9 @@
         private System.Windows.Forms.ComboBox ComboBoxSelectSession;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button ButtonPrint;
+        private System.Windows.Forms.ColumnHeader columnHeader11;
+        private System.Windows.Forms.ColumnHeader columnHeader12;
+        private System.Windows.Forms.Button ButtonPrintScores;
     }
 }
 

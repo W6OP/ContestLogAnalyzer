@@ -277,19 +277,19 @@ namespace W6OP.ContestLogAnalyzer
         //    set { _SentSerialNumber = value; }
         //}
 
-        //private string _OperatorCall;
-        public string OperatorCall { get; set; }
-        //{
-        //    get { return _OperatorCall; }
-        //    set { _OperatorCall = value; }
-        //}
+        private string _OperatorCall;
+        public string OperatorCall
+        {
+            get { return _OperatorCall.ToUpper(); }
+            set { _OperatorCall = value; }
+        }
 
-        //private string _OperatorName;
-        public string OperatorName { get; set; }
-        //{
-        //    get { return _OperatorName; }
-        //    set { _OperatorName = value; }
-        //}
+        private string _OperatorName;
+        public string OperatorName 
+        {
+            get { return _OperatorName.ToUpper(); }
+            set { _OperatorName = value; }
+        }
 
         //private Int32 _ReceivedSerialNumber;
         public Int32 ReceivedSerialNumber { get; set; }
@@ -298,18 +298,18 @@ namespace W6OP.ContestLogAnalyzer
         //    set { _ReceivedSerialNumber = value; }
         //}
 
-        //private string _ContactCall;
-        public string ContactCall { get; set; }
-        //{
-        //    get { return _ContactCall; }
-        //    set { _ContactCall = value; }
-        //}
+        private string _ContactCall;
+        public string ContactCall
+        {
+            get { return _ContactCall.ToUpper(); }
+            set { _ContactCall = value; }
+        }
 
-        //private string _ContactName;
-        public string ContactName { get; set; }
-        //{
-        //    get { return _ContactName; }
-        //    set { _ContactName = value; }
-        //}
+        private string _ContactName;
+        public string ContactName
+        {
+            get { return _ContactName.ToUpper(); }
+            set { _ContactName = value; }
+        }
     } // end class
 }

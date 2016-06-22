@@ -55,7 +55,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 List<QSO> qsoList;
                 call = contestLog.LogOwner;
-                name = contestLog.LogHeader.NameSent;
+                name = contestLog.LogHeader.NameSent.ToUpper();
 
                 progress++;
 
@@ -70,7 +70,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     MarkIncorrectCallSigns(qsoList, call);
 
-                    MarkIncorrectName(qsoList, name.ToUpper());
+                    MarkIncorrectName(qsoList, name);
 
                     MatchQSOs(qsoList, contestLogList, call, name);
 
@@ -234,7 +234,7 @@ namespace W6OP.ContestLogAnalyzer
         private void MarkMultipliers(List<QSO> qsoList)
         {
             var query = qsoList.GroupBy(x => new { x.ContactCall, x.Status })
-             .Where(g => g.Count() > 1)
+             .Where(g => g.Count() >= 1)
              .Select(y => y.Key)
              .ToList();
 

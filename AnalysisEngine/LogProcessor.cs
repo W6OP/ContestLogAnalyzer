@@ -76,10 +76,6 @@ namespace W6OP.ContestLogAnalyzer
             string fileName = fileInfo.Name;
             string logFileName = null;
             string version = null;
-            //string firstQsoDate = null;
-            //string lastQsoDate = null;
-            //string firstQsoTime = null;
-            //string lastQsoTime = null;
             string reason = "Unable to build valid header."; ;
             Int32 progress = 0;
 
@@ -146,6 +142,11 @@ namespace W6OP.ContestLogAnalyzer
                     if (contestLog.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
                     {
                         contestLog.IsCheckLog = true;
+                    }
+
+                    if (contestLog.LogHeader.NameSent == "NONE")
+                    {
+                        contestLog.LogHeader.NameSent = contestLog.QSOCollection[0].OperatorName;
                     }
 
                     contestLogs.Add(contestLog);

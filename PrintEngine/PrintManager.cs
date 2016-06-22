@@ -67,12 +67,20 @@ namespace W6OP.PrintEngine
             string message = null;
             string assisted = null;
             string so2r = null;
-            string year = DateTime.Now.Year.ToString("yyyy");
+            string year = DateTime.Now.ToString("yyyy");
             List<QSO> validQsoList;
 
             session = contestLogs[0].Session.ToString();
             fileName = year + " CWO Box Scores Session " + session + ".txt"; // later convert to PDF
             reportFileName = Path.Combine(ScoreFolder, fileName);
+
+
+
+            // LETS SORT SO IS IN SAME ORDER AS DISPLAY
+            // MAKE PDF
+
+
+
 
             using (StreamWriter sw = File.CreateText(reportFileName))
             {
@@ -82,7 +90,7 @@ namespace W6OP.PrintEngine
                 sw.WriteLine(message + "\r\n");
                 //sw.WriteLine("");
 
-                message = "Call" + "\t" + "Operator" + "\t" + "Station" + "\t" + "Name" + "\t" + "QSOs" + "\t" + "Mults" + "\t" + "Final" + "\t" + "Power" + "\t" + "SO2R" + "\t" + "Assisted";
+                message = "Call" + "\t\t" + "Operator" + "\t" + "Station" + "\t" + "Name" + "\t" + "QSOs" + "\t" + "Mults" + "\t" + "Final" + "\t" + "Power" + "\t" + "SO2R" + "\t" + "Assisted";
                 sw.WriteLine(message);
 
 
@@ -104,7 +112,7 @@ namespace W6OP.PrintEngine
                         so2r = "Y";
                     }
 
-                    message = contestlog.LogOwner + "\t" + contestlog.Operator + "\t" + contestlog.Station + "\t" + contestlog.OperatorName + "\t" + contestlog.QSOCollection.Count.ToString() + "\t";
+                    message = contestlog.LogOwner + "\t\t" + contestlog.Operator + "\t" + contestlog.Station + "\t" + contestlog.OperatorName + "\t" + validQsoList.Count.ToString() + "\t";
 
                     message = message + contestlog.Multipliers.ToString() + "\t" + contestlog.ActualScore.ToString() + "\t" + contestlog.LogHeader.Power + "\t" + so2r + "\t" + assisted;
 
@@ -136,7 +144,7 @@ namespace W6OP.PrintEngine
 
                     // print QSO line and reject reason
                     // QSO: Freq, mode, date, time, op, sent s/n, opname, contact call, rx s/n, contact name, rejectReason
-                    message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() +
+                    message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
                                 qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName; // + qso.RejectReasons[0];
 
                     foreach (var key in qso.RejectReasons.Keys)

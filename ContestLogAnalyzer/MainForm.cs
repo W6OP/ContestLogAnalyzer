@@ -458,13 +458,6 @@ namespace W6OP.ContestLogAnalyzer
             BackgroundWorkerScoreLogs.RunWorkerAsync();
         }
 
-        private void _CWOpen_OnProgressUpdate(ContestLog contestLog)
-        {
-            //contestLog.LogOwner, contestLog.ClaimedScore.ToString(), contestLog.ActualScore.ToString()
-            UpdateListViewScore(contestLog, false);
-        }
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -475,6 +468,11 @@ namespace W6OP.ContestLogAnalyzer
             _CWOpen.ScoreContestLogs(_ContestLogs);
         }
 
+        private void _CWOpen_OnProgressUpdate(ContestLog contestLog)
+        {
+            //contestLog.LogOwner, contestLog.ClaimedScore.ToString(), contestLog.ActualScore.ToString()
+            UpdateListViewScore(contestLog, false);
+        }
 
         /// <summary>
         /// 
@@ -643,6 +641,8 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="clear"></param>
         private void UpdateListViewScore(ContestLog contestLog, bool clear)
         {
+            Int32 validQsoCount = 0;
+
             if (InvokeRequired)
             {
                 this.BeginInvoke(new Action<ContestLog, bool>(this.UpdateListViewScore), contestLog, clear);
@@ -655,16 +655,16 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                // .LogOwner, contestLog.ClaimedScore.ToString(), contestLog.ActualScore.ToString()
+                validQsoCount = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList().Count();
+
                 ListViewItem item = new ListViewItem(contestLog.LogOwner);
                 item.SubItems.Add(contestLog.LogOwner);
                 item.SubItems.Add("");
-
-
-
-                item.SubItems.Add("");
-                item.SubItems.Add("");
+                item.SubItems.Add(contestLog.QSOCollection.Count.ToString());
+                item.SubItems.Add(validQsoCount.ToString());
+                item.SubItems.Add(contestLog.Multipliers.ToString());
                 item.SubItems.Add(contestLog.ClaimedScore.ToString());
+                item.SubItems.Add(contestLog.ActualScore.ToString());
                 ListViewScore.Items.Insert(0, item);
             }
         }
@@ -798,6 +798,11 @@ namespace W6OP.ContestLogAnalyzer
                 _PrintManager.PrintRejectReport(contestLog, contestLog.LogOwner);
             }
             
+        }
+
+        private void ButtonPrintScores_Click(object sender, EventArgs e)
+        {
+            _PrintManager.PrintScoreSheet(_ContestLogs);
         }
 
 
