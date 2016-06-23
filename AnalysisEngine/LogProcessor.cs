@@ -149,6 +149,25 @@ namespace W6OP.ContestLogAnalyzer
                         contestLog.LogHeader.NameSent = contestLog.QSOCollection[0].OperatorName;
                     }
 
+                    // CHECK THESE - temp code so I can test print PDF
+                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    if ( String.IsNullOrEmpty(contestLog.Operator))
+                    {
+                        contestLog.Operator = contestLog.QSOCollection[0].OperatorCall;
+                    }
+
+                    if (String.IsNullOrEmpty(contestLog.Station))
+                    {
+                        contestLog.Station = contestLog.QSOCollection[0].OperatorCall;
+                    }
+
+                    if (String.IsNullOrEmpty(contestLog.OperatorName))
+                    {
+                        contestLog.OperatorName = contestLog.QSOCollection[0].OperatorName;
+                    }
+
+                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
                     contestLogs.Add(contestLog);
                     progress = contestLogs.Count;
 

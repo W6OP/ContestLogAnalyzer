@@ -802,7 +802,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private void ButtonPrintScores_Click(object sender, EventArgs e)
         {
-            _PrintManager.PrintScoreSheet(_ContestLogs);
+            _PrintManager.PrintScoreSheet(_ContestLogs, true);
         }
 
 
