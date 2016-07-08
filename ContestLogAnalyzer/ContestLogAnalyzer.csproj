@@ -142,7 +142,12 @@ copy "$(TargetDir)/Cabrillo.pdb" ..\..\..\Deploy
 copy "$(TargetDir)/LogAnalyzerCommon.dll" ..\..\..\Deploy
 copy "$(TargetDir)/LogAnalyzerCommon.pdb" ..\..\..\Deploy
 copy "$(TargetDir)/ScoreEngine.dll" ..\..\..\Deploy
-copy "$(TargetDir)/ScoreEngine.pdb" ..\..\..\Deploy</PostBuildEvent>
+copy "$(TargetDir)/ScoreEngine.pdb" ..\..\..\Deploy
+copy "$(TargetDir)/AnalysisEngine.dll" ..\..\..\Deploy
+copy "$(TargetDir)/AnalysisEngine.pdb" ..\..\..\Deploy
+copy "$(TargetDir)/PrintEngine.dll" ..\..\..\Deploy
+copy "$(TargetDir)/PrintEngine.pdb" ..\..\..\Deploy
+copy "$(TargetDir)/PdfFileWriter.dll" ..\..\..\Deploy</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
