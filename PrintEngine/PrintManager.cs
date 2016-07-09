@@ -94,7 +94,7 @@ namespace W6OP.PrintEngine
             using (StreamWriter sw = File.CreateText(reportFileName))
             {
                 // Add Header ie. 2014 CW Open Session 1 
-                message = year +  " CW Open Session " + session;
+                message = year + " CW Open Session " + session;
 
                 sw.WriteLine(message + "\r\n");
                 //sw.WriteLine("");
@@ -116,7 +116,7 @@ namespace W6OP.PrintEngine
                         assisted = "Y";
                     }
 
-                    if(contestlog.SO2R == true)
+                    if (contestlog.SO2R == true)
                     {
                         so2r = "Y";
                     }
@@ -230,7 +230,7 @@ namespace W6OP.PrintEngine
             // display page bounds
             //String text = String.Format("Page Bounds: Left {0}, Top {1}, Right {2}, Bottom {3}", e.PageBounds.Left, e.PageBounds.Top, e.PageBounds.Right, e.PageBounds.Bottom);
             //G.DrawString(text, _DefaultFont, Brushes.Black, TextRect);
-           // TextRect.Y += LineHeight;
+            // TextRect.Y += LineHeight;
 
             // display print area
             //text = String.Format("Page Margins: Left {0}, Top {1}, Right {2}, Bottom {3}", PrintArea.Left, PrintArea.Top, PrintArea.Right, PrintArea.Bottom);
@@ -288,10 +288,10 @@ namespace W6OP.PrintEngine
 
                 if (TextRect.Bottom > PrintArea.Bottom)
                 {
-                     break;
+                    break;
                 }
             }
-           
+
 
             // move on to next page
             _PageNo++;
@@ -299,58 +299,67 @@ namespace W6OP.PrintEngine
             return;
         }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="contestLog"></param>
-    public void PrintRejectReport(ContestLog contestLog, string callsign)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="contestLog"></param>
+        public void PrintRejectReport(ContestLog contestLog, string callsign)
         {
-            string reportFileName = Path.Combine(ReportFolder, callsign + ".rpt");
+            string reportFileName = null;
             string message = null;
 
+            // strip "/" from callsign
+            if (callsign.IndexOf(@"/") != -1)
+            {
+                callsign = callsign.Substring(0, callsign.IndexOf(@"/"));
+            }
+            
+            reportFileName = Path.Combine(ReportFolder, callsign + ".rpt");
+            
             // only look at valid QSOs
             List<QSO> inValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
 
-            using (StreamWriter sw = File.CreateText(reportFileName))
+            try
             {
-                foreach (QSO qso in inValidQsoList)
+                using (StreamWriter sw = File.CreateText(reportFileName))
                 {
-
-
-                    // print QSO line and reject reason
-                    // QSO: Freq, mode, date, time, op, sent s/n, opname, contact call, rx s/n, contact name, rejectReason
-                    message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
-                                qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName; // + qso.RejectReasons[0];
-
-                    foreach (var key in qso.RejectReasons.Keys)
+                    foreach (QSO qso in inValidQsoList)
                     {
-                        var value = qso.RejectReasons[key];
-                        message = message + "\t" + value.ToString();
+
+
+                        // print QSO line and reject reason
+                        // QSO: Freq, mode, date, time, op, sent s/n, opname, contact call, rx s/n, contact name, rejectReason
+                        message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
+                                    qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName; // + qso.RejectReasons[0];
+
+                        foreach (var key in qso.RejectReasons.Keys)
+                        {
+                            var value = qso.RejectReasons[key];
+                            message = message + "\t" + value.ToString();
+                        }
+
+                        if (qso.ExcessTimeSpan > 0)
+                        {
+                            message = message + "\t" + qso.ExcessTimeSpan.ToString() + "minutes";
+                        }
+
+
+                        sw.WriteLine(message);
                     }
-
-                    if (qso.ExcessTimeSpan > 0)
-                    {
-                        message = message + "\t" + qso.ExcessTimeSpan.ToString() + "minutes";
-                    }
-
-
-                    sw.WriteLine(message);
+                    //
                 }
-                //
             }
-
-
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public void PrintInspectionReport(string fileName, string failReason)
         {
-            //string fileNameWithPath = Path.Combine(InspectionFolder, inspectReasonFileName);
-
             string inspectFileName = Path.Combine(InspectionFolder, fileName);
-            // string inspectReasonFileName = Path.Combine(InspectionFolder, fileName + ".txt");
 
-
-
+            inspectFileName = Path.Combine(InspectionFolder, fileName);
             //create a text file with the reason for the rejection
             using (StreamWriter sw = File.CreateText(inspectFileName))
             {
