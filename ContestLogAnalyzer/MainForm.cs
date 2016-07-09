@@ -495,6 +495,8 @@ namespace W6OP.ContestLogAnalyzer
 
         #endregion
 
+        #region Commented Out Code
+
         /// <summary>
         /// Look at the QSOs and see if they are valid - how do you know?
         /// need all the QSOs from two lists
@@ -580,6 +582,8 @@ namespace W6OP.ContestLogAnalyzer
                          .Where(t => t.value == matchString)
                          .Select(s => s.index).First();
          */
+
+        #endregion
 
         #region Update ListViews
 
@@ -775,6 +779,12 @@ namespace W6OP.ContestLogAnalyzer
 
         #endregion
 
+        #region Show QSO Form
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ListViewScore_DoubleClick(object sender, EventArgs e)
         {
             List<ContestLog> logList = new List<ContestLog>();
@@ -790,23 +800,53 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        #endregion
+
+        #region Print and Score Buttons
+
+        /// <summary>
+        /// Print a report for each log showing the QSOs that were not counted and why.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ButtonPrint_Click(object sender, EventArgs e)
         {
-
-            foreach (ContestLog contestLog in _ContestLogs)
+            try
             {
-                _PrintManager.PrintRejectReport(contestLog, contestLog.LogOwner);
+                foreach (ContestLog contestLog in _ContestLogs)
+                {
+                    _PrintManager.PrintRejectReport(contestLog, contestLog.LogOwner);
+                }
             }
-            
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            MessageBox.Show("Reject report completed");
         }
 
+        /// <summary>
+        /// Create a PDF file with all the scores.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ButtonPrintScores_Click(object sender, EventArgs e)
         {
-            _PrintManager.PrintScoreSheet(_ContestLogs, true);
+            try
+            {
+                _PrintManager.PrintScoreSheet(_ContestLogs, true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            MessageBox.Show("Score report completed");
         }
 
 
-
+        #endregion
 
 
         //if (InvokeRequired)

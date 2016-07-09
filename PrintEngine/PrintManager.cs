@@ -300,7 +300,7 @@ namespace W6OP.PrintEngine
         }
 
         /// <summary>
-        /// 
+        /// Print a report for each log listing the QSOs rejected and the reason for rejection.
         /// </summary>
         /// <param name="contestLog"></param>
         public void PrintRejectReport(ContestLog contestLog, string callsign)
@@ -325,8 +325,6 @@ namespace W6OP.PrintEngine
                 {
                     foreach (QSO qso in inValidQsoList)
                     {
-
-
                         // print QSO line and reject reason
                         // QSO: Freq, mode, date, time, op, sent s/n, opname, contact call, rx s/n, contact name, rejectReason
                         message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
@@ -346,7 +344,6 @@ namespace W6OP.PrintEngine
 
                         sw.WriteLine(message);
                     }
-                    //
                 }
             }
             catch (Exception)
