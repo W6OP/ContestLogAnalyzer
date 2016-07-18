@@ -488,9 +488,16 @@ namespace W6OP.ContestLogAnalyzer
             else
             {
                 UpdateListViewScore("Log scoring complete.", false);
+
+                PrintQSORejectReport();
+                UpdateListViewScore("Rejected QSO report has been generated.", false);
+
+                PrintFinalScoreReport();
+                UpdateListViewScore("Final score report has been generated.", false);
             }
 
             Cursor = Cursors.Default;
+           
         }
 
         #endregion
@@ -696,7 +703,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 //item.SubItems.Add(claimed);
                 //item.SubItems.Add(actual);
-                //ListViewScore.Items.Insert(0, item);
+                ListViewScore.Items.Insert(0, item);
             }
         }
 
@@ -811,6 +818,11 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonPrint_Click(object sender, EventArgs e)
         {
+            PrintQSORejectReport();
+        }
+
+        private void PrintQSORejectReport()
+        {
             try
             {
                 foreach (ContestLog contestLog in _ContestLogs)
@@ -820,10 +832,26 @@ namespace W6OP.ContestLogAnalyzer
             }
             catch (Exception ex)
             {
+                // later just return a message to show in listview
                 MessageBox.Show(ex.Message);
             }
 
-            MessageBox.Show("Reject report completed");
+            //MessageBox.Show("Reject report completed");
+        }
+
+        private void PrintFinalScoreReport()
+        {
+            try
+            {
+                //_PrintManager.PrintScoreSheet(_ContestLogs, true);
+                _PrintManager.PrintPdfScoreSheet(_ContestLogs);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            //MessageBox.Show("Score report completed");
         }
 
         /// <summary>
@@ -833,16 +861,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonPrintScores_Click(object sender, EventArgs e)
         {
-            try
-            {
-                _PrintManager.PrintScoreSheet(_ContestLogs, true);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-
-            MessageBox.Show("Score report completed");
+            PrintFinalScoreReport();
         }
 
 

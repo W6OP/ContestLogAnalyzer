@@ -251,7 +251,7 @@
             // columnHeader3
             // 
             this.columnHeader3.Text = "Call";
-            this.columnHeader3.Width = 75;
+            this.columnHeader3.Width = 252;
             // 
             // columnHeader4
             // 
@@ -372,8 +372,9 @@
             this.ButtonPrint.Name = "ButtonPrint";
             this.ButtonPrint.Size = new System.Drawing.Size(94, 23);
             this.ButtonPrint.TabIndex = 18;
-            this.ButtonPrint.Text = "Print Report";
+            this.ButtonPrint.Text = "Print Reject Report";
             this.ButtonPrint.UseVisualStyleBackColor = true;
+            this.ButtonPrint.Visible = false;
             this.ButtonPrint.Click += new System.EventHandler(this.ButtonPrint_Click);
             // 
             // ButtonPrintScores
@@ -384,6 +385,7 @@
             this.ButtonPrintScores.TabIndex = 19;
             this.ButtonPrintScores.Text = "Print Scores";
             this.ButtonPrintScores.UseVisualStyleBackColor = true;
+            this.ButtonPrintScores.Visible = false;
             this.ButtonPrintScores.Click += new System.EventHandler(this.ButtonPrintScores_Click);
             // 
             // MainForm
