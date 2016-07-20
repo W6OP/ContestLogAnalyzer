@@ -28,26 +28,37 @@ namespace W6OP.ContestLogAnalyzer
         //private QSOStatus _Status = QSOStatus.ValidQSO;
         public QSOStatus Status { get; set; } = QSOStatus.ValidQSO;
 
+        public List<QSO> InValidQSOs { get; set; } = new List<QSO>();
+
+        public QSO MatchingQSO { get; set; } = null;
+
         /// <summary>
         ///This is a duplicate QSO
         /// </summary>
+        private bool _QSOIsDupe = false;
         public bool QSOIsDupe
         {
+            get
+            {
+                return _QSOIsDupe;
+            }
             set
             {
                 if (value == true)
                 {
-                    if (!RejectReasons.ContainsKey(RejectReason.Duplicate))
+                    _QSOIsDupe = true;
+                    if (!RejectReasons.ContainsKey(RejectReason.DuplicateQSO))
                     {
-                        _RejectReasons.Add(RejectReason.Duplicate, EnumHelper.GetDescription(RejectReason.Duplicate));
+                        _RejectReasons.Add(RejectReason.DuplicateQSO, EnumHelper.GetDescription(RejectReason.DuplicateQSO));
                         Status = QSOStatus.InvalidQSO;
                     }
                 }
                 else
                 {
-                    if (RejectReasons.ContainsKey(RejectReason.Duplicate))
+                    if (RejectReasons.ContainsKey(RejectReason.DuplicateQSO))
                     {
-                        RejectReasons.Remove(RejectReason.Duplicate);
+                        RejectReasons.Remove(RejectReason.DuplicateQSO);
+                        _QSOIsDupe = false;
                         if (RejectReasons.Count == 0)
                         {
                             Status = QSOStatus.ValidQSO;
@@ -56,6 +67,12 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
         }
+
+        /// <summary>
+        /// This property allows the rejected qso report to know there are duplicates of this call
+        /// It will only be true if it is the qso counted as the valid qso not the dupe)
+        /// </summary>
+        public bool QSOHasDupes { get; set; }
 
         /// <summary>
         /// The operators call sign is invalid for this QSO
@@ -96,17 +113,17 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (value == false)
                 {
-                    if (!RejectReasons.ContainsKey(RejectReason.OpName))
+                    if (!RejectReasons.ContainsKey(RejectReason.OperatorName))
                     {
-                        _RejectReasons.Add(RejectReason.OpName, EnumHelper.GetDescription(RejectReason.OpName));
+                        _RejectReasons.Add(RejectReason.OperatorName, EnumHelper.GetDescription(RejectReason.OperatorName));
                         Status = QSOStatus.InvalidQSO;
                     }
                 }
                 else
                 {
-                    if (RejectReasons.ContainsKey(RejectReason.OpName))
+                    if (RejectReasons.ContainsKey(RejectReason.OperatorName))
                     {
-                        RejectReasons.Remove(RejectReason.OpName);
+                        RejectReasons.Remove(RejectReason.OperatorName);
                         if (RejectReasons.Count == 0)
                         {
                             Status = QSOStatus.ValidQSO;
@@ -155,17 +172,17 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (value == false)
                 {
-                    if (!RejectReasons.ContainsKey(RejectReason.BustedSerialNumber))
+                    if (!RejectReasons.ContainsKey(RejectReason.SerialNumber))
                     {
-                        _RejectReasons.Add(RejectReason.BustedSerialNumber, EnumHelper.GetDescription(RejectReason.BustedSerialNumber));
+                        _RejectReasons.Add(RejectReason.SerialNumber, EnumHelper.GetDescription(RejectReason.SerialNumber));
                         Status = QSOStatus.InvalidQSO;
                     }
                 }
                 else
                 {
-                    if (RejectReasons.ContainsKey(RejectReason.BustedSerialNumber))
+                    if (RejectReasons.ContainsKey(RejectReason.SerialNumber))
                     {
-                        RejectReasons.Remove(RejectReason.BustedSerialNumber);
+                        RejectReasons.Remove(RejectReason.SerialNumber);
                         if (RejectReasons.Count == 0)
                         {
                             Status = QSOStatus.ValidQSO;
@@ -301,8 +318,20 @@ namespace W6OP.ContestLogAnalyzer
         private string _ContactCall;
         public string ContactCall
         {
-            get { return _ContactCall.ToUpper(); }
-            set { _ContactCall = value; }
+            get
+            { return _ContactCall.ToUpper(); }
+            set
+            {
+                //strip "/" as in R7RF/6 or /QRP, etc.
+                if (value.IndexOf("/") == -1)
+                {
+                    _ContactCall = value;
+                }
+                else
+                {
+                    _ContactCall = value.Substring(0, value.IndexOf("/"));
+                }
+            }
         }
 
         private string _ContactName;

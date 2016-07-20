@@ -100,7 +100,7 @@ namespace W6OP.PrintEngine
             string message = null;
             ContestLog contestlog;
             string assisted = null;
-            string so2r = null;
+            //string so2r = null;
             List<QSO> validQsoList;
 
             // sort ascending by score
@@ -165,7 +165,7 @@ namespace W6OP.PrintEngine
                     if (contestlog != null)
                     {
                         assisted = "N";
-                        so2r = "N";
+                        //so2r = "N";
 
                         // only look at valid QSOs
                         validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
@@ -177,7 +177,7 @@ namespace W6OP.PrintEngine
 
                         if (contestlog.SO2R == true)
                         {
-                            so2r = "Y";
+                            //so2r = "Y";
                         }
 
                         table.AddCell(new Phrase(contestlog.LogOwner, fontTable));
@@ -220,11 +220,11 @@ namespace W6OP.PrintEngine
         {
             PdfPTable table = new PdfPTable(9);
             //actual width of table in points
-            table.TotalWidth = 510;
+            table.TotalWidth = 514;
             //fix the absolute width of the table
             table.LockedWidth = true;
 
-            float[] widths = new float[] { 68f, 68f, 68f, 68f, 50f, 54f, 54f, 50f, 30f };
+            float[] widths = new float[] { 68f, 68f, 68f, 68f, 50f, 54f, 54f, 54f, 30f };
             table.SetWidths(widths);
             table.HorizontalAlignment = 0;
             //leave a gap before and after the table
@@ -247,6 +247,7 @@ namespace W6OP.PrintEngine
         {
             string reportFileName = null;
             string message = null;
+            string message2 = null;
 
             // strip "/" from callsign
             if (callsign.IndexOf(@"/") != -1)
@@ -256,8 +257,10 @@ namespace W6OP.PrintEngine
 
             reportFileName = Path.Combine(ReportFolder, callsign + ".rpt");
 
-            // only look at valid QSOs
+            // only look at invalid QSOs
             List<QSO> inValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
+            // get list of valid qsos for dupes
+            List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.QSOHasDupes == true).ToList();
 
             try
             {
@@ -279,16 +282,34 @@ namespace W6OP.PrintEngine
                             foreach (var key in qso.RejectReasons.Keys)
                             {
                                 var value = qso.RejectReasons[key];
-                                message = message + "\t" + value.ToString();
+                                //message = message + "\t" + value.ToString();
+                                sw.WriteLine(message + "\t" + value.ToString());
+                            }
+
+                            // print info on the original that was duped - the one that was counted
+                            if (qso.QSOIsDupe == true)
+                            {
+                                List<QSO> dupeList = validQsoList.Where(item => item.ContactCall == qso.ContactCall && item.Band == qso.Band).ToList();
+
+                                if (dupeList.Count > 0)
+                                {
+                                    QSO dupeQSO = dupeList[0];
+
+                                    message2 = "QSO: " + "\t" + dupeQSO.Frequency + "\t" + dupeQSO.Mode + "\t" + dupeQSO.QsoDate + "\t" + dupeQSO.QsoTime + "\t" + dupeQSO.OperatorCall + "\t" + dupeQSO.SentSerialNumber.ToString() + "\t" +
+                                           dupeQSO.OperatorName + "\t" + dupeQSO.ContactCall + "\t" + dupeQSO.ReceivedSerialNumber.ToString() + "\t" + dupeQSO.ContactName;
+
+                                    sw.WriteLine(message2);
+                                }
                             }
 
                             if (qso.ExcessTimeSpan > 0)
                             {
-                                message = message + "\t" + qso.ExcessTimeSpan.ToString() + "minutes";
+                                //message = message + "\t" + qso.ExcessTimeSpan.ToString() + "minutes";
+                                sw.WriteLine(message + "\t" + qso.ExcessTimeSpan.ToString() + "minutes");
                             }
 
 
-                            sw.WriteLine(message);
+                            //sw.WriteLine(message);
                         }
                     }
                     else

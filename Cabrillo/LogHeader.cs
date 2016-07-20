@@ -40,9 +40,20 @@ namespace W6OP.ContestLogAnalyzer
         private string _OperatorCallSign;
         public string OperatorCallSign
         {
-            get { return _OperatorCallSign; }
-            set 
-            { _OperatorCallSign = value; }
+            get
+            { return _OperatorCallSign;}
+            set
+            {
+                //strip "/" as in R7RF/6 or /QRP, etc.
+                if (value.IndexOf("/") == -1)
+                {
+                    _OperatorCallSign = value;
+                }
+                else
+                {
+                    _OperatorCallSign = value.Substring(0, value.IndexOf("/"));
+                }
+            }
         }
 
         private CategoryAssisted _Assisted;
@@ -193,8 +204,8 @@ namespace W6OP.ContestLogAnalyzer
             set { _SoapBox = value; }
         }
 
-      
-       
+
+
     } // end class
 }
 /*

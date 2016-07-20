@@ -15,15 +15,17 @@ namespace W6OP.ContestLogAnalyzer
         [Description("The QSO does not match the other log")]
         NoQSOMatch,
         [Description("The call is a busted call")]
+        NoQSO,
+        [Description("The call is not in the other log")]
         BustedCallSign,
         [Description("The serial number is incorrect")]
-        BustedSerialNumber,
+        SerialNumber,
         [Description("The operator name does not match")]
-        OpName,
-        [Description("The sent serial number does not match")]
-        Sent,
+        OperatorName,
+        //[Description("The sent serial number does not match")]
+        //Sent,
         [Description("This is a duplicate QSO")]
-        Duplicate,
+        DuplicateQSO,
         [Description("The call sign is invalid")]
         InvalidCall,
         [Description("The time does not match within 5 minutes")]

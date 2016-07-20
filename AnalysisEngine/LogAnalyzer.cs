@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.Objects.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -90,6 +91,50 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
+        /// http://stackoverflow.com/questions/16197290/checking-for-duplicates-in-a-list-of-objects-c-sharp
+        /// Find duplicate QSOs in a log and mark the as dupes. Be sure
+        /// to allow the first QSO to be marked as valid, though.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        private void MarkDuplicateQSOs(List<QSO> qsoList)
+        {
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Band })
+             .Where(g => g.Count() > 1)
+             .Select(y => y.Key)
+             .ToList();
+
+            foreach (var qso in query)
+            {
+                List<QSO> dupeList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Band == qso.Band).ToList();
+
+                if (dupeList.Any())
+                {
+                    // set all as dupes
+                    dupeList.Select(c => { c.QSOIsDupe = true; return c; }).ToList();
+                    // now reset the first one as not a dupe
+                    dupeList.First().QSOIsDupe = false;
+                    // let me know it has dupes for the rejected qso report
+                    dupeList.First().QSOHasDupes = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Mark all QSOs where the operator call sign doesn't match the log call sign as invalid.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        /// <param name="call"></param>
+        private void MarkIncorrectCallSigns(List<QSO> qsoList, string call)
+        {
+            List<QSO> qsos = qsoList.Where(q => q.OperatorCall.ToUpper() != call).ToList();
+
+            if (qsos.Any())
+            {
+                qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
+            }
+        }
+
+        /// <summary>
         /// This may not be the correct place for this.
         /// Need to search the other log that matches this QSO
         /// Check the serial number and the callsign, if either do not match then the call is busted
@@ -99,54 +144,63 @@ namespace W6OP.ContestLogAnalyzer
         /// 
         /// 2. Log exists, search for op callsign, if not found search for serial number and compare band, mode, date/time
         ///
-        /// 
+        /// First: See if the other call is in the 
         /// </summary>
         /// <param name="qsoList"></param>
         private void MatchQSOs(List<QSO> qsoList, List<ContestLog> contestLogList, string operatorCall, string sentName)
         {
-            //List<ContestLog> matchingLogs = new List<ContestLog>();
             ContestLog contestLog = null;
             QSO matchQSO = null;
 
             // only look at valid QSOs
             List<QSO> validQsoList = qsoList.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
-            foreach (QSO validQSO in validQsoList)
+
+            foreach (QSO qso in validQsoList)
             {
-                // get the log that matches this QSO
-                contestLog = (ContestLog)contestLogList.FirstOrDefault(q => q.LogOwner == validQSO.ContactCall);
+                // get the other log that matches this QSO
+                contestLog = (ContestLog)contestLogList.FirstOrDefault(q => q.LogOwner == qso.ContactCall);
+
                 if (contestLog != null)
-                {   // now see if a QSO matches this QSO
-                    // need date time still
+                {
+                    // now see if a QSO matches this QSO
+                    //matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName &&
+                    //                        q.ReceivedSerialNumber == qso.SentSerialNumber && DateTime.Compare(q.QSODateTime, qso.QSODateTime) == 0);
 
-                    matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == validQSO.Band && q.OperatorName == validQSO.ContactName &&
-                                q.SentSerialNumber == validQSO.ReceivedSerialNumber);
+                    matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName &&
+                                            q.SentSerialNumber == qso.ReceivedSerialNumber && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
 
-                    if (matchQSO != null)
+
+
+                    if (matchQSO != null) // found it
                     {
+                        // store the matching QSO
+                        qso.MatchingQSO = matchQSO;
                         // now check the date time
-                        TimeSpan ts = validQSO.QSODateTime.Subtract(matchQSO.QSODateTime);
-                        if (ts.Minutes > 5)
-                        {
-                            validQSO.Status = QSOStatus.InvalidQSO;
-                            validQSO.ExcessTimeSpan = ts.Minutes;
-                            validQSO.RejectReasons.Add(RejectReason.InvalidTime, EnumHelper.GetDescription(RejectReason.InvalidTime));
-                        }
+                        //TimeSpan ts = qso.QSODateTime.Subtract(matchQSO.QSODateTime);
+                        //if (ts.Minutes > 5)
+                        //{
+                        //    qso.Status = QSOStatus.InvalidQSO;
+                        //    qso.ExcessTimeSpan = ts.Minutes;
+                        //    qso.RejectReasons.Add(RejectReason.InvalidTime, EnumHelper.GetDescription(RejectReason.InvalidTime));
+                        //}
                     }
                     else
                     {
-                        validQSO.Status = QSOStatus.InvalidQSO;
-                        validQSO.RejectReasons.Add(RejectReason.NoQSOMatch, EnumHelper.GetDescription(RejectReason.NoQSOMatch));
+                        // narrow down search
+                        RejectReason reason = FindRejectReason(contestLog, qso);
+                        qso.Status = QSOStatus.InvalidQSO;
+                        qso.RejectReasons.Add(reason, EnumHelper.GetDescription(reason));
                     }
                 }
                 else
                 {
                     // can't find a matching log
                     // need to see if call is in any logs
+                    // the qso is not in the other log
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
                 }
             }
-
-
-
 
 
             // get the first QSO - lets say W1XXX
@@ -169,6 +223,53 @@ namespace W6OP.ContestLogAnalyzer
             //}
         }
 
+        private RejectReason FindRejectReason(ContestLog contestLog, QSO qso)
+        {
+            QSO matchQSO = null;
+            RejectReason reason = RejectReason.NoQSO;
+
+            // query for time difference
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.SentSerialNumber == qso.ReceivedSerialNumber && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5 && q.Status == QSOStatus.ValidQSO);
+            if (matchQSO != null)
+            {
+                // store the matching QSO
+                qso.MatchingQSO = matchQSO;
+
+                TimeSpan ts = qso.QSODateTime.Subtract(matchQSO.QSODateTime);
+                qso.Status = QSOStatus.InvalidQSO;
+                qso.ExcessTimeSpan = Math.Abs(ts.Minutes);
+                return RejectReason.InvalidTime;
+            }
+
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.Status == QSOStatus.ValidQSO); //&& Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5
+            if (matchQSO != null)
+            {
+                // store the matching QSO
+                qso.MatchingQSO = matchQSO;
+                return RejectReason.SerialNumber;
+            }
+
+            // first check just the band
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.ContactName == qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.Status == QSOStatus.ValidQSO);
+            if (matchQSO != null)
+            {
+                // store the matching QSO
+                qso.MatchingQSO = matchQSO;
+                return RejectReason.Band;
+            }
+
+            // next check the name
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.SentSerialNumber == qso.ReceivedSerialNumber && q.Status == QSOStatus.ValidQSO);
+            if (matchQSO != null)
+            {
+                // store the matching QSO
+                qso.MatchingQSO = matchQSO;
+                return RejectReason.OperatorName;
+            }
+
+            return reason;
+        }
+
         /// <summary>
         /// Mark all QSOs that don't have the correct name sent as invalid.
         /// </summary>
@@ -184,47 +285,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        /// <summary>
-        /// Mark all QSOs where the operator call sign doesn't match the log call sign as invalid.
-        /// </summary>
-        /// <param name="qsoList"></param>
-        /// <param name="call"></param>
-        private void MarkIncorrectCallSigns(List<QSO> qsoList, string call)
-        {
-            List<QSO> qsos = qsoList.Where(q => q.OperatorCall.ToUpper() != call).ToList();
 
-            if (qsos.Any())
-            {
-                qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
-            }
-        }
-
-        /// <summary>
-        /// http://stackoverflow.com/questions/16197290/checking-for-duplicates-in-a-list-of-objects-c-sharp
-        /// Find duplicate QSOs in a log and mark the as dupes. Be sure
-        /// to allow the first QSO to be marked as valid, though.
-        /// </summary>
-        /// <param name="qsoList"></param>
-        private void MarkDuplicateQSOs(List<QSO> qsoList)
-        {
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Band })
-             .Where(g => g.Count() > 1)
-             .Select(y => y.Key)
-             .ToList();
-
-            foreach (var duplicate in query)
-            {
-                List<QSO> dupeList = qsoList.Where(item => item.ContactCall == duplicate.ContactCall && item.Band == duplicate.Band).ToList();
-
-                if (dupeList.Any())
-                {
-                    // set all as dupes
-                    dupeList.Select(c => { c.QSOIsDupe = true; return c; }).ToList();
-                    // now reset the first one as not a dupe
-                    dupeList.First().QSOIsDupe = false;
-                }
-            }
-        }
 
         /// <summary>
         /// Find all the calls for the session. For each call see if it is valid.

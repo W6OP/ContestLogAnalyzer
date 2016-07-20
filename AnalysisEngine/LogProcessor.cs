@@ -423,32 +423,25 @@ namespace W6OP.ContestLogAnalyzer
 
                 IEnumerable<QSO> qso =
                      from line in lineList
-                     let splitName = line.Split(' ')
+                     let split = line.Split(' ')
                      select new QSO()
                      {
                          // maybe .toUpper() will be needed
-                         Frequency = splitName[1],
-                         Mode = splitName[2],
-                         QsoDate = splitName[3],
-                         QsoTime = splitName[4],
-                         OperatorCall = splitName[5],
-                         SentSerialNumber = ConvertSerialNumber(splitName[6]),
-                         OperatorName = splitName[7],
-                         ContactCall = splitName[8],
-                         ReceivedSerialNumber = ConvertSerialNumber(splitName[9]),
-                         ContactName = splitName[10],
-                         CallIsValid = CheckCallSignFormat(splitName[5]),
-                         SessionIsValid = CheckForvalidSession(session, splitName[3], splitName[4])
+                         Frequency = split[1],
+                         Mode = split[2],
+                         QsoDate = split[3],
+                         QsoTime = split[4],
+                         OperatorCall = split[5],
+                         SentSerialNumber = ConvertSerialNumber(split[6]),
+                         OperatorName = split[7],
+                         ContactCall = split[8],
+                         ReceivedSerialNumber = ConvertSerialNumber(split[9]),
+                         ContactName = split[10],
+                         CallIsValid = CheckCallSignFormat(split[5]),
+                         SessionIsValid = CheckForvalidSession(session, split[3], split[4])
                      };
 
                 qsoList = qso.ToList();
-
-                //MarkDuplicateQSOs(qsoList);
-
-                //MarkIncorrectCallSigns(qsoList, call.ToUpper());
-
-                //MarkIncorrectName(qsoList, name.ToUpper());
-
             }
             catch (Exception ex)
             {
