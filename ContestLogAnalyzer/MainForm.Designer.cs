@@ -73,7 +73,8 @@
             // 
             // LogFolderBrowserDialog
             // 
-            this.LogFolderBrowserDialog.RootFolder = System.Environment.SpecialFolder.MyDocuments;
+            this.LogFolderBrowserDialog.RootFolder = System.Environment.SpecialFolder.MyComputer;
+            this.LogFolderBrowserDialog.SelectedPath = "C:\\";
             this.LogFolderBrowserDialog.ShowNewFolderButton = false;
             // 
             // label1
@@ -265,23 +266,28 @@
             // 
             // columnHeader8
             // 
-            this.columnHeader8.Text = "Name";
+            this.columnHeader8.Text = "Total QSOs";
+            this.columnHeader8.Width = 79;
             // 
             // columnHeader11
             // 
-            this.columnHeader11.Text = "QSOs";
+            this.columnHeader11.Text = "ValidQSOs";
+            this.columnHeader11.Width = 71;
             // 
             // columnHeader12
             // 
-            this.columnHeader12.Text = "Mults";
+            this.columnHeader12.Text = "Multipliers";
+            this.columnHeader12.Width = 72;
             // 
             // columnHeader9
             // 
-            this.columnHeader9.Text = "Claimed";
+            this.columnHeader9.Text = "Claimed Score";
+            this.columnHeader9.Width = 95;
             // 
             // columnHeader10
             // 
-            this.columnHeader10.Text = "Actual";
+            this.columnHeader10.Text = "Actual Score";
+            this.columnHeader10.Width = 88;
             // 
             // ProgressBarLoad
             // 

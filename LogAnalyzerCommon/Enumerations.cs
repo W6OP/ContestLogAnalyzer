@@ -47,7 +47,10 @@ namespace W6OP.ContestLogAnalyzer
         Assisted,
         [Description("NON-ASSISTED")]
         NonAssisted,
-         [Description("UNKNOWN")]
+        // added for K5OT
+       // [Description("NON-ASSISTED")]
+        //UnAssisted,
+        [Description("UNKNOWN")]
         Uknown
     }
 
@@ -121,18 +124,24 @@ namespace W6OP.ContestLogAnalyzer
         MIXED
     }
 
-    //SINGLE-OP ALL LOW CW
+    //SINGLE-OP ALL LOW CW "SINGLE-OP ALL HIGH CW" "SINGLE-OP ALL\tLOW CW" SINGLE-OP LOW
     public enum CategoryOperator
     {
         [Description("SINGLE-OP")]
         SingleOp,
+        [Description("SINGLE-OP QRP")]
+        SingleOpQRP,
+        [Description("SINGLE-OP LOW")]
+        SingleOpLow,
         [Description("SINGLE-OP ALL LOW CW")]
         SingleOpLowCW,
+        [Description("SINGLE-OP ALL HIGH CW")]
+        SingleOpHighCW,
         [Description("MULTI-OP")]
         MultiOp,
         [Description("CHECKLOG")]
         CheckLog,
-        [Description("UNKNOWN")]
+        [Description("Unable to determine operator category")]
         Uknown
     }
 

@@ -21,13 +21,13 @@ namespace W6OP.ContestLogAnalyzer
         public PrintManager _PrintManager = null;
 
         public string FailReason { get; set; }
-       
-       public string LogSourceFolder { get; set; }
-      
+
+        public string LogSourceFolder { get; set; }
+
         public string InspectionFolder { get; set; }
 
         public string WorkingFolder { get; set; }
-       
+
         /// <summary>
         /// Default constructor.
         /// </summary>
@@ -151,7 +151,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     // CHECK THESE - temp code so I can test print PDF
                     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                    if ( String.IsNullOrEmpty(contestLog.Operator))
+                    if (String.IsNullOrEmpty(contestLog.Operator))
                     {
                         contestLog.Operator = contestLog.QSOCollection[0].OperatorCall;
                     }
@@ -174,10 +174,10 @@ namespace W6OP.ContestLogAnalyzer
                     OnProgressUpdate?.Invoke(progress);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 logFileName = fileName;
-                MoveFileToInpectFolder(fileName);
+                MoveFileToInpectFolder(fileName, ex.Message);
             }
 
             return logFileName;
@@ -188,11 +188,11 @@ namespace W6OP.ContestLogAnalyzer
         /// Move a file to the inspection folder.
         /// </summary>
         /// <param name="fileInfo"></param>
-        private void MoveFileToInpectFolder(string fileName)
+        private void MoveFileToInpectFolder(string fileName, string exception)
         {
             string logFileName = null;
             string inspectFileName = null;
-            
+
             // move the file to inspection folder
             inspectFileName = Path.Combine(InspectionFolder, fileName + ".txt");
             logFileName = Path.Combine(InspectionFolder, fileName);
@@ -213,7 +213,7 @@ namespace W6OP.ContestLogAnalyzer
             }
 
 
-            _PrintManager.PrintInspectionReport(fileName + ".txt", FailReason);
+            _PrintManager.PrintInspectionReport(fileName + ".txt", FailReason + " - " + exception);
 
 
             // create a text file with the reason for the rejection
@@ -280,37 +280,47 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="match"></param>
         private LogHeader BuildHeaderV2(List<string> lineList, string logFileName)
         {
-            //string a = null;
+            IEnumerable<LogHeader> logHeader = null;
 
-            IEnumerable<LogHeader> logHeader =
-                from line in lineList
-                select new LogHeader()
-                {
-                    // NEED StringComparer.CurrentCultureIgnoreCase ???
-                    LogFileName = logFileName,
-                    Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
-                    Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: UNKNOWN").First().Substring(9).Trim(),
-                    OperatorCallSign = CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN").ToUpper(),
-                    OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY:")).DefaultIfEmpty("CATEGORY: SINGLE-OP").First().Substring(9).Trim().ToUpper()),
-                    // this is for when the CATEGORY-ASSISTED: is missing or has no value
-                    Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: ASSISTED").First(), 18, "ASSISTED")),   //.Substring(18).Trim().ToUpper()),
-                    Band = Utility.GetValueFromDescription<CategoryBand>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).DefaultIfEmpty("CATEGORY-BAND: ALL").First(), 14, "ALL")),
-                    Power = Utility.GetValueFromDescription<CategoryPower>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-POWER:")).DefaultIfEmpty("CATEGORY-POWER: UNKNOWN").First(), 15, "UNKNOWN")),
-                    Mode = Utility.GetValueFromDescription<CategoryMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
-                    Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
-                    Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
-                    ClaimedScore = Convert.ToInt32(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First(), 14, "0")),
-                    Club = CheckForNull(lineList.Where(l => l.StartsWith("CLUB:")).DefaultIfEmpty("CLUB: NONE").First(), 5, "NONE"),
-                    Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
-                    CreatedBy = CheckForNull(lineList.Where(l => l.StartsWith("CREATED-BY:")).DefaultIfEmpty("CREATED-BY: NONE").First(), 11, "NONE"),
-                    PrimaryName = CheckForNull(lineList.Where(l => l.StartsWith("NAME:")).DefaultIfEmpty("NAME: NONE").First(), 5, "NONE"),
-                    NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent:")).DefaultIfEmpty("Name Sent: NONE").First(), 10, "NONE"),
-                    // need to work on address
-                    Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
-                    SoapBox =  CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX: ''").First(), 7, ""),
-                    //SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).FirstOrDefault().Substring(7).Trim()),
-                };
+            try
+            {
 
+                logHeader =
+                    from line in lineList
+                    select new LogHeader()
+                    {
+                        // NEED StringComparer.CurrentCultureIgnoreCase ???
+                        LogFileName = logFileName,
+                        Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
+                        Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: UNKNOWN").First().Substring(9).Trim(),
+                        OperatorCallSign = CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN").ToUpper(),
+                        OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY:")).DefaultIfEmpty("CATEGORY: SINGLE-OP").First().Substring(9).Trim().ToUpper()),
+                        // this is for when the CATEGORY-ASSISTED: is missing or has no value
+                        Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: ASSISTED").First(), 18, "ASSISTED")),   //.Substring(18).Trim().ToUpper()),
+                        Band = Utility.GetValueFromDescription<CategoryBand>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).DefaultIfEmpty("CATEGORY-BAND: ALL").First(), 14, "ALL")),
+                        Power = Utility.GetValueFromDescription<CategoryPower>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-POWER:")).DefaultIfEmpty("CATEGORY-POWER: UNKNOWN").First(), 15, "UNKNOWN")),
+                        Mode = Utility.GetValueFromDescription<CategoryMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
+                        Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
+                        Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
+                        ClaimedScore = Convert.ToInt32(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First(), 14, "0")),
+                        Club = CheckForNull(lineList.Where(l => l.StartsWith("CLUB:")).DefaultIfEmpty("CLUB: NONE").First(), 5, "NONE"),
+                        Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
+                        CreatedBy = CheckForNull(lineList.Where(l => l.StartsWith("CREATED-BY:")).DefaultIfEmpty("CREATED-BY: NONE").First(), 11, "NONE"),
+                        PrimaryName = CheckForNull(lineList.Where(l => l.StartsWith("NAME:")).DefaultIfEmpty("NAME: NONE").First(), 5, "NONE"),
+                        NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent:")).DefaultIfEmpty("Name Sent: NONE").First(), 10, "NONE"),
+                        // need to work on address
+                        Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
+                        SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX: ''").First(), 7, ""),
+                        //SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).FirstOrDefault().Substring(7).Trim()),
+                    };
+
+                //return logHeader.FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                string a = ex.Message;
+                throw;
+            }
 
             return logHeader.FirstOrDefault();
         }
@@ -329,14 +339,11 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="match"></param>
         private LogHeader BuildHeaderV3(List<string> lineList, string logFileName)
         {
-            //try
-            //{
-            // MAY HAVE TO LOOK AT VERSION OF LOG AND FORK
-            //string logVer = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim();
+            IEnumerable<LogHeader> logHeader = null;
 
-            // Merge the data sources using a named type. 
-            // var could be used instead of an explicit type.
-            IEnumerable<LogHeader> logHeader =
+            try
+            {
+                logHeader =
                 from line in lineList
                 select new LogHeader()
                 {
@@ -364,12 +371,14 @@ namespace W6OP.ContestLogAnalyzer
                     SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX: ''").First(), 7, ""),
                 };
 
+            }
+            catch (Exception ex)
+            {
+                string a = ex.Message;
+                throw;
+            }
+
             return logHeader.FirstOrDefault();
-            //}
-            //catch (Exception ex)
-            //{
-            //    string a = ex.Message;
-            //}
         }
 
         /// <summary>
@@ -472,7 +481,7 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         isValidSession = true;
                     }
-                        break;
+                    break;
                 case Session.Session_2:
                     if (qsoSessionTime >= 1200 && qsoSessionTime <= 1559)
                     {
@@ -489,7 +498,7 @@ namespace W6OP.ContestLogAnalyzer
                     isValidSession = false;
                     break;
             }
-            
+
             return isValidSession;
         }
 

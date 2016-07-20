@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace W6OP.ContestLogAnalyzer
@@ -22,6 +23,10 @@ namespace W6OP.ContestLogAnalyzer
             {
                 throw new InvalidOperationException();
             }
+
+            // remove extra embedded spaces between words
+            Regex trimmer = new Regex(@"\s\s+");
+            description = trimmer.Replace(description, " ");
 
             foreach (var field in type.GetFields())
             {
@@ -52,7 +57,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 }
             }
-            throw new ArgumentException("Not found.", "description");
+            throw new ArgumentException("Not found.", description);
             // or return default(T);
         }
 
