@@ -247,7 +247,8 @@ namespace W6OP.PrintEngine
         {
             string reportFileName = null;
             string message = null;
-            string message2 = null;
+            var value = "";
+            //string message2 = null;
 
             // strip "/" from callsign
             if (callsign.IndexOf(@"/") != -1)
@@ -279,34 +280,45 @@ namespace W6OP.PrintEngine
                             message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
                                         qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName; // + qso.RejectReasons[0];
 
+                            // should only be one reason so lets change the collection type
                             foreach (var key in qso.RejectReasons.Keys)
                             {
-                                var value = qso.RejectReasons[key];
+                                 value = qso.RejectReasons[key];
                                 //message = message + "\t" + value.ToString();
-                                sw.WriteLine(message + "\t" + value.ToString());
+                                //sw.WriteLine(message + "\t" + value.ToString());
                             }
+
+                            sw.WriteLine(message + "\t" + value.ToString());
 
                             // print info on the original that was duped - the one that was counted
-                            if (qso.QSOIsDupe == true)
+                            if (qso.MatchingQSO != null)
                             {
-                                List<QSO> dupeList = validQsoList.Where(item => item.ContactCall == qso.ContactCall && item.Band == qso.Band).ToList();
+                                //List<QSO> dupeList = validQsoList.Where(item => item.ContactCall == qso.ContactCall && item.Band == qso.Band).ToList();
 
-                                if (dupeList.Count > 0)
-                                {
-                                    QSO dupeQSO = dupeList[0];
+                                //if (dupeList.Count > 0)
+                                //{
+                                // QSO dupeQSO = dupeList[0];
 
-                                    message2 = "QSO: " + "\t" + dupeQSO.Frequency + "\t" + dupeQSO.Mode + "\t" + dupeQSO.QsoDate + "\t" + dupeQSO.QsoTime + "\t" + dupeQSO.OperatorCall + "\t" + dupeQSO.SentSerialNumber.ToString() + "\t" +
+                               QSO dupeQSO = qso.MatchingQSO;
+
+                                    message = "QSO: " + "\t" + dupeQSO.Frequency + "\t" + dupeQSO.Mode + "\t" + dupeQSO.QsoDate + "\t" + dupeQSO.QsoTime + "\t" + dupeQSO.OperatorCall + "\t" + dupeQSO.SentSerialNumber.ToString() + "\t" +
                                            dupeQSO.OperatorName + "\t" + dupeQSO.ContactCall + "\t" + dupeQSO.ReceivedSerialNumber.ToString() + "\t" + dupeQSO.ContactName;
 
-                                    sw.WriteLine(message2);
+                                    //sw.WriteLine(message2);
+                                //}
+
+                                if (qso.ExcessTimeSpan > 0)
+                                {
+                                    message = message + "\t" + qso.ExcessTimeSpan.ToString() + " minutes";
+                                   // sw.WriteLine(message + "\t" + qso.ExcessTimeSpan.ToString() + " minutes");
                                 }
+
+                                sw.WriteLine(message);
                             }
 
-                            if (qso.ExcessTimeSpan > 0)
-                            {
-                                //message = message + "\t" + qso.ExcessTimeSpan.ToString() + "minutes";
-                                sw.WriteLine(message + "\t" + qso.ExcessTimeSpan.ToString() + "minutes");
-                            }
+                            
+
+                            sw.WriteLine("");
 
 
                             //sw.WriteLine(message);
@@ -349,7 +361,7 @@ namespace W6OP.PrintEngine
             message = String.Format("Final:   Valid QSOs: {0}   Mults: {1}   Score: {2}" , totalValidQSOs.ToString(), multiplierCount.ToString(), score.ToString());
             sw.WriteLine(message);
 
-            message = String.Format("Category:   {0}   Checked{1} ", contestLog.LogHeader.OperatorCategory, " What goes here");
+            message = String.Format("Category:   {0}   Checked: {1} ", contestLog.LogHeader.OperatorCategory, " What goes here");
             sw.WriteLine(message);
         }
 

@@ -187,15 +187,14 @@ namespace W6OP.ContestLogAnalyzer
                     // can't find a matching log
                     // need to see if call is in any logs
                     List<ContestLog> tempLog = contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.Status == QSOStatus.ValidQSO)).ToList();
-                    if (tempLog == null || tempLog.Count <= 1) // 1 would be only this log
+                    if (tempLog == null || tempLog.Count <= 1) // 1 would mean its only in this log
                     {
-                        // the qso is not in any other log
+                        // the call is not in any other log
                         qso.Status = QSOStatus.InvalidQSO;
                         qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
                     }
                     else
                     {
-                        // the qso is not in the other log
                         qso.Status = QSOStatus.ValidQSO;
                     } 
                 }

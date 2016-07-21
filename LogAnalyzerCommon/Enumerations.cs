@@ -14,11 +14,11 @@ namespace W6OP.ContestLogAnalyzer
         Band,
         [Description("The QSO does not match the other log")]
         NoQSOMatch,
-        [Description("The call is a busted call")]
+        [Description("The call is not in any other log")]
         NoQSO,
         [Description("The call is not in the other log")]
         BustedCallSign,
-        [Description("The serial number is incorrect")]
+        [Description("The received serial number is incorrect")]
         SerialNumber,
         [Description("The operator name does not match")]
         OperatorName,
