@@ -241,7 +241,7 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incoreect serial number
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.OperatorCall == qso.ContactCall && q.Status == QSOStatus.ValidQSO); //&& Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall && q.Status == QSOStatus.ValidQSO); //&& Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -250,7 +250,7 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incorrect band
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.ContactName == qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.OperatorCall == qso.ContactCall && q.Status == QSOStatus.ValidQSO);
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.OperatorName == qso.ContactName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.OperatorCall == qso.ContactCall && q.Status == QSOStatus.ValidQSO);
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -268,7 +268,7 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incoreect call
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.Status == QSOStatus.ValidQSO);
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.Status == QSOStatus.ValidQSO);
             if (matchQSO != null)
             {
                 // store the matching QSO

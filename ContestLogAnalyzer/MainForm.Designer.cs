@@ -305,6 +305,7 @@
             this.LabelProgress.Size = new System.Drawing.Size(38, 15);
             this.LabelProgress.TabIndex = 14;
             this.LabelProgress.Text = "label2";
+            this.LabelProgress.Visible = false;
             // 
             // TabControlMain
             // 

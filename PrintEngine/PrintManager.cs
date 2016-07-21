@@ -309,7 +309,7 @@ namespace W6OP.PrintEngine
 
                                 if (qso.ExcessTimeSpan > 0)
                                 {
-                                    message = message + "\t" + qso.ExcessTimeSpan.ToString() + " minutes";
+                                    message = message + "\t" + qso.ExcessTimeSpan.ToString() + " minutes difference";
                                    // sw.WriteLine(message + "\t" + qso.ExcessTimeSpan.ToString() + " minutes");
                                 }
 
