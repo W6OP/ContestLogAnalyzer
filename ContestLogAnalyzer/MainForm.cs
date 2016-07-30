@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 using W6OP.PrintEngine;
 
@@ -66,6 +67,12 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void MainForm_Load(object sender, EventArgs e)
         {
+            Assembly asm = Assembly.GetExecutingAssembly();
+            AssemblyName an = asm.GetName();
+            string version = an.Version.Major + "." + an.Version.Minor + "." + an.Version.Build + "." + an.Version.Revision;
+
+            this.Text = "W6OP Contest Log Analyzer (" + version + ")";
+
             if (_LogProcessor == null)
             {
                 _LogProcessor = new LogProcessor();
