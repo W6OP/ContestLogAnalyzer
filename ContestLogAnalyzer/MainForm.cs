@@ -200,7 +200,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 ProgressBarLoad.Maximum = 0;
                 UpdateListViewLoad("", "", true);
-                UpdateListViewAnalysis("", "", true);
+                UpdateListViewAnalysis("", "", "", true);
                 UpdateListViewScore(new ContestLog(), true);
                 ButtonStartAnalysis.Enabled = false;
 
@@ -395,7 +395,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         private void AnalyzeLogs()
         {
-            UpdateListViewAnalysis("", "", true);
+            UpdateListViewAnalysis("", "", "", true);
             ProgressBarLoad.Maximum = 0;
             ProgressBarLoad.Maximum = _ContestLogs.Count;
 
@@ -420,9 +420,9 @@ namespace W6OP.ContestLogAnalyzer
         /// Update the list view with the call sign last processed.
         /// </summary>
         /// <param name="value"></param>
-        private void _LogAnalyser_OnProgressUpdate(string value, string qsoCount, Int32 progress)
+        private void _LogAnalyser_OnProgressUpdate(string value, string qsoCount, string validQsoCount, Int32 progress)
         {
-            UpdateListViewAnalysis(value, qsoCount, false);
+            UpdateListViewAnalysis(value, qsoCount, validQsoCount, false);
             UpdateProgress(progress);
         }
 
@@ -435,11 +435,11 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (e.Error != null)
             {
-                UpdateListViewAnalysis(e.Error.Message, "", false);
+                UpdateListViewAnalysis(e.Error.Message, "", "", false);
             }
             else
             {
-                UpdateListViewAnalysis("Log analysis completed!", "", false);
+                UpdateListViewAnalysis("Log analysis completed!", "", "", false);
                 Cursor = Cursors.Default;
                 ButtonScoreLogs.Enabled = true; // might be cross thread
             }
@@ -632,11 +632,11 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="message"></param>
         /// <param name="clear"></param>
-        private void UpdateListViewAnalysis(string message, string count, bool clear)
+        private void UpdateListViewAnalysis(string message, string count, string validCount, bool clear)
         {
             if (InvokeRequired)
             {
-                this.BeginInvoke(new Action<string, string, bool>(this.UpdateListViewAnalysis), message, count, clear);
+                this.BeginInvoke(new Action<string, string, string, bool>(this.UpdateListViewAnalysis), message, count, validCount, clear);
                 return;
             }
 
@@ -648,6 +648,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 ListViewItem item = new ListViewItem(message);
                 item.SubItems.Add(count);
+                item.SubItems.Add(validCount);
                 ListViewAnalysis.Items.Insert(0, item);
             }
         }

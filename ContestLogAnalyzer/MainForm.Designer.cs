@@ -65,6 +65,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.ButtonPrint = new System.Windows.Forms.Button();
             this.ButtonPrintScores = new System.Windows.Forms.Button();
+            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TabControlMain.SuspendLayout();
             this.TabPageLogStatus.SuspendLayout();
             this.TabPageAnalysis.SuspendLayout();
@@ -203,7 +204,8 @@
             this.ListViewAnalysis.BackColor = System.Drawing.SystemColors.Info;
             this.ListViewAnalysis.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader2,
-            this.columnHeader6});
+            this.columnHeader6,
+            this.columnHeader13});
             this.ListViewAnalysis.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ListViewAnalysis.GridLines = true;
             this.ListViewAnalysis.Location = new System.Drawing.Point(3, 3);
@@ -221,8 +223,8 @@
             // 
             // columnHeader6
             // 
-            this.columnHeader6.Text = "QSO Count";
-            this.columnHeader6.Width = 78;
+            this.columnHeader6.Text = "Total QSOs";
+            this.columnHeader6.Width = 76;
             // 
             // ListViewScore
             // 
@@ -395,6 +397,11 @@
             this.ButtonPrintScores.Visible = false;
             this.ButtonPrintScores.Click += new System.EventHandler(this.ButtonPrintScores_Click);
             // 
+            // columnHeader13
+            // 
+            this.columnHeader13.Text = "Valid QSOs";
+            this.columnHeader13.Width = 80;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -469,6 +476,7 @@
         private System.Windows.Forms.ColumnHeader columnHeader11;
         private System.Windows.Forms.ColumnHeader columnHeader12;
         private System.Windows.Forms.Button ButtonPrintScores;
+        private System.Windows.Forms.ColumnHeader columnHeader13;
     }
 }
 
