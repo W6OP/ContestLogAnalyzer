@@ -361,7 +361,7 @@ namespace W6OP.PrintEngine
             message = String.Format("Final:   Valid QSOs: {0}   Mults: {1}   Score: {2}" , totalValidQSOs.ToString(), multiplierCount.ToString(), score.ToString());
             sw.WriteLine(message);
 
-            message = String.Format("Category:   {0}   Checked: {1} ", contestLog.LogHeader.OperatorCategory, " What goes here");
+            message = String.Format("Category:   {0}   Power: {1} ", contestLog.LogHeader.OperatorCategory, contestLog.LogHeader.Power);
             sw.WriteLine(message);
         }
 

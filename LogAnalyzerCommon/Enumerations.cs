@@ -49,9 +49,6 @@ namespace W6OP.ContestLogAnalyzer
         Assisted,
         [Description("NON-ASSISTED")]
         NonAssisted,
-        // added for K5OT
-       // [Description("NON-ASSISTED")]
-        //UnAssisted,
         [Description("UNKNOWN")]
         Uknown
     }
@@ -116,6 +113,13 @@ namespace W6OP.ContestLogAnalyzer
         .Single(x => (myEnum)x.GetValue(null) == enumValue),    
         typeof(DescriptionAttribute))).Description
      */
+
+    // added for K5OT
+    //[Description("UNASSISTED")]
+    //UnAssisted,
+    // added for K9OZ
+    //[Description("NONASSISTED")]
+    //NotAssisted,
 
     public enum CategoryMode
     {

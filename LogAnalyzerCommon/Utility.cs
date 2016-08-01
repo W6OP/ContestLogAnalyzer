@@ -24,6 +24,9 @@ namespace W6OP.ContestLogAnalyzer
                 throw new InvalidOperationException();
             }
 
+            // remove tabs
+            description = description.Replace("\t", " ");
+
             // remove extra embedded spaces between words
             Regex trimmer = new Regex(@"\s\s+");
             description = trimmer.Replace(description, " ");
@@ -37,6 +40,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (attribute != null)
                     {
+                        // maybe need to look at the TYPE and then do indexOf or something
                         if (attribute.Description == description)
                         {
                             return (T)field.GetValue(null);
@@ -57,8 +61,8 @@ namespace W6OP.ContestLogAnalyzer
 
                 }
             }
-            throw new ArgumentException("Not found.", description);
-            // or return default(T);
+            //throw new ArgumentException("Not found.", description);
+            return default(T); // this returns the first or "=0" enum
         }
 
         /// <summary>
