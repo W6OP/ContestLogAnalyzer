@@ -108,6 +108,7 @@ namespace W6OP.ContestLogAnalyzer
                         contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
                     }
 
+                    List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
 
                     // make sure minimum amout of information is correct
                     if (contestLog.LogHeader != null && AnalyzeHeader(contestLog, out reason) == true)
@@ -130,6 +131,8 @@ namespace W6OP.ContestLogAnalyzer
                     lineList = lineList.Where(x => x.IndexOf("QSO:", 0) != -1).ToList();
                     contestLog.Session = (int)session;
                     contestLog.QSOCollection = CollectQSOs(lineList, session, contestLog.LogHeader.NameSent, contestLog.LogHeader.OperatorCallSign);
+
+                    validQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
 
                     if (contestLog.QSOCollection == null)
                     {
@@ -437,7 +440,7 @@ namespace W6OP.ContestLogAnalyzer
                          ContactCall = split[8],
                          ReceivedSerialNumber = ConvertSerialNumber(split[9]),
                          ContactName = split[10],
-                         CallIsValid = CheckCallSignFormat(split[5]),
+                         CallIsInValid = CheckCallSignFormat(split[5]),
                          SessionIsValid = CheckForvalidSession(session, split[3], split[4])
                      };
 
@@ -568,16 +571,15 @@ namespace W6OP.ContestLogAnalyzer
         private bool CheckCallSignFormat(string call)
         {
             string regex = @"^([A-Z]{1,2}|[0-9][A-Z])([0-9])([A-Z]{1,3})$";
-            bool match = false;
-
+            bool invalid = true;
 
             // should this pass "DR50RRDXA" it does not currently
             if (Regex.IsMatch(call.ToUpper(), regex, RegexOptions.IgnoreCase))
             {
-                match = true;
+                invalid = false;
             }
 
-            return match;
+            return invalid;
         }
 
         #endregion

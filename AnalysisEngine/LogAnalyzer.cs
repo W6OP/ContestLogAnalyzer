@@ -48,8 +48,8 @@ namespace W6OP.ContestLogAnalyzer
         {
             string call = null;
             string name = null;
-            //Int32 count = 0; // QSOs processed?
             Int32 progress = 0;
+            Int32 validQsos;
 
 
             foreach (ContestLog contestLog in contestLogList)
@@ -59,9 +59,6 @@ namespace W6OP.ContestLogAnalyzer
                 name = contestLog.LogHeader.NameSent.ToUpper();
 
                 progress++;
-
-                // ReportProgress with Callsign
-                //OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), progress);
 
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
@@ -76,16 +73,13 @@ namespace W6OP.ContestLogAnalyzer
                     MatchQSOs(qsoList, contestLogList, call, name);
 
                     MarkMultipliers(qsoList);
-
-
-                    // count = CollateLogs(contestLogList, contestLog, count);
                 }
                 else
                 {
                     // what do I do now?
                 }
 
-                Int32 validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
+                validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
 
                 // ReportProgress with Callsign
                 OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
@@ -135,7 +129,7 @@ namespace W6OP.ContestLogAnalyzer
 
             if (qsos.Any())
             {
-                qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
+                qsos.Select(c => { c.CallIsInValid = false; return c; }).ToList();
             }
         }
 
@@ -158,19 +152,16 @@ namespace W6OP.ContestLogAnalyzer
             QSO matchQSO = null;
 
             // only look at valid QSOs
-            List<QSO> validQsoList = qsoList.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+            //List<QSO> validQsoList = qsoList.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
 
-            foreach (QSO qso in validQsoList)
+            foreach (QSO qso in qsoList) //validQsoList
             {
                 // get the other log that matches this QSO contact call
-                contestLog = (ContestLog)contestLogList.FirstOrDefault(q => q.LogOwner == qso.ContactCall);
+                contestLog = contestLogList.FirstOrDefault(q => q.LogOwner == qso.ContactCall);
 
                 if (contestLog != null)
                 {
                     // now see if a QSO matches this QSO
-                    //matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName &&
-                    //                        q.ReceivedSerialNumber == qso.SentSerialNumber && DateTime.Compare(q.QSODateTime, qso.QSODateTime) == 0);
-
                     matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
                                             q.SentSerialNumber == qso.ReceivedSerialNumber && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
 
@@ -191,7 +182,8 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     // can't find a matching log
                     // need to see if call is in any logs
-                    List<ContestLog> tempLog = contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.Status == QSOStatus.ValidQSO)).ToList();
+                    // don't want to exclude invalid QSOs as we are checking all logs and al QSOs
+                    List<ContestLog> tempLog = contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall )).ToList(); // && a.Status == QSOStatus.ValidQSO
                     if (tempLog == null || tempLog.Count <= 1) // 1 would mean its only in this log
                     {
                         // the call is not in any other log
@@ -207,26 +199,6 @@ namespace W6OP.ContestLogAnalyzer
                     } 
                 }
             }
-
-
-            // get the first QSO - lets say W1XXX
-            // look for the log for W1XXX
-            // List<QSO> validQsoList = qsoList.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
-            //matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => String.Equals(a.ContactCall, operatorCall, StringComparison.CurrentCultureIgnoreCase) && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && String.Equals(a.ContactName, sentName, StringComparison.CurrentCultureIgnoreCase) && a.Status == QSOStatus.InvalidQSO)).ToList());
-
-
-            // this might be tough
-            // for each QSO I need to query every other log for an exact match of name and serial number - if match then good and quit
-            // if no match then search by serial number, band, mode, date/time? (may not be exact)
-            // if no match then search by sent name, band, mode, date/time? (may not be exact)
-
-
-            // for each QSO find the matching log
-            //foreach (ContestLog contestLog in contestLogList)
-            //{
-            //    // List<QSO> qsoList = contestLog.QSOCollection.Where(q => q.ContactCall == operatorCall && q.ReceivedSerialNumber == sent && q.Band == band && q.ContactName == sentName && q.Status == QSOStatus.InvalidQSO).ToList(); 
-            //    //matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => String.Equals(a.ContactCall, operatorCall, StringComparison.CurrentCultureIgnoreCase) && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && String.Equals(a.ContactName, sentName, StringComparison.CurrentCultureIgnoreCase) && a.Status == QSOStatus.InvalidQSO)).ToList());
-            //}
         }
 
         /// <summary>
@@ -236,36 +208,27 @@ namespace W6OP.ContestLogAnalyzer
         private bool SearchForBustedCall(QSO qso, List<ContestLog> contestLogList)
         {
             bool found = false;
-           List< QSO> matchQSO = null;
-            //from contestLog in contestLogList
-            //where contestLog.IsValidLog
-            //from qsox in contestLog.QSOCollection
-            //where qsox.SentSerialNumber == qso.SentSerialNumber
-            //select qsox;
+            List<QSO> matchingQSOs = null;
 
-            matchQSO = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall != qso.ContactCall && q.SentSerialNumber == qso.ReceivedSerialNumber && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList();
+            matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.ContactCall == qso.OperatorCall &&
+                                            q.SentSerialNumber == qso.ReceivedSerialNumber && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList(); // && q.Status == QSOStatus.ValidQSO
 
-
-
-            //ContestLog contestLog = (ContestLog)contestLogList.FirstOrDefault(q => (QSO)q.QSOCollection.FirstOrDefault(q => q.Band == qso.Band));
-
-            //QSO matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall != qso.ContactCall && q.SentSerialNumber == qso.ReceivedSerialNumber && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
-
-            if (matchQSO != null && matchQSO.Count > 0) // found it
+            if (matchingQSOs != null && matchingQSOs.Count > 0) // found it
             {
-                if (matchQSO.Count == 0)
+                if (matchingQSOs.Count == 1)
                 {
-                    RejectReason reason = RejectReason.BustedCallSign;
-                    qso.Status = QSOStatus.InvalidQSO;
-                    qso.MatchingQSO = matchQSO[0];
-                    qso.RejectReasons.Add(reason, EnumHelper.GetDescription(reason));
+                    found = true;
+                    //RejectReason reason = RejectReason.BustedCallSign;
+                    qso.CallIsBusted = true;
+                    //qso.Status = QSOStatus.InvalidQSO;
+                    qso.MatchingQSO = matchingQSOs[0];
+                    //qso.RejectReasons.Add(reason, EnumHelper.GetDescription(reason));
                 }
                 else
                 {
                     int a = 0;
                 }
             }
-
 
             return found;
         }
@@ -277,7 +240,7 @@ namespace W6OP.ContestLogAnalyzer
             TimeSpan ts;
 
             // query for time difference
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5 && q.Status == QSOStatus.ValidQSO);
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5); // && q.Status == QSOStatus.ValidQSO
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -289,8 +252,8 @@ namespace W6OP.ContestLogAnalyzer
                 return RejectReason.InvalidTime;
             }
 
-            // query for incoreect serial number
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall == qso.OperatorCall && q.Status == QSOStatus.ValidQSO); //&& Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5
+            // query for incorrect serial number
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.SentSerialNumber != qso.ReceivedSerialNumber && q.ContactCall == qso.OperatorCall); // && q.Status == QSOStatus.ValidQSO
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -299,7 +262,7 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incorrect band
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.ContactName == qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.ContactCall == qso.OperatorCall && q.Status == QSOStatus.ValidQSO);
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.ContactCall == qso.OperatorCall); // && q.Status == QSOStatus.ValidQSO
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -308,7 +271,7 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incorrect name
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.SentSerialNumber == qso.ReceivedSerialNumber && q.ContactCall == qso.OperatorCall && q.Status == QSOStatus.ValidQSO);
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName != qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.ContactCall == qso.OperatorCall); // && q.Status == QSOStatus.ValidQSO
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -317,7 +280,7 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incorrect call
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.Status == QSOStatus.ValidQSO);
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.ContactCall != qso.OperatorCall); // && q.Status == QSOStatus.ValidQSO
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -339,7 +302,7 @@ namespace W6OP.ContestLogAnalyzer
 
             if (qsos.Any())
             {
-                qsos.Select(c => { c.CallIsValid = false; return c; }).ToList();
+                qsos.Select(c => { c.CallIsInValid = false; return c; }).ToList();
             }
         }
 

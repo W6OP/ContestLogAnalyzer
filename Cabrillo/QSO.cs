@@ -15,7 +15,7 @@ namespace W6OP.ContestLogAnalyzer
         public QSO()
         {
             QSOIsDupe = false;
-            CallIsValid = true;
+            CallIsInValid = false;
             SessionIsValid = true;
         }
 
@@ -27,8 +27,6 @@ namespace W6OP.ContestLogAnalyzer
 
         //private QSOStatus _Status = QSOStatus.ValidQSO;
         public QSOStatus Status { get; set; } = QSOStatus.ValidQSO;
-
-        public List<QSO> InValidQSOs { get; set; } = new List<QSO>();
 
         public QSO MatchingQSO { get; set; } = null;
 
@@ -77,12 +75,11 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// The operators call sign is invalid for this QSO
         /// </summary>
-        public bool CallIsValid
+        public bool CallIsInValid
         {
-            //get { return CallIsValid; }
             set
             {
-                if (value == false)
+                if (value == true)
                 {
                     if (!RejectReasons.ContainsKey(RejectReason.InvalidCall))
                     {
@@ -107,11 +104,11 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// The operators name does not match for this QSO
         /// </summary>
-        public bool NameIsValid
+        public bool OpNameIsInValid
         {
             set
             {
-                if (value == false)
+                if (value == true)
                 {
                     if (!RejectReasons.ContainsKey(RejectReason.OperatorName))
                     {
@@ -135,13 +132,13 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// The call is busted - do I want a sub reason, is it call or serial number?
-        /// The calsign does not mact the call sign in the ther log
+        /// The calsign does not match the call sign in the other log
         /// </summary>
         public bool CallIsBusted
         {
             set
             {
-                if (value == false)
+                if (value == true)
                 {
                     if (!RejectReasons.ContainsKey(RejectReason.BustedCallSign))
                     {
@@ -170,7 +167,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             set
             {
-                if (value == false)
+                if (value == true)
                 {
                     if (!RejectReasons.ContainsKey(RejectReason.SerialNumber))
                     {
@@ -194,7 +191,7 @@ namespace W6OP.ContestLogAnalyzer
 
 
         /// <summary>
-        /// This QSO does not belong to the current session
+        /// This QSO belongs to the current session
         /// </summary>
         public bool SessionIsValid
         {
