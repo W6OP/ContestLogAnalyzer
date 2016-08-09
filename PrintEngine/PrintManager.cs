@@ -230,9 +230,17 @@ namespace W6OP.PrintEngine
                             // should only be one reason so lets change the collection type
                             foreach (var key in qso.RejectReasons.Keys)
                             {
-                                 value = qso.RejectReasons[key];
+                                if (key == RejectReason.OperatorName)
+                                {
+                                    value = qso.RejectReasons[key] + " - " + qso.IncorrectName;
+                                }
+                                else
+                                {
+                                    value = qso.RejectReasons[key];
+                                }
                             }
 
+                            
                             sw.WriteLine(message + "\t" + value.ToString());
 
                             // print info on the original that was duped - the one that was counted

@@ -16,7 +16,7 @@ namespace W6OP.ContestLogAnalyzer
         NoQSOMatch,
         [Description("The call is not in any other log")]
         NoQSO,
-        [Description("The call is not in the other log")]
+        [Description("Busted call")]
         BustedCallSign,
         [Description("The received serial number is incorrect")]
         SerialNumber,

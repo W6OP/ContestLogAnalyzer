@@ -181,18 +181,18 @@ namespace W6OP.ContestLogAnalyzer
                 else
                 {
                     // can't find a matching log
-                    // need to see if call is in any logs
-                    // don't want to exclude invalid QSOs as we are checking all logs and al QSOs
-                    List<ContestLog> tempLog = contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall )).ToList(); // && a.Status == QSOStatus.ValidQSO
-                    if (tempLog == null || tempLog.Count <= 1) // 1 would mean its only in this log
+                    // find all the logs this operator is in so we can try to get a match without call signs
+                    // don't want to exclude invalid QSOs as we are checking all logs and all QSOs
+                    List<ContestLog> tempLog = contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall )).ToList();
+                    if (tempLog == null || tempLog.Count <= 1) // 1 would mean it's only in this log
                     {
                         // the call is not in any other log
                         qso.Status = QSOStatus.InvalidQSO;
                         qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
                     }
                     else
-                    { // ok call is not in any logs, did someone work only one contester or is it busted. Need to query all logs for everything except call sign
-                        if (SearchForBustedCall(qso, contestLogList) == false) // did not find it
+                    { // ok call is in 2 or more logs, is it busted
+                        if (SearchForBustedCall(qso, contestLogList) == false) // did not find it so is name incorrect
                         {
                             qso.Status = QSOStatus.ValidQSO;
                         }
@@ -210,29 +210,78 @@ namespace W6OP.ContestLogAnalyzer
             bool found = false;
             List<QSO> matchingQSOs = null;
 
+            // look for a log without a call sign parameter
             matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.ContactCall == qso.OperatorCall &&
                                             q.SentSerialNumber == qso.ReceivedSerialNumber && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList(); // && q.Status == QSOStatus.ValidQSO
 
-            if (matchingQSOs != null && matchingQSOs.Count > 0) // found it
+            if (matchingQSOs != null && matchingQSOs.Count > 0)
             {
                 if (matchingQSOs.Count == 1)
+                {    // found it so call is busted
+                    found = true;
+                    qso.CallIsBusted = true;
+                    qso.MatchingQSO = matchingQSOs[0];
+                }
+            }
+            else// did not find it
+            {
+                // WHY DOESN'T THIS WORK!!!
+
+            // This is where I left off, I am trying to find out if a guy that did not send in a log is in other logs
+            // then if he is, is the name correct
+
+
+
+                found = SearchForIncorrectname(qso, contestLogList);
+            }
+
+            return found;
+        }
+
+        /// <summary>
+        /// Now see if the name is incorrect and that is why we can't find the QSO
+        /// This is only when the call sign did not submit a log
+        /// </summary>
+        /// <param name="qso"></param>
+        /// <param name="contestLogList"></param>
+        /// <returns></returns>
+        private bool SearchForIncorrectname(QSO qso, List<ContestLog> contestLogList)
+        {
+            bool found = false;
+            Int32 matchCount = 0;
+            List<QSO> matchingQSOs = null;
+
+            // now look for a match without the operator name
+            matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
+
+            if (matchingQSOs.Count >= 1)
+            {
+                // loop through and see if first few names match
+                for (int i = 0; i < matchingQSOs.Count; i++)
+                {
+                    if (qso.ContactName == matchingQSOs[i].ContactName)
+                    {
+                        matchCount++;
+                    }
+                }
+
+                if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 < 50)
                 {
                     found = true;
-                    //RejectReason reason = RejectReason.BustedCallSign;
-                    qso.CallIsBusted = true;
-                    //qso.Status = QSOStatus.InvalidQSO;
-                    qso.MatchingQSO = matchingQSOs[0];
-                    //qso.RejectReasons.Add(reason, EnumHelper.GetDescription(reason));
-                }
-                else
-                {
-                    int a = 0;
+                    qso.IncorrectName = matchingQSOs[0].ContactName;
+                    qso.OpNameIsInValid = true;
                 }
             }
 
             return found;
         }
 
+        /// <summary>
+        /// Determine the reason to reject the QSO
+        /// </summary>
+        /// <param name="contestLog"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
         private RejectReason FindRejectReason(ContestLog contestLog, QSO qso)
         {
             QSO matchQSO = null;

@@ -72,6 +72,8 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public bool QSOHasDupes { get; set; }
 
+        public string IncorrectName { get; set; }
+
         /// <summary>
         /// The operators call sign is invalid for this QSO
         /// </summary>
