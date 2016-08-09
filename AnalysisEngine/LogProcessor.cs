@@ -313,8 +313,7 @@ namespace W6OP.ContestLogAnalyzer
                         NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent:")).DefaultIfEmpty("Name Sent: NONE").First(), 10, "NONE"),
                         // need to work on address
                         Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
-                        SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX: ''").First(), 7, ""),
-                        //SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).FirstOrDefault().Substring(7).Trim()),
+                        SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX:").First(), 8, ""),
                     };
 
                 //return logHeader.FirstOrDefault();
@@ -371,7 +370,7 @@ namespace W6OP.ContestLogAnalyzer
                     NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent:")).DefaultIfEmpty("Name Sent: NONE").First(), 10, "NONE"),
                     // need to work on address
                     Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
-                    SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX: ''").First(), 7, ""),
+                    SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX:").First(), 8, ""),
                 };
 
             }

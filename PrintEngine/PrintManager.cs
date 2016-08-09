@@ -26,68 +26,6 @@ namespace W6OP.PrintEngine
 
         }
 
-        /*
-        public void PrintTextScoreSheet(List<ContestLog> contestLogs)
-        {
-            string reportFileName = null;
-            string fileName = null;
-            string session = null;
-            string message = null;
-            string assisted = null;
-            string so2r = null;
-            string year = DateTime.Now.ToString("yyyy");
-            List<QSO> validQsoList;
-
-            session = contestLogs[0].Session.ToString();
-            fileName = year + " CWO Box Scores Session " + session + ".txt"; // later convert to PDF
-            reportFileName = Path.Combine(ScoreFolder, fileName);
-
-
-
-            // LETS SORT SO IS IN SAME ORDER AS DISPLAY
-            contestLogs = contestLogs.OrderBy(o => o.LogOwner).ToList();
-
-
-            using (StreamWriter sw = File.CreateText(reportFileName))
-            {
-                // Add Header ie. 2014 CW Open Session 1 
-                message = year + " CW Open Session " + session;
-
-                sw.WriteLine(message + "\r\n");
-                //sw.WriteLine("");
-
-                message = "Call" + "\t\t" + "Operator" + "\t" + "Station" + "\t" + "Name" + "\t" + "QSOs" + "\t" + "Mults" + "\t" + "Final" + "\t" + "Power" + "\t" + "SO2R" + "\t" + "Assisted";
-                sw.WriteLine(message);
-
-
-                foreach (ContestLog contestlog in contestLogs)
-                {
-                    assisted = "N";
-                    so2r = "N";
-
-                    // only look at valid QSOs
-                    validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
-
-                    if (contestlog.LogHeader.Assisted == CategoryAssisted.Assisted)
-                    {
-                        assisted = "Y";
-                    }
-
-                    if (contestlog.SO2R == true)
-                    {
-                        so2r = "Y";
-                    }
-
-                    message = contestlog.LogOwner + "\t\t" + contestlog.Operator + "\t" + contestlog.Station + "\t" + contestlog.OperatorName + "\t" + validQsoList.Count.ToString() + "\t";
-
-                    message = message + contestlog.Multipliers.ToString() + "\t" + contestlog.ActualScore.ToString() + "\t" + contestlog.LogHeader.Power + "\t" + so2r + "\t" + assisted;
-
-                    sw.WriteLine(message);
-                }
-            }
-        }
-        */
-
         // using iTextSharp
         public void PrintPdfScoreSheet(List<ContestLog> contestLogs)
         {
@@ -216,6 +154,10 @@ namespace W6OP.PrintEngine
             }
         }
 
+        /// <summary>
+        /// Build a table to hold the results.
+        /// </summary>
+        /// <returns></returns>
         private PdfPTable BuildPdfTable()
         {
             PdfPTable table = new PdfPTable(9);
@@ -271,12 +213,17 @@ namespace W6OP.PrintEngine
                     sw.WriteLine("CWO log checking results for " + callsign);
                     sw.WriteLine("");
 
+                    if (!String.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
+                    {
+                        sw.WriteLine(contestLog.LogHeader.SoapBox);
+                        sw.WriteLine("");
+                    }
+
                     if (inValidQsoList.Count > 0)
                     {
                         foreach (QSO qso in inValidQsoList)
                         {
                             // print QSO line and reject reason
-                            // QSO: Freq, mode, date, time, op, sent s/n, opname, contact call, rx s/n, contact name, rejectReason
                             message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
                                         qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName; // + qso.RejectReasons[0];
 
@@ -284,8 +231,6 @@ namespace W6OP.PrintEngine
                             foreach (var key in qso.RejectReasons.Keys)
                             {
                                  value = qso.RejectReasons[key];
-                                //message = message + "\t" + value.ToString();
-                                //sw.WriteLine(message + "\t" + value.ToString());
                             }
 
                             sw.WriteLine(message + "\t" + value.ToString());
@@ -293,35 +238,20 @@ namespace W6OP.PrintEngine
                             // print info on the original that was duped - the one that was counted
                             if (qso.MatchingQSO != null)
                             {
-                                //List<QSO> dupeList = validQsoList.Where(item => item.ContactCall == qso.ContactCall && item.Band == qso.Band).ToList();
-
-                                //if (dupeList.Count > 0)
-                                //{
-                                // QSO dupeQSO = dupeList[0];
-
                                QSO dupeQSO = qso.MatchingQSO;
 
                                     message = "QSO: " + "\t" + dupeQSO.Frequency + "\t" + dupeQSO.Mode + "\t" + dupeQSO.QsoDate + "\t" + dupeQSO.QsoTime + "\t" + dupeQSO.OperatorCall + "\t" + dupeQSO.SentSerialNumber.ToString() + "\t" +
                                            dupeQSO.OperatorName + "\t" + dupeQSO.ContactCall + "\t" + dupeQSO.ReceivedSerialNumber.ToString() + "\t" + dupeQSO.ContactName;
 
-                                    //sw.WriteLine(message2);
-                                //}
-
                                 if (qso.ExcessTimeSpan > 0)
                                 {
                                     message = message + "\t" + qso.ExcessTimeSpan.ToString() + " minutes difference";
-                                   // sw.WriteLine(message + "\t" + qso.ExcessTimeSpan.ToString() + " minutes");
                                 }
 
                                 sw.WriteLine(message);
                             }
 
-                            
-
                             sw.WriteLine("");
-
-
-                            //sw.WriteLine(message);
                         }
                     }
                     else
