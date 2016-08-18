@@ -151,10 +151,7 @@ namespace W6OP.ContestLogAnalyzer
             ContestLog contestLog = null;
             QSO matchQSO = null;
 
-            // only look at valid QSOs
-            //List<QSO> validQsoList = qsoList.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
-
-            foreach (QSO qso in qsoList) //validQsoList
+            foreach (QSO qso in qsoList) 
             {
                 // get the other log that matches this QSO contact call
                 contestLog = contestLogList.FirstOrDefault(q => q.LogOwner == qso.ContactCall);
@@ -162,8 +159,9 @@ namespace W6OP.ContestLogAnalyzer
                 if (contestLog != null)
                 {
                     // now see if a QSO matches this QSO
+                    // leave the time check here for future use
                     matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
-                                           q.SentSerialNumber == qso.ReceivedSerialNumber && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
+                                           Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);  
 
                     if (matchQSO != null) // found it
                     {
@@ -175,7 +173,8 @@ namespace W6OP.ContestLogAnalyzer
                         // narrow down search
                         RejectReason reason = FindRejectReason(contestLog, qso);
 
-                        if (reason != RejectReason.None) // test for non because S/N can be off by one
+                        // test for NONE because S/N can be off by one
+                        if (reason != RejectReason.InvalidTime) 
                         {
                             qso.Status = QSOStatus.InvalidQSO;
                             qso.RejectReasons.Add(reason, EnumHelper.GetDescription(reason));
@@ -187,8 +186,9 @@ namespace W6OP.ContestLogAnalyzer
                     // can't find a matching log
                     // find all the logs this operator is in so we can try to get a match without call signs
                     // don't want to exclude invalid QSOs as we are checking all logs and all QSOs
-                    List<ContestLog> tempLog = contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall)).ToList();
-                    if (tempLog == null || tempLog.Count <= 1) // 1 would mean it's only in this log
+                    List<ContestLog> tempLog = contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == qso.ContactCall)).ToList();
+
+                    if (tempLog.Count <= 1) // 1 would mean this call sign only in this log
                     {
                         // the call is not in any other log
                         qso.Status = QSOStatus.InvalidQSO;
@@ -206,38 +206,6 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Alan allows the S/N to be off by one.
-        /// </summary>
-        /// <param name="sent"></param>
-        /// <param name="received"></param>
-        /// <returns></returns>
-        private bool CheckForOneOff(int sent, int received)
-        {
-            bool inRange = false;
-            //int num = 1;
-
-            //return num > sent && num < received;
-
-            //if (sent == received)
-            //{
-            //    inRange = true;
-            //}
-
-            if (Math.Abs(sent - received) <= 1)
-            {
-                inRange = true;
-            }
-
-            //if (Math.Abs(received - sent) <= 1)
-            //{
-            //    inRange = true;
-            //}
-
-            return inRange;
-        }
-
-
-        /// <summary>
         /// Search every log for a match to this QSO without the call sign
         /// </summary>
         /// <param name="qso"></param>
@@ -247,8 +215,8 @@ namespace W6OP.ContestLogAnalyzer
             List<QSO> matchingQSOs = null;
 
             // look for a log without a call sign parameter
-            matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.ContactCall == qso.OperatorCall &&
-                                            q.SentSerialNumber == qso.ReceivedSerialNumber && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList(); // && q.Status == QSOStatus.ValidQSO
+            matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorCall == qso.ContactCall &&
+                                            Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList(); // && q.OperatorName == qso.ContactName 
 
             if (matchingQSOs != null && matchingQSOs.Count > 0)
             {
@@ -261,14 +229,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             else// did not find it
             {
-                // WHY DOESN'T THIS WORK!!!
-
-                // This is where I left off, I am trying to find out if a guy that did not send in a log is in other logs
-                // then if he is, is the name correct
-
-
-
-                found = SearchForIncorrectname(qso, contestLogList);
+                found = SearchForIncorrectName(qso, contestLogList);
             }
 
             return found;
@@ -281,11 +242,12 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qso"></param>
         /// <param name="contestLogList"></param>
         /// <returns></returns>
-        private bool SearchForIncorrectname(QSO qso, List<ContestLog> contestLogList)
+        private bool SearchForIncorrectName(QSO qso, List<ContestLog> contestLogList)
         {
             bool found = false;
             Int32 matchCount = 0;
             List<QSO> matchingQSOs = null;
+            string matchName = null;
 
             // now look for a match without the operator name
             matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
@@ -295,16 +257,17 @@ namespace W6OP.ContestLogAnalyzer
                 // loop through and see if first few names match
                 for (int i = 0; i < matchingQSOs.Count; i++)
                 {
-                    if (qso.ContactName == matchingQSOs[i].ContactName)
+                    if (qso.ContactName != matchingQSOs[i].ContactName)
                     {
                         matchCount++;
+                        matchName = matchingQSOs[i].ContactName;
                     }
                 }
 
-                if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 < 50)
+                if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 > 50)
                 {
                     found = true;
-                    qso.IncorrectName = matchingQSOs[0].ContactName;
+                    qso.IncorrectName = qso.ContactName + " --> " + matchName;
                     qso.OpNameIsInValid = true;
                 }
             }
@@ -325,37 +288,40 @@ namespace W6OP.ContestLogAnalyzer
             TimeSpan ts;
 
             // query for time difference
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5); // && q.Status == QSOStatus.ValidQSO
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5);  
             if (matchQSO != null)
             {
                 // store the matching QSO
                 qso.MatchingQSO = matchQSO;
-
                 ts = qso.QSODateTime.Subtract(matchQSO.QSODateTime);
-                qso.Status = QSOStatus.InvalidQSO;
                 qso.ExcessTimeSpan = Math.Abs(ts.Minutes);
-                return RejectReason.InvalidTime;
+
+                // temporarily remove time check
+                //return RejectReason.InvalidTime; 
+                // also need to check for incorrect S/N and name
+                return  RejectReason.InvalidTime;
             }
 
             // query for incorrect serial number
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.SentSerialNumber != qso.ReceivedSerialNumber && q.ContactCall == qso.OperatorCall);
+            matchQSO = (QSO)contestLog.QSOCollection.Where(q => q.Band == qso.Band && q.ContactName == qso.OperatorName  && q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) > 1).FirstOrDefault(); //
             if (matchQSO != null)
             {
                 // store the matching QSO
                 qso.MatchingQSO = matchQSO;
 
-                if (CheckForOneOff(matchQSO.SentSerialNumber, qso.ReceivedSerialNumber))
-                {
-                    return RejectReason.None;
-                }
-                else
-                {
+                //if (CheckForOneOff(matchQSO.SentSerialNumber, qso.ReceivedSerialNumber))
+                //{
+                //    // also need to check for incorrect name
+                //    reason =  RejectReason.None; 
+                //}
+                //else
+                //{
                     return RejectReason.SerialNumber;
-                }
+                //}
             }
 
             // query for incorrect band
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.ContactCall == qso.OperatorCall); // && q.Status == QSOStatus.ValidQSO
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && q.ContactCall == qso.OperatorCall); //
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -364,16 +330,17 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incorrect name
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName != qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.ContactCall == qso.OperatorCall); // && q.Status == QSOStatus.ValidQSO
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band  && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && q.ContactCall == qso.OperatorCall && q.ContactName == qso.OperatorName && q.OperatorName != qso.ContactName); // 
             if (matchQSO != null)
             {
                 // store the matching QSO
                 qso.MatchingQSO = matchQSO;
+                qso.IncorrectName = qso.ContactName;
                 return RejectReason.OperatorName;
             }
 
             // query for incorrect call
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.SentSerialNumber == qso.ReceivedSerialNumber && q.ContactCall != qso.OperatorCall); // && q.Status == QSOStatus.ValidQSO
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall != qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 ); // 
             if (matchQSO != null)
             {
                 // store the matching QSO

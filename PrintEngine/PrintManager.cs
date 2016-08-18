@@ -225,14 +225,21 @@ namespace W6OP.PrintEngine
                         {
                             // print QSO line and reject reason
                             message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
-                                        qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName; // + qso.RejectReasons[0];
+                                        qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
 
                             // should only be one reason so lets change the collection type
                             foreach (var key in qso.RejectReasons.Keys)
                             {
                                 if (key == RejectReason.OperatorName)
                                 {
-                                    value = qso.RejectReasons[key] + " - " + qso.IncorrectName;
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
+                                    }
+                                    else
+                                    {
+                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectName;
+                                    }
                                 }
                                 else
                                 {
@@ -251,10 +258,10 @@ namespace W6OP.PrintEngine
                                     message = "QSO: " + "\t" + dupeQSO.Frequency + "\t" + dupeQSO.Mode + "\t" + dupeQSO.QsoDate + "\t" + dupeQSO.QsoTime + "\t" + dupeQSO.OperatorCall + "\t" + dupeQSO.SentSerialNumber.ToString() + "\t" +
                                            dupeQSO.OperatorName + "\t" + dupeQSO.ContactCall + "\t" + dupeQSO.ReceivedSerialNumber.ToString() + "\t" + dupeQSO.ContactName;
 
-                                if (qso.ExcessTimeSpan > 0)
-                                {
-                                    message = message + "\t" + qso.ExcessTimeSpan.ToString() + " minutes difference";
-                                }
+                                //if (qso.ExcessTimeSpan > 0)
+                                //{
+                                //    message = message + "\t" + qso.ExcessTimeSpan.ToString() + " minutes difference";
+                                //}
 
                                 sw.WriteLine(message);
                             }
