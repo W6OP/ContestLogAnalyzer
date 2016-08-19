@@ -161,7 +161,7 @@ namespace W6OP.ContestLogAnalyzer
                     // now see if a QSO matches this QSO
                     // leave the time check here for future use
                     matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
-                                           Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);  
+                                          q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);  
 
                     if (matchQSO != null) // found it
                     {
@@ -182,58 +182,120 @@ namespace W6OP.ContestLogAnalyzer
                     }
                 }
                 else
-                {
+                            {
+                    //            // there isn't a log for this call sign - is the call busted or just a guy that didn't submit a log
+                    //            // if others have also worked this call then it is not busted
+                    //            List<ContestLog> tempLog = contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == qso.ContactCall)).ToList();
+
+                    //            if (tempLog.Count <= 1) 
+                    //            {
+                    //                // 1 would mean this call sign is only in this log
+                    //                // now is it a unique or a busted call
+                    //                // search for the QSO using everything except the contact call sign?
+                    //                //tempLog = contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
+                    //                //                   Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList();
+
+                    //                if (SearchForBustedCall(qso, contestLogList) == false)
+                    //                {
+                    //                    //qso.Status = QSOStatus.ValidQSO;
+                    //                    qso.Status = QSOStatus.InvalidQSO;
+                    //                    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                    //                }
+                    //            }
+                    //            else
+                    //            { 
+                    //                // ok call is in 2 or more logs, is it busted or just someone did not send in a log?
+                    //                // do I need to search all logs or just this small colection of logs?
+                    //                if (SearchForBustedCall(qso, contestLogList) == false) // did not find it so is name incorrect
+                    //                {
+                    //                    qso.Status = QSOStatus.ValidQSO;
+                    //                }
+                    //            }
+                    //        }
+                    //    }
+                    //}
+
                     // can't find a matching log
                     // find all the logs this operator is in so we can try to get a match without call signs
                     // don't want to exclude invalid QSOs as we are checking all logs and all QSOs
                     List<ContestLog> tempLog = contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == qso.ContactCall)).ToList();
 
-                    if (tempLog.Count <= 1) // 1 would mean this call sign only in this log
+                if (tempLog.Count <= 1) // 1 would mean this call sign only in this log
+                {
+                    // the call is not in any other log
+                    qso.Status = QSOStatus.ReviewQSO;
+                    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                }
+                else
+                { // ok call is in 2 or more logs, is it busted
+                    if (SearchForBustedCall(qso, contestLogList) == false) // did not find it so is name incorrect
                     {
-                        // the call is not in any other log
-                        qso.Status = QSOStatus.InvalidQSO;
-                        qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
-                    }
-                    else
-                    { // ok call is in 2 or more logs, is it busted
-                        if (SearchForBustedCall(qso, contestLogList) == false) // did not find it so is name incorrect
-                        {
-                            qso.Status = QSOStatus.ValidQSO;
-                        }
+                        qso.Status = QSOStatus.ValidQSO;
                     }
                 }
             }
         }
+    }
 
-        /// <summary>
-        /// Search every log for a match to this QSO without the call sign
-        /// </summary>
-        /// <param name="qso"></param>
-        private bool SearchForBustedCall(QSO qso, List<ContestLog> contestLogList)
+    /// <summary>
+    /// Search every log for a match to this QSO without the call sign
+    /// </summary>
+    /// <param name="qso"></param>
+    private bool SearchForBustedCall(QSO qso, List<ContestLog> contestLogList)
+    {
+        bool found = false;
+        List<QSO> matchingQSOs = null;
+
+        // look for a log without a call sign parameter
+        matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorCall == qso.ContactCall &&
+                                        Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList(); // && q.OperatorName == qso.ContactName 
+
+        if (matchingQSOs != null && matchingQSOs.Count > 0)
         {
-            bool found = false;
-            List<QSO> matchingQSOs = null;
-
-            // look for a log without a call sign parameter
-            matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorCall == qso.ContactCall &&
-                                            Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList(); // && q.OperatorName == qso.ContactName 
-
-            if (matchingQSOs != null && matchingQSOs.Count > 0)
-            {
-                if (matchingQSOs.Count == 1)
-                {    // found it so call is busted
-                    found = true;
-                    qso.CallIsBusted = true;
-                    qso.MatchingQSO = matchingQSOs[0];
-                }
+            if (matchingQSOs.Count == 1)
+            {    // found it so call is busted
+                found = true;
+                qso.CallIsBusted = true;
+                qso.MatchingQSO = matchingQSOs[0];
             }
-            else// did not find it
-            {
-                found = SearchForIncorrectName(qso, contestLogList);
-            }
-
-            return found;
         }
+        else// did not find it
+        {
+            found = SearchForIncorrectName(qso, contestLogList);
+        }
+
+        return found;
+    }
+
+    /// <summary>
+    /// Search every log for a match to this QSO without the call sign
+    /// </summary>
+    /// <param name="qso"></param>
+    //private bool SearchForBustedCall(QSO qso, List<ContestLog> contestLogList)
+    //    {
+    //        bool found = false;
+    //        List<QSO> matchingQSOs = null;
+
+    //        // look for a log without a call sign parameter
+    //        matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.ContactName == qso.OperatorName &&
+    //                                        Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList();
+
+    //        if (matchingQSOs.Count > 0)
+    //        {
+    //            if (matchingQSOs.Count == 1)
+    //            {    // found it so call is busted
+    //                found = true;
+    //                qso.CallIsBusted = true;
+    //                qso.MatchingQSO = matchingQSOs[0];
+    //            }
+    //        }
+    //        else// did not find it
+    //        {
+    //            found = SearchForIncorrectName(qso, contestLogList);
+    //        }
+
+    //        return found;
+    //    }
 
         /// <summary>
         /// Now see if the name is incorrect and that is why we can't find the QSO

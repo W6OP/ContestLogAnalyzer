@@ -26,17 +26,20 @@ namespace W6OP.ContestLogAnalyzer
         private const string LOG_ANALYSER_WORKING_FOLDER_PATH = @"W6OP\LogAnalyser\Working";
         private const string LOG_ANALYSER_INSPECT_FOLDER_PATH = @"W6OP\LogAnalyser\Inspect";
         private const string LOG_ANALYSER_REPORT_FOLDER_PATH = @"W6OP\LogAnalyser\Report";
+        private const string LOG_ANALYSER_REVIEW_FOLDER_PATH = @"W6OP\LogAnalyser\Review";
         private const string LOG_ANALYSER_SCORE_FOLDER_PATH = @"W6OP\LogAnalyser\Score";
 
         // set the actual folders to use
         private string _BaseWorkingFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_WORKING_FOLDER_PATH);
         private string _BaseInspectFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_INSPECT_FOLDER_PATH);
         private string _BaseReportFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_REPORT_FOLDER_PATH);
+        private string _BaseReviewFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_REVIEW_FOLDER_PATH);
         private string _BaseScoreFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_SCORE_FOLDER_PATH);
 
         private string _WorkingFolder = null;
         private string _InspectFolder = null;
         private string _ReportFolder = null;
+        private string _ReviewFolder = null;
         private string _ScoreFolder = null;
 
         private List<ContestLog> _ContestLogs;
@@ -183,6 +186,7 @@ namespace W6OP.ContestLogAnalyzer
             _WorkingFolder = Path.Combine(_BaseWorkingFolder, session);
             _InspectFolder = Path.Combine(_BaseInspectFolder, session);
             _ReportFolder = Path.Combine(_BaseReportFolder, session);
+            _ReviewFolder = Path.Combine(_BaseReviewFolder, session);
             _ScoreFolder = Path.Combine(_BaseScoreFolder, session);
 
             LoadLogFiles(session);
@@ -222,6 +226,11 @@ namespace W6OP.ContestLogAnalyzer
                     Directory.CreateDirectory(_ReportFolder);
                 }
 
+                if (!Directory.Exists(Path.Combine(_ReviewFolder, session)))
+                {
+                    Directory.CreateDirectory(_ReviewFolder);
+                }
+
                 if (!Directory.Exists(Path.Combine(_ScoreFolder, session)))
                 {
                     Directory.CreateDirectory(_ScoreFolder);
@@ -243,6 +252,7 @@ namespace W6OP.ContestLogAnalyzer
                 _PrintManager.InspectionFolder = _InspectFolder;
                 _PrintManager.WorkingFolder = _WorkingFolder;
                 _PrintManager.ReportFolder = _ReportFolder;
+                _PrintManager.ReviewFolder = _ReviewFolder;
                 _PrintManager.ScoreFolder = _ScoreFolder;
 
                 _LogProcessor.WorkingFolder = _WorkingFolder;
@@ -498,6 +508,9 @@ namespace W6OP.ContestLogAnalyzer
 
                 PrintQSORejectReport();
                 UpdateListViewScore("Rejected QSO report has been generated.", false);
+
+                PrintQSOReviewReport();
+                UpdateListViewScore("Review QSO report has been generated.", false);
 
                 PrintFinalScoreReport();
                 UpdateListViewScore("Final score report has been generated.", false);
@@ -843,8 +856,22 @@ namespace W6OP.ContestLogAnalyzer
                 // later just return a message to show in listview
                 MessageBox.Show(ex.Message);
             }
+        }
 
-            //MessageBox.Show("Reject report completed");
+        private void PrintQSOReviewReport()
+        {
+            try
+            {
+                foreach (ContestLog contestLog in _ContestLogs)
+                {
+                    _PrintManager.PrintReviewReport(contestLog, contestLog.LogOwner);
+                }
+            }
+            catch (Exception ex)
+            {
+                // later just return a message to show in listview
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void PrintFinalScoreReport()

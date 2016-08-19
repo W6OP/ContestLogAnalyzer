@@ -17,6 +17,7 @@ namespace W6OP.PrintEngine
         public string ReportFolder { get; set; }
         public string LogFolder { get; set; }
         public string ScoreFolder { get; set; }
+        public string ReviewFolder { get; set; }
 
         /// <summary>
         /// Constructor
@@ -92,7 +93,7 @@ namespace W6OP.PrintEngine
                 // Setting paragraph's text alignment using iTextSharp.text.Element class
                 para.Alignment = Element.ALIGN_LEFT;
                 // Adding this 'para' to the Document object
-                doc.Add(para);           
+                doc.Add(para);
 
                 Int32 line = 2; // 2 header lines initially
                 bool firstPage = true;
@@ -144,7 +145,7 @@ namespace W6OP.PrintEngine
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 string a = ex.Message;
             }
@@ -201,9 +202,9 @@ namespace W6OP.PrintEngine
             reportFileName = Path.Combine(ReportFolder, callsign + ".rpt");
 
             // only look at invalid QSOs
-            List<QSO> inValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
+            List<QSO> inValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
             // get list of valid qsos for dupes
-            List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.QSOHasDupes == true).ToList();
+            //List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.QSOHasDupes == true).ToList();
 
             try
             {
@@ -241,22 +242,33 @@ namespace W6OP.PrintEngine
                                         value = qso.RejectReasons[key] + " - " + qso.IncorrectName;
                                     }
                                 }
+                                else if (key == RejectReason.SerialNumber)
+                                {
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = qso.RejectReasons[key] + " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
+                                    }
+                                    else
+                                    {
+                                        value = qso.RejectReasons[key];
+                                    }
+                                }
                                 else
                                 {
                                     value = qso.RejectReasons[key];
                                 }
                             }
 
-                            
+
                             sw.WriteLine(message + "\t" + value.ToString());
 
                             // print info on the original that was duped - the one that was counted
                             if (qso.MatchingQSO != null)
                             {
-                               QSO dupeQSO = qso.MatchingQSO;
+                                QSO dupeQSO = qso.MatchingQSO;
 
-                                    message = "QSO: " + "\t" + dupeQSO.Frequency + "\t" + dupeQSO.Mode + "\t" + dupeQSO.QsoDate + "\t" + dupeQSO.QsoTime + "\t" + dupeQSO.OperatorCall + "\t" + dupeQSO.SentSerialNumber.ToString() + "\t" +
-                                           dupeQSO.OperatorName + "\t" + dupeQSO.ContactCall + "\t" + dupeQSO.ReceivedSerialNumber.ToString() + "\t" + dupeQSO.ContactName;
+                                message = "QSO: " + "\t" + dupeQSO.Frequency + "\t" + dupeQSO.Mode + "\t" + dupeQSO.QsoDate + "\t" + dupeQSO.QsoTime + "\t" + dupeQSO.OperatorCall + "\t" + dupeQSO.SentSerialNumber.ToString() + "\t" +
+                                       dupeQSO.OperatorName + "\t" + dupeQSO.ContactCall + "\t" + dupeQSO.ReceivedSerialNumber.ToString() + "\t" + dupeQSO.ContactName;
 
                                 //if (qso.ExcessTimeSpan > 0)
                                 //{
@@ -272,10 +284,77 @@ namespace W6OP.PrintEngine
                     else
                     {
                         sw.WriteLine("Golden log with zero errors. Congratulations!");
-                       
+
                     }
 
                     AddFooter(contestLog, sw);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Print a report for each log listing the QSOs rejected and the reason for rejection.
+        /// 
+        /// CWO log checking results for 4K9W
+        /// 
+        /// Final: Valid QSOs:  2  Mults:  2  Score:  4 
+        ///Category: LOW Checked:  2 
+        /// </summary>
+        /// <param name="contestLog"></param>
+        public void PrintReviewReport(ContestLog contestLog, string callsign)
+        {
+            string reportFileName = null;
+            string message = null;
+            var value = "";
+
+            // strip "/" from callsign
+            if (callsign.IndexOf(@"/") != -1)
+            {
+                callsign = callsign.Substring(0, callsign.IndexOf(@"/"));
+            }
+
+            reportFileName = Path.Combine(ReviewFolder, callsign + ".rpt");
+
+            // only look at invalid QSOs
+            List<QSO> reviewQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ReviewQSO).ToList();
+
+            try
+            {
+                if (reviewQsoList.Count > 0)
+                {
+                    using (StreamWriter sw = File.CreateText(reportFileName))
+                    {
+                        // maybe add contest year later
+                        sw.WriteLine("CWO log checking results for " + callsign);
+                        sw.WriteLine("");
+
+                        if (!String.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
+                        {
+                            sw.WriteLine(contestLog.LogHeader.SoapBox);
+                            sw.WriteLine("");
+                        }
+
+                        foreach (QSO qso in reviewQsoList)
+                        {
+                            // print QSO line and reject reason
+                            message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
+                                        qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
+
+                            // should only be one reason so lets change the collection type
+                            foreach (var key in qso.RejectReasons.Keys)
+                            {
+                                value = qso.RejectReasons[key];
+                            }
+
+                            sw.WriteLine(message + "\t" + value.ToString());
+
+                            sw.WriteLine("");
+                        }
+                    }
                 }
             }
             catch (Exception)
@@ -303,7 +382,7 @@ namespace W6OP.PrintEngine
 
             sw.WriteLine(message);
 
-            message = String.Format("Final:   Valid QSOs: {0}   Mults: {1}   Score: {2}" , totalValidQSOs.ToString(), multiplierCount.ToString(), score.ToString());
+            message = String.Format("Final:   Valid QSOs: {0}   Mults: {1}   Score: {2}", totalValidQSOs.ToString(), multiplierCount.ToString(), score.ToString());
             sw.WriteLine(message);
 
             message = String.Format("Category:   {0}   Power: {1} ", contestLog.LogHeader.OperatorCategory, contestLog.LogHeader.Power);
