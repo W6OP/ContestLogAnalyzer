@@ -253,6 +253,17 @@ namespace W6OP.PrintEngine
                                         value = qso.RejectReasons[key];
                                     }
                                 }
+                                else if (key == RejectReason.BustedCallSign)
+                                {
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = qso.RejectReasons[key] + " - " + qso.ContactCall + " --> " + qso.MatchingQSO.OperatorCall;
+                                    }
+                                    else
+                                    {
+                                        value = qso.RejectReasons[key];
+                                    }
+                                }
                                 else
                                 {
                                     value = qso.RejectReasons[key];
@@ -317,7 +328,7 @@ namespace W6OP.PrintEngine
                 callsign = callsign.Substring(0, callsign.IndexOf(@"/"));
             }
 
-            reportFileName = Path.Combine(ReviewFolder, callsign + ".rpt");
+            reportFileName = Path.Combine(ReviewFolder, callsign + "_Review.rpt");
 
             // only look at invalid QSOs
             List<QSO> reviewQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ReviewQSO).ToList();

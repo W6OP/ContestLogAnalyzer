@@ -339,5 +339,12 @@ namespace W6OP.ContestLogAnalyzer
             get { return _ContactName.ToUpper(); }
             set { _ContactName = value; }
         }
+
+        /// <summary>
+        /// This means an earlier QSO matched this one but this can't find the match because
+        /// the call is busted and appears unique. I should probably analyse the list of calls 
+        /// twice, ascending and descending to get all of these - 2 passes
+        /// </summary>
+        public bool HasMatchingQso { get; set; }
     } // end class
 }

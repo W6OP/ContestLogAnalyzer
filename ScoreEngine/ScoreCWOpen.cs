@@ -29,6 +29,8 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
+                    MarkMultipliers(contestLog);
+
                     CalculateScore(contestLog);
                     // ReportProgress with Callsign
                     // ADD IF THE LOG NEEDS REVIEW AND SET IN LISTBOX IN RED
@@ -36,6 +38,36 @@ namespace W6OP.ContestLogAnalyzer
                     OnProgressUpdate?.Invoke(contestLog);
                 }
                 
+            }
+        }
+
+        /// <summary>
+        /// Find all the calls for the session. For each call see if it is valid.
+        /// If it is a valid call set it as a multiplier.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        private void MarkMultipliers(ContestLog contestLog)
+        {
+
+            List<QSO> qsoList = contestLog.QSOCollection;
+
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Status })
+             .Where(g => g.Count() >= 1)
+             .Select(y => y.Key)
+             .ToList();
+
+
+            // THIS NEEDS TESTING !!!
+
+            foreach (var qso in query)
+            {
+                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Status == QSOStatus.ValidQSO).ToList();
+
+                if (multiList.Any())
+                {
+                    // now set the first one as a multiplier
+                    multiList.First().IsMultiplier = true;
+                }
             }
         }
 
