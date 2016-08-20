@@ -253,7 +253,7 @@ namespace W6OP.PrintEngine
                                         value = qso.RejectReasons[key];
                                     }
                                 }
-                                else if (key == RejectReason.BustedCallSign)
+                                else if (key == RejectReason.BustedCallSign || key == RejectReason.NoQSO)
                                 {
                                     if (qso.MatchingQSO != null)
                                     {

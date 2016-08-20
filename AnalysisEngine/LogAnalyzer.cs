@@ -90,12 +90,35 @@ namespace W6OP.ContestLogAnalyzer
             //FindLogsToReview(contestLogList);
         }
 
-        private void MakeSecondPass(List<ContestLog> contestLogList)
+
+        public void PreProcessContestLogsReverse(List<ContestLog> contestLogList)
         {
+            string call = null;
+            string name = null;
+            Int32 progress = 0;
+            Int32 validQsos;
+
             contestLogList.Reverse();
 
+            foreach (ContestLog contestLog in contestLogList)
+            {
+                List<QSO> qsoList;
+                call = contestLog.LogOwner;
+                name = contestLog.LogHeader.NameSent.ToUpper();
 
+                progress++;
 
+                if (!contestLog.IsCheckLog && contestLog.IsValidLog)
+                {
+                    qsoList = contestLog.QSOCollection;
+                    MatchQSOs(qsoList, contestLogList, call, name);
+
+                    validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
+
+                    // ReportProgress with Callsign
+                    OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
+                }
+            }
         }
 
         /// <summary>

@@ -406,8 +406,9 @@ namespace W6OP.ContestLogAnalyzer
         private void AnalyzeLogs()
         {
             UpdateListViewAnalysis("", "", "", true);
-            ProgressBarLoad.Maximum = 0;
-            ProgressBarLoad.Maximum = _ContestLogs.Count;
+            //ProgressBarLoad.Maximum = 0;
+            //ProgressBarLoad.Maximum = _ContestLogs.Count;
+            ResetProgressBar(true);
 
             BackgroundWorkerAnalzeLogs.RunWorkerAsync();
         }
@@ -424,6 +425,11 @@ namespace W6OP.ContestLogAnalyzer
         private void BackgroundWorkerAnalyzeLogs_DoWork(object sender, DoWorkEventArgs e)
         {
             _LogAnalyser.PreProcessContestLogs(_ContestLogs);
+
+            UpdateListViewAnalysis("", "", "", true);
+            ResetProgressBar(true);
+
+            _LogAnalyser.PreProcessContestLogsReverse(_ContestLogs);
         }
 
         /// <summary>
@@ -715,13 +721,9 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                // .LogOwner, contestLog.ClaimedScore.ToString(), contestLog.ActualScore.ToString()
                 ListViewItem item = new ListViewItem(message);
                 //item.SubItems.Add(contestLog.Operator);
                 //item.SubItems.Add(contestLog.;
-
-
-
                 //item.SubItems.Add(claimed);
                 //item.SubItems.Add(actual);
                 ListViewScore.Items.Insert(0, item);
@@ -767,6 +769,20 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             ButtonStartAnalysis.Enabled = clear;
+        }
+
+        private void ResetProgressBar(bool clear)
+        {
+            if (InvokeRequired)
+            {
+                this.BeginInvoke(new Action<bool>(this.ResetProgressBar), clear);
+                return;
+            }
+
+            ProgressBarLoad.Value = 0;
+            ProgressBarLoad.Maximum = 0;
+            ProgressBarLoad.Maximum = _ContestLogs.Count;
+            Application.DoEvents();
         }
 
         #endregion
