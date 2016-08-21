@@ -1,4 +1,5 @@
 ﻿//using PdfFileWriter;
+using CsvHelper;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System;
@@ -12,6 +13,7 @@ namespace W6OP.PrintEngine
     public class PrintManager
     {
         private List<ContestLog> _ContestLogs;
+        private ScoreList _ScoreList = new ScoreList();
         public string WorkingFolder { get; set; }
         public string InspectionFolder { get; set; }
         public string ReportFolder { get; set; }
@@ -27,6 +29,109 @@ namespace W6OP.PrintEngine
 
         }
 
+        public void PrintCsvFile(List<ContestLog> contestLogs)
+        {
+            ContestLog contestlog;
+            List<QSO> validQsoList;
+            string assisted = null;
+            string reportFileName = null;
+            string fileName = null;
+            string session = null;
+            string year = DateTime.Now.ToString("yyyy");
+
+            session = contestLogs[0].Session.ToString();
+            fileName = year + " CWO Box Scores Session " + session + ".csv";
+            reportFileName = Path.Combine(ScoreFolder, fileName);
+
+            _ContestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
+
+            using (var sw = new StreamWriter(reportFileName))
+            {
+                var writer = new CsvWriter(sw);
+                for (int i = 0; i < _ContestLogs.Count; i++)
+                {
+                    contestlog = _ContestLogs[i];
+                    if (contestlog != null)
+                    {
+                        assisted = "N";
+                        //so2r = "N";
+
+                        // only look at valid QSOs
+                        validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+
+                        if (contestlog.LogHeader.Assisted == CategoryAssisted.Assisted)
+                        {
+                            assisted = "Y";
+                        }
+
+                        if (contestlog.SO2R == true)
+                        {
+                            //so2r = "Y";
+                        }
+
+                        //writer.WriteHeader<ScoreList>();
+
+                        _ScoreList.LogOwner = contestlog.LogOwner;
+                        _ScoreList.Operator = contestlog.Operator;
+                        _ScoreList.Station = contestlog.Station;
+                        _ScoreList.OperatorName = contestlog.OperatorName;
+                        _ScoreList.QSOCount = validQsoList.Count.ToString();
+                        _ScoreList.Multipliers = contestlog.Multipliers.ToString();
+                        _ScoreList.ActualScore = contestlog.ActualScore.ToString();
+                        _ScoreList.Power = contestlog.LogHeader.Power.ToString();
+                        _ScoreList.Assisted = assisted;
+
+                        //Write entire current record
+                        writer.WriteRecord(_ScoreList);
+                    }
+                }
+            }
+        }
+
+        //private void PopulateScoreList(List<ContestLog> contestLogs)
+        //{
+        //    ContestLog contestlog;
+        //    List<QSO> validQsoList;
+        //    string assisted = null;
+
+        //    // sort ascending by score
+        //    _ContestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
+
+
+        //    for (int i = 0; i < _ContestLogs.Count; i++)
+        //    {
+        //        contestlog = _ContestLogs[i];
+        //        if (contestlog != null)
+        //        {
+        //            assisted = "N";
+        //            //so2r = "N";
+
+        //            // only look at valid QSOs
+        //            validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+
+        //            if (contestlog.LogHeader.Assisted == CategoryAssisted.Assisted)
+        //            {
+        //                assisted = "Y";
+        //            }
+
+        //            if (contestlog.SO2R == true)
+        //            {
+        //                //so2r = "Y";
+        //            }
+
+        //            _ScoreList.LogOwner = contestlog.LogOwner;
+        //            _ScoreList.Operator = contestlog.Operator;
+        //            _ScoreList.Station = contestlog.Station;
+        //            _ScoreList.OperatorName = contestlog.OperatorName;
+        //            _ScoreList.QSOCount = validQsoList.Count.ToString();
+        //            _ScoreList.Multipliers = contestlog.Multipliers.ToString();
+        //            _ScoreList.ActualScore = contestlog.ActualScore.ToString();
+        //            _ScoreList.Power = contestlog.LogHeader.Power.ToString();
+        //            _ScoreList.Assisted = assisted;
+        //        }
+        //    }
+        //}
+
         // using iTextSharp
         public void PrintPdfScoreSheet(List<ContestLog> contestLogs)
         {
@@ -41,6 +146,9 @@ namespace W6OP.PrintEngine
             string assisted = null;
             //string so2r = null;
             List<QSO> validQsoList;
+
+            PrintCsvFile(contestLogs);
+
 
             // sort ascending by score
             _ContestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
