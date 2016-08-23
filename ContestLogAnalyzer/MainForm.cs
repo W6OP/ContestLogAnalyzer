@@ -455,6 +455,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
+                ResetProgressBar(true);
                 UpdateListViewAnalysis("Log analysis completed!", "", "", false);
                 Cursor = Cursors.Default;
                 ButtonScoreLogs.Enabled = true; // might be cross thread
