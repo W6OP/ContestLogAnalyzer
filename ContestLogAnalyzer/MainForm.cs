@@ -273,6 +273,7 @@ namespace W6OP.ContestLogAnalyzer
                     fileCount = _LogFileList.Cast<object>().Count();
                 }
 
+                ResetProgressBar(true);
                 ProgressBarLoad.Maximum = fileCount;
 
                 UpdateListViewLoad(fileCount.ToString() + " logs total.", "", false);
@@ -331,6 +332,8 @@ namespace W6OP.ContestLogAnalyzer
 
             try
             {
+                UpdateListViewAnalysis("", "", "", true);
+
                 foreach (FileInfo fileInfo in _LogFileList)
                 {
                     fileName = _LogProcessor.BuildContestLog(fileInfo, _ContestLogs, _Session);
@@ -342,8 +345,8 @@ namespace W6OP.ContestLogAnalyzer
             }
             catch (Exception)
             {
-                ComboBoxSelectContest.Enabled = true;
-                ComboBoxSelectSession.Enabled = true;
+                //ComboBoxSelectContest.Enabled = true;
+                //ComboBoxSelectSession.Enabled = true;
             }
         }
 
@@ -374,8 +377,9 @@ namespace W6OP.ContestLogAnalyzer
                 Cursor = Cursors.Default;
             }
 
-            ProgressBarLoad.Maximum = _ContestLogs.Count;
-            UpdateProgress(_ContestLogs.Count);
+            //ProgressBarLoad.Maximum = _LogFileList.Count();
+            //ProgressBarLoad.Value = ProgressBarLoad.Maximum;
+
             EnableControl(true);
 
             ComboBoxSelectContest.Enabled = true;
@@ -455,7 +459,12 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                ResetProgressBar(true);
+                //ResetProgressBar(true);
+                //ProgressBarLoad.Maximum = 0;
+                ProgressBarLoad.Maximum = _ContestLogs.Count;
+                ProgressBarLoad.Value = _ContestLogs.Count;
+
+                UpdateListViewAnalysis("-----------------------", "", "", false);
                 UpdateListViewAnalysis("Log analysis completed!", "", "", false);
                 Cursor = Cursors.Default;
                 ButtonScoreLogs.Enabled = true; // might be cross thread
@@ -477,7 +486,7 @@ namespace W6OP.ContestLogAnalyzer
             UpdateListViewScore(new ContestLog(), true);
 
             Cursor = Cursors.WaitCursor;
-
+            ResetProgressBar(true);
             // now score each log
             BackgroundWorkerScoreLogs.RunWorkerAsync();
         }
@@ -492,9 +501,9 @@ namespace W6OP.ContestLogAnalyzer
             _CWOpen.ScoreContestLogs(_ContestLogs);
         }
 
-        private void _CWOpen_OnProgressUpdate(ContestLog contestLog)
+        private void _CWOpen_OnProgressUpdate(ContestLog contestLog, Int32 progress)
         {
-            //contestLog.LogOwner, contestLog.ClaimedScore.ToString(), contestLog.ActualScore.ToString()
+            UpdateProgress(progress);
             UpdateListViewScore(contestLog, false);
         }
 
@@ -511,15 +520,22 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
+                ProgressBarLoad.Maximum = _ContestLogs.Count;
+                ProgressBarLoad.Value = _ContestLogs.Count;
+
+                UpdateListViewAnalysis("-----------------------", "", "", false);
                 UpdateListViewScore("Log scoring complete.", false);
 
                 PrintQSORejectReport();
+                UpdateListViewAnalysis("-----------------------", "", "", false);
                 UpdateListViewScore("Rejected QSO report has been generated.", false);
 
                 PrintQSOReviewReport();
+                UpdateListViewAnalysis("-----------------------", "", "", false);
                 UpdateListViewScore("Review QSO report has been generated.", false);
 
                 PrintFinalScoreReport();
+                UpdateListViewAnalysis("-----------------------", "", "", false);
                 UpdateListViewScore("Final score report has been generated.", false);
             }
 

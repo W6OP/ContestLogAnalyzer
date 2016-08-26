@@ -9,7 +9,7 @@ namespace W6OP.ContestLogAnalyzer
 {
     public class ScoreCWOpen
     {
-        public delegate void ProgressUpdate(ContestLog contestLog);
+        public delegate void ProgressUpdate(ContestLog contestLog, Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
 
         public ScoreCWOpen()
@@ -20,22 +20,21 @@ namespace W6OP.ContestLogAnalyzer
 
         public void ScoreContestLogs(List<ContestLog> logList)
         {
+            Int32 progress = 0;
 
             List<ContestLog> contestLogList = logList.OrderByDescending(o => o.LogOwner).ToList();
 
-            //contestLogList.Sort((x, y) => string.Compare(x.LogOwner, y.LogOwner));
-
             foreach (ContestLog contestLog in contestLogList)
             {
+                progress++;
+
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
                     MarkMultipliers(contestLog);
 
                     CalculateScore(contestLog);
-                    // ReportProgress with Callsign
-                    // ADD IF THE LOG NEEDS REVIEW AND SET IN LISTBOX IN RED
-                    // probably make a little collection here to pass dupe and other info
-                    OnProgressUpdate?.Invoke(contestLog);
+                    
+                    OnProgressUpdate?.Invoke(contestLog, progress);
                 }
                 
             }
