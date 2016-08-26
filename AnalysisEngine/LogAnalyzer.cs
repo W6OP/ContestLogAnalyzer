@@ -136,7 +136,9 @@ namespace W6OP.ContestLogAnalyzer
 
             foreach (var qso in query)
             {
-                List<QSO> dupeList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Band == qso.Band).ToList();
+                List<QSO> dupeList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Band == qso.Band).OrderBy(o => o.QSODateTime).ToList();
+
+                // List<ContestLog> contestLogList = logList.OrderByDescending(o => o.LogOwner).ToList();
 
                 if (dupeList.Any())
                 {

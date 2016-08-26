@@ -895,10 +895,10 @@ namespace W6OP.ContestLogAnalyzer
         {
             try
             {
-                foreach (ContestLog contestLog in _ContestLogs)
-                {
-                    _PrintManager.PrintReviewReport(contestLog, contestLog.LogOwner);
-                }
+                //foreach (ContestLog contestLog in _ContestLogs)
+                //{
+                    _PrintManager.PrintReviewReport(_ContestLogs);
+                //}
             }
             catch (Exception ex)
             {

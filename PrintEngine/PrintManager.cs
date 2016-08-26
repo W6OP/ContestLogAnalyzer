@@ -424,53 +424,62 @@ namespace W6OP.PrintEngine
         ///Category: LOW Checked:  2 
         /// </summary>
         /// <param name="contestLog"></param>
-        public void PrintReviewReport(ContestLog contestLog, string callsign)
+        public void PrintReviewReport(List<ContestLog> contestLogs)
         {
             string reportFileName = null;
             string message = null;
+            string callsign = null;
             var value = "";
 
-            // strip "/" from callsign
-            if (callsign.IndexOf(@"/") != -1)
-            {
-                callsign = callsign.Substring(0, callsign.IndexOf(@"/"));
-            }
-
-            reportFileName = Path.Combine(ReviewFolder, callsign + "_Review.rpt");
-
-            // only look at invalid QSOs
-            List<QSO> reviewQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ReviewQSO).ToList();
+            reportFileName = Path.Combine(ReviewFolder, "Review.rpt");
 
             try
             {
-                if (reviewQsoList.Count > 0)
+                using (StreamWriter sw = File.CreateText(reportFileName))
                 {
-                    using (StreamWriter sw = File.CreateText(reportFileName))
+                    foreach (ContestLog contestLog in contestLogs)
                     {
-                        // maybe add contest year later
-                        sw.WriteLine("CWO log checking results for " + callsign);
-                        sw.WriteLine("");
 
-                        if (!String.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
+                        callsign = contestLog.LogOwner;
+
+                        // strip "/" from callsign
+                        if (callsign.IndexOf(@"/") != -1)
                         {
-                            sw.WriteLine(contestLog.LogHeader.SoapBox);
-                            sw.WriteLine("");
+                            callsign = callsign.Substring(0, callsign.IndexOf(@"/"));
                         }
 
-                        foreach (QSO qso in reviewQsoList)
-                        {
-                            // print QSO line and reject reason
-                            message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
-                                        qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
+                        // only look at invalid QSOs
+                        List<QSO> reviewQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ReviewQSO).ToList();
 
-                            // should only be one reason so lets change the collection type
-                            foreach (var key in qso.RejectReasons.Keys)
+                        if (reviewQsoList.Count > 0)
+                        {
+
+                            // maybe add contest year later
+                            sw.WriteLine("CWO log checking results for " + callsign);
+                            sw.WriteLine("");
+
+                            if (!String.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
                             {
-                                value = qso.RejectReasons[key];
+                                sw.WriteLine(contestLog.LogHeader.SoapBox);
+                                sw.WriteLine("");
                             }
 
-                            sw.WriteLine(message + "\t" + value.ToString());
+                            foreach (QSO qso in reviewQsoList)
+                            {
+                                // print QSO line and reject reason
+                                message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
+                                            qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
 
+                                // should only be one reason so lets change the collection type
+                                foreach (var key in qso.RejectReasons.Keys)
+                                {
+                                    value = qso.RejectReasons[key];
+                                }
+
+                                sw.WriteLine(message + "\t" + value.ToString());
+                                sw.WriteLine("");
+                            }
+                            sw.WriteLine("---------------------------------------");
                             sw.WriteLine("");
                         }
                     }
