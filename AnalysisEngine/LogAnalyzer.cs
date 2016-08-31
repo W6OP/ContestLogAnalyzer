@@ -443,6 +443,12 @@ namespace W6OP.ContestLogAnalyzer
                 // store the matching QSO
                 qso.MatchingQSO = matchQSO;
                 qso.IncorrectName = qso.ContactName;
+                //if (Soundex(qso.IncorrectName) == Soundex(qso.MatchingQSO.OperatorName))
+                //{
+                //    var a = 1;
+                //    //string zz = Soundex(qso.IncorrectName);
+                //    //string xx = Soundex(qso.ContactName);
+                //}
                 return RejectReason.OperatorName;
             }
 
@@ -512,7 +518,79 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        #region Soundex
 
+        private string Soundex(string data)
+        {
+            StringBuilder result = new StringBuilder();
+            string previousCode = "";
+            string currentCode = "";
+            string currentLetter = "";
+
+            if (data != null && data.Length > 0)
+            {
+                previousCode = "";
+                currentCode = "";
+                currentLetter = "";
+
+                result.Append(data.Substring(0, 1));
+
+                for (int i = 1; i < data.Length; i++)
+                {
+                    currentLetter = data.Substring(1, 1).ToLower();
+                    currentCode = "";
+
+                    if ("bfpv".IndexOf(currentLetter) > -1)
+                    {
+                        currentCode = "1";
+                    }
+                    else if ("cgjkqsxz".IndexOf(currentLetter) > -1)
+                    {
+                        currentCode = "2";
+                    }
+                    else if ("dt".IndexOf(currentLetter) > -1)
+                    {
+                        currentCode = "3";
+                    }
+                    else if (currentLetter == "1")
+                    {
+                        currentCode = "4";
+                    }
+                    else if ("mn".IndexOf(currentLetter) > -1)
+                    {
+                        currentCode = "5";
+                    }
+                    else if (currentLetter == "r")
+                    {
+                        currentCode = "6";
+                    }
+
+                    if( currentCode != previousCode)
+                    {
+                        result.Append(currentCode);
+                    }
+
+                    if(result.Length == 4)
+                    {
+                        break;
+                    }
+
+                    if (currentCode != previousCode)
+                    {
+                        previousCode = currentCode;
+                    }
+                }
+            }
+
+            if (result.Length < 4)
+            {
+                result.Append(new String('0', 4 - result.Length));
+            }
+
+            return result.ToString().ToUpper();
+        }
+
+        #endregion
 
         /// <summary>
         /// This is the first pass and I am mostly interested in collating the logs.
@@ -524,143 +602,143 @@ namespace W6OP.ContestLogAnalyzer
         /// of duplicates because a log is added for each QSO that matches. Later I'll remove the duplicates.
         /// </summary>
         /// <param name="contestLog"></param>
-        private Int32 CollateLogs(List<ContestLog> contestLogList, ContestLog contestLog, Int32 count)
-        {
-            List<ContestLog> matchingLogs = new List<ContestLog>();
-            List<ContestLog> reviewLogs = new List<ContestLog>();
-            List<ContestLog> otherLogs = new List<ContestLog>();
-            string operatorCall = contestLog.LogOwner;
-            string sentName = null;
-            Int32 sentSerialNumber = 0;
-            Int32 received = 0;
-            Int32 band = 0;
-            Int32 qsoCount = 0;
-            Int32 otherCount = 0;
+        //private Int32 CollateLogs(List<ContestLog> contestLogList, ContestLog contestLog, Int32 count)
+        //{
+        //    List<ContestLog> matchingLogs = new List<ContestLog>();
+        //    List<ContestLog> reviewLogs = new List<ContestLog>();
+        //    List<ContestLog> otherLogs = new List<ContestLog>();
+        //    string operatorCall = contestLog.LogOwner;
+        //    string sentName = null;
+        //    Int32 sentSerialNumber = 0;
+        //    Int32 received = 0;
+        //    Int32 band = 0;
+        //    Int32 qsoCount = 0;
+        //    Int32 otherCount = 0;
 
-            foreach (QSO qso in contestLog.QSOCollection)
-            {
-                List<QSO> InvalidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
-                List<QSO> ValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
-                //if (!_CallTable.ContainsKey(qso.ContactCall.ToString() + qso.ContactName.ToString()))
-                //{
-                //    // Chas and Chuck same guy, also AJ and Anthony
-                //    _CallTable.Add(qso.ContactCall.ToString() + qso.ContactName.ToString(), qso.ContactCall.ToString() + " - " + qso.ContactName);
-                //}
-
-
-                // query all the other logs for a match
-                // if there is a match, mark each QSO as valid.
+        //    foreach (QSO qso in contestLog.QSOCollection)
+        //    {
+        //        List<QSO> InvalidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
+        //        List<QSO> ValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+        //        //if (!_CallTable.ContainsKey(qso.ContactCall.ToString() + qso.ContactName.ToString()))
+        //        //{
+        //        //    // Chas and Chuck same guy, also AJ and Anthony
+        //        //    _CallTable.Add(qso.ContactCall.ToString() + qso.ContactName.ToString(), qso.ContactCall.ToString() + " - " + qso.ContactName);
+        //        //}
 
 
-
-                // AM I ONLY CHECKING THE ONES I ALREADY MARKED INVALID HERE OR TRYING TO FIND NEW ONES TO INVALIDATE ????
-                // 
+        //        // query all the other logs for a match
+        //        // if there is a match, mark each QSO as valid.
 
 
 
-                if (qso.Status == QSOStatus.InvalidQSO)
-                {
-                    sentSerialNumber = qso.SentSerialNumber;
-                    received = qso.ReceivedSerialNumber;
-                    band = qso.Band;
-                    sentName = qso.OperatorName;
-
-                    // get logs that have at least a partial match
-                    // List<ContestLog> partialMatch = contestLog.Where(q => q.QSOCollection.Any(a => a.ContactCall == call)).ToList();
-
-                    // get all the QSOs that match
-                    //List<QSO> qsoList = contestLog.QSOCollection.Where(q => q.ContactCall == operatorCall && q.ReceivedSerialNumber == sent && q.Band == band && q.ContactName == sentName && q.Status == QSOStatus.InvalidQSO).ToList(); 
-                    // get all the logs that have at least one exact match
-                    //List<ContestLog> list = _ContestLogs.Where(q => q.QSOCollection.Any(a =>  a.Band == band)).ToList();
-
-                    // need to add way to check if log is valid
-                    //matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO)).ToList()); // && a.IsValidQSO == false
-                    // case insensitive
-                    matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => String.Equals(a.ContactCall, operatorCall, StringComparison.CurrentCultureIgnoreCase) && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && String.Equals(a.ContactName, sentName, StringComparison.CurrentCultureIgnoreCase) && a.Status == QSOStatus.InvalidQSO)).ToList()); // && a.IsValidQSO == false
-
-                    //StringComparer.CurrentCultureIgnoreCase
-
-                    // some of these will be marked valid as we go along and need to be removed from this collection
-                    //reviewLogs.AddRange(_ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && (a.ReceivedSerialNumber != sentSerialNumber || a.Band == band || a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO))).ToList());
-                    // logs where there was no match at all - exclude this logs owner too
-
-                    // StringComparison.CurrentCultureIgnoreCase
-                    //otherLogs.AddRange(contestLogList.Where(q => q.QSOCollection.All(a => a.ContactCall != operatorCall && a.OperatorCall != operatorCall)).ToList());
-                    otherLogs.AddRange(contestLogList.Where(q => q.QSOCollection.All(a => !String.Equals(a.ContactCall, operatorCall, StringComparison.CurrentCultureIgnoreCase) && !String.Equals(a.OperatorCall, operatorCall, StringComparison.CurrentCultureIgnoreCase))).ToList());
-
-                    // need to determine if the matching log count went up, if it did, mark the QSO as valid
-                    if (matchingLogs.Count > qsoCount)
-                    {
-                        qso.Status = QSOStatus.ValidQSO;
-                        qsoCount++;
-
-                    }
-
-                    //if (reviewLogs.Count > reviewCount)
-                    //{
-                    //    if (qso.Status != QSOStatus.ValidQSO)
-                    //    {
-                    //        qso.Status = QSOStatus.ReviewQSO;
-                    //        reviewCount++;
-                    //    }
-                    //}
-
-                    if (otherLogs.Count > otherCount)
-                    {
-                        if (qso.Status != QSOStatus.ReviewQSO)
-                        {
-                            qso.Status = QSOStatus.ValidQSO;
-                            otherCount++;
-                        }
-                    }
-
-                    count++;
-
-                }
-            }
-
-            //reviewLogs.AddRange(otherLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.Status == QSOStatus.InvalidQSO)).ToList());
-
-            // http://stackoverflow.com/questions/3319016/convert-list-to-dictionary-using-linq-and-not-worrying-about-duplicates
-            // this gives me a dictionary with a unique log even if several QSOs
-            contestLog.MatchLogs = matchingLogs
-                .GroupBy(p => p.LogOwner, StringComparer.OrdinalIgnoreCase)
-                    .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-
-            // THIS DOES THE SAME AS ABOVE BUT THE KEY IS THE LOG INSTEAD OF LogOwner
-            //// http://social.msdn.microsoft.com/Forums/vstudio/en-US/c0f0141c-1f98-422e-89af-406638c4403f/how-to-write-linq-query-to-convert-to-dictionaryintlistint-in-c?forum=linqprojectgeneral
-            //// this converts the list to a dictionary and lists how many logs were matching
-            //var match = matchingLogs
-            //    .Select((n, i) => new { Value = n, Index = i })
-            //    .GroupBy(a => a.Value)
-            //    .ToDictionary(
-            //        g => g.Key,
-            //        g => g.Select(a => a.Index).ToList()
-            //     );
-
-            // now cleanup - THIS NEEDS TO BE CHECKED TO SEE IF IT WORKS
-            //if (reviewLogs.Count > 0)
-            //{
-            //foreach (ContestLog log in reviewLogs)
-            //{
-            //    Int32 asd = log.QSOCollection.Count;
-            //    log.QSOCollection.RemoveAll(x => x.Status == QSOStatus.ValidQSO);
-
-            //}
+        //        // AM I ONLY CHECKING THE ONES I ALREADY MARKED INVALID HERE OR TRYING TO FIND NEW ONES TO INVALIDATE ????
+        //        // 
 
 
-            //contestLog.ReviewLogs = reviewLogs
-            //   .GroupBy(p => p.LogOwner, StringComparer.OrdinalIgnoreCase)
-            //       .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+        //        if (qso.Status == QSOStatus.InvalidQSO)
+        //        {
+        //            sentSerialNumber = qso.SentSerialNumber;
+        //            received = qso.ReceivedSerialNumber;
+        //            band = qso.Band;
+        //            sentName = qso.OperatorName;
+
+        //            // get logs that have at least a partial match
+        //            // List<ContestLog> partialMatch = contestLog.Where(q => q.QSOCollection.Any(a => a.ContactCall == call)).ToList();
+
+        //            // get all the QSOs that match
+        //            //List<QSO> qsoList = contestLog.QSOCollection.Where(q => q.ContactCall == operatorCall && q.ReceivedSerialNumber == sent && q.Band == band && q.ContactName == sentName && q.Status == QSOStatus.InvalidQSO).ToList(); 
+        //            // get all the logs that have at least one exact match
+        //            //List<ContestLog> list = _ContestLogs.Where(q => q.QSOCollection.Any(a =>  a.Band == band)).ToList();
+
+        //            // need to add way to check if log is valid
+        //            //matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO)).ToList()); // && a.IsValidQSO == false
+        //            // case insensitive
+        //            matchingLogs.AddRange(contestLogList.Where(q => q.QSOCollection.Any(a => String.Equals(a.ContactCall, operatorCall, StringComparison.CurrentCultureIgnoreCase) && a.ReceivedSerialNumber == sentSerialNumber && a.Band == band && String.Equals(a.ContactName, sentName, StringComparison.CurrentCultureIgnoreCase) && a.Status == QSOStatus.InvalidQSO)).ToList()); // && a.IsValidQSO == false
+
+        //            //StringComparer.CurrentCultureIgnoreCase
+
+        //            // some of these will be marked valid as we go along and need to be removed from this collection
+        //            //reviewLogs.AddRange(_ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && (a.ReceivedSerialNumber != sentSerialNumber || a.Band == band || a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO))).ToList());
+        //            // logs where there was no match at all - exclude this logs owner too
+
+        //            // StringComparison.CurrentCultureIgnoreCase
+        //            //otherLogs.AddRange(contestLogList.Where(q => q.QSOCollection.All(a => a.ContactCall != operatorCall && a.OperatorCall != operatorCall)).ToList());
+        //            otherLogs.AddRange(contestLogList.Where(q => q.QSOCollection.All(a => !String.Equals(a.ContactCall, operatorCall, StringComparison.CurrentCultureIgnoreCase) && !String.Equals(a.OperatorCall, operatorCall, StringComparison.CurrentCultureIgnoreCase))).ToList());
+
+        //            // need to determine if the matching log count went up, if it did, mark the QSO as valid
+        //            if (matchingLogs.Count > qsoCount)
+        //            {
+        //                qso.Status = QSOStatus.ValidQSO;
+        //                qsoCount++;
+
+        //            }
+
+        //            //if (reviewLogs.Count > reviewCount)
+        //            //{
+        //            //    if (qso.Status != QSOStatus.ValidQSO)
+        //            //    {
+        //            //        qso.Status = QSOStatus.ReviewQSO;
+        //            //        reviewCount++;
+        //            //    }
+        //            //}
+
+        //            if (otherLogs.Count > otherCount)
+        //            {
+        //                if (qso.Status != QSOStatus.ReviewQSO)
+        //                {
+        //                    qso.Status = QSOStatus.ValidQSO;
+        //                    otherCount++;
+        //                }
+        //            }
+
+        //            count++;
+
+        //        }
+        //    }
+
+        //    //reviewLogs.AddRange(otherLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.Status == QSOStatus.InvalidQSO)).ToList());
+
+        //    // http://stackoverflow.com/questions/3319016/convert-list-to-dictionary-using-linq-and-not-worrying-about-duplicates
+        //    // this gives me a dictionary with a unique log even if several QSOs
+        //    contestLog.MatchLogs = matchingLogs
+        //        .GroupBy(p => p.LogOwner, StringComparer.OrdinalIgnoreCase)
+        //            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+        //    // THIS DOES THE SAME AS ABOVE BUT THE KEY IS THE LOG INSTEAD OF LogOwner
+        //    //// http://social.msdn.microsoft.com/Forums/vstudio/en-US/c0f0141c-1f98-422e-89af-406638c4403f/how-to-write-linq-query-to-convert-to-dictionaryintlistint-in-c?forum=linqprojectgeneral
+        //    //// this converts the list to a dictionary and lists how many logs were matching
+        //    //var match = matchingLogs
+        //    //    .Select((n, i) => new { Value = n, Index = i })
+        //    //    .GroupBy(a => a.Value)
+        //    //    .ToDictionary(
+        //    //        g => g.Key,
+        //    //        g => g.Select(a => a.Index).ToList()
+        //    //     );
+
+        //    // now cleanup - THIS NEEDS TO BE CHECKED TO SEE IF IT WORKS
+        //    //if (reviewLogs.Count > 0)
+        //    //{
+        //    //foreach (ContestLog log in reviewLogs)
+        //    //{
+        //    //    Int32 asd = log.QSOCollection.Count;
+        //    //    log.QSOCollection.RemoveAll(x => x.Status == QSOStatus.ValidQSO);
+
+        //    //}
 
 
-            // this also contains the LogOwner's log so I want to remove it in a bit
-            contestLog.OtherLogs = otherLogs
-               .GroupBy(p => p.LogOwner, StringComparer.OrdinalIgnoreCase)
-                   .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+        //    //contestLog.ReviewLogs = reviewLogs
+        //    //   .GroupBy(p => p.LogOwner, StringComparer.OrdinalIgnoreCase)
+        //    //       .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
-            return count;
-        }
+
+        //    // this also contains the LogOwner's log so I want to remove it in a bit
+        //    contestLog.OtherLogs = otherLogs
+        //       .GroupBy(p => p.LogOwner, StringComparer.OrdinalIgnoreCase)
+        //           .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+        //    return count;
+        //}
 
         /// <summary>
         /// I have a collection of logs where some the QSOs match and another collection
@@ -669,29 +747,29 @@ namespace W6OP.ContestLogAnalyzer
         /// 
         /// SO WHAT AM I DOING HERE? Don't return anything or updtae anything from what I can see
         /// </summary>
-        private void FindLogsToReview(List<ContestLog> contestLogList)
-        {
-            List<QSO> reviewQsoList = new List<QSO>();
-            Dictionary<string, QSO> review;
+        //private void FindLogsToReview(List<ContestLog> contestLogList)
+        //{
+        //    List<QSO> reviewQsoList = new List<QSO>();
+        //    Dictionary<string, QSO> review;
 
 
 
-            // This gives me a list of all the QSOs in the Contest Log collection that need reviewing
-            reviewQsoList = contestLogList.SelectMany(q => q.QSOCollection).Where(a => a.Status == QSOStatus.InvalidQSO).ToList();
+        //    // This gives me a list of all the QSOs in the Contest Log collection that need reviewing
+        //    reviewQsoList = contestLogList.SelectMany(q => q.QSOCollection).Where(a => a.Status == QSOStatus.InvalidQSO).ToList();
 
-            // this eliminates the dupes - needs testing
-            review = reviewQsoList
-              .GroupBy(p => p.OperatorCall, StringComparer.OrdinalIgnoreCase)
-              .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-
-
+        //    // this eliminates the dupes - needs testing
+        //    review = reviewQsoList
+        //      .GroupBy(p => p.OperatorCall, StringComparer.OrdinalIgnoreCase)
+        //      .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
 
-            //var seasonSpots = from s in _ContestLogs
-            //                  where s.QSOCollection != null
-            //                  where QSO(s.QSOCollection)
-            //                  select s.;
-        }
+
+
+        //    //var seasonSpots = from s in _ContestLogs
+        //    //                  where s.QSOCollection != null
+        //    //                  where QSO(s.QSOCollection)
+        //    //                  select s.;
+        //}
 
 
     } // end class
