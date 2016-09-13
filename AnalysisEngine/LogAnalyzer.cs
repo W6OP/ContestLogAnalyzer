@@ -395,7 +395,8 @@ namespace W6OP.ContestLogAnalyzer
             TimeSpan ts;
 
             // query for time difference
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5);
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
+                        q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5);
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -410,7 +411,8 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incorrect serial number
-            matchQSO = (QSO)contestLog.QSOCollection.Where(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) > 1).FirstOrDefault(); //
+            matchQSO = (QSO)contestLog.QSOCollection.Where(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall == qso.OperatorCall &&
+                        Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) > 1).FirstOrDefault(); //
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -428,7 +430,8 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incorrect band
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && q.ContactCall == qso.OperatorCall); //
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
+                        q.ContactCall == qso.OperatorCall); //
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -437,7 +440,8 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incorrect name
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && q.ContactCall == qso.OperatorCall && q.ContactName == qso.OperatorName && q.OperatorName != qso.ContactName); // 
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && q.ContactCall == qso.OperatorCall &&
+                        q.ContactName == qso.OperatorName && q.OperatorName != qso.ContactName); // 
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -453,7 +457,8 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incorrect call
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall != qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1); // 
+            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall != qso.OperatorCall &&
+                        Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1); // 
             if (matchQSO != null)
             {
                 // determine which guy is at fault

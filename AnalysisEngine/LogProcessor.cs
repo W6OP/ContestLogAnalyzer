@@ -78,6 +78,7 @@ namespace W6OP.ContestLogAnalyzer
             string version = null;
             string reason = "Unable to build valid header."; ;
             Int32 progress = 0;
+            Int32 count = 0;
 
             FailReason = reason;
 
@@ -132,14 +133,26 @@ namespace W6OP.ContestLogAnalyzer
                     contestLog.Session = (int)session;
                     contestLog.QSOCollection = CollectQSOs(lineList, session, contestLog.LogHeader.NameSent, contestLog.LogHeader.OperatorCallSign);
 
-                    validQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
-
-                    if (contestLog.QSOCollection == null)
+                    if (contestLog.QSOCollection == null || contestLog.QSOCollection.Count == 0)
                     {
                         // may want to expand on this for a future report
-                        FailReason = "QSO collection is null"; // create enum
+                        FailReason = "QSO collection is null or empty"; // create enum
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
+                    }
+                    else
+                    {
+                        // this catches QSOs (or entire log) that do not belong to this session
+                        count = contestLog.QSOCollection.Count;
+                        contestLog.QSOCollection = contestLog.QSOCollection.Where(q => q.SessionIsValid == true).ToList();
+
+                        if(count > 0 && contestLog.QSOCollection.Count == 0)
+                        {
+                            // may want to expand on this for a future report
+                            FailReason = "QSO collection is empty - Invalid seesion"; // create enum
+                            contestLog.IsValidLog = false;
+                            throw new Exception(fileInfo.Name); // don't want this added to collection
+                        }
                     }
 
                     if (contestLog.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
@@ -167,6 +180,14 @@ namespace W6OP.ContestLogAnalyzer
                     if (String.IsNullOrEmpty(contestLog.OperatorName))
                     {
                         contestLog.OperatorName = contestLog.QSOCollection[0].OperatorName;
+                    }
+
+                    if (contestLog.OperatorName.ToUpper() == "NAME")
+                    {
+                        // may want to expand on this for a future report
+                        FailReason = "Name sent is 'NAME' - Invalid name."; // create enum
+                        contestLog.IsValidLog = false;
+                        throw new Exception(fileInfo.Name); // don't want this added to collection
                     }
 
                     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -362,11 +383,12 @@ namespace W6OP.ContestLogAnalyzer
                     Mode = Utility.GetValueFromDescription<CategoryMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
                     Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
                     Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
-                    ClaimedScore = Convert.ToInt32(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First().Replace(",",""), 14, "0")), // some guys do score as 52,000
+                    ClaimedScore = Convert.ToInt32(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First().Replace(",", ""), 14, "0")), // some guys do score as 52,000
                     Club = CheckForNull(lineList.Where(l => l.StartsWith("CLUB:")).DefaultIfEmpty("CLUB: NONE").First(), 5, "NONE"),
                     Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
                     CreatedBy = CheckForNull(lineList.Where(l => l.StartsWith("CREATED-BY:")).DefaultIfEmpty("CREATED-BY: NONE").First(), 11, "NONE"),
                     PrimaryName = CheckForNull(lineList.Where(l => l.StartsWith("NAME:")).DefaultIfEmpty("NAME: NONE").First(), 5, "NONE"),
+                    // NameSent will always be NONE
                     NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent:")).DefaultIfEmpty("Name Sent: NONE").First(), 10, "NONE"),
                     // need to work on address
                     Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
@@ -440,7 +462,7 @@ namespace W6OP.ContestLogAnalyzer
                          ReceivedSerialNumber = ConvertSerialNumber(split[9]),
                          ContactName = split[10],
                          CallIsInValid = CheckCallSignFormat(split[5]),
-                         SessionIsValid = CheckForvalidSession(session, split[3], split[4])
+                         SessionIsValid = CheckForvalidSession(session, split[4])
                      };
 
                 qsoList = qso.ToList();
@@ -464,7 +486,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qsoDate"></param>
         /// <param name="qsoTime"></param>
         /// <returns></returns>
-        private bool CheckForvalidSession(Session session, string qsoDate, string qsoTime)
+        private bool CheckForvalidSession(Session session, string qsoTime)
         {
             bool isValidSession = false;
             int qsoSessionTime = Convert.ToInt16(qsoTime);

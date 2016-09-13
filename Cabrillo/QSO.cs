@@ -195,10 +195,13 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// This QSO belongs to the current session
         /// </summary>
+        private bool _SessionIsValid = true;
         public bool SessionIsValid
         {
+            get { return _SessionIsValid; }
             set
             {
+                _SessionIsValid = value;
                 if (value == false)
                 {
                     if (!RejectReasons.ContainsKey(RejectReason.InvalidSession))

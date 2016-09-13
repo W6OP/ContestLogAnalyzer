@@ -377,8 +377,8 @@ namespace W6OP.ContestLogAnalyzer
                 Cursor = Cursors.Default;
             }
 
-            //ProgressBarLoad.Maximum = _LogFileList.Count();
-            //ProgressBarLoad.Value = ProgressBarLoad.Maximum;
+            ProgressBarLoad.Maximum = _ContestLogs.Count;
+            ProgressBarLoad.Value = _ContestLogs.Count;
 
             EnableControl(true);
 
