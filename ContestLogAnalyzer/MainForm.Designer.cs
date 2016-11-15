@@ -46,6 +46,7 @@
             this.ListViewAnalysis = new System.Windows.Forms.ListView();
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ListViewScore = new System.Windows.Forms.ListView();
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -63,9 +64,8 @@
             this.TabPageScoring = new System.Windows.Forms.TabPage();
             this.ComboBoxSelectSession = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.ButtonPrint = new System.Windows.Forms.Button();
-            this.ButtonPrintScores = new System.Windows.Forms.Button();
-            this.columnHeader13 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ButtonLoadBadcalls = new System.Windows.Forms.Button();
+            this.OpenCSVFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.TabControlMain.SuspendLayout();
             this.TabPageLogStatus.SuspendLayout();
             this.TabPageAnalysis.SuspendLayout();
@@ -226,6 +226,11 @@
             this.columnHeader6.Text = "Total QSOs";
             this.columnHeader6.Width = 76;
             // 
+            // columnHeader13
+            // 
+            this.columnHeader13.Text = "Valid QSOs";
+            this.columnHeader13.Width = 80;
+            // 
             // ListViewScore
             // 
             this.ListViewScore.BackColor = System.Drawing.SystemColors.Info;
@@ -375,32 +380,21 @@
             this.label2.TabIndex = 17;
             this.label2.Text = "Select Session";
             // 
-            // ButtonPrint
+            // ButtonLoadBadcalls
             // 
-            this.ButtonPrint.Location = new System.Drawing.Point(496, 36);
-            this.ButtonPrint.Name = "ButtonPrint";
-            this.ButtonPrint.Size = new System.Drawing.Size(94, 23);
-            this.ButtonPrint.TabIndex = 18;
-            this.ButtonPrint.Text = "Print Reject Report";
-            this.ButtonPrint.UseVisualStyleBackColor = true;
-            this.ButtonPrint.Visible = false;
-            this.ButtonPrint.Click += new System.EventHandler(this.ButtonPrint_Click);
+            this.ButtonLoadBadcalls.Location = new System.Drawing.Point(336, 35);
+            this.ButtonLoadBadcalls.Name = "ButtonLoadBadcalls";
+            this.ButtonLoadBadcalls.Size = new System.Drawing.Size(119, 23);
+            this.ButtonLoadBadcalls.TabIndex = 18;
+            this.ButtonLoadBadcalls.Text = "Load Bad Call List";
+            this.ButtonLoadBadcalls.UseVisualStyleBackColor = true;
+            this.ButtonLoadBadcalls.Click += new System.EventHandler(this.ButtonLoadBadcalls_Click);
             // 
-            // ButtonPrintScores
+            // OpenCSVFileDialog
             // 
-            this.ButtonPrintScores.Location = new System.Drawing.Point(653, 36);
-            this.ButtonPrintScores.Name = "ButtonPrintScores";
-            this.ButtonPrintScores.Size = new System.Drawing.Size(94, 23);
-            this.ButtonPrintScores.TabIndex = 19;
-            this.ButtonPrintScores.Text = "Print Scores";
-            this.ButtonPrintScores.UseVisualStyleBackColor = true;
-            this.ButtonPrintScores.Visible = false;
-            this.ButtonPrintScores.Click += new System.EventHandler(this.ButtonPrintScores_Click);
-            // 
-            // columnHeader13
-            // 
-            this.columnHeader13.Text = "Valid QSOs";
-            this.columnHeader13.Width = 80;
+            this.OpenCSVFileDialog.FileName = "BadGoodCalls.csv";
+            this.OpenCSVFileDialog.Filter = "CSV File|*.csv";
+            this.OpenCSVFileDialog.SupportMultiDottedExtensions = true;
             // 
             // MainForm
             // 
@@ -408,8 +402,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
             this.ClientSize = new System.Drawing.Size(1008, 729);
-            this.Controls.Add(this.ButtonPrintScores);
-            this.Controls.Add(this.ButtonPrint);
+            this.Controls.Add(this.ButtonLoadBadcalls);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.ComboBoxSelectSession);
             this.Controls.Add(this.TabControlMain);
@@ -472,11 +465,11 @@
         private System.Windows.Forms.ColumnHeader columnHeader10;
         private System.Windows.Forms.ComboBox ComboBoxSelectSession;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button ButtonPrint;
         private System.Windows.Forms.ColumnHeader columnHeader11;
         private System.Windows.Forms.ColumnHeader columnHeader12;
-        private System.Windows.Forms.Button ButtonPrintScores;
         private System.Windows.Forms.ColumnHeader columnHeader13;
+        private System.Windows.Forms.Button ButtonLoadBadcalls;
+        private System.Windows.Forms.OpenFileDialog OpenCSVFileDialog;
     }
 }
 

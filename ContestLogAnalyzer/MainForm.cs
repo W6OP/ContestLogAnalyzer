@@ -44,6 +44,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private List<ContestLog> _ContestLogs;
         private IEnumerable<System.IO.FileInfo> _LogFileList;
+        private ILookup<string, string> _BadCallList;
 
         private LogProcessor _LogProcessor;
         private LogAnalyzer _LogAnalyser;
@@ -540,7 +541,7 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             Cursor = Cursors.Default;
-           
+
         }
 
         #endregion
@@ -897,7 +898,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 //foreach (ContestLog contestLog in _ContestLogs)
                 //{
-                    _PrintManager.PrintReviewReport(_ContestLogs);
+                _PrintManager.PrintReviewReport(_ContestLogs);
                 //}
             }
             catch (Exception ex)
@@ -932,7 +933,56 @@ namespace W6OP.ContestLogAnalyzer
             PrintFinalScoreReport();
         }
 
+        private void ButtonLoadBadcalls_Click(object sender, EventArgs e)
+        {
+            LoadCSVFile();
+        }
 
+       
+
+        private void LoadCSVFile()
+        {
+            try
+            {
+                _BadCallList = LoadFile();
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show(ex.Message, "Load CSV File", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                UpdateListViewLoad("Unable to load bad call file.", ex.Message, false);
+            }
+            finally
+            {
+                _BadCallList = null;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private ILookup<string, string> LoadFile()
+        {
+            // List<string> lineList = new List<string>();
+            char[] SpaceDelimiter = new char[] { ' ' };
+
+
+            if (OpenCSVFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                if (File.Exists(OpenCSVFileDialog.FileName))
+                {
+                    var lines = File.ReadLines(OpenCSVFileDialog.FileName)
+                      .Select(csvLine => csvLine.Split(SpaceDelimiter, StringSplitOptions.RemoveEmptyEntries))
+                     .Distinct()
+                      .ToLookup(s => s[0], s => s[1]);
+
+                    return lines;
+                }
+            }
+
+            // return empty list
+            return null;
+        }
         #endregion
 
 
