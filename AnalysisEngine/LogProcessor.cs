@@ -146,7 +146,7 @@ namespace W6OP.ContestLogAnalyzer
                         count = contestLog.QSOCollection.Count;
                         contestLog.QSOCollection = contestLog.QSOCollection.Where(q => q.SessionIsValid == true).ToList();
 
-                        if(count > 0 && contestLog.QSOCollection.Count == 0)
+                        if (count > 0 && contestLog.QSOCollection.Count == 0)
                         {
                             // may want to expand on this for a future report
                             FailReason = "QSO collection is empty - Invalid seesion"; // create enum
@@ -569,17 +569,11 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private Int32 ConvertSerialNumber(string serialNumber)
         {
-            Int32 number = 0; // indicates invalid serial number
+            Int32 number = 0; // catches invalid serial number
 
-            try
-            {
-                serialNumber = Regex.Match(serialNumber, @"\d+").Value; ;
-                number = Convert.ToInt32(serialNumber);
-            }
-            catch (Exception)
-            {
-                number = 0;
-            }
+            // catch when SN is swapped with Name
+            serialNumber = Regex.Match(serialNumber, @"\d+").Value; ;
+            number = Convert.ToInt32(serialNumber);
 
             return number;
         }
