@@ -519,47 +519,8 @@ namespace W6OP.ContestLogAnalyzer
             return isValidSession;
         }
 
-        ///// <summary>
-        ///// http://stackoverflow.com/questions/16197290/checking-for-duplicates-in-a-list-of-objects-c-sharp
-        ///// Find duplicate QSOs in a log and mark the as dupes. Be sure
-        ///// to allow the first QSO to be marked as valid, though.
-        ///// </summary>
-        ///// <param name="qsoList"></param>
-        //private void MarkDuplicateQSOs(List<QSO> qsoList)
-        //{
-        //    var query = qsoList.GroupBy(x => new { x.ContactCall, x.Band })
-        //     .Where(g => g.Count() > 1)
-        //     .Select(y => y.Key)
-        //     .ToList();
-
-        //    foreach (var duplicate in query)
-        //    {
-        //        List<QSO> dupeList = qsoList.Where(item => item.ContactCall == duplicate.ContactCall && item.Band == duplicate.Band).ToList();
-
-        //        if (dupeList.Any())
-        //        {
-        //            // set all as dupes
-        //            dupeList.Select(c => { c.QSOIsDupe = true; return c; }).ToList();
-        //            // now reset the first one as not a dupe
-        //            dupeList.First().QSOIsDupe = false;
-        //        }
-        //    }
-        //}
-
-        //}
-        /*
-         *  http://stackoverflow.com/questions/18547354/c-sharp-linq-find-duplicates-in-list
-         * var dupes = qsoList.GroupBy(x => new { x.ContactCall, x.ContactName, x.QsoDate, x.QsoTime,x.Band })
-                   .Where(x => x.Skip(1).Any()).ToArray();
-
-                if (dupes.Any())
-                {
-                    foreach (var dupeList in dupes)
-                    {
-
-                    }
-                }
-         */
+        // http://stackoverflow.com/questions/16197290/checking-for-duplicates-in-a-list-of-objects-c-sharp
+        // http://stackoverflow.com/questions/18547354/c-sharp-linq-find-duplicates-in-list
 
         /// <summary>
         /// Convert a string to an Int32. Also extract a number from a string as a serial

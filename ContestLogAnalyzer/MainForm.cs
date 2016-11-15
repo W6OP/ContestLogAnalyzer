@@ -75,6 +75,8 @@ namespace W6OP.ContestLogAnalyzer
             AssemblyName an = asm.GetName();
             string version = an.Version.Major + "." + an.Version.Minor + "." + an.Version.Build + "." + an.Version.Revision;
 
+            UpdateLabel("");
+
             this.Text = "W6OP Contest Log Analyzer (" + version + ")";
 
             if (_LogProcessor == null)
@@ -429,6 +431,8 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void BackgroundWorkerAnalyzeLogs_DoWork(object sender, DoWorkEventArgs e)
         {
+            UpdateLabel("");
+
             _LogAnalyser.PreProcessContestLogs(_ContestLogs);
 
             UpdateListViewAnalysis("", "", "", true);
@@ -443,8 +447,24 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="value"></param>
         private void _LogAnalyser_OnProgressUpdate(string value, string qsoCount, string validQsoCount, Int32 progress)
         {
-            UpdateListViewAnalysis(value, qsoCount, validQsoCount, false);
-            UpdateProgress(progress);
+
+            if (value.Length > 1)
+            {
+                UpdateListViewAnalysis(value, qsoCount, validQsoCount, false);
+                UpdateProgress(progress);
+            }
+            else
+            {
+                if (value == "1")
+                {
+                    UpdateLabel("Analysing Pass 1");
+                }
+
+                if (value == "2")
+                {
+                    UpdateLabel("Analysing Pass 2");
+                }
+            }
         }
 
         /// <summary>
@@ -460,8 +480,6 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                //ResetProgressBar(true);
-                //ProgressBarLoad.Maximum = 0;
                 ProgressBarLoad.Maximum = _ContestLogs.Count;
                 ProgressBarLoad.Value = _ContestLogs.Count;
 
@@ -469,7 +487,26 @@ namespace W6OP.ContestLogAnalyzer
                 UpdateListViewAnalysis("Log analysis completed!", "", "", false);
                 Cursor = Cursors.Default;
                 ButtonScoreLogs.Enabled = true; // might be cross thread
+                UpdateLabel("");
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        private void UpdateLabel(string message)
+        {
+            if (InvokeRequired)
+            {
+                this.BeginInvoke(new Action<string>(this.UpdateLabel), message);
+                return;
+            }
+
+            LabelProgress.Enabled = true;
+            LabelProgress.Visible = true;
+            LabelProgress.Text = message;
+
         }
 
         #endregion
@@ -771,8 +808,8 @@ namespace W6OP.ContestLogAnalyzer
                 ProgressBarLoad.PerformStep();
             }
 
-            //Application.DoEvents();
-            LabelProgress.Text = count.ToString();
+            
+            //LabelProgress.Text = count.ToString();
         }
 
         /// <summary>

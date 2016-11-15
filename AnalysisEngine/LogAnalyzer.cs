@@ -51,6 +51,7 @@ namespace W6OP.ContestLogAnalyzer
             Int32 progress = 0;
             Int32 validQsos;
 
+            OnProgressUpdate?.Invoke("1", "", "", 0);
 
             foreach (ContestLog contestLog in contestLogList)
             {
@@ -68,7 +69,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     MarkIncorrectCallSigns(qsoList, call);
 
-                    MarkIncorrectName(qsoList, name);
+                    MarkIncorrectSentName(qsoList, name);
 
                     MatchQSOs(qsoList, contestLogList, call, name);
 
@@ -97,6 +98,8 @@ namespace W6OP.ContestLogAnalyzer
             string name = null;
             Int32 progress = 0;
             Int32 validQsos;
+
+            OnProgressUpdate?.Invoke("2", "", "", 0);
 
             contestLogList.Reverse();
 
@@ -440,7 +443,7 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incorrect name
-            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && q.ContactCall == qso.OperatorCall &&
+            matchQSO = contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && q.ContactCall == qso.OperatorCall &&
                         q.ContactName == qso.OperatorName && q.OperatorName != qso.ContactName); // 
             if (matchQSO != null)
             {
@@ -484,13 +487,15 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="qsoList"></param>
         /// <param name="name"></param>
-        private void MarkIncorrectName(List<QSO> qsoList, string name)
+        private void MarkIncorrectSentName(List<QSO> qsoList, string name)
         {
             List<QSO> qsos = qsoList.Where(q => q.OperatorName.ToUpper() != name).ToList();
 
             if (qsos.Any())
             {
-                qsos.Select(c => { c.CallIsInValid = false; return c; }).ToList();
+                //qsos.Select(c => { c.CallIsInValid = false; return c; }).ToList();
+                // was previous line - why wasn't this caught?
+                qsos.Select(c => { c.OpNameIsInValid = false; return c; }).ToList();
             }
         }
 
