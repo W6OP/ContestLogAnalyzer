@@ -44,7 +44,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private List<ContestLog> _ContestLogs;
         private IEnumerable<System.IO.FileInfo> _LogFileList;
-        private ILookup<string, string> _BadCallList;
+        //private ILookup<string, string> _BadCallList;
 
         private LogProcessor _LogProcessor;
         private LogAnalyzer _LogAnalyser;
@@ -919,7 +919,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 foreach (ContestLog contestLog in _ContestLogs)
                 {
-                    _PrintManager.PrintRejectReport(contestLog, contestLog.LogOwner);
+                    _PrintManager.PrintLogSummaryReport(contestLog, contestLog.LogOwner);
                 }
             }
             catch (Exception ex)
@@ -981,7 +981,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             try
             {
-                _BadCallList = LoadFile();
+                _LogAnalyser.BadCallList = LoadFile();
             }
             catch (Exception ex)
             {
@@ -990,7 +990,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             finally
             {
-                _BadCallList = null;
+              
             }
         }
 
@@ -1002,23 +1002,21 @@ namespace W6OP.ContestLogAnalyzer
         {
             // List<string> lineList = new List<string>();
             char[] SpaceDelimiter = new char[] { ' ' };
-
+            ILookup<string, string> lines = null;
 
             if (OpenCSVFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 if (File.Exists(OpenCSVFileDialog.FileName))
                 {
-                    var lines = File.ReadLines(OpenCSVFileDialog.FileName)
+                    lines = File.ReadLines(OpenCSVFileDialog.FileName)
                       .Select(csvLine => csvLine.Split(SpaceDelimiter, StringSplitOptions.RemoveEmptyEntries))
-                     .Distinct()
+                      .Distinct()
                       .ToLookup(s => s[0], s => s[1]);
-
-                    return lines;
                 }
             }
 
             // return empty list
-            return null;
+            return lines;
         }
         #endregion
 

@@ -10,6 +10,15 @@ namespace W6OP.ContestLogAnalyzer
 {
     public class LogAnalyzer
     {
+        private ILookup<string, string> _BadCallList;
+        public ILookup<string, string> BadCallList
+        {
+            set
+            {
+                _BadCallList = value;
+            }
+        }
+
         public delegate void ProgressUpdate(string value, string qsoCount, string validQsoCount, Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
 
@@ -23,6 +32,11 @@ namespace W6OP.ContestLogAnalyzer
             // need case insensitive BOB and Bob
             //_CallTable = new SortedDictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
         }
+
+        //public LogAnalyzer(ILookup<string, string> badCallList)
+        //{
+        //    this._BadCallList = badCallList;
+        //}
 
         /// <summary>
         /// Start processing individual logs.
@@ -225,33 +239,30 @@ namespace W6OP.ContestLogAnalyzer
                     //            // if others have also worked this call then it is not busted
                     //            List<ContestLog> tempLog = contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == qso.ContactCall)).ToList();
 
-                    //            if (tempLog.Count <= 1) 
-                    //            {
-                    //                // 1 would mean this call sign is only in this log
-                    //                // now is it a unique or a busted call
-                    //                // search for the QSO using everything except the contact call sign?
-                    //                //tempLog = contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
-                    //                //                   Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList();
 
-                    //                if (SearchForBustedCall(qso, contestLogList) == false)
-                    //                {
-                    //                    //qso.Status = QSOStatus.ValidQSO;
-                    //                    qso.Status = QSOStatus.InvalidQSO;
-                    //                    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
-                    //                }
-                    //            }
-                    //            else
-                    //            { 
-                    //                // ok call is in 2 or more logs, is it busted or just someone did not send in a log?
-                    //                // do I need to search all logs or just this small colection of logs?
-                    //                if (SearchForBustedCall(qso, contestLogList) == false) // did not find it so is name incorrect
-                    //                {
-                    //                    qso.Status = QSOStatus.ValidQSO;
-                    //                }
-                    //            }
-                    //        }
+
+
+                    // lets look at the bad call sign list
+                    //if (_BadCallList != null)
+                    //{
+                    //    var uniqueResults = _BadCallList
+                    //        .Where(item => item.Key.Contains(qso.ContactCall)) // filter the collection
+                    //        .SelectMany(item => item)                   // get the Values from KeyValuePairs
+                    //        .Distinct()                                   // remove duplicates
+                    //        .ToList();
+
+
+                    //    if (uniqueResults.Count > 0)
+                    //    {
+                    //        qso.Status = QSOStatus.InvalidQSO;
+                    //        qso.BustedCallGuess = uniqueResults[0];
+                    //        qso.RejectReasons.Clear();
+                    //        qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+
+                    //        return;
                     //    }
                     //}
+
 
                     // can't find a matching log
                     // find all the logs this operator is in so we can try to get a match without call signs
@@ -575,12 +586,12 @@ namespace W6OP.ContestLogAnalyzer
                         currentCode = "6";
                     }
 
-                    if( currentCode != previousCode)
+                    if (currentCode != previousCode)
                     {
                         result.Append(currentCode);
                     }
 
-                    if(result.Length == 4)
+                    if (result.Length == 4)
                     {
                         break;
                     }

@@ -336,6 +336,11 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// This is the call that he should have copied.
+        /// </summary>
+        public string BustedCallGuess { get; set; }
+
         private string _ContactName;
         public string ContactName
         {

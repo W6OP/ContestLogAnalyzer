@@ -294,7 +294,7 @@ namespace W6OP.PrintEngine
         ///Category: LOW Checked:  2 
         /// </summary>
         /// <param name="contestLog"></param>
-        public void PrintRejectReport(ContestLog contestLog, string callsign)
+        public void PrintLogSummaryReport(ContestLog contestLog, string callsign)
         {
             string reportFileName = null;
             string message = null;
@@ -369,7 +369,8 @@ namespace W6OP.PrintEngine
                                     }
                                     else
                                     {
-                                        value = qso.RejectReasons[key];
+                                        value = qso.RejectReasons[key] + " - " + qso.ContactCall + " --> " + qso.BustedCallGuess;
+                                        //value = qso.RejectReasons[key];
                                     }
                                 }
                                 else
