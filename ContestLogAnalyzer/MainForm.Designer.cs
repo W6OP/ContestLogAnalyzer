@@ -405,6 +405,7 @@
             this.ButtonPreScoreReports.TabIndex = 19;
             this.ButtonPreScoreReports.Text = "Generate Pre Score Reports";
             this.ButtonPreScoreReports.UseVisualStyleBackColor = true;
+            this.ButtonPreScoreReports.Visible = false;
             // 
             // ButtonCreateBadCallList
             // 
@@ -414,6 +415,7 @@
             this.ButtonCreateBadCallList.TabIndex = 20;
             this.ButtonCreateBadCallList.Text = "Generate Bad Call List";
             this.ButtonCreateBadCallList.UseVisualStyleBackColor = true;
+            this.ButtonCreateBadCallList.Visible = false;
             // 
             // MainForm
             // 

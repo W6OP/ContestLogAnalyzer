@@ -748,7 +748,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                validQsoCount = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList().Count();
+                validQsoCount = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
 
                 ListViewItem item = new ListViewItem(contestLog.LogOwner + "     -     " + contestLog.LogHeader.PrimaryName);
                 item.SubItems.Add(contestLog.Operator);

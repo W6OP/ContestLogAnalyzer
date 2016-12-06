@@ -57,7 +57,7 @@ namespace W6OP.PrintEngine
                         //so2r = "N";
 
                         // only look at valid QSOs
-                        validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+                        validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
 
                         if (contestlog.LogHeader.Assisted == CategoryAssisted.Assisted)
                         {
@@ -215,7 +215,7 @@ namespace W6OP.PrintEngine
                         //so2r = "N";
 
                         // only look at valid QSOs
-                        validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+                        validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
 
                         if (contestlog.LogHeader.Assisted == CategoryAssisted.Assisted)
                         {
