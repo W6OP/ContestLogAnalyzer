@@ -276,6 +276,7 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             qso.Status = QSOStatus.ReviewQSO;
                             qso.RejectReasons.Clear();
+                            qso.IsMultiplier = true;
                             qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
                         }
                         else

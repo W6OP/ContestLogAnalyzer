@@ -126,16 +126,19 @@ namespace W6OP.ContestLogAnalyzer
             Int32 multiplierCount = 0;
             Int32 totalValidQSOs = 0;
 
-            totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList().Count();
-            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier== true && q.Status == QSOStatus.ValidQSO).ToList().Count();
+            totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
+            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier== true && q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
 
-            // need to subtract dupes and invalid logs
-            //uniqueCount = contestLog.QSOCollection
-            //    .Where(q => q.Status == QSOStatus.ValidQSO)
-            //    .GroupBy(p=> p.ContactCall, StringComparer.OrdinalIgnoreCase)
-            //    .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase).Count();
+            //if (!qso.HasMatchingQso)
+            //{
+            //}
+                // need to subtract dupes and invalid logs
+                //uniqueCount = contestLog.QSOCollection
+                //    .Where(q => q.Status == QSOStatus.ValidQSO)
+                //    .GroupBy(p=> p.ContactCall, StringComparer.OrdinalIgnoreCase)
+                //    .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase).Count();
 
-            contestLog.Multipliers = multiplierCount;
+                contestLog.Multipliers = multiplierCount;
             if (multiplierCount != 0)
             {
                 contestLog.ActualScore = totalValidQSOs * multiplierCount;

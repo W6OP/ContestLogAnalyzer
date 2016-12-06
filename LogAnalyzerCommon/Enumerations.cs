@@ -14,7 +14,7 @@ namespace W6OP.ContestLogAnalyzer
         Band,
         [Description("The QSO does not match the other log")]
         NoQSOMatch,
-        [Description("FYI: call not in any other log - scored as unique (pending review)")]
+        [Description("FYI: call not in any other log - scored as unique")]
         NoQSO,
         [Description("Busted call")]
         BustedCallSign,

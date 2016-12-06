@@ -66,6 +66,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.ButtonLoadBadcalls = new System.Windows.Forms.Button();
             this.OpenCSVFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.ButtonPreScoreReports = new System.Windows.Forms.Button();
+            this.ButtonCreateBadCallList = new System.Windows.Forms.Button();
             this.TabControlMain.SuspendLayout();
             this.TabPageLogStatus.SuspendLayout();
             this.TabPageAnalysis.SuspendLayout();
@@ -395,12 +397,32 @@
             this.OpenCSVFileDialog.Filter = "CSV File|*.csv";
             this.OpenCSVFileDialog.SupportMultiDottedExtensions = true;
             // 
+            // ButtonPreScoreReports
+            // 
+            this.ButtonPreScoreReports.Location = new System.Drawing.Point(496, 36);
+            this.ButtonPreScoreReports.Name = "ButtonPreScoreReports";
+            this.ButtonPreScoreReports.Size = new System.Drawing.Size(178, 23);
+            this.ButtonPreScoreReports.TabIndex = 19;
+            this.ButtonPreScoreReports.Text = "Generate Pre Score Reports";
+            this.ButtonPreScoreReports.UseVisualStyleBackColor = true;
+            // 
+            // ButtonCreateBadCallList
+            // 
+            this.ButtonCreateBadCallList.Location = new System.Drawing.Point(674, 36);
+            this.ButtonCreateBadCallList.Name = "ButtonCreateBadCallList";
+            this.ButtonCreateBadCallList.Size = new System.Drawing.Size(178, 23);
+            this.ButtonCreateBadCallList.TabIndex = 20;
+            this.ButtonCreateBadCallList.Text = "Generate Bad Call List";
+            this.ButtonCreateBadCallList.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
             this.ClientSize = new System.Drawing.Size(1008, 729);
+            this.Controls.Add(this.ButtonCreateBadCallList);
+            this.Controls.Add(this.ButtonPreScoreReports);
             this.Controls.Add(this.ButtonLoadBadcalls);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.ComboBoxSelectSession);
@@ -469,6 +491,8 @@
         private System.Windows.Forms.ColumnHeader columnHeader13;
         private System.Windows.Forms.Button ButtonLoadBadcalls;
         private System.Windows.Forms.OpenFileDialog OpenCSVFileDialog;
+        private System.Windows.Forms.Button ButtonPreScoreReports;
+        private System.Windows.Forms.Button ButtonCreateBadCallList;
     }
 }
 

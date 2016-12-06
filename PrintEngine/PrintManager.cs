@@ -310,7 +310,7 @@ namespace W6OP.PrintEngine
             reportFileName = Path.Combine(ReportFolder, callsign + ".rpt");
 
             // only look at invalid QSOs
-            List<QSO> inValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
+            List<QSO> inValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
             // get list of valid qsos for dupes
             //List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.QSOHasDupes == true).ToList();
 
@@ -505,8 +505,8 @@ namespace W6OP.PrintEngine
             Int32 multiplierCount = 0;
             Int32 score = 0;
 
-            totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList().Count();
-            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && q.Status == QSOStatus.ValidQSO).ToList().Count();
+            totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
+            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
             score = contestLog.ActualScore;
 
             sw.WriteLine(message);
