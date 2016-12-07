@@ -123,6 +123,8 @@ namespace W6OP.ContestLogAnalyzer
             .ToList();
             ComboBoxSelectSession.DisplayMember = "Description";
             ComboBoxSelectSession.ValueMember = "value";
+
+            TabControlMain.SelectTab(TabPageLogStatus);
         }
 
         #endregion
@@ -972,6 +974,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private void ButtonLoadBadcalls_Click(object sender, EventArgs e)
         {
+            TabControlMain.SelectTab(TabPageLogStatus);
             LoadCSVFile();
         }
 
@@ -979,9 +982,13 @@ namespace W6OP.ContestLogAnalyzer
 
         private void LoadCSVFile()
         {
+            ILookup<string, string> badCallList;
+
             try
             {
-                _LogAnalyser.BadCallList = LoadFile();
+                badCallList = LoadFile();
+                _LogAnalyser.BadCallList = badCallList;
+                UpdateListViewLoad("Loaded bad call file.", badCallList.Count.ToString() + " entries.", false);
             }
             catch (Exception ex)
             {

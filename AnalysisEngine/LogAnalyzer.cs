@@ -235,35 +235,6 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    //            // there isn't a log for this call sign - is the call busted or just a guy that didn't submit a log
-                    //            // if others have also worked this call then it is not busted
-                    //            List<ContestLog> tempLog = contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == qso.ContactCall)).ToList();
-
-
-
-
-                    // lets look at the bad call sign list
-                    if (_BadCallList != null)
-                    {
-                        var uniqueResults = _BadCallList
-                            .Where(item => item.Key.Contains(qso.ContactCall)) // filter the collection
-                            .SelectMany(item => item)                   // get the Values from KeyValuePairs
-                            .Distinct()                                   // remove duplicates
-                            .ToList();
-
-
-                        if (uniqueResults.Count > 0)
-                        {
-                            qso.Status = QSOStatus.InvalidQSO;
-                            qso.BustedCallGuess = uniqueResults[0];
-                            qso.RejectReasons.Clear();
-                            qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
-
-                            return;
-                        }
-                    }
-
-
                     // can't find a matching log
                     // find all the logs this operator is in so we can try to get a match without call signs
                     // don't want to exclude invalid QSOs as we are checking all logs and all QSOs
@@ -288,9 +259,16 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     { // ok call is in 2 or more logs, is it busted
-                        if (SearchForBustedCall(qso, contestLogList) == false) // did not find it so is name incorrect
+                        if (CheckBadCallList(qso) == false)
                         {
-                            qso.Status = QSOStatus.ValidQSO;
+                            if (SearchForBustedCall(qso, contestLogList) == false) // did not find it so is name incorrect
+                            {
+                                qso.Status = QSOStatus.ValidQSO;
+                            }
+                        }
+                        else
+                        {
+                            qso.Status = QSOStatus.InvalidQSO;
                         }
                     }
                 }
@@ -328,34 +306,59 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Search every log for a match to this QSO without the call sign
+        /// See if the call is in the Good/Bad call list
         /// </summary>
         /// <param name="qso"></param>
-        //private bool SearchForBustedCall(QSO qso, List<ContestLog> contestLogList)
-        //    {
-        //        bool found = false;
-        //        List<QSO> matchingQSOs = null;
+        /// <returns></returns>
+        private bool CheckBadCallList(QSO qso)
+        {
+            if (_BadCallList != null)
+            {
+                var uniqueResults = _BadCallList
+                    .Where(item => item.Key == qso.ContactCall) // filter the collection
+                    .SelectMany(item => item)                   // get the Values from KeyValuePairs
+                    .Distinct()                                   // remove duplicates
+                    .ToList();
 
-        //        // look for a log without a call sign parameter
-        //        matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.ContactName == qso.OperatorName &&
-        //                                        Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList();
 
-        //        if (matchingQSOs.Count > 0)
-        //        {
-        //            if (matchingQSOs.Count == 1)
-        //            {    // found it so call is busted
-        //                found = true;
-        //                qso.CallIsBusted = true;
-        //                qso.MatchingQSO = matchingQSOs[0];
-        //            }
-        //        }
-        //        else// did not find it
-        //        {
-        //            found = SearchForIncorrectName(qso, contestLogList);
-        //        }
+                if (uniqueResults.Count > 0)
+                {
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.CallIsBusted = true;
+                    qso.BustedCallGuess = uniqueResults[0];
+                    qso.RejectReasons.Clear();
+                    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
 
-        //        return found;
-        //    }
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /*
+          // lets look at the bad call sign list
+            if (_BadCallList != null)
+            {
+                var uniqueResults = _BadCallList
+                    .Where(item => item.Key.Contains(qso.ContactCall)) // filter the collection
+                    .SelectMany(item => item)                   // get the Values from KeyValuePairs
+                    .Distinct()                                   // remove duplicates
+                    .ToList();
+
+
+                if (uniqueResults.Count > 0)
+                {
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.BustedCallGuess = uniqueResults[0];
+                    qso.RejectReasons.Clear();
+                    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+
+                    return;
+                }
+            }
+
+         */
 
         /// <summary>
         /// Now see if the name is incorrect and that is why we can't find the QSO
