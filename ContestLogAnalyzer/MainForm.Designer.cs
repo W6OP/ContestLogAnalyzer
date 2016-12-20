@@ -42,7 +42,7 @@
             this.ButtonStartAnalysis = new System.Windows.Forms.Button();
             this.ButtonScoreLogs = new System.Windows.Forms.Button();
             this.BackgroundWorkerScoreLogs = new System.ComponentModel.BackgroundWorker();
-            this.BackgroundWorkerAnalzeLogs = new System.ComponentModel.BackgroundWorker();
+            this.BackgroundWorkerAnalyzeLogs = new System.ComponentModel.BackgroundWorker();
             this.ListViewAnalysis = new System.Windows.Forms.ListView();
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -68,6 +68,7 @@
             this.OpenCSVFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.ButtonPreScoreReports = new System.Windows.Forms.Button();
             this.ButtonCreateBadCallList = new System.Windows.Forms.Button();
+            this.BackgroundWorkerPreAnalysis = new System.ComponentModel.BackgroundWorker();
             this.TabControlMain.SuspendLayout();
             this.TabPageLogStatus.SuspendLayout();
             this.TabPageAnalysis.SuspendLayout();
@@ -195,11 +196,11 @@
             this.BackgroundWorkerScoreLogs.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerScoreLogs_DoWork);
             this.BackgroundWorkerScoreLogs.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerScoreLogs_RunWorkerCompleted);
             // 
-            // BackgroundWorkerAnalzeLogs
+            // BackgroundWorkerAnalyzeLogs
             // 
-            this.BackgroundWorkerAnalzeLogs.WorkerSupportsCancellation = true;
-            this.BackgroundWorkerAnalzeLogs.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerAnalyzeLogs_DoWork);
-            this.BackgroundWorkerAnalzeLogs.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerAnalyzeLogs_RunWorkerCompleted);
+            this.BackgroundWorkerAnalyzeLogs.WorkerSupportsCancellation = true;
+            this.BackgroundWorkerAnalyzeLogs.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerAnalyzeLogs_DoWork);
+            this.BackgroundWorkerAnalyzeLogs.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerAnalyzeLogs_RunWorkerCompleted);
             // 
             // ListViewAnalysis
             // 
@@ -418,6 +419,14 @@
             this.ButtonCreateBadCallList.UseVisualStyleBackColor = true;
             this.ButtonCreateBadCallList.Visible = false;
             // 
+            // BackgroundWorkerPreAnalysis
+            // 
+            this.BackgroundWorkerPreAnalysis.WorkerReportsProgress = true;
+            this.BackgroundWorkerPreAnalysis.WorkerSupportsCancellation = true;
+            this.BackgroundWorkerPreAnalysis.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerPreAnalysis_DoWork);
+            this.BackgroundWorkerPreAnalysis.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorkerPreAnalysis_ProgressChanged);
+            this.BackgroundWorkerPreAnalysis.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerPreAnalysis_RunWorkerCompleted);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -469,7 +478,7 @@
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.Button ButtonScoreLogs;
         private System.ComponentModel.BackgroundWorker BackgroundWorkerScoreLogs;
-        private System.ComponentModel.BackgroundWorker BackgroundWorkerAnalzeLogs;
+        private System.ComponentModel.BackgroundWorker BackgroundWorkerAnalyzeLogs;
         private System.Windows.Forms.ListView ListViewAnalysis;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.ListView ListViewScore;
@@ -496,6 +505,7 @@
         private System.Windows.Forms.OpenFileDialog OpenCSVFileDialog;
         private System.Windows.Forms.Button ButtonPreScoreReports;
         private System.Windows.Forms.Button ButtonCreateBadCallList;
+        private System.ComponentModel.BackgroundWorker BackgroundWorkerPreAnalysis;
     }
 }
 

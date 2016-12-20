@@ -50,7 +50,6 @@ namespace W6OP.ContestLogAnalyzer
         private LogAnalyzer _LogAnalyser;
         private ScoreCWOpen _CWOpen;
         private PrintManager _PrintManager;
-        private ReportGenerator _ReportGenerator;
 
         private string _LogSourceFolder = null;
         private Session _Session = Session.Session_0;
@@ -426,7 +425,7 @@ namespace W6OP.ContestLogAnalyzer
             //ProgressBarLoad.Maximum = _ContestLogs.Count;
             ResetProgressBar(true);
 
-            BackgroundWorkerAnalzeLogs.RunWorkerAsync();
+            BackgroundWorkerAnalyzeLogs.RunWorkerAsync();
         }
 
         #endregion
@@ -1036,16 +1035,50 @@ namespace W6OP.ContestLogAnalyzer
 
         #endregion
 
-        #region Pre Score Reports
+        #region Pre Analysis Reports
 
+        /// <summary>
+        /// Handle button click.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ButtonPreScoreReports_Click(object sender, EventArgs e)
         {
             CreateCallNameFile();
         }
 
+        /// <summary>
+        /// Start the background worker to create the pre-analysis reports.
+        /// </summary>
         private void CreateCallNameFile()
         {
-           
+            UpdateListViewAnalysis("", "", "", true);
+
+            ResetProgressBar(true);
+
+            BackgroundWorkerPreAnalysis.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Create a reportWith all the calls and all the names and summarize
+        /// how many times each call and each name is referenced in other logs.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BackgroundWorkerPreAnalysis_DoWork(object sender, DoWorkEventArgs e)
+        {
+            
+
+        }
+
+        private void BackgroundWorkerPreAnalysis_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+
+        }
+
+        private void BackgroundWorkerPreAnalysis_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+
         }
 
         #endregion

@@ -127,10 +127,6 @@
       <Project>{0829f3ea-1697-4323-9fc6-e405634ecfab}</Project>
       <Name>PrintEngine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ReportEngine\ReportEngine.csproj">
-      <Project>{4dcf13e5-255e-42e1-aefc-d6a28dad0592}</Project>
-      <Name>ReportEngine</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ScoreEngine\ScoreEngine.csproj">
       <Project>{93049529-661f-4bda-b057-7ba5e07d158f}</Project>
       <Name>ScoreEngine</Name>

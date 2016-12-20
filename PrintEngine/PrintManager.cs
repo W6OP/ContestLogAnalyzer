@@ -29,6 +29,8 @@ namespace W6OP.PrintEngine
 
         }
 
+        #region Print Scores
+
         public void PrintCsvFile(List<ContestLog> contestLogs)
         {
             ContestLog contestlog;
@@ -285,6 +287,10 @@ namespace W6OP.PrintEngine
             return table;
         }
 
+        #endregion
+
+        #region Print Reject Report
+
         /// <summary>
         /// Print a report for each log listing the QSOs rejected and the reason for rejection.
         /// 
@@ -521,6 +527,10 @@ namespace W6OP.PrintEngine
             sw.WriteLine(message);
         }
 
+        #endregion
+
+
+
         public void PrintInspectionReport(string fileName, string failReason)
         {
             string inspectFileName = Path.Combine(InspectionFolder, fileName);
@@ -533,5 +543,20 @@ namespace W6OP.PrintEngine
             }
         }
 
+
+        #region Create Pre Analysis Reports
+
+
+        private void CreateCallNameFile()
+        {
+
+        }
+
+        private void CreateUniqueFile()
+        {
+
+        }
+
+        #endregion
     } // end class
 }
