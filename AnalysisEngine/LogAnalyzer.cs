@@ -336,30 +336,6 @@ namespace W6OP.ContestLogAnalyzer
             return false;
         }
 
-        /*
-          // lets look at the bad call sign list
-            if (_BadCallList != null)
-            {
-                var uniqueResults = _BadCallList
-                    .Where(item => item.Key.Contains(qso.ContactCall)) // filter the collection
-                    .SelectMany(item => item)                   // get the Values from KeyValuePairs
-                    .Distinct()                                   // remove duplicates
-                    .ToList();
-
-
-                if (uniqueResults.Count > 0)
-                {
-                    qso.Status = QSOStatus.InvalidQSO;
-                    qso.BustedCallGuess = uniqueResults[0];
-                    qso.RejectReasons.Clear();
-                    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
-
-                    return;
-                }
-            }
-
-         */
-
         /// <summary>
         /// Now see if the name is incorrect and that is why we can't find the QSO
         /// This is only when the call sign did not submit a log

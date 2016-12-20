@@ -50,6 +50,7 @@ namespace W6OP.ContestLogAnalyzer
         private LogAnalyzer _LogAnalyser;
         private ScoreCWOpen _CWOpen;
         private PrintManager _PrintManager;
+        private ReportGenerator _ReportGenerator;
 
         private string _LogSourceFolder = null;
         private Session _Session = Session.Session_0;
@@ -96,6 +97,12 @@ namespace W6OP.ContestLogAnalyzer
                 TabControlMain.SelectTab(TabPageScoring);
                 _CWOpen = new ScoreCWOpen();
                 _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
+            }
+
+            if (_PrintManager == null)
+            {
+                _PrintManager = new PrintManager();
+                _LogProcessor._PrintManager = _PrintManager;
             }
 
             if (_PrintManager == null)
@@ -1025,8 +1032,23 @@ namespace W6OP.ContestLogAnalyzer
             // return empty list
             return lines;
         }
+
+
         #endregion
 
+        #region Pre Score Reports
+
+        private void ButtonPreScoreReports_Click(object sender, EventArgs e)
+        {
+            CreateCallNameFile();
+        }
+
+        private void CreateCallNameFile()
+        {
+           
+        }
+
+        #endregion
 
         //if (InvokeRequired)
         //   {

@@ -406,6 +406,7 @@
             this.ButtonPreScoreReports.Text = "Generate Pre Score Reports";
             this.ButtonPreScoreReports.UseVisualStyleBackColor = true;
             this.ButtonPreScoreReports.Visible = false;
+            this.ButtonPreScoreReports.Click += new System.EventHandler(this.ButtonPreScoreReports_Click);
             // 
             // ButtonCreateBadCallList
             // 

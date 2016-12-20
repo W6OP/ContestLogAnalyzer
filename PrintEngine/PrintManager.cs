@@ -299,6 +299,7 @@ namespace W6OP.PrintEngine
             string reportFileName = null;
             string message = null;
             var value = "";
+            Int32 session = contestLog.Session;
             //string message2 = null;
 
             // strip "/" from callsign
@@ -319,7 +320,7 @@ namespace W6OP.PrintEngine
                 using (StreamWriter sw = File.CreateText(reportFileName))
                 {
                     // maybe add contest year later
-                    sw.WriteLine("CWO log checking results for " + callsign);
+                    sw.WriteLine("CWO log checking results for " + callsign + " in session " + session.ToString());
                     sw.WriteLine("");
 
                     if (!String.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
@@ -403,7 +404,7 @@ namespace W6OP.PrintEngine
                     }
                     else
                     {
-                        sw.WriteLine("Golden log with zero errors. Congratulations!");
+                        sw.WriteLine("Golden log with zero errors in session " + session.ToString() + ". Congratulations!");
 
                     }
 
@@ -431,6 +432,7 @@ namespace W6OP.PrintEngine
             string message = null;
             string callsign = null;
             var value = "";
+            Int32 session = 1;
 
             reportFileName = Path.Combine(ReviewFolder, "Review.rpt");
 
@@ -441,6 +443,7 @@ namespace W6OP.PrintEngine
                     foreach (ContestLog contestLog in contestLogs)
                     {
 
+                        session = contestLog.Session;
                         callsign = contestLog.LogOwner;
 
                         // strip "/" from callsign
@@ -456,7 +459,7 @@ namespace W6OP.PrintEngine
                         {
 
                             // maybe add contest year later
-                            sw.WriteLine("CWO log checking results for " + callsign);
+                            sw.WriteLine("CWO log checking results for " + callsign + " in session " + session.ToString() + ".");
                             sw.WriteLine("");
 
                             if (!String.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
