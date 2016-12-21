@@ -64,9 +64,8 @@ namespace W6OP.ContestLogAnalyzer
         #region Load and Pre Process Logs
 
         /// <summary>
-        /// See if there is a header and a footer
-        /// load and process the header.
-        /// Collect all of the QSOs for each log
+        /// See if there is a header and a footer. Load and process the header.
+        /// Collect all of the QSOs for each log.
         /// </summary>
         /// <param name="fileInfo"></param>
         public string BuildContestLog(FileInfo fileInfo, List<ContestLog> contestLogs, Session session)
@@ -131,12 +130,12 @@ namespace W6OP.ContestLogAnalyzer
                     // read all the QSOs in and mark any that are duplicates, bad call format, incorrect session
                     lineList = lineList.Where(x => x.IndexOf("QSO:", 0) != -1).ToList();
                     contestLog.Session = (int)session;
-                    contestLog.QSOCollection = CollectQSOs(lineList, session, contestLog.LogHeader.NameSent, contestLog.LogHeader.OperatorCallSign);
+                    contestLog.QSOCollection = CollectQSOs(lineList, session, contestLog.LogHeader.NameSent, contestLog.LogHeader.OperatorCallSign, false);
 
                     if (contestLog.QSOCollection == null || contestLog.QSOCollection.Count == 0)
                     {
                         // may want to expand on this for a future report
-                        FailReason = "QSO collection is null or empty"; // create enum
+                        FailReason = "QSO collection is null or empty. The QSOs may be in an invalid format."; // create enum
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
                     }
@@ -429,7 +428,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="lineList"></param>
         /// <returns></returns>
-        private List<QSO> CollectQSOs(List<string> lineList, Session session, string name, string call)
+        private List<QSO> CollectQSOs(List<string> lineList, Session session, string name, string call, bool reverse)
         {
             List<QSO> qsoList = null;
             List<string> temp = new List<string>();
@@ -445,32 +444,74 @@ namespace W6OP.ContestLogAnalyzer
 
                 lineList = temp;
 
-                IEnumerable<QSO> qso =
-                     from line in lineList
-                     let split = line.Split(' ')
-                     select new QSO()
-                     {
-                         // maybe .toUpper() will be needed
-                         Frequency = split[1],
-                         Mode = split[2],
-                         QsoDate = split[3],
-                         QsoTime = split[4],
-                         OperatorCall = split[5],
-                         SentSerialNumber = ConvertSerialNumber(split[6]),
-                         OperatorName = split[7],
-                         ContactCall = split[8],
-                         ReceivedSerialNumber = ConvertSerialNumber(split[9]),
-                         ContactName = split[10],
-                         CallIsInValid = CheckCallSignFormat(split[5]),
-                         SessionIsValid = CheckForvalidSession(session, split[4])
-                     };
+                if (!reverse)
+                {
+                    IEnumerable<QSO> qso =
+                         from line in lineList
+                         let split = line.Split(' ')
+                         select new QSO()
+                         {
+                             // maybe .toUpper() will be needed
+                             Frequency = split[1],
+                             Mode = split[2],
+                             QsoDate = split[3],
+                             QsoTime = split[4],
+                             OperatorCall = split[5],
+                             SentSerialNumber = ConvertSerialNumber(split[6]),
+                             OperatorName = split[7],
+                             ContactCall = split[8],
+                             ReceivedSerialNumber = ConvertSerialNumber(split[9]),
+                             ContactName = split[10],
+                             CallIsInValid = CheckCallSignFormat(split[5]),
+                             SessionIsValid = CheckForvalidSession(session, split[4])
+                         };
 
-                qsoList = qso.ToList();
+                    qsoList = qso.ToList();
+                }
+                else
+                {
+                    IEnumerable<QSO> qso =
+                         from line in lineList
+                         let split = line.Split(' ')
+                         select new QSO()
+                         {
+                             // maybe .toUpper() will be needed
+                             Frequency = split[1],
+                             Mode = split[2],
+                             QsoDate = split[3],
+                             QsoTime = split[4],
+                             OperatorCall = split[5],
+
+                             OperatorName = split[6],
+                             SentSerialNumber = ConvertSerialNumber(split[7]),
+
+                             ContactCall = split[8],
+
+                             ContactName = split[9],
+                             ReceivedSerialNumber = ConvertSerialNumber(split[10]),
+
+                             CallIsInValid = CheckCallSignFormat(split[5]),
+                             SessionIsValid = CheckForvalidSession(session, split[4])
+                         };
+                    qsoList = qso.ToList();
+                }
+
+
             }
             catch (Exception ex)
             {
-                // send log name to look at later
-                OnErrorRaised?.Invoke(ex.Message);
+                // if there is a format exception it means the CWT template may have been used
+                // this swaps the name and serial number columns
+                if (ex is FormatException && reverse == false)
+                {
+                    qsoList = CollectQSOs(lineList, session, name, call, true);
+                }
+                else
+                {
+                    // send log name to look at later
+                    OnErrorRaised?.Invoke(ex.Message);
+                }
+                
             }
 
             return qsoList;

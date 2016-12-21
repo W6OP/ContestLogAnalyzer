@@ -421,8 +421,6 @@ namespace W6OP.ContestLogAnalyzer
         private void AnalyzeLogs()
         {
             UpdateListViewAnalysis("", "", "", true);
-            //ProgressBarLoad.Maximum = 0;
-            //ProgressBarLoad.Maximum = _ContestLogs.Count;
             ResetProgressBar(true);
 
             BackgroundWorkerAnalyzeLogs.RunWorkerAsync();
