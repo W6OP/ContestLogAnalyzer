@@ -1,5 +1,8 @@
 ﻿//using PdfFileWriter;
 using CsvHelper;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System;
@@ -14,6 +17,13 @@ namespace W6OP.PrintEngine
     {
         private List<ContestLog> _ContestLogs;
         private ScoreList _ScoreList = new ScoreList();
+
+        //private ExcelPackage _Excelpackage;
+        //private ExcelWorkbook _Workbook;
+        //private ExcelWorksheet _Worksheet;
+
+
+
         public string WorkingFolder { get; set; }
         public string InspectionFolder { get; set; }
         public string ReportFolder { get; set; }
@@ -89,50 +99,6 @@ namespace W6OP.PrintEngine
                 }
             }
         }
-
-        //private void PopulateScoreList(List<ContestLog> contestLogs)
-        //{
-        //    ContestLog contestlog;
-        //    List<QSO> validQsoList;
-        //    string assisted = null;
-
-        //    // sort ascending by score
-        //    _ContestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
-
-
-        //    for (int i = 0; i < _ContestLogs.Count; i++)
-        //    {
-        //        contestlog = _ContestLogs[i];
-        //        if (contestlog != null)
-        //        {
-        //            assisted = "N";
-        //            //so2r = "N";
-
-        //            // only look at valid QSOs
-        //            validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
-
-        //            if (contestlog.LogHeader.Assisted == CategoryAssisted.Assisted)
-        //            {
-        //                assisted = "Y";
-        //            }
-
-        //            if (contestlog.SO2R == true)
-        //            {
-        //                //so2r = "Y";
-        //            }
-
-        //            _ScoreList.LogOwner = contestlog.LogOwner;
-        //            _ScoreList.Operator = contestlog.Operator;
-        //            _ScoreList.Station = contestlog.Station;
-        //            _ScoreList.OperatorName = contestlog.OperatorName;
-        //            _ScoreList.QSOCount = validQsoList.Count.ToString();
-        //            _ScoreList.Multipliers = contestlog.Multipliers.ToString();
-        //            _ScoreList.ActualScore = contestlog.ActualScore.ToString();
-        //            _ScoreList.Power = contestlog.LogHeader.Power.ToString();
-        //            _ScoreList.Assisted = assisted;
-        //        }
-        //    }
-        //}
 
         // using iTextSharp
         public void PrintPdfScoreSheet(List<ContestLog> contestLogs)
@@ -546,17 +512,136 @@ namespace W6OP.PrintEngine
 
         #region Create Pre Analysis Reports
 
+        public void CreateExcelDoc(string reportPath, string session)
+        {
+            using (SpreadsheetDocument document = SpreadsheetDocument.Create(reportPath + @"\unique_" + session + ".xlsx", SpreadsheetDocumentType.Workbook))
+            {
+                WorkbookPart workbookPart = document.AddWorkbookPart();
+                workbookPart.Workbook = new Workbook();
 
-        private void CreateCallNameFile()
+                WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+                worksheetPart.Worksheet = new Worksheet(new SheetData());
+
+                Sheets sheets = workbookPart.Workbook.AppendChild(new Sheets());
+
+                Sheet sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Unique Calls" };
+
+                sheets.Append(sheet);
+
+                workbookPart.Workbook.Save();
+            }
+        }
+
+        /// <summary>
+        /// Create an Excel spreadsheet that list every call/name pair and
+        /// how many times each was used.
+        /// </summary>
+        private void CreateCallNameFile(List<ContestLog> contestLogs)
         {
 
         }
 
-        private void CreateUniqueFile()
+        public void CreateUniqueFile(List<Tuple<string, string>> distinctQSOs, string reportPath, string session)
         {
+
+            FileInfo newFile = new FileInfo(reportPath + @"\unique_" + session + ".xlsx");
+            if (newFile.Exists)
+            {
+                newFile.Delete();  // ensures we create a new workbook
+                //newFile = new FileInfo(reportPath + @"\unique_" + session + ".xlsx");
+            }
+
+            using (SpreadsheetDocument document = SpreadsheetDocument.Create(reportPath + @"\unique_" + session + ".xlsx", SpreadsheetDocumentType.Workbook))
+            {
+                WorkbookPart workbookPart = document.AddWorkbookPart();
+                workbookPart.Workbook = new Workbook();
+
+                WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+                worksheetPart.Worksheet = new Worksheet(new SheetData());
+
+                Sheets sheets = workbookPart.Workbook.AppendChild(new Sheets());
+
+                Sheet sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Unique Calls" };
+
+                sheets.Append(sheet);
+
+
+
+                // Get the sheetData cell table.
+                SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+
+                for (int i = 0; i < distinctQSOs.Count; i++)
+                {
+                    // Add a row to the cell table.
+                    Row row;
+                    row = new Row() { RowIndex = (UInt32)i + 1 };
+                    sheetData.Append(row);
+
+                    // In the new row, find the column location to insert a cell in A1.  
+                    Cell refCell = null;
+                    foreach (Cell cell in row.Elements<Cell>())
+                    {
+                        if (string.Compare(cell.CellReference.Value, "A1", true) > 0)
+                        {
+                            refCell = cell;
+                            break;
+                        }
+                    }
+
+                    // Add the cell to the cell table at A1.
+                    Cell newCell = new Cell() { CellReference = "A" + row.RowIndex.ToString() };
+                    row.InsertBefore(newCell, refCell);
+
+                    // Set the cell value to be a numeric value of 100.
+                    newCell.CellValue = new CellValue(distinctQSOs[i].Item1);
+                    newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                    // Add the cell to the cell table at A2.
+                    newCell = new Cell() { CellReference = "B" + row.RowIndex.ToString() };
+                    row.InsertBefore(newCell, refCell);
+
+                    // Set the cell value to be a numeric value of 100.
+                    newCell.CellValue = new CellValue(distinctQSOs[i].Item2);
+                    newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                }
+
+
+                // Close the document.
+                document.Close();
+            }
 
         }
 
         #endregion
+
+        #region Excel Functions
+
+        private void CreateWorkBook(string name)
+        {
+            // Workbook workbook = 
+
+
+            // _xlApp.Workbooks.Add(name);
+
+
+
+            //return workbook;
+        }
+
+        //private void PopulateWorksheet(Workbook workbook)
+        //{
+        //  // Worksheet xlWorkSheet = (Worksheet)workbook.Worksheets.get_Item(1);
+        // //   xlWorkSheet.Cells[1, 1] = "ID";
+        ////    xlWorkSheet.Cells[1, 2] = "Name";
+        ////    xlWorkSheet.Cells[2, 1] = "1";
+        ////    xlWorkSheet.Cells[2, 2] = "One";
+        ////    xlWorkSheet.Cells[3, 1] = "2";
+        ////    xlWorkSheet.Cells[3, 2] = "Two";
+        //}
+
+
+        #endregion
+
     } // end class
 }

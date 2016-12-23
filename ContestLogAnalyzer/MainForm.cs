@@ -1043,6 +1043,7 @@ namespace W6OP.ContestLogAnalyzer
         private void ButtonPreScoreReports_Click(object sender, EventArgs e)
         {
             CreateCallNameFile();
+            
         }
 
         /// <summary>
@@ -1057,6 +1058,9 @@ namespace W6OP.ContestLogAnalyzer
             BackgroundWorkerPreAnalysis.RunWorkerAsync();
         }
 
+        //List<QSO> _DistinctQSOs;
+
+
         /// <summary>
         /// Create a reportWith all the calls and all the names and summarize
         /// how many times each call and each name is referenced in other logs.
@@ -1065,7 +1069,8 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void BackgroundWorkerPreAnalysis_DoWork(object sender, DoWorkEventArgs e)
         {
-            
+            List<Tuple<string, string>> distinctQSOs = _LogAnalyser.CollectAllDistinctQSOs(_ContestLogs);
+            _PrintManager.CreateUniqueFile(distinctQSOs, _BaseReportFolder, _Session.ToString());
 
         }
 
@@ -1089,7 +1094,6 @@ namespace W6OP.ContestLogAnalyzer
 
     } // end class
 }
-
 
 /*
   tempLog = _ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.ReceivedSerialNumber == sent && a.Band == band && a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO)).ToList();

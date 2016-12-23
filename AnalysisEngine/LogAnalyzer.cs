@@ -33,10 +33,30 @@ namespace W6OP.ContestLogAnalyzer
             //_CallTable = new SortedDictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
         }
 
-        //public LogAnalyzer(ILookup<string, string> badCallList)
-        //{
-        //    this._BadCallList = badCallList;
-        //}
+        /// <summary>
+        /// Get a list of all QSO by call sign
+        /// </summary>
+        /// <param name="contestLogList"></param>
+        public List<Tuple<string, string>> CollectAllDistinctQSOs(List<ContestLog> contestLogList)
+        {
+            //List<QSO> matchingQSOs = null;
+
+            // list of all QSOs by call signs sorted by operator call
+            //matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall != null && q.ContactName != null).Distinct().OrderBy(q => q.ContactCall).ToList();
+
+            // list of all distinct QSOs
+            List<Tuple<string, string>> distinctQSOs = contestLogList.SelectMany(z => z.QSOCollection)
+               .Select(r => new Tuple<string,string>( r.ContactCall, r.ContactName ))
+              .GroupBy(p => new Tuple<string, string> (p.Item1, p.Item2 ))
+              .Select(g => g.First())
+              .OrderBy(q => q.Item1)
+              .ToList();
+
+            var a = 1;
+
+            return distinctQSOs;
+        }
+
 
         /// <summary>
         /// Start processing individual logs.
