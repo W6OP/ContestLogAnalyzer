@@ -385,6 +385,7 @@ namespace W6OP.ContestLogAnalyzer
             else
             {
                 UpdateListViewLoad(_ContestLogs.Count.ToString() + " logs loaded.", "", false);
+                ButtonPreScoreReports.Enabled = true;
                 Cursor = Cursors.Default;
             }
 

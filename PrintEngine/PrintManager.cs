@@ -512,60 +512,65 @@ namespace W6OP.PrintEngine
 
         #region Create Pre Analysis Reports
 
-        public void CreateExcelDoc(string reportPath, string session)
-        {
-            using (SpreadsheetDocument document = SpreadsheetDocument.Create(reportPath + @"\unique_" + session + ".xlsx", SpreadsheetDocumentType.Workbook))
-            {
-                WorkbookPart workbookPart = document.AddWorkbookPart();
-                workbookPart.Workbook = new Workbook();
+        //public void CreateExcelDoc(string reportPath, string session)
+        //{
+        //    using (SpreadsheetDocument document = SpreadsheetDocument.Create(reportPath + @"\unique_" + session + ".xlsx", SpreadsheetDocumentType.Workbook))
+        //    {
+        //        WorkbookPart workbookPart = document.AddWorkbookPart();
+        //        workbookPart.Workbook = new Workbook();
 
-                WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
-                worksheetPart.Worksheet = new Worksheet(new SheetData());
+        //        WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+        //        worksheetPart.Worksheet = new Worksheet(new SheetData());
 
-                Sheets sheets = workbookPart.Workbook.AppendChild(new Sheets());
+        //        Sheets sheets = workbookPart.Workbook.AppendChild(new Sheets());
 
-                Sheet sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Unique Calls" };
+        //        Sheet sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Unique Calls" };
 
-                sheets.Append(sheet);
+        //        sheets.Append(sheet);
 
-                workbookPart.Workbook.Save();
-            }
-        }
+        //        workbookPart.Workbook.Save();
+        //    }
+        //}
 
         /// <summary>
         /// Create an Excel spreadsheet that list every call/name pair and
         /// how many times each was used.
         /// </summary>
-        private void CreateCallNameFile(List<ContestLog> contestLogs)
-        {
+        //private void CreateCallNameFile(List<ContestLog> contestLogs)
+        //{
 
-        }
+        //}
 
         public void CreateUniqueFile(List<Tuple<string, string>> distinctQSOs, string reportPath, string session)
         {
+            string fileName = reportPath + @"\Unique_Calls_" + session + ".xlsx";
 
-            FileInfo newFile = new FileInfo(reportPath + @"\unique_" + session + ".xlsx");
+            FileInfo newFile = new FileInfo(fileName);
             if (newFile.Exists)
             {
                 newFile.Delete();  // ensures we create a new workbook
-                //newFile = new FileInfo(reportPath + @"\unique_" + session + ".xlsx");
             }
 
-            using (SpreadsheetDocument document = SpreadsheetDocument.Create(reportPath + @"\unique_" + session + ".xlsx", SpreadsheetDocumentType.Workbook))
+            using (SpreadsheetDocument document = SpreadsheetDocument.Create(fileName, SpreadsheetDocumentType.Workbook))
             {
-                WorkbookPart workbookPart = document.AddWorkbookPart();
-                workbookPart.Workbook = new Workbook();
+                //WorkbookPart workbookPart = document.AddWorkbookPart();
+                //workbookPart.Workbook = new Workbook();
 
-                WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
-                worksheetPart.Worksheet = new Worksheet(new SheetData());
+                // add workbookpart
+                WorkbookPart workbookPart = CreateWorkBookPart(document);
 
-                Sheets sheets = workbookPart.Workbook.AppendChild(new Sheets());
+                WorksheetPart worksheetPart = AddWorkSheetPart(workbookPart);
 
-                Sheet sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Unique Calls" };
+                // WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+                // worksheetPart.Worksheet = new Worksheet(new SheetData());
 
-                sheets.Append(sheet);
 
+                AddWorkSheet(workbookPart, worksheetPart, "Unique Calls");
 
+                //Sheets sheets = workbookPart.Workbook.AppendChild(new Sheets());
+                //Sheet sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Unique Calls" };
+
+                //sheets.Append(sheet);
 
                 // Get the sheetData cell table.
                 SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
@@ -606,39 +611,133 @@ namespace W6OP.PrintEngine
 
                 }
 
+                // Test code
+                ThisWillPopulateAnotherWorksheet(workbookPart, worksheetPart);
 
                 // Close the document.
                 document.Close();
             }
+        }
 
+
+
+
+        private void ThisWillPopulateAnotherWorksheet(WorkbookPart workbookPart, WorksheetPart worksheetPart)
+        {
+            // Add another worksheet with data
+            worksheetPart = AddWorkSheetPart(workbookPart);
+            //SheetData sheetData = 
+            AddWorkSheet(workbookPart, worksheetPart, "More Stuff");
+
+            SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+            //// Add a row to the cell table.
+            Row row2;
+            row2 = new Row() { RowIndex = (UInt32)1 };
+            sheetData.Append(row2);
+
+
+
+            Cell refCell2 = null;
+            foreach (Cell cell2 in row2.Elements<Cell>())
+            {
+                if (string.Compare(cell2.CellReference.Value, "A1", true) > 0)
+                {
+                    refCell2 = cell2;
+                    break;
+                }
+            }
+
+            // Add the cell to the cell table at A1.
+            Cell newCell2 = new Cell() { CellReference = "A" + row2.RowIndex.ToString() };
+            row2.InsertBefore(newCell2, refCell2);
+
+            // Set the cell value to be a numeric value of 100.
+            newCell2.CellValue = new CellValue("Testing");
+            newCell2.DataType = new EnumValue<CellValues>(CellValues.String);
         }
 
         #endregion
 
         #region Excel Functions
 
-        private void CreateWorkBook(string name)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="document"></param>
+        /// <returns></returns>
+        private WorkbookPart CreateWorkBookPart(SpreadsheetDocument document)
         {
-            // Workbook workbook = 
+            WorkbookPart workbookPart = document.AddWorkbookPart();
+            workbookPart.Workbook = new Workbook();
 
-
-            // _xlApp.Workbooks.Add(name);
-
-
-
-            //return workbook;
+            return workbookPart;
         }
 
-        //private void PopulateWorksheet(Workbook workbook)
-        //{
-        //  // Worksheet xlWorkSheet = (Worksheet)workbook.Worksheets.get_Item(1);
-        // //   xlWorkSheet.Cells[1, 1] = "ID";
-        ////    xlWorkSheet.Cells[1, 2] = "Name";
-        ////    xlWorkSheet.Cells[2, 1] = "1";
-        ////    xlWorkSheet.Cells[2, 2] = "One";
-        ////    xlWorkSheet.Cells[3, 1] = "2";
-        ////    xlWorkSheet.Cells[3, 2] = "Two";
-        //}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="workbookPart"></param>
+        /// <returns></returns>
+        private WorksheetPart AddWorkSheetPart(WorkbookPart workbookPart)
+        {
+            WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+            worksheetPart.Worksheet = new Worksheet(new SheetData());
+
+            return worksheetPart;
+        }
+
+        /// <summary>
+        /// http://stackoverflow.com/questions/9120544/openxml-multiple-sheets
+        /// </summary>
+        /// <param name="workbookPart"></param>
+        /// <param name="worksheetPart"></param>
+        /// <param name="name"></param>
+        private void AddWorkSheet(WorkbookPart workbookPart, WorksheetPart worksheetPart, string sheetName)
+        {
+            UInt32 sheetId = 1;
+            Sheet sheet = null;
+
+            Sheets sheets = workbookPart.Workbook.GetFirstChild<Sheets>();
+
+            if (sheets != null && sheets.Elements<Sheet>().Count() > 0)
+            {
+                sheetId = sheets.Elements<Sheet>().Select(s => s.SheetId.Value).Max() + 1;
+                string relationshipId = workbookPart.GetIdOfPart(worksheetPart);
+                sheet = new Sheet() { Id = relationshipId, SheetId = sheetId, Name = sheetName };
+            }
+            else
+            {
+                sheets = workbookPart.Workbook.AppendChild(new Sheets());
+                sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = sheetId, Name = sheetName };
+            }
+
+            // probably can put this in calling function
+            //SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>(); 
+
+            sheets.Append(sheet);
+
+            //return sheetData;
+           
+        }
+
+        /*
+            Sheets sheets = workbookPart.Workbook.GetFirstChild<Sheets>();
+            string relationshipId = workbookPart.GetIdOfPart(worksheetPart);
+
+ 
+
+            if (sheets.Elements<Sheet>().Count() > 0)
+            {
+                sheetId = sheets.Elements<Sheet>().Select(s => s.SheetId.Value).Max() + 1;
+            }
+
+            string sheetName = name;
+
+            // Append the new worksheet and associate it with the workbook.
+            Sheet sheet = new Sheet() { Id = relationshipId, SheetId = sheetId, Name = sheetName };
+
+
+         */
 
 
         #endregion

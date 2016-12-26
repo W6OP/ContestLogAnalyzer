@@ -384,7 +384,7 @@
             // 
             // ButtonLoadBadcalls
             // 
-            this.ButtonLoadBadcalls.Location = new System.Drawing.Point(336, 35);
+            this.ButtonLoadBadcalls.Location = new System.Drawing.Point(496, 36);
             this.ButtonLoadBadcalls.Name = "ButtonLoadBadcalls";
             this.ButtonLoadBadcalls.Size = new System.Drawing.Size(119, 23);
             this.ButtonLoadBadcalls.TabIndex = 18;
@@ -400,7 +400,8 @@
             // 
             // ButtonPreScoreReports
             // 
-            this.ButtonPreScoreReports.Location = new System.Drawing.Point(496, 36);
+            this.ButtonPreScoreReports.Enabled = false;
+            this.ButtonPreScoreReports.Location = new System.Drawing.Point(277, 35);
             this.ButtonPreScoreReports.Name = "ButtonPreScoreReports";
             this.ButtonPreScoreReports.Size = new System.Drawing.Size(178, 23);
             this.ButtonPreScoreReports.TabIndex = 19;
@@ -410,7 +411,7 @@
             // 
             // ButtonCreateBadCallList
             // 
-            this.ButtonCreateBadCallList.Location = new System.Drawing.Point(674, 36);
+            this.ButtonCreateBadCallList.Location = new System.Drawing.Point(792, 36);
             this.ButtonCreateBadCallList.Name = "ButtonCreateBadCallList";
             this.ButtonCreateBadCallList.Size = new System.Drawing.Size(178, 23);
             this.ButtonCreateBadCallList.TabIndex = 20;
