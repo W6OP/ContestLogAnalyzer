@@ -541,7 +541,7 @@ namespace W6OP.PrintEngine
 
         //}
 
-        public void CreateUniqueFile(List<Tuple<string, string>> distinctQSOs, string reportPath, string session)
+        public void ListUniqueCallNamePairs(List<Tuple<string, string>> distinctQSOs, string reportPath, string session)
         {
             string fileName = reportPath + @"\Unique_Calls_" + session + ".xlsx";
 
@@ -553,24 +553,12 @@ namespace W6OP.PrintEngine
 
             using (SpreadsheetDocument document = SpreadsheetDocument.Create(fileName, SpreadsheetDocumentType.Workbook))
             {
-                //WorkbookPart workbookPart = document.AddWorkbookPart();
-                //workbookPart.Workbook = new Workbook();
-
                 // add workbookpart
                 WorkbookPart workbookPart = CreateWorkBookPart(document);
 
                 WorksheetPart worksheetPart = AddWorkSheetPart(workbookPart);
 
-                // WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
-                // worksheetPart.Worksheet = new Worksheet(new SheetData());
-
-
                 AddWorkSheet(workbookPart, worksheetPart, "Unique Calls");
-
-                //Sheets sheets = workbookPart.Workbook.AppendChild(new Sheets());
-                //Sheet sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Unique Calls" };
-
-                //sheets.Append(sheet);
 
                 // Get the sheetData cell table.
                 SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
@@ -612,21 +600,106 @@ namespace W6OP.PrintEngine
                 }
 
                 // Test code
-                ThisWillPopulateAnotherWorksheet(workbookPart, worksheetPart);
+                //ThisWillPopulateAnotherWorksheet(workbookPart, worksheetPart);
 
                 // Close the document.
                 document.Close();
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="callNameCountList"></param>
+        /// <param name="_BaseReportFolder"></param>
+        /// <param name="v"></param>
+        public void ListCallNameOccurences(List<Tuple<string, int, string, int>> callNameCountList, string reportPath, string session)
+        {
+            string fileName = reportPath + @"\Unique_Calls_" + session + ".xlsx";
 
+            using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+            {
+                using (SpreadsheetDocument document = SpreadsheetDocument.Open(fs, true))
+                {
+                    WorkbookPart workbookPart = document.WorkbookPart;
+                    //SharedStringTablePart sstpart = workbookPart.GetPartsOfType<SharedStringTablePart>().First();
+                    //SharedStringTable sst = sstpart.SharedStringTable;
+
+                    // WorksheetPart worksheetPart = workbookPart.WorksheetParts.First();
+                    //Worksheet sheet = worksheetPart.Worksheet;
+
+
+                    // Add another worksheet with data
+                    WorksheetPart worksheetPart = AddWorkSheetPart(workbookPart);
+                    AddWorkSheet(workbookPart, worksheetPart, "Call-Name Counts");
+
+                    SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+                    //AddWorkSheet(workbookPart, worksheetPart, "Call-Name Counts");
+
+                    //// Get the sheetData cell table.
+                    //SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+
+                    for (int i = 0; i < callNameCountList.Count; i++)
+                    {
+                        // Add a row to the cell table.
+                        Row row;
+                        row = new Row() { RowIndex = (UInt32)i + 1 };
+                        sheetData.Append(row);
+
+                        // In the new row, find the column location to insert a cell in A1.  
+                        Cell refCell = null;
+                        foreach (Cell cell in row.Elements<Cell>())
+                        {
+                            if (string.Compare(cell.CellReference.Value, "A1", true) > 0)
+                            {
+                                refCell = cell;
+                                break;
+                            }
+                        }
+
+                        // Add the cell to the cell table at A1.
+                        Cell newCell = new Cell() { CellReference = "A" + row.RowIndex.ToString() };
+                        row.InsertBefore(newCell, refCell);
+
+                        // Set the cell value to be a numeric value of 100.
+                        newCell.CellValue = new CellValue(callNameCountList[i].Item1);
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        // Add the cell to the cell table at A2.
+                        newCell = new Cell() { CellReference = "B" + row.RowIndex.ToString() };
+                        row.InsertBefore(newCell, refCell);
+
+                        // Set the cell value to be a numeric value of 100.
+                        newCell.CellValue = new CellValue(callNameCountList[i].Item2.ToString());
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
+
+                        // Add the cell to the cell table at A3.
+                        newCell = new Cell() { CellReference = "C" + row.RowIndex.ToString() };
+                        row.InsertBefore(newCell, refCell);
+
+                        // Set the cell value to be a numeric value of 100.
+                        newCell.CellValue = new CellValue(callNameCountList[i].Item3);
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        // Add the cell to the cell table at A4.
+                        newCell = new Cell() { CellReference = "D" + row.RowIndex.ToString() };
+                        row.InsertBefore(newCell, refCell);
+
+                        // Set the cell value to be a numeric value of 100.
+                        newCell.CellValue = new CellValue(callNameCountList[i].Item4.ToString());
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
+                    }
+
+
+                }
+            }
+        }
 
 
         private void ThisWillPopulateAnotherWorksheet(WorkbookPart workbookPart, WorksheetPart worksheetPart)
         {
             // Add another worksheet with data
             worksheetPart = AddWorkSheetPart(workbookPart);
-            //SheetData sheetData = 
             AddWorkSheet(workbookPart, worksheetPart, "More Stuff");
 
             SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
@@ -717,8 +790,10 @@ namespace W6OP.PrintEngine
             sheets.Append(sheet);
 
             //return sheetData;
-           
+
         }
+
+
 
         /*
             Sheets sheets = workbookPart.Workbook.GetFirstChild<Sheets>();

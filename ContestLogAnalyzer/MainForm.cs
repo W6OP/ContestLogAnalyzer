@@ -1070,8 +1070,15 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void BackgroundWorkerPreAnalysis_DoWork(object sender, DoWorkEventArgs e)
         {
-            List<Tuple<string, string>> distinctQSOs = _LogAnalyser.CollectAllDistinctQSOs(_ContestLogs);
-            _PrintManager.CreateUniqueFile(distinctQSOs, _BaseReportFolder, _Session.ToString());
+            // list of all call/name pairs
+            List<Tuple<string, string>> distinctQSOs = _LogAnalyser.CollectAllCallNamePairs(_ContestLogs);
+            _PrintManager.ListUniqueCallNamePairs(distinctQSOs, _BaseReportFolder, _Session.ToString());
+
+            // list of all calls with number of hits and all names with number of hits
+            List<Tuple<string, Int32, string, Int32>> callNameCountList = _LogAnalyser.CollectAllDistinctQSOs(distinctQSOs, _ContestLogs);
+            _PrintManager.ListCallNameOccurences(callNameCountList, _BaseReportFolder, _Session.ToString());
+
+           // List<QSO> qsoList = _LogAnalyser.CollectQSOs(_ContestLogs);
 
         }
 
@@ -1082,7 +1089,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private void BackgroundWorkerPreAnalysis_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-
+            UpdateListViewLoad("Reports completed.", "", false);
         }
 
         #endregion
