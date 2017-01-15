@@ -34,74 +34,132 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Get a list of all QSO call/name pairs by call sign
+        /// Get a list of all distinct call/name pairs by grouped by call sign. This is used
+        /// for the bad call list.
         /// </summary>
         /// <param name="contestLogList"></param>
         public List<Tuple<string, string>> CollectAllCallNamePairs(List<ContestLog> contestLogList)
         {
             // list of all distinct call/name pairs
-            List<Tuple<string, string>> distinctQSOs = contestLogList.SelectMany(z => z.QSOCollection)
+            List<Tuple<string, string>> distinctCallNamePairs = contestLogList.SelectMany(z => z.QSOCollection)
               .Select(r => new Tuple<string, string>(r.ContactCall, r.ContactName))
               .GroupBy(p => new Tuple<string, string>(p.Item1, p.Item2))
               .Select(g => g.First())
               .OrderBy(q => q.Item1)
               .ToList();
 
-            return distinctQSOs;
+            return distinctCallNamePairs;
         }
 
-        public List<Tuple<string, Int32, string, Int32>> CollectAllDistinctQSOs(List<Tuple<string, string>> distinctQSOs, List<ContestLog> contestLogList)
+        /// <summary>
+        /// Take the list of distinct call signs and a list of all call/name pairs. For every
+        /// call sign see how many times it was used. Also, get the call and name combination
+        /// and see how many times each name was used.
+        /// </summary>
+        /// <param name="distinctCallNamePairs"></param>
+        /// <param name="contestLogList"></param>
+        /// <returns></returns>
+        public List<Tuple<string, Int32, string, Int32>> CollectCallNameHitData(List<Tuple<string, string>> distinctCallNamePairs, List<ContestLog> contestLogList, out List<Tuple<string, string>> suspectCallList)
         {
             string currentCall = "";
             string previousCall = "";
+            Int32 count = 0;
 
-            List<Tuple<string, Int32, string, Int32>> listQSOs2 = new List<Tuple<string, int, string, int>>();
+            suspectCallList = new List<Tuple<string, string>>();
 
-            List<Tuple<string, string>> allQSOs = contestLogList.SelectMany(z => z.QSOCollection)
-             .Select(r => new Tuple<string, string>(r.ContactCall, r.ContactName))
-             .ToList();
+            List<Tuple<string, Int32, string, Int32>> callNameCountList = new List<Tuple<string, int, string, int>>();
 
-            //List<Tuple<string, Int32, string, Int32>> listQSOs = contestLogList.SelectMany(z => z.QSOCollection)
-            // .Select(r => new Tuple<string, Int32, string, Int32>(r.ContactCall, r.ContactCall.Count(), r.ContactName, r.ContactName.Count()))
-            // .GroupBy(p => new Tuple<string,  string>(p.Item1, p.Item3))
-            // .Select(g => g.First())
-            // .OrderBy(q => q.Item1)
-            // .ToList();
+            List<Tuple<string, string>> allCallNamePairs = contestLogList.SelectMany(z => z.QSOCollection)
+                .Select(r => new Tuple<string, string>(r.ContactCall, r.ContactName))
+                .ToList();
 
-          
-            for (int i = 0; i < distinctQSOs.Count; i++)
+            for (int i = 0; i < distinctCallNamePairs.Count; i++)
             {
-               
-                //Int32 callCount = allQSOs.SelectMany(q => q.Item1 == distinctQSOs[i].Item1).ToList().Count;
-                IEnumerable<Tuple<string, string>> callCount = allQSOs.Where(t => t.Item1 == distinctQSOs[i].Item1);
-                //Int32 nameCount = allQSOs.Select(q => q.Item1 == distinctQSOs[i].Item1 && q.Item2 == distinctQSOs[i].Item2).ToList().Count;
-                IEnumerable<Tuple<string, string>> nameCount = allQSOs.Where(t => t.Item1 == distinctQSOs[i].Item1 && t.Item2 == distinctQSOs[i].Item2);
+                IEnumerable<Tuple<string, string>> callCount = allCallNamePairs.Where(t => t.Item1 == distinctCallNamePairs[i].Item1);
+                IEnumerable<Tuple<string, string>> nameCount = allCallNamePairs.Where(t => t.Item1 == distinctCallNamePairs[i].Item1 && t.Item2 == distinctCallNamePairs[i].Item2);
 
-                if (previousCall != distinctQSOs[i].Item1)
+                if (previousCall != distinctCallNamePairs[i].Item1)
                 {
-                    previousCall = distinctQSOs[i].Item1;
-                    currentCall = distinctQSOs[i].Item1;
+                    previousCall = distinctCallNamePairs[i].Item1;
+                    currentCall = distinctCallNamePairs[i].Item1;
+                    count = callCount.Count();
+
+                    if (count <= 3)
+                    {
+                        suspectCallList.Add(distinctCallNamePairs[i]); // this is an OUT parameter
+                    }
                 }
                 else
                 {
                     currentCall = "";
+                    count = 0;
                 }
 
-                Tuple<string, Int32, string, Int32> tuple = new Tuple<string, Int32, string, Int32>(currentCall, callCount.Count(), distinctQSOs[i].Item2, nameCount.Count());
+                Tuple<string, Int32, string, Int32> tuple = new Tuple<string, Int32, string, Int32>(currentCall, count, distinctCallNamePairs[i].Item2, nameCount.Count());
                
-                listQSOs2.Add(tuple);
+                callNameCountList.Add(tuple);
             }
 
-            return listQSOs2;
+            return callNameCountList;
         }
 
-        //public class Pair<T1, T2>
-        //{
-        //    public T1 First { get; set; }
-        //    public T2 Second { get; set; }
-        //    public T3 Third { get; set; }
-        //    public T4 Fourth { get; set; }
-        //}
+        /// <summary>
+        /// Get every QSO that matches the call/name in the suspect call list.
+        /// </summary>
+        /// <param name="suspectCallList"></param>
+        /// <returns></returns>
+        public List<QSO> CollectSuspectQSOs(List<Tuple<string, string>> suspectCallList, List<ContestLog> contestLogList)
+        { 
+            List<QSO> suspectQSOs = new List<QSO>();
+
+
+            //suspectQSOs = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
+            //                             q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
+
+
+            List<Tuple<string, QSO>> allCallNamePairs = contestLogList.SelectMany(z => z.QSOCollection)
+                .Select(r => new Tuple<string, QSO>(r.ContactCall, r))
+                .ToList();
+
+
+            foreach (Tuple<string, string> tuple in suspectCallList)
+            {
+                // WHERE I LEFT OFF
+                // allCallNamePairs - query this
+
+                //QSO qso = (QSO)contestLogList.FirstOrDefault(q => q.QSOCollection != null).QSOCollection.FirstOrDefault((q => q.ContactCall == tuple.Item1 && q.ContactName == tuple.Item2));
+
+
+            }
+
+
+            //{
+            //    // get the other log that matches this QSO contact call
+            //    contestLog = contestLogList.FirstOrDefault(q => q.LogOwner == qso.ContactCall);
+
+            //    if (contestLog != null)
+            //    {
+            //        // now see if a QSO matches this QSO
+            //        // leave the time check here for future use
+            //        matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
+            //                              q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            return suspectQSOs;
+        }
 
         /// <summary>
         /// Start processing individual logs.
@@ -652,11 +710,6 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return result.ToString().ToUpper();
-        }
-
-        public List<QSO> CollectQSOs(List<ContestLog> _ContestLogs)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion
