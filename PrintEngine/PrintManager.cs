@@ -670,7 +670,10 @@ namespace W6OP.PrintEngine
                         row.InsertBefore(newCell, refCell);
 
                         // Set the cell value to be a numeric value of 100.
-                        newCell.CellValue = new CellValue(callNameCountList[i].Item2.ToString());
+                        if (callNameCountList[i].Item2 != 0)
+                        {
+                            newCell.CellValue = new CellValue(callNameCountList[i].Item2.ToString());
+                        }
                         newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
 
                         // Add the cell to the cell table at A3.
