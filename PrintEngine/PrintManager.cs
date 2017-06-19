@@ -689,8 +689,6 @@ namespace W6OP.PrintEngine
                         newCell.CellValue = new CellValue(callNameCountList[i].Item4.ToString());
                         newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
                     }
-
-
                 }
             }
         }

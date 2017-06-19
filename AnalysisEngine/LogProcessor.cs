@@ -148,7 +148,7 @@ namespace W6OP.ContestLogAnalyzer
                         if (count > 0 && contestLog.QSOCollection.Count == 0)
                         {
                             // may want to expand on this for a future report
-                            FailReason = "QSO collection is empty - Invalid seesion"; // create enum
+                            FailReason = "QSO collection is empty - Invalid session"; // create enum
                             contestLog.IsValidLog = false;
                             throw new Exception(fileInfo.Name); // don't want this added to collection
                         }
