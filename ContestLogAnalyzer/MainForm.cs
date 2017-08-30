@@ -1075,10 +1075,12 @@ namespace W6OP.ContestLogAnalyzer
 
             // list of all call/name pairs
             List<Tuple<string, string>> distinctCallNamePairs = _LogAnalyser.CollectAllCallNamePairs(_ContestLogs);
+            UpdateListViewLoad("List Unique Call Name Pairs", "", false);
             _PrintManager.ListUniqueCallNamePairs(distinctCallNamePairs, _BaseReportFolder, _Session.ToString());
 
             // list of all calls with number of hits and all names with number of hits
             List<Tuple<string, Int32, string, Int32>> callNameCountList = _LogAnalyser.CollectCallNameHitData(distinctCallNamePairs, _ContestLogs, out suspectCallList);
+            UpdateListViewLoad("List Call Name Occurences", "", false);
             _PrintManager.ListCallNameOccurences(callNameCountList, _BaseReportFolder, _Session.ToString());
 
             List<QSO> suspectQSOs = _LogAnalyser.CollectSuspectQSOs(suspectCallList, _ContestLogs);
@@ -1093,7 +1095,14 @@ namespace W6OP.ContestLogAnalyzer
 
         private void BackgroundWorkerPreAnalysis_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            UpdateListViewLoad("Reports completed.", "", false);
+            if (e.Error != null)
+            {
+                UpdateListViewAnalysis(e.Error.Message, "", "", false);
+            }
+            else
+            {
+                UpdateListViewLoad("Reports completed.", "", false);
+            }
         }
 
         #endregion

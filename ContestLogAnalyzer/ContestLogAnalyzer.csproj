@@ -149,7 +149,8 @@ copy "$(TargetDir)/AnalysisEngine.pdb" ..\..\..\Deploy
 copy "$(TargetDir)/PrintEngine.dll" ..\..\..\Deploy
 copy "$(TargetDir)/PrintEngine.pdb" ..\..\..\Deploy
 copy "$(TargetDir)/itextsharp.dll" ..\..\..\Deploy
-copy "$(TargetDir)/csvhelper.dll" ..\..\..\Deploy</PostBuildEvent>
+copy "$(TargetDir)/csvhelper.dll" ..\..\..\Deploy
+copy "$(TargetDir)/DocumentFormat.OpenXml.dll" ..\..\..\Deploy</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
