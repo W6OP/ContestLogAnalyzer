@@ -96,6 +96,7 @@
     <EmbeddedResource Include="QSOForm.resx">
       <DependentUpon>QSOForm.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="License.rtf" />
     <None Include="Properties\DataSources\QSO.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
