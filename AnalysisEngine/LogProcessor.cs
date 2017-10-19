@@ -446,27 +446,36 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (!reverse)
                 {
-                    IEnumerable<QSO> qso =
-                         from line in lineList
-                         let split = line.Split(' ')
-                         select new QSO()
-                         {
+                    //try // DEBUGGING ONLY
+                    //{
+                        IEnumerable<QSO> qso =
+                             from line in lineList
+                             let split = line.Split(' ')
+                             select new QSO()
+                             {
                              // maybe .toUpper() will be needed
                              Frequency = split[1],
-                             Mode = split[2],
-                             QsoDate = split[3],
-                             QsoTime = split[4],
-                             OperatorCall = split[5],
-                             SentSerialNumber = ConvertSerialNumber(split[6]),
-                             OperatorName = split[7],
-                             ContactCall = split[8],
-                             ReceivedSerialNumber = ConvertSerialNumber(split[9]),
-                             ContactName = split[10],
-                             CallIsInValid = CheckCallSignFormat(split[5]),
-                             SessionIsValid = CheckForvalidSession(session, split[4])
-                         };
+                                 Mode = split[2],
+                                 QsoDate = split[3],
+                                 QsoTime = split[4],
+                                 OperatorCall = split[5],
+                                 SentSerialNumber = ConvertSerialNumber(split[6]),
+                                 OperatorName = split[7],
+                                 ContactCall = split[8],
+                                 ReceivedSerialNumber = ConvertSerialNumber(split[9]),
+                                 ContactName = split[10],
+                                 CallIsInValid = CheckCallSignFormat(split[5]),
+                                 SessionIsValid = CheckForvalidSession(session, split[4])
+                             };
 
-                    qsoList = qso.ToList();
+                        qsoList = qso.ToList();
+                    //}
+                    //catch(Exception eex)
+                    //{
+                    //    string a = eex.Message;
+                    //}
+
+                    
                 }
                 else
                 {
@@ -574,7 +583,7 @@ namespace W6OP.ContestLogAnalyzer
             Int32 number = 0; // catches invalid serial number
 
             // catch when SN is swapped with Name
-            serialNumber = Regex.Match(serialNumber, @"\d+").Value; ;
+            serialNumber = Regex.Match(serialNumber, @"\d+").Value;
             number = Convert.ToInt32(serialNumber);
 
             return number;
