@@ -128,7 +128,9 @@ namespace W6OP.ContestLogAnalyzer
 
                     // this statement says to copy all QSO lines
                     // read all the QSOs in and mark any that are duplicates, bad call format, incorrect session
-                    lineList = lineList.Where(x => x.IndexOf("QSO:", 0) != -1).ToList();
+                    lineList = lineList.Where(x => (x.IndexOf("QSO:", 0) != -1) && (x.IndexOf("XQSO:", 0) == -1) && (x.IndexOf("X-QSO:", 0) == -1)).ToList();
+                    //lineList = DeleteIgnoredQSOs(lineList);
+
                     contestLog.Session = (int)session;
                     contestLog.QSOCollection = CollectQSOs(lineList, session, contestLog.LogHeader.NameSent, contestLog.LogHeader.OperatorCallSign, false);
 
@@ -204,6 +206,15 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return logFileName;
+        }
+
+        private List<string> DeleteIgnoredQSOs(List<string> lineList)
+        {
+
+            
+
+
+            return lineList;
         }
 
 
