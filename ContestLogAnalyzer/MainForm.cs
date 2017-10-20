@@ -590,82 +590,6 @@ namespace W6OP.ContestLogAnalyzer
 
         #endregion
 
-        #region Commented Out Code
-
-        /// <summary>
-        /// Look at the QSOs and see if they are valid - how do you know?
-        /// need all the QSOs from two lists
-        /// the qsos that match between the two logs
-        /// </summary>
-        /// <param name="log"></param>
-        //private void AnalyzeQSOs(ContestLog log)
-        //{
-        //    List<QSO> qsoList;
-        //    List<QSO> matchList = null;
-        //    List<QSO> totalList = null;
-        //    List<QSO> exceptionList = null;
-        //    Hashtable callTable = new Hashtable();
-        //    string logOwnerCall = log.LogHeader.OperatorCallSign;
-        //    string operatorCall = null;
-        //    string sentName = null;
-        //    Int32 sent = 0;
-        //    Int32 received = 0;
-        //    Int32 band = 0;
-        //    Int32 matchCount = 0;
-        //    QSOStatus valid = QSOStatus.ValidQSO;
-
-
-        //    foreach (ContestLog contestLog in log.MatchLogs)
-        //    {
-        //        //operatorCall = qso.OperatorCall;
-        //        //sent = qso.SentSerialNumber;
-        //        //received = qso.ReceivedSerialNumber;
-        //        //band = qso.Band;
-        //        //sentName = qso.OperatorName;
-
-        //        // list of QSOs from the other guy where 
-        //        qsoList = contestLog.QSOCollection.Where(a => a.ContactCall == logOwnerCall).ToList();
-
-
-        //        //matchList = contestLog.QSOCollection.Where(a => a.ContactCall == operatorCall && a.SentSerialNumber == received && a.Band == band && a.ContactName == sentName).ToList<QSO>();
-
-        //        return;
-        //        //totalList = contestLog.QSOCollection.Where(a => a.ContactCall == logOwnerCall && a.SentSerialNumber == received && a.Band == band && a.ContactName == sentName).ToList<QSO>();
-        //        // now query this guys log for matches
-        //        foreach (QSO qso in qsoList)
-        //        {
-        //            operatorCall = qso.OperatorCall;
-        //            sent = qso.SentSerialNumber;
-        //            received = qso.ReceivedSerialNumber;
-        //            band = qso.Band;
-        //            sentName = qso.OperatorName; // check on this
-        //            valid = QSOStatus.ValidQSO;
-
-        //            //totalList = log.QSOCollection.Where(a => a.ContactCall == operatorCall).ToList<QSO>();
-        //            // could there be more than one returned?
-        //            matchList = log.QSOCollection.Where(a => a.ContactCall == operatorCall && a.SentSerialNumber == received && a.Band == band && a.ContactName == sentName).ToList<QSO>();
-        //            foreach (QSO q in matchList)
-        //            {
-        //                q.Status = QSOStatus.ValidQSO;
-        //                valid = QSOStatus.InvalidQSO;
-        //                if (q.Status == QSOStatus.InvalidQSO)
-        //                {
-        //                    // later expand this with more information
-        //                    q.RejectReason = "Dupe";
-        //                }
-        //            }
-
-        //            //// see if there are any QSOs that need correction or looking at
-        //            //if (totalList.Count != matchList.Count)
-        //            //{
-        //            //    exceptionList = totalList.Except(qsoList).ToList<QSO>();
-        //            //}
-        //        }
-        //    }
-        //}
-
-
-
         /// <summary>
         /// http://stackoverflow.com/questions/721395/linq-question-querying-nested-collections
         /// http://stackoverflow.com/questions/15996168/linq-query-to-filter-items-by-criteria-from-multiple-lists
@@ -677,8 +601,6 @@ namespace W6OP.ContestLogAnalyzer
                          .Where(t => t.value == matchString)
                          .Select(s => s.index).First();
          */
-
-        #endregion
 
         #region Update ListViews
 

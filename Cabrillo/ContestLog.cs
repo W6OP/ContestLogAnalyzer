@@ -82,41 +82,17 @@ namespace W6OP.ContestLogAnalyzer
         public int Session { get; set; }
 
         public bool SO2R { get; set; }
+        
         /// <summary>
         /// List of all the QSOs in this log.
         /// </summary>
-        //private List<QSO> _QSOCollection;
         public List<QSO> QSOCollection { get; set; } = new List<QSO>();
-        //{
-        //    get { return _QSOCollection; }
-        //    set { _QSOCollection = value; }
-        //}
 
-        ///// <summary>
-        ///// List of QSOs from other logs that fully match QSOs in this log.
-        ///// </summary>
-        ////private List<QSO> _FullMatchQSOS;
-        //public List<QSO> FullMatchQSOS { get; set; } = new List<QSO>();
-        ////{
-        ////    get { return _FullMatchQSOS; }
-        ////    set { _FullMatchQSOS = value; }
-        ////}
+        /// <summary>
+        /// List of all the XQSOs in this log.
+        /// </summary>
+        public List<QSO> QSOCollectionX { get; set; } = new List<QSO>();
 
-        ///// <summary>
-        ///// List of QSOs from other logs that match at least the call sign for this log.
-        ///// </summary>
-        ////private List<QSO> _PartialMatchQSOS;
-        //public List<QSO> PartialMatchQSOS { get; set; } = new List<QSO>();
-        ////{
-        ////    get { return _PartialMatchQSOS; }
-        ////    set { _PartialMatchQSOS = value; }
-        ////}
-
-        ///// List of QSOs from other logs that do not match any QSOs in this log.
-        ///// </summary>
-        ////private List<QSO> _OtherQSOS;
-        //public List<QSO> OtherQSOS { get; set; } = new List<QSO>();
-       
         /// <summary>
         /// A list of all of the logs that have a reference to the call represented by this log.
         /// </summary>

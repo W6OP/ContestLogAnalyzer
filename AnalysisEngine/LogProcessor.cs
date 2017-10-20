@@ -71,6 +71,8 @@ namespace W6OP.ContestLogAnalyzer
         public string BuildContestLog(FileInfo fileInfo, List<ContestLog> contestLogs, Session session)
         {
             ContestLog contestLog = new ContestLog();
+            List<string> lineList;
+            List<string> lineListX;
             string fullName = fileInfo.FullName;
             string fileName = fileInfo.Name;
             string logFileName = null;
@@ -85,7 +87,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (File.Exists(fullName))
                 {
-                    List<string> lineList = File.ReadAllLines(fullName).Select(i => i.ToString()).ToList();
+                    lineList = File.ReadAllLines(fullName).Select(i => i.ToString()).ToList();
 
                     version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim();
 
@@ -128,11 +130,13 @@ namespace W6OP.ContestLogAnalyzer
 
                     // this statement says to copy all QSO lines
                     // read all the QSOs in and mark any that are duplicates, bad call format, incorrect session
+                    lineListX = lineList.Where(x => (x.IndexOf("XQSO:", 0) != -1) || (x.IndexOf("X-QSO:", 0) != -1)).ToList();
                     lineList = lineList.Where(x => (x.IndexOf("QSO:", 0) != -1) && (x.IndexOf("XQSO:", 0) == -1) && (x.IndexOf("X-QSO:", 0) == -1)).ToList();
-                    //lineList = DeleteIgnoredQSOs(lineList);
 
                     contestLog.Session = (int)session;
-                    contestLog.QSOCollection = CollectQSOs(lineList, session, contestLog.LogHeader.NameSent, contestLog.LogHeader.OperatorCallSign, false);
+
+                    contestLog.QSOCollection = CollectQSOs(lineList, session, false);
+                    contestLog.QSOCollectionX = CollectQSOs(lineListX, session, false);
 
                     if (contestLog.QSOCollection == null || contestLog.QSOCollection.Count == 0)
                     {
@@ -207,16 +211,6 @@ namespace W6OP.ContestLogAnalyzer
 
             return logFileName;
         }
-
-        private List<string> DeleteIgnoredQSOs(List<string> lineList)
-        {
-
-            
-
-
-            return lineList;
-        }
-
 
         /// <summary>
         /// Move a file to the inspection folder.
@@ -439,7 +433,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="lineList"></param>
         /// <returns></returns>
-        private List<QSO> CollectQSOs(List<string> lineList, Session session, string name, string call, bool reverse)
+        private List<QSO> CollectQSOs(List<string> lineList, Session session, bool reverse)
         {
             List<QSO> qsoList = null;
             List<string> temp = new List<string>();
@@ -464,8 +458,8 @@ namespace W6OP.ContestLogAnalyzer
                              let split = line.Split(' ')
                              select new QSO()
                              {
-                             // maybe .toUpper() will be needed
-                             Frequency = split[1],
+                                // maybe .toUpper() will be needed
+                                Frequency = split[1],
                                  Mode = split[2],
                                  QsoDate = split[3],
                                  QsoTime = split[4],
@@ -524,7 +518,7 @@ namespace W6OP.ContestLogAnalyzer
                 // this swaps the name and serial number columns
                 if (ex is FormatException && reverse == false)
                 {
-                    qsoList = CollectQSOs(lineList, session, name, call, true);
+                    qsoList = CollectQSOs(lineList, session, true);
                 }
                 else
                 {

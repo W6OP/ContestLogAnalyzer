@@ -132,32 +132,6 @@ namespace W6OP.ContestLogAnalyzer
 
             }
 
-
-            //{
-            //    // get the other log that matches this QSO contact call
-            //    contestLog = contestLogList.FirstOrDefault(q => q.LogOwner == qso.ContactCall);
-
-            //    if (contestLog != null)
-            //    {
-            //        // now see if a QSO matches this QSO
-            //        // leave the time check here for future use
-            //        matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
-            //                              q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             return suspectQSOs;
         }
 
@@ -193,6 +167,7 @@ namespace W6OP.ContestLogAnalyzer
             foreach (ContestLog contestLog in contestLogList)
             {
                 List<QSO> qsoList;
+                List<QSO> qsoListX;
                 call = contestLog.LogOwner;
                 name = contestLog.LogHeader.NameSent.ToUpper();
 
@@ -201,12 +176,17 @@ namespace W6OP.ContestLogAnalyzer
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
                     qsoList = contestLog.QSOCollection;
+                    qsoListX = contestLog.QSOCollectionX;
+                    //qsoList = contestLog.QSOCollection.Concat(contestLog.QSOCollectionX).ToList();
 
                     MarkDuplicateQSOs(qsoList);
+                    MarkDuplicateQSOs(qsoListX);
 
                     MarkIncorrectCallSigns(qsoList, call);
+                    MarkIncorrectCallSigns(qsoListX, call);
 
                     MarkIncorrectSentName(qsoList, name);
+                    MarkIncorrectSentName(qsoListX, name);
 
                     MatchQSOs(qsoList, contestLogList, call, name);
 
@@ -306,7 +286,6 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// This may not be the correct place for this.
         /// Need to search the other log that matches this QSO
         /// Check the serial number and the callsign, if either do not match then the call is busted
         /// 
@@ -321,7 +300,9 @@ namespace W6OP.ContestLogAnalyzer
         private void MatchQSOs(List<QSO> qsoList, List<ContestLog> contestLogList, string operatorCall, string sentName)
         {
             ContestLog contestLog = null;
+            ContestLog contestLogX = null;
             QSO matchQSO = null;
+            QSO matchQSO_X = null;
 
             foreach (QSO qso in qsoList)
             {
@@ -335,10 +316,18 @@ namespace W6OP.ContestLogAnalyzer
                     matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
                                           q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
 
+                    matchQSO_X = (QSO)contestLog.QSOCollectionX.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
+                                          q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
+
                     if (matchQSO != null) // found it
                     {
                         // store the matching QSO
                         qso.MatchingQSO = matchQSO;
+                    }
+                    else if (matchQSO_X != null) // found it
+                    {
+                        // store the matching QSO
+                        qso.MatchingQSO = matchQSO_X;
                     }
                     else
                     {
