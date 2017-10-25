@@ -255,7 +255,7 @@ namespace W6OP.ContestLogAnalyzer
                 // initialize other modules
                 if (_LogSourceFolder != _WorkingFolder)
                 {
-                    _LogProcessor.LogSourceFolder = _LogSourceFolder;
+                    _LogProcessor._LogSourceFolder = _LogSourceFolder;
                     // copy eveything to working folder so we don't modify originals
                     CopyLogFilesToWorkingFolder();
                 }
@@ -266,8 +266,8 @@ namespace W6OP.ContestLogAnalyzer
                 _PrintManager.ReviewFolder = _ReviewFolder;
                 _PrintManager.ScoreFolder = _ScoreFolder;
 
-                _LogProcessor.WorkingFolder = _WorkingFolder;
-                _LogProcessor.InspectionFolder = _InspectFolder;
+                _LogProcessor._WorkingFolder = _WorkingFolder;
+                _LogProcessor._InspectionFolder = _InspectFolder;
 
 
                 if (_LogFileList == null)
@@ -350,7 +350,7 @@ namespace W6OP.ContestLogAnalyzer
                     fileName = _LogProcessor.BuildContestLog(fileInfo, _ContestLogs, _Session);
                     if (fileName != null)
                     {
-                        UpdateListViewLoad(fileName, "Load failed." + " - " + _LogProcessor.FailReason, false);
+                        UpdateListViewLoad(fileName, "Load failed." + " - " + _LogProcessor._FailReason, false);
                     }
                 }
             }

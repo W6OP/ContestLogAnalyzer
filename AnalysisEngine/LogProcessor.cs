@@ -10,29 +10,36 @@ using W6OP.PrintEngine;
 
 namespace W6OP.ContestLogAnalyzer
 {
-    public delegate void ErrorRaised(string error);
+    //public delegate void ErrorRaised(string error);
 
     public class LogProcessor
     {
         public delegate void ProgressUpdate(Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
-        public event ErrorRaised OnErrorRaised;
+        //public event ErrorRaised OnErrorRaised;
 
         public PrintManager _PrintManager = null;
 
-        public string FailReason { get; set; }
+        public string _FailReason { get; set; }
 
-        public string LogSourceFolder { get; set; }
+        public string _FailingLine { get; set; }
 
-        public string InspectionFolder { get; set; }
+        public string _LogSourceFolder { get; set; }
 
-        public string WorkingFolder { get; set; }
+        public string _InspectionFolder { get; set; }
+
+        public string _WorkingFolder { get; set; }
+
+
+        private string _WorkingLine = null;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
         public LogProcessor()
         {
+            _FailingLine = "";
+            _WorkingLine = "";
             //_PrintManager = new PrintManager();
         }
 
@@ -43,7 +50,7 @@ namespace W6OP.ContestLogAnalyzer
         public Int32 BuildFileList(Session session, out IEnumerable<System.IO.FileInfo> logFileList)
         {
             // Take a snapshot of the file system. http://msdn.microsoft.com/en-us/library/bb546159.aspx
-            DirectoryInfo dir = new DirectoryInfo(LogSourceFolder);
+            DirectoryInfo dir = new DirectoryInfo(_LogSourceFolder);
 
             // this is where I left off - TEST IT
             string fileNameFormat = "*_" + ((uint)session).ToString() + ".log";
@@ -81,7 +88,7 @@ namespace W6OP.ContestLogAnalyzer
             Int32 progress = 0;
             Int32 count = 0;
 
-            FailReason = reason;
+            _FailReason = reason;
 
             try
             {
@@ -119,7 +126,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        FailReason = reason;
+                        _FailReason = reason;
                         contestLog.IsValidLog = false;
 
                         throw new Exception(fileName); // don't want this added to collection
@@ -135,13 +142,18 @@ namespace W6OP.ContestLogAnalyzer
 
                     contestLog.Session = (int)session;
 
+                    _FailingLine = "";
                     contestLog.QSOCollection = CollectQSOs(lineList, session, false);
                     contestLog.QSOCollectionX = CollectQSOs(lineListX, session, false);
 
                     if (contestLog.QSOCollection == null || contestLog.QSOCollection.Count == 0)
                     {
                         // may want to expand on this for a future report
-                        FailReason = "QSO collection is null or empty. The QSOs may be in an invalid format."; // create enum
+                        _FailReason = "QSO collection is null or empty. The QSOs may be in an invalid format."; // create enum
+                        if (_FailingLine.Length > 0)
+                        {
+                            _FailReason += Environment.NewLine + _FailingLine;
+                        }
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
                     }
@@ -154,7 +166,7 @@ namespace W6OP.ContestLogAnalyzer
                         if (count > 0 && contestLog.QSOCollection.Count == 0)
                         {
                             // may want to expand on this for a future report
-                            FailReason = "QSO collection is empty - Invalid session"; // create enum
+                            _FailReason = "QSO collection is empty - Invalid session"; // create enum
                             contestLog.IsValidLog = false;
                             throw new Exception(fileInfo.Name); // don't want this added to collection
                         }
@@ -190,7 +202,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (contestLog.OperatorName.ToUpper() == "NAME")
                     {
                         // may want to expand on this for a future report
-                        FailReason = "Name sent is 'NAME' - Invalid name."; // create enum
+                        _FailReason = "Name sent is 'NAME' - Invalid name."; // create enum
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
                     }
@@ -222,8 +234,8 @@ namespace W6OP.ContestLogAnalyzer
             string inspectFileName = null;
 
             // move the file to inspection folder
-            inspectFileName = Path.Combine(InspectionFolder, fileName + ".txt");
-            logFileName = Path.Combine(InspectionFolder, fileName);
+            inspectFileName = Path.Combine(_InspectionFolder, fileName + ".txt");
+            logFileName = Path.Combine(_InspectionFolder, fileName);
 
             if (File.Exists(logFileName))
             {
@@ -235,13 +247,13 @@ namespace W6OP.ContestLogAnalyzer
                 File.Delete(inspectFileName);
             }
 
-            if (File.Exists(Path.Combine(WorkingFolder, fileName)))
+            if (File.Exists(Path.Combine(_WorkingFolder, fileName)))
             {
-                File.Move(Path.Combine(WorkingFolder, fileName), logFileName);
+                File.Move(Path.Combine(_WorkingFolder, fileName), logFileName);
             }
 
 
-            _PrintManager.PrintInspectionReport(fileName + ".txt", FailReason + " - " + exception);
+            _PrintManager.PrintInspectionReport(fileName + ".txt", _FailReason + Environment.NewLine + " - " + exception);
 
 
             // create a text file with the reason for the rejection
@@ -436,7 +448,9 @@ namespace W6OP.ContestLogAnalyzer
         private List<QSO> CollectQSOs(List<string> lineList, Session session, bool reverse)
         {
             List<QSO> qsoList = null;
-            List<string> temp = new List<string>();
+            List<string> tempList = new List<string>();
+
+            _WorkingLine = "";
 
             try
             {
@@ -444,10 +458,10 @@ namespace W6OP.ContestLogAnalyzer
                 // later lets make a more elegant solution
                 foreach (string line in lineList)
                 {
-                    temp.Add(Utility.RemoveRepeatedSpaces(line));
+                    tempList.Add(Utility.RemoveRepeatedSpaces(line));
                 }
 
-                lineList = temp;
+                lineList = tempList;
 
                 if (!reverse)
                 {
@@ -458,8 +472,8 @@ namespace W6OP.ContestLogAnalyzer
                              let split = line.Split(' ')
                              select new QSO()
                              {
-                                // maybe .toUpper() will be needed
-                                Frequency = split[1],
+                                 // maybe .toUpper() will be needed
+                                 Frequency = CheckCompleteQSO(split, line),
                                  Mode = split[2],
                                  QsoDate = split[3],
                                  QsoTime = split[4],
@@ -477,10 +491,8 @@ namespace W6OP.ContestLogAnalyzer
                     //}
                     //catch(Exception eex)
                     //{
-                    //    string a = eex.Message;
-                    //}
-
-                    
+                    //    string a = eex.Message;OnErrorRaised
+                    //} 
                 }
                 else
                 {
@@ -490,7 +502,7 @@ namespace W6OP.ContestLogAnalyzer
                          select new QSO()
                          {
                              // maybe .toUpper() will be needed
-                             Frequency = split[1],
+                             Frequency = CheckCompleteQSO(split, line),
                              Mode = split[2],
                              QsoDate = split[3],
                              QsoTime = split[4],
@@ -522,13 +534,32 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    // send log name to look at later
-                    OnErrorRaised?.Invoke(ex.Message);
+                    if (_FailingLine.IndexOf(_WorkingLine) != -1)
+                    {
+                        _FailingLine += Environment.NewLine + _WorkingLine;
+                    }
                 }
-                
             }
 
             return qsoList;
+        }
+
+        /// <summary>
+        /// Check and see if every field is in the line
+        /// </summary>
+        /// <param name="split"></param>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        private string CheckCompleteQSO(string[] split, string line)
+        {
+            _WorkingLine = line;
+
+            if (split.Length != 11)
+            {
+                _FailingLine += Environment.NewLine + line; 
+            }
+
+            return split[1];
         }
 
         /// <summary>
