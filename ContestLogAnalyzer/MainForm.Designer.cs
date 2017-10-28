@@ -152,6 +152,7 @@
             this.ComboBoxSelectContest.Name = "ComboBoxSelectContest";
             this.ComboBoxSelectContest.Size = new System.Drawing.Size(131, 23);
             this.ComboBoxSelectContest.TabIndex = 7;
+            this.ComboBoxSelectContest.SelectedIndexChanged += new System.EventHandler(this.ComboBoxSelectContest_SelectedIndexChanged);
             // 
             // label3
             // 
@@ -362,6 +363,7 @@
             // ComboBoxSelectSession
             // 
             this.ComboBoxSelectSession.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ComboBoxSelectSession.Enabled = false;
             this.ComboBoxSelectSession.FormattingEnabled = true;
             this.ComboBoxSelectSession.Items.AddRange(new object[] {
             "Session 1",

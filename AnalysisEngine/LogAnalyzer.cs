@@ -167,7 +167,7 @@ namespace W6OP.ContestLogAnalyzer
             foreach (ContestLog contestLog in contestLogList)
             {
                 List<QSO> qsoList;
-                List<QSO> qsoListX;
+                // List<QSO> qsoListX;
                 call = contestLog.LogOwner;
                 name = contestLog.LogHeader.NameSent.ToUpper();
 
@@ -176,17 +176,16 @@ namespace W6OP.ContestLogAnalyzer
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
                     qsoList = contestLog.QSOCollection;
-                    qsoListX = contestLog.QSOCollectionX;
-                    //qsoList = contestLog.QSOCollection.Concat(contestLog.QSOCollectionX).ToList();
+                    //qsoListX = contestLog.QSOCollectionX;
 
                     MarkDuplicateQSOs(qsoList);
-                    MarkDuplicateQSOs(qsoListX);
+                    //MarkDuplicateQSOs(qsoListX);
 
                     MarkIncorrectCallSigns(qsoList, call);
-                    MarkIncorrectCallSigns(qsoListX, call);
+                    //MarkIncorrectCallSigns(qsoListX, call);
 
                     MarkIncorrectSentName(qsoList, name);
-                    MarkIncorrectSentName(qsoListX, name);
+                    //MarkIncorrectSentName(qsoListX, name);
 
                     MatchQSOs(qsoList, contestLogList, call, name);
 

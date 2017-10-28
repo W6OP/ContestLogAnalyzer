@@ -132,6 +132,32 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        public bool EntityIsInValid
+        {
+            set
+            {
+                if (value == true)
+                {
+                    if (!RejectReasons.ContainsKey(RejectReason.InvalidEntity))
+                    {
+                        _RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                        Status = QSOStatus.InvalidQSO;
+                    }
+                }
+                else
+                {
+                    if (RejectReasons.ContainsKey(RejectReason.InvalidEntity))
+                    {
+                        RejectReasons.Remove(RejectReason.InvalidEntity);
+                        if (RejectReasons.Count == 0)
+                        {
+                            Status = QSOStatus.ValidQSO;
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// The call is busted - do I want a sub reason, is it call or serial number?
         /// The calsign does not match the call sign in the other log
@@ -316,6 +342,36 @@ namespace W6OP.ContestLogAnalyzer
         //    get { return _ReceivedSerialNumber; }
         //    set { _ReceivedSerialNumber = value; }
         //}
+
+        public Int32 DXCC { get; set; }
+
+        public string DXCountry { get; set; }
+
+        public string DXProvince { get; set; }
+
+        public string DXProvinceCode { get; set; }
+
+        public string DXCity { get; set; }
+
+        public string OperatorDXCC { get; set; }
+
+        public string OperatorCountry { get; set; }
+
+        public string OperatorProvince { get; set; }
+
+        public string OperatorProvinceCode { get; set; }
+
+        public string OperatorCity { get; set; }
+
+        /// <summary>
+        /// For HQP contest
+        /// </summary>
+        public Int32 HQPPoints { get; set; }
+
+        /// <summary>
+        /// For HQP Contest
+        /// </summary>
+        public string HQPEntity { get; set; }
 
         private string _ContactCall;
         public string ContactCall

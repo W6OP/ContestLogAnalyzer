@@ -32,6 +32,8 @@ namespace W6OP.ContestLogAnalyzer
         InvalidTime,
         [Description("The session is incorrect")]
         InvalidSession,
+        [Description("The entity is incorrect")]
+        InvalidEntity,
         [Description("None")]
         None
     }
@@ -126,7 +128,9 @@ namespace W6OP.ContestLogAnalyzer
         SSB,
         CW,
         DIGI,
+        PH,
         RTTY,
+        RY,
         MIXED
     }
 
@@ -220,7 +224,8 @@ namespace W6OP.ContestLogAnalyzer
     //[AttributeUsage(AllowMultiple = true)]
     public enum ContestName
     {
-        //[Description("CW OPEN")]
+        [Description("Select")]
+        Select,
         [ContestDescription("CWOPS-OPEN", "CW-OPEN", "CWOPEN", "CW OPEN")]
         CW_OPEN,
         [Description("HI-QSO-PARTY")]
@@ -307,6 +312,25 @@ namespace W6OP.ContestLogAnalyzer
         //STEW_PERRY,
         //[Description("TARA-RTTY")]
         //TARA_RTTY,
+    }
+
+    public enum HQPMults
+    {
+        HIL,
+        HON,
+        KAL,
+        KAU,
+        KOH,
+        KON,
+        LAN,
+        LHN,
+        MAU,
+        MOL,
+        NII,
+        PRL,
+        VOL,
+        WHN,
+        Undefined
     }
 
     public class Enumerations

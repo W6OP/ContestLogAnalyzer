@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using CallParser;
 using W6OP.PrintEngine;
 
 namespace W6OP.ContestLogAnalyzer
@@ -30,8 +31,11 @@ namespace W6OP.ContestLogAnalyzer
 
         public string _WorkingFolder { get; set; }
 
+        public ContestName _ActiveContest { get; set; }
 
         private string _WorkingLine = null;
+
+        private CallParser.CallsignParser _Parser;
 
         /// <summary>
         /// Default constructor.
@@ -40,7 +44,9 @@ namespace W6OP.ContestLogAnalyzer
         {
             _FailingLine = "";
             _WorkingLine = "";
-            //_PrintManager = new PrintManager();
+
+            _Parser = new CallParser.CallsignParser();
+            _Parser.PrefixFile = @"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"; //"prefix.lst";  // @"C:\Users\pbourget\Documents\Visual Studio 2012\Projects\Ham Radio\DXACollector\Support\CallParser\prefix.lst";
         }
 
         /// <summary>
@@ -49,11 +55,19 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public Int32 BuildFileList(Session session, out IEnumerable<System.IO.FileInfo> logFileList)
         {
+            string fileNameFormat = null;
             // Take a snapshot of the file system. http://msdn.microsoft.com/en-us/library/bb546159.aspx
             DirectoryInfo dir = new DirectoryInfo(_LogSourceFolder);
 
-            // this is where I left off - TEST IT
-            string fileNameFormat = "*_" + ((uint)session).ToString() + ".log";
+            switch (_ActiveContest)
+            {
+                case ContestName.CW_OPEN:
+                    fileNameFormat = "*_" + ((uint)session).ToString() + ".log";
+                    break;
+                default:
+                    fileNameFormat = "*.log";
+                    break;
+            }
 
             // This method assumes that the application has discovery permissions for all folders under the specified path.
             IEnumerable<FileInfo> fileList = dir.GetFiles(fileNameFormat, System.IO.SearchOption.TopDirectoryOnly);
@@ -140,7 +154,14 @@ namespace W6OP.ContestLogAnalyzer
                     lineListX = lineList.Where(x => (x.IndexOf("XQSO:", 0) != -1) || (x.IndexOf("X-QSO:", 0) != -1)).ToList();
                     lineList = lineList.Where(x => (x.IndexOf("QSO:", 0) != -1) && (x.IndexOf("XQSO:", 0) == -1) && (x.IndexOf("X-QSO:", 0) == -1)).ToList();
 
-                    contestLog.Session = (int)session;
+                    switch (_ActiveContest)
+                    {
+                        case ContestName.CW_OPEN:
+                            contestLog.Session = (int)session;
+                            break;
+                        default:
+                            break;
+                    }
 
                     _FailingLine = "";
                     contestLog.QSOCollection = CollectQSOs(lineList, session, false);
@@ -207,6 +228,14 @@ namespace W6OP.ContestLogAnalyzer
                         throw new Exception(fileInfo.Name); // don't want this added to collection
                     }
 
+                    // now add the DXCC information some contests need for multipliers
+                    // later break out to nwe method and add switch statement
+                    if (_ActiveContest == ContestName.HQP)
+                    {
+                        SetDXCCInformation(contestLog.QSOCollection);
+                    }
+
+
                     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                     contestLogs.Add(contestLog);
@@ -222,6 +251,127 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return logFileName;
+        }
+
+        /// <summary>
+        /// Call parser handling
+        /// </summary>
+        /// <param name="qsoCollection"></param>
+        private void SetDXCCInformation(List<QSO> qsoCollection)
+        {
+            CallParser.PrefixInfo prefixInfo = null;
+            bool isValidHQPEntity = false;
+            // HQP logs are backwards - need to fix this elsewhere eventually
+            //string ContactName = null;
+            //string OperatorName = null;
+            //string ContactCall = null;
+            //string OperatorCall = null;
+
+
+            foreach (QSO qso in qsoCollection)
+            {
+                qso.OperatorCountry = qso.OperatorName;
+                qso.DXCountry = qso.ContactName;
+
+                isValidHQPEntity = Enum.IsDefined(typeof(HQPMults), qso.OperatorName);
+
+                // if op name not in enum list of Hawaii entities
+                if (!isValidHQPEntity && qso.ContactName == "DX")
+                {
+                    qso.EntityIsInValid = true;
+                }
+
+                if (isValidHQPEntity && qso.ContactName == "DX")
+                {
+                    prefixInfo = GetPrefixInformation(qso.ContactCall);
+
+                    if (prefixInfo != null && prefixInfo.Territory == "United States of America")
+                    {
+                        //    info = QRZLookup(call, info);
+                    }
+
+                    if (prefixInfo != null)
+                    {
+                        if (prefixInfo.Territory != null)
+                        {
+                            qso.DXCountry = prefixInfo.Territory.ToString();
+                            qso.ContactName = qso.DXCountry; // is this correct???
+                        }
+
+                        if (prefixInfo.Province != null)
+                        {
+                            qso.DXProvince = prefixInfo.Province.ToString();
+                            qso.ContactName = qso.DXProvince; // is this correct???
+                        }
+
+                        if (prefixInfo.ProvinceCode != null)
+                        {
+                            qso.DXProvinceCode = prefixInfo.ProvinceCode.ToString();
+                            qso.ContactName = qso.DXProvinceCode; // is this correct???
+                        }
+
+                        if (prefixInfo.City != null)
+                        {
+                            qso.DXCity = prefixInfo.City.ToString();
+                        }
+                    }
+                }
+
+               if (!isValidHQPEntity && qso.OperatorName == "DX")
+                {
+                    prefixInfo = GetPrefixInformation(qso.OperatorCall);
+
+                    //if (prefixInfo != null && prefixInfo.Territory == "United States of America")
+                    //{
+                    //    //    info = QRZLookup(call, info);
+                    //}
+
+                    if (prefixInfo != null)
+                    {
+                        if (prefixInfo.Territory != null)
+                        {
+                            qso.OperatorCountry = prefixInfo.Territory.ToString();
+                        }
+
+                        if (prefixInfo.Province != null)
+                        {
+                            qso.OperatorProvince = prefixInfo.Province.ToString();
+                        }
+
+                        if (prefixInfo.ProvinceCode != null)
+                        {
+                            qso.OperatorProvinceCode = prefixInfo.ProvinceCode.ToString();
+                        }
+
+                        if (prefixInfo.City != null)
+                        {
+                            qso.OperatorCity = prefixInfo.City.ToString();
+                        }
+                    }
+                }
+            }
+        }
+
+        private PrefixInfo GetPrefixInformation(string call)
+        {
+            CallParser.PrefixInfo prefixInfo = null;
+
+            _Parser.Callsign = call;
+
+            if (_Parser.HitCount > 0)
+            {
+                prefixInfo = _Parser.Hits[0];
+            }
+
+            if (_Parser.HitCount > 1)
+            {
+                for (int i = 0; i < _Parser.HitCount; i++)
+                {
+                    prefixInfo = _Parser.Hits[0];
+                }
+            }
+
+            return prefixInfo;
         }
 
         /// <summary>
@@ -467,27 +617,26 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     //try // DEBUGGING ONLY
                     //{
-                        IEnumerable<QSO> qso =
-                             from line in lineList
-                             let split = line.Split(' ')
-                             select new QSO()
-                             {
-                                 // maybe .toUpper() will be needed
-                                 Frequency = CheckCompleteQSO(split, line),
-                                 Mode = split[2],
-                                 QsoDate = split[3],
-                                 QsoTime = split[4],
-                                 OperatorCall = split[5],
-                                 SentSerialNumber = ConvertSerialNumber(split[6]),
-                                 OperatorName = split[7],
-                                 ContactCall = split[8],
-                                 ReceivedSerialNumber = ConvertSerialNumber(split[9]),
-                                 ContactName = split[10],
-                                 CallIsInValid = CheckCallSignFormat(split[5]),
-                                 SessionIsValid = CheckForvalidSession(session, split[4])
-                             };
-
-                        qsoList = qso.ToList();
+                    IEnumerable<QSO> qso =
+                         from line in lineList
+                         let split = line.Split(' ')
+                         select new QSO()
+                         {
+                             // maybe .toUpper() will be needed
+                             Frequency = CheckCompleteQSO(split, line),
+                             Mode = split[2],
+                             QsoDate = split[3],
+                             QsoTime = split[4],
+                             OperatorCall = split[5],
+                             SentSerialNumber = ConvertSerialNumber(split[6]),
+                             OperatorName = split[7],
+                             ContactCall = split[8],
+                             ReceivedSerialNumber = ConvertSerialNumber(split[9]),
+                             ContactName = split[10],
+                             CallIsInValid = CheckCallSignFormat(split[5]),
+                             SessionIsValid = CheckForvalidSession(session, split[4])
+                         };
+                    qsoList = qso.ToList();
                     //}
                     //catch(Exception eex)
                     //{
@@ -556,7 +705,7 @@ namespace W6OP.ContestLogAnalyzer
 
             if (split.Length != 11)
             {
-                _FailingLine += Environment.NewLine + line; 
+                _FailingLine += Environment.NewLine + line;
             }
 
             return split[1];
@@ -576,6 +725,12 @@ namespace W6OP.ContestLogAnalyzer
         {
             bool isValidSession = false;
             int qsoSessionTime = Convert.ToInt16(qsoTime);
+
+            // later may want to check time stamp for that contest
+            if (_ActiveContest != ContestName.CW_OPEN)
+            {
+                return true;
+            }
 
             switch (session)
             {

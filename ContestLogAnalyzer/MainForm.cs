@@ -49,10 +49,13 @@ namespace W6OP.ContestLogAnalyzer
         private LogProcessor _LogProcessor;
         private LogAnalyzer _LogAnalyser;
         private ScoreCWOpen _CWOpen;
+        private ScoreHQP _HQP;
         private PrintManager _PrintManager;
 
         private string _LogSourceFolder = null;
         private Session _Session = Session.Session_0;
+
+        private ContestName _ActiveContest;
 
         #region Load and Initialize
 
@@ -91,12 +94,12 @@ namespace W6OP.ContestLogAnalyzer
                 _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
             }
 
-            if (_CWOpen == null)
-            {
-                TabControlMain.SelectTab(TabPageScoring);
-                _CWOpen = new ScoreCWOpen();
-                _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
-            }
+            //if (_CWOpen == null)
+            //{
+            //    TabControlMain.SelectTab(TabPageScoring);
+            //    _CWOpen = new ScoreCWOpen();
+            //    _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
+            //}
 
             if (_PrintManager == null)
             {
@@ -161,17 +164,54 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ComboBoxSelectSession_SelectedIndexChanged(object sender, EventArgs e)
         {
             // get the current session number - this is specific to CWOPEN and will need to be moved later
             Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out _Session);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ComboBoxSelectContest_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Enum.TryParse(ComboBoxSelectContest.SelectedValue.ToString(), out _ActiveContest);
+
+            _LogProcessor._ActiveContest = _ActiveContest;
+
+            switch (_ActiveContest)
+            {
+                case ContestName.CW_OPEN:
+                    if (_CWOpen == null)
+                    {
+                        TabControlMain.SelectTab(TabPageScoring);
+                        _CWOpen = new ScoreCWOpen();
+                        _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
+                    }
+                    ComboBoxSelectSession.Enabled = true;
+                    break;
+                default:
+                    if (_HQP == null)
+                    {
+                        TabControlMain.SelectTab(TabPageScoring);
+                        _HQP = new ScoreHQP();
+                        _HQP.OnProgressUpdate += _HQP_OnProgressUpdate;
+                    }
+                    ComboBoxSelectSession.Enabled = false;
+                    break;
+            }
+        }
+
         #endregion
 
         #region Load Log Files
-
-
 
         /// <summary>
         /// Handle the click event for the ButtonLoadLogs button.
@@ -180,36 +220,51 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonLoadLogs_Click(object sender, EventArgs e)
         {
-            //Session currentSession = Session.Session_0;
             string session = null;
+            string contestName = _ActiveContest.ToString();
 
             TabControlMain.SelectTab(TabPageLogStatus);
             _LogFileList = null;
 
-            // check the current session number - this is specific to CWOPEN and will need to be moved later
-            if (_Session == Session.Session_0)
+            switch (_ActiveContest)
             {
-                MessageBox.Show("You must select the session to be scored", "Invalid Session", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                return;
+                case ContestName.CW_OPEN:
+                    if (_Session == Session.Session_0)
+                    {
+                        MessageBox.Show("You must select the session to be scored", "Invalid Session", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                        return;
+                    }
+                    session = EnumHelper.GetDescription(_Session);
+                    _WorkingFolder = Path.Combine(_BaseWorkingFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName),  session);
+                    _InspectFolder = Path.Combine(_BaseInspectFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
+                    _ReportFolder = Path.Combine(_BaseReportFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
+                    _ReviewFolder = Path.Combine(_BaseReviewFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
+                    _ScoreFolder = Path.Combine(_BaseScoreFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
+                    break;
+                case ContestName.HQP:
+                    _Session = Session.Session_0;
+                    _WorkingFolder = _BaseWorkingFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName);
+                    _InspectFolder = _BaseInspectFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName);
+                    _ReportFolder = _BaseReportFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName);
+                    _ReviewFolder = _BaseReviewFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName);
+                    _ScoreFolder = _BaseScoreFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName);
+                    break;
+                default:
+                    break;
             }
+            
 
-            session = EnumHelper.GetDescription(_Session);
-            _WorkingFolder = Path.Combine(_BaseWorkingFolder, session);
-            _InspectFolder = Path.Combine(_BaseInspectFolder, session);
-            _ReportFolder = Path.Combine(_BaseReportFolder, session);
-            _ReviewFolder = Path.Combine(_BaseReviewFolder, session);
-            _ScoreFolder = Path.Combine(_BaseScoreFolder, session);
-
-            LoadLogFiles(session);
+            LoadLogFiles();
         }
 
         /// <summary>
         /// Get a list and count of the files to be uploaded. Pass them off to another thread
         /// to preprocess the logs.
         /// </summary>
-        private void LoadLogFiles(string session)
+        private void LoadLogFiles()
         {
             Int32 fileCount = 0;
+            string  session = EnumHelper.GetDescription(_Session);
 
             try
             {
@@ -222,27 +277,27 @@ namespace W6OP.ContestLogAnalyzer
                 _ContestLogs = new List<ContestLog>();
 
                 // create folders if necessary
-                if (!Directory.Exists(Path.Combine(_WorkingFolder, session)))
+                if (!Directory.Exists(_WorkingFolder))
                 {
                     Directory.CreateDirectory(_WorkingFolder);
                 }
 
-                if (!Directory.Exists(Path.Combine(_InspectFolder, session)))
+                if (!Directory.Exists(_InspectFolder))
                 {
                     Directory.CreateDirectory(_InspectFolder);
                 }
 
-                if (!Directory.Exists(Path.Combine(_ReportFolder, session)))
+                if (!Directory.Exists(_ReportFolder))
                 {
                     Directory.CreateDirectory(_ReportFolder);
                 }
 
-                if (!Directory.Exists(Path.Combine(_ReviewFolder, session)))
+                if (!Directory.Exists(_ReviewFolder))
                 {
                     Directory.CreateDirectory(_ReviewFolder);
                 }
 
-                if (!Directory.Exists(Path.Combine(_ScoreFolder, session)))
+                if (!Directory.Exists(_ScoreFolder))
                 {
                     Directory.CreateDirectory(_ScoreFolder);
                 }
@@ -395,7 +450,10 @@ namespace W6OP.ContestLogAnalyzer
             EnableControl(true);
 
             ComboBoxSelectContest.Enabled = true;
-            ComboBoxSelectSession.Enabled = true;
+            if (_ActiveContest == ContestName.CW_OPEN)
+            {
+                ComboBoxSelectSession.Enabled = true;
+            }
         }
 
         #endregion
@@ -543,10 +601,24 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void BackgroundWorkerScoreLogs_DoWork(object sender, DoWorkEventArgs e)
         {
-            _CWOpen.ScoreContestLogs(_ContestLogs);
+            switch (_ActiveContest)
+            {
+                case ContestName.CW_OPEN:
+                    _CWOpen.ScoreContestLogs(_ContestLogs);
+                    break;
+                case ContestName.HQP:
+                    _HQP.ScoreContestLogs(_ContestLogs);
+                    break;
+            }
         }
 
         private void _CWOpen_OnProgressUpdate(ContestLog contestLog, Int32 progress)
+        {
+            UpdateProgress(progress);
+            UpdateListViewScore(contestLog, false);
+        }
+
+        private void _HQP_OnProgressUpdate(ContestLog contestLog, int progress)
         {
             UpdateProgress(progress);
             UpdateListViewScore(contestLog, false);
@@ -994,16 +1066,22 @@ namespace W6OP.ContestLogAnalyzer
         {
             // calls with <= 3 hits
             List<Tuple<string, string>> suspectCallList = null;
+            string session = _Session.ToString();
+
+            if (_Session == Session.Session_0)
+            {
+                session = "";
+            }
 
             // list of all call/name pairs
             List<Tuple<string, string>> distinctCallNamePairs = _LogAnalyser.CollectAllCallNamePairs(_ContestLogs);
             UpdateListViewLoad("List Unique Call Name Pairs", "", false);
-            _PrintManager.ListUniqueCallNamePairs(distinctCallNamePairs, _BaseReportFolder, _Session.ToString());
+            _PrintManager.ListUniqueCallNamePairs(distinctCallNamePairs, _ReportFolder, session);
 
             // list of all calls with number of hits and all names with number of hits
             List<Tuple<string, Int32, string, Int32>> callNameCountList = _LogAnalyser.CollectCallNameHitData(distinctCallNamePairs, _ContestLogs, out suspectCallList);
             UpdateListViewLoad("List Call Name Occurences", "", false);
-            _PrintManager.ListCallNameOccurences(callNameCountList, _BaseReportFolder, _Session.ToString());
+            _PrintManager.ListCallNameOccurences(callNameCountList, _ReportFolder, session);
 
             List<QSO> suspectQSOs = _LogAnalyser.CollectSuspectQSOs(suspectCallList, _ContestLogs);
             //_PrintManager.Li
@@ -1028,12 +1106,6 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         #endregion
-
-        //if (InvokeRequired)
-        //   {
-        //       this.BeginInvoke(new Action<string, DXAFileType>(this.MoveFileToBackupDirectory), uploadFile, fileType);
-        //       return;
-        //   }
 
     } // end class
 }

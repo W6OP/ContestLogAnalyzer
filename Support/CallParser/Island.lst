@@ -1,0 +1,2262 @@
+#--------------------------------------------------------------
+#InternalUse|Longitude|Latitude|+Island(s)|-Country|Prefix|-TZ|
+#--------------------------------------------------------------
+00|31137|328|Abaiang Atoll|KR|T30|
+00|9403|2195|Abd al Kuri|YM|7O|
+00|31296|75|Abemama|KR|T30|
+00|9683|4355|Abu al Abyad|TC|A6|
+00|-1817|9711|Achill I.|EI|EJ|
+00|-13330|4041|Acklins I.|BF|C6|
+00|-31806|9321|Adak|US|KL|America/Adak
+00|29893|-9160|Adams I.|NZ|ZL9|
+00|-12313|-12093|Adelaide I.|AY|CE9|
+00|22167|-2793|Adele I.|AS|VK6|
+00|-24189|10387|Admiralty I.|US|KL|America/Juneau
+00|23064|-2718|Adolphus I.|AS|VK6|
+00|4457|10729|Aegna||ES1|
+00|1863|9882|Aero|DA|OZ|
+00|-27467|10482|Afognak I.|US|KL|America/Anchorage
+00|26222|3378|Agrihan I.|CQ|KH0|
+00|26198|2671|Aguijan I.|CQ|KH0|
+00|-26325|-2604|Ahe|FP|FO[P]|Pacific/Tahiti
+00|-25272|-3534|Ahunui|FP|FO[P]|Pacific/Tahiti
+00|29953|2007|Ailinginae Atoll|RM|V7|
+00|30375|1316|Ailinglaplap|RM|V7|
+00|30588|1859|Ailuk Atoll|RM|V7|
+00|-13331|12235|Air Force I.|CA|VY0|America/Iqaluit
+00|-28762|-3396|Aitutaki|CW|E51[S]|
+00|-25051|-3334|Akiaki|FP|FO[P]|Pacific/Tahiti
+00|-14646|9532|Akimiski I.|CA|VE3|America/Montreal
+00|-12257|10873|Akpatok I.|CA|VY0|America/Pangnirtung
+00|-29797|9756|Akun I.|US|KL|America/Nome
+00|-29860|9742|Akutan I.|US|KL|America/Nome
+00|9557|4380|Al Bazm al Gharbi|TC|A6|
+00|10085|3154|Al Hallaniyah|MU|A4|
+00|6670|4496|Al Hasani|SA|HZ|
+00|21969|2541|Alabat I.|RP|DU|
+00|26252|3166|Alamagan I.|CQ|KH0|
+00|3597|10845|Aland Is.|FI|OH0|
+00|-31016|-3761|Albert Mayer Reef|TN|A3|
+00|8345|-1693|Aldabra Is.|SE|S7|
+00|-12916|-12734|Alexander I.|AY|CE9|
+00|-18483|13656|Alexander I.|CA|VY0|America/Cambridge_Bay
+00|28916|-1605|Alite Reef|BP|H44|
+00|3144|11235|Almon I.|SW|SM3|
+00|4303|7058|Alonnisos|GR|SV8|
+00|1773|9895|Als|DA|OZ|
+00|2267|10012|Amager|DA|OZ|
+00|-29369|9975|Amak I.|US|KL|America/Nome
+00|23298|5096|Amami|JA|JR6|
+00|-25331|-3200|Amanu|FP|FO[P]|Pacific/Tahiti
+00|-32238|9225|Amatignak|US|KL|America/Adak
+00|-15829|3243|Ambergris Cay|MX|XF3|America/Cancun
+00|27653|-734|Ambitle I.|PP|P2|
+00|30261|-2920|Ambrym|NH|YJ|
+00|1043|9621|Ameland|NL|PA|
+00|-31231|9375|Amlia|US|KL|America/Adak
+00|4663|6633|Amorgos|GR|SV8|
+00|1502|9839|Amrum|GM|DL|
+00|-30827|9448|Amukta|US|KL|America/Adak
+00|-17392|14095|Amund Ringnes I.|CA|VY0|America/Rankin_Inlet
+00|6434|4879|An Numan|SA|HZ|
+00|-26173|-3142|Anaa|FP|FO[P]|Pacific/Tahiti
+00|4643|6547|Anafi|GR|SV8|
+00|26221|2944|Anatahan I.|CQ|KH0|
+00|30566|-3635|Anatom|NH|YJ|
+01|16786|2178|Andaman and Nicobar Is.|IN|VU4|
+00|3119|12395|Andorja|NO|LA|
+00|2850|12437|Andoya|NO|LA|
+01|-31546|9360|Andreanof Is.|US|KL|America/Adak
+00|4472|6812|Andros|GR|SV8|
+00|-14036|4403|Andros I.|BF|C6|
+00|-11581|3370|Anegada|VI|VP2V|
+00|24148|1244|Angaur I.|PS|T8|
+00|-11215|11822|Angijak I.|CA|VY0|America/Pangnirtung
+00|-776|9589|Anglesey|UK|GW|
+00|-11352|3280|Anguilla|AV|VP2E|
+00|2084|10205|Anholt|DA|OZ|
+00|30526|-3466|Aniwa|NH|YJ|
+00|7996|-2200|Anjouan|CN|D6|
+00|-6671|-9808|Annekov I.|FA|VP8[G]|
+00|-23667|9924|Annette I.|US|KL|America/Juneau
+00|-11120|3074|Antigua|AC|V2|
+00|32180|-8941|Antipodes I.|NZ|ZL|
+00|-11433|-11617|Anvers I.|AY|CE9|
+00|30211|-2769|Aoba|NH|YJ|
+00|30089|-2803|Aore|NH|YJ|
+00|-26317|-2763|Apataki|FP|FO[P]|Pacific/Tahiti
+00|-12832|7480|Aquidneck I.|US|W1|
+00|-1534|9898|Aran I.|EI|EJ|
+00|31251|28|Aranuka|KR|T30|
+00|31371|-7409|Arapawa I.|NZ|ZL|
+00|-26189|-2783|Aratika|FP|FO[P]|Pacific/Tahiti
+01|-14216|1500|Arch. de las Perlas|PM|HP8|
+01|-13386|-8098|Archipielago de los Chonos|CI|CE|
+00|-23239|9475|Aristazabal|CA|VE7|America/Vancouver
+01|30914|1282|Arno Atoll|RM|V7|
+00|3716|12626|Arnoy|NO|LA|
+00|31826|-475|Arorae|KR|T30|
+00|-943|10003|Arran|UK|GM|
+00|-16145|4047|Arrecife Alacran|MX|XF3|America/Merida
+00|-16602|3765|Arrecifes Triangulos|MX|XF2|America/Merida
+00|-12594|2254|Aruba|AB|P4|
+00|28287|-1481|Arundel I.|BP|H44|
+00|-26393|-2744|Arutua|FP|FO[P]|Pacific/Tahiti
+00|9799|4418|As Sadiyat|TC|A6|
+00|10054|3150|As Sawda|MU|A4|
+00|-2584|-1428|Ascension|SH|ZD8|
+00|25995|-1869|Ashmore Reef|AS|VK4|Australia/Brisbane
+00|22141|-2206|Ashmore Reef|AS|VK8|
+00|921|10890|Askoy|NO|LA|
+00|8372|-1750|Assumption I.|SE|S7|
+00|4746|6583|Astipalaia|GR|SV8|
+00|8593|-1817|Astove I.|SE|S7|
+00|26172|3541|Asuncion I.|CQ|KH0|
+00|-31048|-1543|Atafu|TL|ZK3|
+00|17625|2505|Atet Bok I.|BM|XZ|
+00|-28459|-3599|Atiu|CW|E51[S]|
+00|-31439|9397|Atka|US|KL|America/Adak
+00|898|11043|Atlo|NO|LA|
+00|-25838|-3674|Atoll Anuanu Raro|FP|FO[P]|Pacific/Tahiti
+00|-25797|-3712|Atoll Anuanu Ruga|FP|FO[P]|Pacific/Tahiti
+00|-27815|-2841|Atoll Bellinghausen|FP|FO[P]|Pacific/Tahiti
+00|-26093|-3585|Atoll Hereheretue|FP|FO[P]|Pacific/Tahiti
+00|-24683|-4171|Atoll Morane|FP|FO[P]|Pacific/Gambier
+00|-25753|-3726|Atoll Nukutipipi|FP|FO[P]|Pacific/Tahiti
+00|-25588|-3278|Atoll Ravahere|FP|FO[P]|Pacific/Tahiti
+00|-27833|-2974|Atoll Scilly|FP|FO[P]|Pacific/Tahiti
+00|-25315|-3903|Atoll Tematangi|FP|FO[P]|Pacific/Gambier
+00|31132|9518|Attu I.|US|KL|America/Adak
+00|29897|-9124|Auckland I.|NZ|ZL9|
+00|-27621|10686|Augustine I.|US|KL|America/Anchorage
+00|22416|-2760|Augustus I.|AS|VK6|
+00|17626|2488|Auk Bok I.|BM|XZ|
+00|-12243|12530|Aulitivik I.|CA|VY0|America/Pangnirtung
+00|-30699|-2572|Aunuu|AQ|KH8|
+00|30798|1486|Aur Atoll|RM|V7|
+00|2653|12299|Austvagoya|NO|LA|
+00|1366|11346|Averoya|NO|LA|
+00|-16354|14357|Axel Heiberg I.|CA|VY0|America/Rankin_Inlet
+00|4502|7113|Ayios Evstratios|GR|SV8|
+00|24222|1358|Babelthuap I.|PS|T8|
+00|21951|3515|Babuyan I.|RP|DU|
+01|21887|3455|Babuyan Is.|RP|DU|
+00|19225|3759|Bac Nha Mac|VM|3W|
+00|22208|1779|Badian I.|RP|DU|
+00|-13167|12600|Baffin I.|CA|VY0|America/Iqaluit
+00|9097|4683|Bahrain|BA|A9|
+00|19235|3748|Bai Nha Mac|VM|3W|
+00|-17027|13656|Baillie Hamilton I.|CA|VY0|America/Rankin_Inlet
+00|-23078|12708|Baillie I.|CA|VE8|
+00|-22056|8579|Bainbridge I.|US|W7|America/Los_Angeles
+00|-31763|40|Baker I.|FQ|KH1|
+00|-24042|9959|Baker I.|US|KL|America/Juneau
+00|21063|1430|Balabac I.|RP|DU|
+00|21322|-6286|Bald I.|AS|VK6|
+00|20714|-1522|Bali|ID|YB|
+01|29445|-12039|Balleny Is.|AY|CE9|
+00|1332|9671|Baltrum|GM|DL|
+00|22567|971|Balut I.|RP|DU|
+00|30528|-158|Banaba I.|KR|T33|
+00|-23376|9596|Banks|CA|VE7|America/Vancouver
+00|22275|2019|Bantayan I.|RP|DU|
+00|32064|-3309|Baqa|FJ|3D2|
+00|-24325|10235|Baranof I.|US|KL|America/Juneau
+00|16709|2194|Baratang I.|IN|VU4|
+00|-10718|2375|Barbados|BB|8P|
+00|-11124|3174|Barbuda|AC|V2|
+00|3816|14113|Barentsoya|SV|JW|
+00|28502|-1353|Barora Fa I.|BP|H44|
+00|28516|-1370|Barora Ite I.|BP|H44|
+00|-1344|10260|Barra|UK|GM|
+00|16895|2209|Barren I.|IN|VU4|
+01|-27407|10609|Barren Is.|US|KL|America/Anchorage
+00|-14879|8268|Barrie|CA|VE3|America/Montreal
+00|20772|-3741|Barrow I.|AS|VK6|
+00|27178|-1915|Basilaki I.|PP|P2|
+00|21971|1185|Basilan|RP|DU|
+00|-11100|2908|Basse Terre|GP|FG|
+00|22321|2386|Batan I.|RP|DU|
+00|23454|-2085|Bathurst I.|AS|VK8|
+00|-18015|13649|Bathurst I.|CA|VY0|America/Rankin_Inlet
+00|30058|-13848|Beaufort I.|AY|CE9|
+00|-11026|-9330|Beaver I.|FA|VP8[F]|
+00|-15400|8223|Beaver I.|US|W8|America/Detroit
+01|-14288|10146|Belcher Is.|CA|VY0|America/Iqaluit
+00|-9999|9135|Bell I.|CA|VO1|
+00|-569|8521|Belle Ile|FR|F|
+00|-9963|9349|Belle Isle|CA|VO2|America/Goose_Bay
+00|28767|-2035|Bellona I.|BP|H44|
+00|-1315|10340|Benbecula|UK|GM|
+00|17648|2114|Bentinck I.|BM|XZ|
+00|-11023|2342|Bequia|VC|J8|
+00|-8842|-14296|Berkner I.|AY|CE9|
+00|-22363|13247|Bernard I.|CA|VE8|
+00|-1293|10389|Berneray|UK|GM|
+00|20364|-4478|Bernier I.|AS|VK6|
+00|31676|-240|Beru|KR|T30|
+00|31128|242|Betio|KR|T30|
+00|-30211|-3599|Beveridge Reef|NE|E6|
+00|22669|1738|Bicas Grande I.|RP|DU|
+00|24515|-2477|Bickerton I.|AS|VK8|
+00|-30428|11842|Big Diomede I.|UR|UA0|Asia/Anadyr
+00|-14850|10077|Big I.|CA|VY0|America/Iqaluit
+00|-28723|9926|Big Koniuji I.|US|KL|America/Nome
+00|22527|-2625|Bigge I.|AS|VK6|
+00|30620|2203|Bikar|RM|V7|
+00|29796|2093|Bikini Atoll|RM|V7|
+00|22406|2085|Biliran I.|RP|DU|
+00|19425|-520|Billiton|ID|YB|
+00|17556|2946|Bilugyun I.|BM|XZ|
+00|-14274|4631|Bimini I.|BF|C6|
+00|-6852|-9723|Bird I.|FA|VP8[G]|
+00|3428|13398|Bjornoya|SV|JW|
+00|29968|-14075|Black I.|AY|CE9|
+00|13044|-937|Blenheim Reef|IO|VQ9|
+00|-14160|2852|Blower Rock|JM|6Y|
+00|-4107|2899|Boa Vista|CV|D4|
+00|27595|-611|Boang I.|PP|P2|
+00|22355|1778|Bohol|RP|DU|
+00|-15204|8240|Bois Blanc|US|W8|America/Detroit
+00|-12295|2190|Bonaire|NA|PJ4|
+00|31158|245|Bonriki|KR|T30|
+00|-27318|-2971|Bora Bora|FP|FO[P]|Pacific/Tahiti
+00|-20100|14132|Borden I.|CA|VE8,VY0|America/Inuvik
+00|1212|9646|Borkum|GM|DL|
+00|20603|90|Borneo|BX|YB|
+00|2685|9927|Bornholm|DA|OZ|
+00|27959|-1108|Bougainville I.|PP|P2|
+00|32232|-8581|Bounty I.|NZ|ZL|
+00|614|-9796|Bouvet|BV|3Y[B]|
+00|18562|-11753|Bowman I.|AY|CE9|
+00|-11224|-11568|Brabant I.|AY|CE9|
+00|-4450|2673|Brava|CV|D4|
+00|-13863|12469|Bray I.|CA|VY0|America/Iqaluit
+00|916|11132|Bremangerlandet|NO|LA|
+00|24624|-2178|Bremer Is.|AS|VK8|
+00|-11570|11425|Brevoort I.|CA|VY0|America/Pangnirtung
+00|-4785|-10626|Bristol I.|FA|VP8[S]|
+00|-20582|14019|Brock I.|CA|VE8|
+00|-22812|9145|Broughton|CA|VE7|America/Vancouver
+00|27417|-5868|Broughton I.|AS|VK2|Australia/Sydney
+00|-11502|12164|Broughton I.|CA|VY0|America/Pangnirtung
+00|22239|-2538|Browse I.|AS|VK6|
+00|-10063|8509|Brunette I.|CA|VO1|
+00|26508|-7809|Bruny Is.|AS|VK7|
+00|9760|4376|Bu Khushayshah|TC|A6|
+00|31506|-269|Buariki|KR|T30|
+00|8677|5363|Bubiyan|KU|9K|
+00|-16381|13895|Buckingham I.|CA|VY0|America/Rankin_Inlet
+00|29348|-11999|Buckle I.|AY|CE9|
+00|27833|-943|Buka I.|PP|P2|
+00|22168|2326|Burias I.|RP|DU|
+00|-23633|9429|Burnaby I.|CA|VE7|America/Vancouver
+00|21617|2187|Busuanga I.|RP|DU|
+00|31107|547|Butaritari|KR|T30|
+00|-919|10048|Bute|UK|GM|
+00|-11637|10914|Button I.|CA|VO2|America/Goose_Bay
+00|-18766|13541|Byam Martin I.|CA|VY0|America/Cambridge_Bay
+00|-14127|13185|Bylot I.|CA|VY0|America/Iqaluit
+00|21326|1261|Cagayan de TawiTawi I.|RP|DU|
+00|22300|2392|Cagraray I.|RP|DU|
+00|21861|3478|Calayan I.|RP|DU|
+00|-23042|9282|Calvert|CA|VE7|America/Vancouver
+00|-22039|8667|Camano I.|US|W7|America/Los_Angeles
+00|-18692|13768|Cameron I.|CA|VY0|America/Cambridge_Bay
+00|22450|1650|Camiguin|RP|DU|
+00|21945|3404|Camiguin I.|RP|DU|
+00|16828|1459|Camorta I.|IN|VU4|
+00|-23295|9554|Campania|CA|VE7|America/Vancouver
+00|-23080|9379|Campbell I.|CA|VE7|America/Vancouver
+00|30442|-9452|Campbell I.|NZ|ZL9|
+00|-4804|-10272|Candlemas I.|FA|VP8[S]|
+00|-1178|10270|Canna|UK|GM|
+00|-11039|2288|Canouan|VC|J8|
+00|-30901|-507|Canton I.|KR|T30|
+00|26682|-7272|Cape Barren I.|AS|VK7|
+00|-10921|8332|Cape Breton I.|CA|VE1|America/Glace_Bay
+00|-13607|6386|Cape Hatteras I.|US|W4|America/New_York
+00|-11809|7824|Cape Sable I.|CA|VE1|America/Halifax
+00|16697|1655|Car Nicobar I.|IN|VU4|
+00|-30599|9522|Carlisle I.|US|KL|America/Adak
+00|-27040|-1789|Caroline Atoll|KR|T32|
+01|26877|927|Caroline Is.|FM|V6|Pacific/Chuuk
+00|-11062|2247|Carriacou I.|GJ|J3|
+00|22238|-2256|Cartier I.|AS|VK8|
+00|-14037|-13196|Case I.|AY|CE9|
+00|22611|-2508|Cassini I.|AS|VK6|
+00|-13595|4394|Cat I.|BF|C6|
+00|-16201|5337|Cat I.|US|W5|America/Chicago
+00|22360|2485|Catanduanes I.|RP|DU|
+00|27996|-4185|Cato I.|AS|VK4|Australia/Brisbane
+00|-29237|9791|Caton I.|US|KL|America/Nome
+00|-14366|3550|Cayman Brac|CJ|ZF9|
+00|-16453|3978|Cayo Arenas|MX|XF2|America/Merida
+00|-14128|4047|Cayo Coco|CU|CO|
+00|-11996|2122|Cayo Grande|VE|YV|
+00|-15722|3326|Cayo Lobos|MX|XF3|America/Cancun
+00|-16554|3635|Cayos Arcas|MX|XF2|America/Merida
+01|22263|1862|Cebu|RP|DU|
+00|21799|-469|Celebes|ID|YB|
+00|23205|-571|Ceram|ID|YB|
+00|9183|-1711|Cerf I.|SE|S7|
+00|-15991|5383|Chamdeleur I.|US|W5|America/Chicago
+00|-13513|-12584|Charcot I.|AY|CE9|
+00|-13375|11281|Charles I.|CA|VY0|America/Iqaluit
+00|-14302|9362|Charlton I.|CA|VY0|America/Iqaluit
+00|-31772|-7905|Chatham I.|NZ|ZL7|
+00|16852|3382|Cheduba I.|BM|XZ|
+00|-24412|10408|Chichagof I.|US|KL|America/Juneau
+00|-28016|10053|Chirikof I.|US|KL|America/Anchorage
+00|28258|-1263|Choiseul I.|BP|H44|
+00|-28328|336|Christmas I.|KR|T32|
+00|19017|-1890|Christmas I.|AS|VK9[X]|
+00|-30572|9509|Chuginadak I.|US|KL|America/Adak
+00|-32275|-3196|Cicia|FJ|3D2|
+00|17625|1959|Clara I.|BM|XZ|
+00|-9738|-11012|Clarence I.|AY|VP8[H]|
+00|26670|-7299|Clarke I.|AS|VK7|
+00|21480|-3120|Clerke Reef|AS|VK9[R]|
+00|-19656|1848|Clipperton I.|IP|FO[C]|
+00|-14923|11262|Coats I.|CA|VY0|America/Iqaluit
+00|-14270|13672|Coburg I.|CA|VY0|America/Iqaluit
+00|22251|-2895|Cockatoo I.|AS|VK6|
+00|-15008|8267|Cockburn|CA|VE3|America/Montreal
+01|17439|-2190|Cocos (Keeling) Is.|AS|VK9[C]|
+00|-11119|10400|Cod I.|CA|VO2|America/Goose_Bay
+00|30175|-8418|Codfish I.|NZ|ZL|
+00|10128|-1287|Coetivy I.|SE|S7|
+00|-1184|10192|Coll|UK|GM|
+00|17720|1977|Collies I.|BM|XZ|
+00|-1116|10093|Colonsay|UK|GM|
+00|19190|1567|Con Dao Con Son|VM|3W|
+00|31429|-3904|Conway Reef|FJ|3D2[C]|
+00|-4895|-10702|Cook I.|FA|VP8[S]|
+00|-6437|-9869|Cooper I.|FA|VP8[G]|
+00|3577|7127|Corfu|GR|SV8|
+00|-17049|13972|Cornwall I.|CA|VY0|America/Rankin_Inlet
+00|-17102|13523|Cornwallis I.|CA|VY0|America/Rankin_Inlet
+00|-24160|10057|Coronation I.|US|KL|America/Juneau
+00|22485|-2694|Coronation I.|AS|VK6|
+00|-8201|-10914|Coronation I.|AY|VP8[O]|
+00|1630|7594|Corsica|FR|TK|
+00|8552|-1746|Cosmoledo Group|SE|S7|
+00|30542|-13216|Coulman I.|AY|CE9|
+00|-22756|9100|Cracroft|CA|VE7|America/Vancouver
+00|23479|-616|Cream|ID|YB|
+00|4486|6355|Crete|GR|SV9|
+00|23856|-2001|Croker I.|AS|VK8|
+00|-13353|4095|Crooked I.|BF|C6|
+00|-15645|12614|Crown Prince Frederick I.|CA|VY0|America/Rankin_Inlet
+00|19611|1895|Cu Lao Thu|VM|3W|
+00|-14318|3873|Cuba|CU|CO|
+00|21593|2127|Culion I.|RP|DU|
+00|-26669|10926|Culross I.|US|KL|America/Anchorage
+00|-14661|5551|Cumberland I.|US|W4|America/New_York
+00|-12412|2199|Curacao|NA|PJ2|
+00|27209|-4251|Curtis I.|AS|VK4|Australia/Brisbane
+00|-32150|-5505|Curtis I.|NZ|ZL8|
+00|6017|6330|Cyprus|CY|5B|
+00|-10130|-11353|D'Urville I.|AY|CE9|
+00|31297|-7344|D'Urville I.|NZ|ZL|
+00|30839|1276|Dalap|RM|V7|
+00|-23929|9892|Dall I.|US|KL|America/Juneau
+00|21821|3436|Dalupiri I.|RP|DU|
+01|21000|-3693|Dampier Arch.|AS|VK6|
+00|12828|-1148|Danger I.|IO|VQ9|
+01|-29855|-1964|Danger Is.|CW|E51[N]|
+00|19390|3624|Dao Bach Long Vi|VM|3W|
+00|19348|3809|Dao Cai Bau|VM|3W|
+00|19261|3742|Dao Cat Ba|VM|3W|
+00|19410|3782|Dao Ching Lan Yan|VM|3W|
+00|19397|3776|Dao Cu Xu|VM|3W|
+00|18713|1841|Dao Phu Quoc|VM|3W|
+00|18627|1673|Dao Tho CHu Hon Panjang|VM|3W|
+00|19424|3847|Dao Vinh Thuc|VM|3W|
+00|19397|3840|Dao Xinh Moui Tai|VM|3W|
+00|9594|2182|Darsah|YM|7O|
+00|17656|2198|Daung Kyun|BM|XZ|
+00|-15874|5445|Dauphin I.|US|W4|America/Chicago
+01|27465|-1938|Deboyne Is.|PP|P2|
+00|-10909|-11330|Deception I.|AY|VP8[H]|
+00|-29220|9883|Deer I.|US|KL|America/Nome
+00|7231|2831|Dehalak Deset|ET|E3|
+01|-32208|9274|Delarof Is.|US|KL|America/Adak
+00|-15867|13637|Devon I.|CA|VY0|America/Rankin_Inlet
+00|27196|-3140|Diamond I.|AS|VK4|Australia/Brisbane
+00|13041|-1320|Diego Garcia|IO|VQ9|
+00|-14036|11262|Diggis I.|CA|VY0|America/Iqaluit
+00|20349|-4650|Dirk Hartog I.|AS|VK6|
+00|29878|-9108|Disappointment I.|NZ|ZL9|
+00|-15232|5364|Dog I.|US|W4|America/New_York
+00|-29119|9920|Dolgoi I.|US|KL|America/Nome
+00|-10958|-12702|Dolleman I.|AY|CE9|
+00|-11047|2775|Dominica|DO|J7|
+00|2256|11903|Donna|NO|LA|
+00|20355|-4526|Dorre I.|AS|VK6|
+00|1959|9915|Dovnsklint|DA|OZ|
+00|-15063|8283|Drummond|US|W8|America/Detroit
+00|-22461|-4441|Ducie Atoll|PC|VP6[D]|
+01|30087|-1782|Duff Is.|BP|H40|
+00|2704|7924|Dugi Otok|YO|9A|
+00|-23641|9887|Duke I.|US|KL|America/Juneau
+00|21579|1898|Dumaran I.|RP|DU|
+00|-10072|-11427|Dundee I.|AY|CE9|
+00|26307|-3228|Dunk I.|AS|VK4|Australia/Brisbane
+00|-11275|12078|Durbin I.|CA|VY0|America/Pangnirtung
+00|27161|-530|Dyaul I.|PP|P2|
+00|12843|-1114|Eagle I.|IO|VQ9|
+00|-12874|3907|East Caicos|TK|VP5|
+00|-10571|-9323|East Falkland|FA|VP8[F]|
+00|22677|-2439|East Holothuria Reef|AS|VK6|
+00|16764|2185|East I.|IN|VU4|
+00|-19680|-4884|Easter I.|CI|CE0Y|
+00|-13997|14008|Easter I.|CA|VY0|America/Iqaluit
+00|25751|1208|Eauripik I.|FM|V6|Pacific/Chuuk
+00|30028|1679|Ebadon|RM|V7|
+00|30371|828|Ebon|RM|V7|
+00|3531|10840|Eckero|FI|OH0|
+00|21219|-6330|Eclipse I.|AS|VK6|
+00|-500|10655|Eday|UK|GM|
+00|-11707|11130|Edgell I.|CA|VY0|America/Pangnirtung
+00|4117|13995|Edgeoya|SV|JW|
+00|-18759|13882|Edmund Walker I.|CA|VY0|America/Cambridge_Bay
+00|28744|-1393|Edwards Bank|BP|H44|
+00|30306|-3183|Efate|NH|YJ|
+00|-21318|13645|Eglinton I.|CA|VE8|
+00|-25322|-1440|Eiao|FP|FO[M]|
+00|26314|1352|Elato I.|FM|V6|Pacific/Chuuk
+00|24432|-2151|Elcho I.|AS|VK8|
+00|-9913|-11010|Elephant I.|AY|VP8[H]|
+00|-10955|-9212|Elephant Jason|FA|VP8[F]|
+00|-18412|14143|Ellef Ringnes I.|CA|VY0|America/Cambridge_Bay,America/Rankin_Inlet
+00|-13773|14332|Ellesmere I.|CA|VY0|America/Iqaluit
+00|-19410|13245|Elvira I.|CA|VY0|America/Cambridge_Bay
+00|-20549|13824|Emerald I.|CA|VE8|
+00|-30795|-563|Enderbury I.|KR|T31|
+00|29936|-9090|Enderby I.|NZ|ZL9|
+00|29200|2074|Enewetok|RM|V7|
+00|2729|12232|Engeloya|NO|LA|
+00|30378|838|Eninaitok|RM|V7|
+00|29795|1657|Enylamieg|RM|V7|
+00|30293|-3008|Epi|NH|YJ|
+00|30600|1646|Erikub Atoll|RM|V7|
+00|30448|-3386|Erromango|NH|YJ|
+00|30039|-2726|Espiritu Santo|NH|YJ|
+00|-26644|10955|Esther|US|KL|America/Anchorage
+01|27639|1006|Etal Atoll|FM|V6|Pacific/Pohnpei
+00|-23833|10104|Etolin I.|US|KL|America/Juneau
+00|26612|8093|Etorofuto Ostrov Itrup|UR|UA0|Asia/Sakhalin
+00|4268|6929|Euboea|GR|SV1|
+00|-26665|10795|Evans I.|US|KL|America/Anchorage
+00|-11053|-12593|Ewing I.|AY|CE9|
+01|-32194|-3103|Exploring Isles|FJ|3D2|
+00|-26130|-3013|Faaite|FP|FO[P]|Pacific/Tahiti
+00|8698|5297|Failka|KU|9K|
+00|-291|10716|Fair Isle|UK|GZ|
+00|-25224|-2874|Fakahina|FP|FO[P]|Pacific/Tahiti
+00|-30820|-1685|Fakaofu|TL|ZK3|
+00|-26199|-2919|Fakarava|FP|FO[P]|Pacific/Tahiti
+00|2149|9861|Falster|DA|OZ|
+00|-25360|-2847|Fangatau|FP|FO[P]|Pacific/Tahiti
+00|-28679|694|Fanning I.|KR|T32|
+00|1515|9972|Fano|DA|OZ|
+00|29291|-1502|Faore|BP|H44|
+00|7554|3010|Farasan al Kabir|SA|HZ|
+00|26018|1546|Faraulep Atoll|FM|V6|Pacific/Chuuk
+00|9172|4726|Fasht ad Dibal|QA|A7|
+00|9094|4764|Fasht al Jarim|BA|A9|
+00|-24958|-1888|Fatu Hiva|FP|FO[M]|
+00|28097|-1243|Fauro I.|BP|H44|
+00|27244|1542|Fayu Reef|FM|V6|Pacific/Chuuk
+00|854|10940|Fedje|NO|LA|
+00|27333|1322|Fefan I.|FM|V6|Pacific/Chuuk
+00|2009|9805|Fehmarn|GM|DL|
+00|27122|-1715|Fergusson I.|PP|P2|
+00|1565|627|Fernando Po|EK|3C|
+00|-14719|8189|Fitzwilliam|CA|VE3|America/Montreal
+00|-20483|13883|Fitzwilliam Owen I.|CA|VE8|
+00|-14301|10117|Flaherty I.|CA|VY0|America/Iqaluit
+00|2406|12256|Flakstadoya|NO|LA|
+00|24204|-6069|Flinders I.|AS|VK5|
+00|26643|-7176|Flinders I.|AS|VK7|
+00|27627|-4767|Flinders Reef|AS|VK4|Australia/Brisbane
+00|-27323|-2057|Flint I.|KR|T32|
+00|21854|-1532|Flores|ID|YB|
+00|-22706|8878|Flores I.|CA|VE7|America/Vancouver
+01|-14609|4503|Florida Keys|US|W4|America/New_York
+00|-4394|2687|Fogo|CV|D4|
+00|-9745|8939|Fogo I.|CA|VO1|
+00|1529|9850|Fohr|GM|DL|
+00|-13517|12333|Foley I.|CA|VY0|America/Iqaluit
+00|891|10940|Fosnoy|NO|LA|
+01|-30689|9483|Fox Is.|US|KL|America/Adak
+00|30338|-13710|Franklin I.|AY|CE9|
+01|9930|14559|Franz Josef Land|UR|RI1FJ|
+00|27570|-4545|Fraser I.|AS|VK4|Australia/Brisbane
+00|-29908|4276|French Frigate Shoals|US|KH6|
+00|26163|-6903|French I.|AS|VK3|
+00|-15851|3167|Frenchmans Cay|BH|V3|
+00|1235|11302|Froya|NO|LA|
+00|13219|-53|Fua Mulaku|MV|8Q|
+00|-2525|5108|Fuerteventura|SP|EA8|
+00|21849|3397|Fuga I.|RP|DU|
+00|-32142|-3446|Fulanga I.|FJ|3D2|
+00|32256|-1531|Funafuti|TV|T2|
+00|-9571|8958|Funk I.|CA|VO1|
+00|30642|-3517|Futuna|NH|YJ|
+00|1846|9958|Fyn|DA|OZ|
+00|26982|-6759|Gabo I.|AS|VK3|
+00|26169|1663|Gaferut Atoll|FM|V6|Pacific/Chuuk
+00|-22221|8806|Galiano I.|CA|VE7|America/Vancouver
+00|-17088|5261|Galveston I.|US|W5|America/Chicago
+00|-22210|8907|Gambier I.|CA|VE7|America/Vancouver
+00|24564|-6324|Gambier I.|AS|VK5|
+00|13170|-123|Gan|MV|8Q|
+00|20819|-5796|Garden I.|AS|VK6|
+00|-31419|-859|Gardner I.|KR|T31|
+00|-30240|4502|Gardner Pinnacles|US|KH6|
+00|-32183|9322|Gareloi|US|KL|America/Adak
+00|-18081|12702|Gateshead I.|CA|VY0|America/Rankin_Inlet
+00|28476|-1577|Gatukai I.|BP|H44|
+00|4336|6271|Gavdhos|GR|SV9|
+00|-20160|12659|George I.|CA|VE8|
+00|28226|-1456|Ghizo I.|BP|H44|
+00|-22751|9132|Gilford I.|CA|VE7|America/Vancouver
+00|-23262|9578|Gill|CA|VE7|America/Vancouver
+00|-14406|10767|Gilmour I.|CA|VY0|America/Iqaluit
+00|-31304|-4090|Gleaner Reef|TN|A3|
+00|-15800|3022|Glover Reef|BH|V3|
+00|4651|7230|Goceada|TU|TA0|
+00|1088|11248|Godoya|NO|LA|
+00|27043|-1686|Goodenough I.|PP|P2|
+00|-1743|9585|Gorumna I.|EI|EJ|
+00|1243|11308|Gossen|NO|LA|
+00|3319|10338|Gotland I.|SW|SM1|
+00|-1794|-7264|Gough I.|UK|ZD9G|
+00|2567|6488|Gozo|MT|9H4|
+00|-5041|7030|Graciosa|PO|CU4|
+00|-20050|11772|Graham I.|CA|VE8|
+00|-2806|5032|Gran Canaria|SP|EA8|
+00|-14121|4797|Grand Bahama|BF|C6|
+00|-14627|3480|Grand Cayman|CJ|ZF1|
+00|-12028|8048|Grand Manan|CA|VE9|
+00|29673|-3817|Grand Recif de Oatope|NC|FK|
+00|29505|-3659|Grand Recif de Poum|NC|FK|
+00|29491|-3633|Grand Recif des Nenema|NC|FK|
+00|29652|-3676|Grand Recif Pouma|NC|FK|
+00|-11044|2944|Grand Terre|GP|FG|
+00|-12805|3865|Grand Turk I.|TK|VP5|
+00|7798|-2104|Grande Comore|CN|D6|
+00|3329|10873|Graso I.|SW|SM3|
+00|-13947|4753|Great Abaco|BF|C6|
+00|31577|-6516|Great Barrier I.|NZ|ZL|
+01|26285|-2911|Great Barrier Reef|AS|VK4|Australia/Brisbane
+00|-11658|5818|Great Bermuda I.|BD|VP9|
+00|-14738|8284|Great Cloche|CA|VE3|America/Montreal
+00|16810|2539|Great Coco I.|BM|XZ|
+00|-13653|4241|Great Exuma|BF|C6|
+00|-13205|3802|Great Inagua|BF|C6|
+00|27171|-4170|Great Keppel I.|AS|VK4|Australia/Brisbane
+00|16882|1258|Great Nicobar I.|IN|VU4|
+00|32286|-2919|Great Sea Reef|FJ|3D2|
+00|-31694|9366|Great Sitkin|US|KL|America/Adak
+00|17543|2122|Great West Torres I.|BM|XZ|
+00|26274|-3015|Green I.|AS|VK4|Australia/Brisbane
+00|-10757|-11249|Greenwich I.|AY|VP8[H]|
+00|-11105|2181|Grenada|GJ|J3|
+00|-23224|9617|Gribbell I.|CA|VE7|America/Vancouver
+00|-17200|13423|Griffith I.|CA|VY0|America/Rankin_Inlet
+00|-11100|8546|Grindstone I.|CA|VE2|America/Halifax
+00|-10005|9168|Groais I.|CA|VO1|
+00|24588|-2508|Groote Eylandt I.|AS|VK8|
+00|2970|12408|Grytoya|NO|LA|
+00|28838|-1728|Guadalcanal I.|BP|H44|
+00|26062|2420|Guam|GQ|KH2|
+00|-465|8904|Guernsey|UK|GU|
+00|26254|3114|Guguan I.|CQ|KH0|
+00|22069|1904|Guimaras I.|RP|DU|
+00|1033|11206|Gurskoya|NO|LA|
+01|26307|7830|Habomai Is.|UR|UA0|Asia/Sakhalin
+00|2669|12339|Hadseloya|NO|LA|
+00|-28967|10564|Hagemeister I.|US|KL|America/Nome
+00|-17010|14080|HaigThomas I.|CA|VY0|America/Rankin_Inlet
+00|23067|116|Halmahera Jailolo|ID|YB|
+00|-25358|-3284|Hao|FP|FO[P]|Pacific/Tahiti
+00|-25820|-3140|Haraki|FP|FO[P]|Pacific/Tahiti
+00|1127|11279|Haramsoya|NO|LA|
+00|1083|11221|Hareidlandet|NO|LA|
+00|1168|11297|Haroya|NO|LA|
+00|-16260|12481|Harrison I.|CA|VY0|America/Rankin_Inlet
+00|-25305|-1423|Hatutu|FP|FO[M]|
+00|16740|2153|Havelock I.|IN|VU4|
+00|-32212|-5633|Havre Rock|NZ|ZL8|
+01|-27964|3527|Hawaii|US|KH6|
+00|-23219|9639|Hawkesbury I.|CA|VE7|America/Vancouver
+00|26799|-3609|Hayman I.|AS|VK4|Australia/Lindeman
+00|13227|-9559|Heard I.|AS|VK0|
+00|-11170|-12494|Hearst I.|AY|CE9|
+00|-24036|10084|Heceta I.|US|KL|America/Juneau
+00|-18174|13798|Helena I.|CA|VY0|America/Rankin_Inlet
+00|31449|-6471|Hen and Chickens|NZ|ZL|
+00|-23097|-4386|Henderson I.|PC|VP6[P]|
+00|16755|2187|Henry Lawrence I.|IN|VU4|
+00|26385|-3423|Herald I.|AS|VK4|Australia/Brisbane
+00|-30622|9495|Herbert|US|KL|America/Adak
+00|-12722|13935|Herbert I.|GL|OX|America/Thule
+00|-25038|12526|Herschel I.|CA|VY1|America/Dawson
+00|22215|-2159|Hibernia Reef|AS|VK8|
+00|-15861|3186|Hicks Cay|BH|V3|
+00|2360|9816|Hiddensee|GM|DL|
+00|-3245|4994|Hierro|SP|EA8|
+00|-29150|4148|Hihoa|US|KH6|
+00|-25668|-3164|Hikueru|FP|FO[P]|Pacific/Tahiti
+00|-26352|10865|Hinchinbrook|US|KL|America/Anchorage
+00|26322|-3303|Hinchinbrook I.|AS|VK4|Australia/Brisbane
+00|2852|12352|Hinnoya|NO|LA|
+00|13158|-110|Hitaddu|MV|8Q|
+00|-25936|-3010|Hiti|FP|FO[P]|Pacific/Tahiti
+00|1582|11438|Hitra|NO|LA|
+00|29978|-2363|Hiu|NH|YJ|
+00|-25018|-1760|Hiva Oa|FP|FO[M]|
+00|25703|7822|Hokkaido|JA|JA8|
+00|-21191|12717|Holman I.|CA|VE8|
+00|26628|-2965|Holmes Reef|AS|VK4|Australia/Brisbane
+00|3762|11484|Holmon I.|SW|SM2|
+00|922|10904|Holsnoy|NO|LA|
+00|-833|9591|Holy I.|UK|GW|
+00|22634|1936|Homonhon I.|RP|DU|
+00|26805|-3621|Hook I.|AS|VK4|Australia/Lindeman
+00|4547|13783|Hopen|SV|JW|
+00|25611|-1908|Horn I.|AS|VK4|Australia/Brisbane
+00|-15955|5442|Horn I.|US|W5|America/Chicago
+00|20481|-5169|Houtman Abrolhos Is.|AS|VK6|
+00|-31795|144|Howland I.|HQ|KH1|
+00|-591|10593|Hoy|UK|GM|
+00|-27181|-3023|Huahine|FP|FO[P]|Pacific/Tahiti
+00|-27185|-3012|Huahine Nui|FP|FO[P]|Pacific/Tahiti
+00|946|10813|Huftaroy|NO|LA|
+00|29887|-3970|Hugon|NC|FK|
+00|-30996|-812|Hull I.|KR|T31|
+00|-10884|-9291|Hummock I.|FA|VP8[F]|
+00|30972|-4034|Hunter|NC|FK|
+00|-23058|9342|Hunter|CA|VE7|America/Vancouver
+00|26055|-7290|Hunter I.|AS|VK7|
+00|851|10989|Husoy|NO|LA|
+00|255|7015|Ibiza|SP|EA6|
+00|-31657|9355|Igitkin|US|KL|America/Adak
+00|4710|6767|Ikaria|GR|SV8|
+00|-13256|3254|Ile a Vache|HA|HH|
+00|13956|-6815|Ile Amsterdam|FS|FT#Z|
+00|30161|-4094|Ile Ana|NC|FK|
+00|29459|-3547|Ile Art|NC|FK|
+00|9043|-8296|Ile aux Cochons|FR|FT#W|
+00|19367|3789|Ile Ba Mun|VM|3W|
+00|29513|-3608|Ile Baaba|NC|FK|
+00|12998|-964|Ile Baddan|IO|VQ9|
+00|29555|-3621|Ile Balabio|NC|FK|
+00|-11356|8911|Ile D'Anticosti|CA|VE2|America/Halifax
+00|-232|8267|Ile D'Oleron|FR|F|
+00|-12774|8449|Ile D'Orleans|CA|VE2|America/Montreal
+00|-419|8409|Ile D'Yeu|FR|F|
+00|19324|3748|Ile Danh Do La|VM|3W|
+00|-13149|3390|Ile de la Gonave|HA|HH|
+00|9316|-8350|Ile de la Possession|FR|FT#W|
+00|19346|3774|Ile De La Table|VM|3W|
+00|-13102|3607|Ile de la Tortue|HA|HH|
+00|2314|-1062|Ile de Mateba|CG|9Q2|Africa/Kinshasa
+00|-399|8454|Ile De Noirmoutier|FR|F|
+00|19352|3760|Ile De Quan Lan|VM|3W|
+00|-253|8317|Ile De Re|FR|F|
+00|-10527|9224|Ile des Genevriers|CA|VE2|America/Halifax
+00|30148|-4069|Ile des Pins|NC|FK|
+00|12918|-943|Ile Diamont|IO|VQ9|
+00|12919|-978|Ile du Coin|IO|VQ9|
+00|-10681|9107|Ile du Petit Mecatina|CA|VE2|America/Halifax
+00|-32061|-2570|Ile Futuna|WF|FW|
+00|7694|-3071|Ile Juan de Nova|JU|FT#J|
+00|30156|-4081|Ile Koutoumo|NC|FK|
+00|-11626|8610|Ile Lameque|CA|VE9|
+00|12844|-1198|Ile Lubine|IO|VQ9|
+00|29507|-3628|Ile Neba|NC|FK|
+00|30025|-4038|Ile Ouen|NC|FK|
+00|8150|-2300|Ile Pamanzi|MF|FH|
+00|12914|-950|Ile Pierre|IO|VQ9|
+00|29446|-3524|Ile Pott|NC|FK|
+00|13953|-6970|Ile Saint Paul|FS|FT#Z|
+00|8984|-3042|Ile Sainte Marie|MA|5R|
+00|30208|-3802|Ile Tiga|NC|FK|
+00|29958|-3906|Ile Toupeti|NC|FK|
+00|-18631|13711|Ile Vanier|CA|VY0|America/Cambridge_Bay
+00|29485|-3611|Ile Yande|NC|FK|
+00|12954|-941|Ile Yeye|IO|VQ9|
+01|-27045|-4168|Iles Australes|FP|FO[A]|
+01|9183|-8325|Iles Crozet|FR|FT#W|
+01|-25435|-2547|Iles Du Desappointement|FP|FO[P]|Pacific/Tahiti
+01|-26212|-2614|Iles Du Roi Georges|FP|FO[P]|Pacific/Tahiti
+01|-25798|-3699|Iles Duc De Gloucester|FP|FO[P]|Pacific/Tahiti
+00|12477|-8882|Iles Kerguelen|FS|FT#X|
+00|-27844|-3923|Iles Maria|FP|FO[A]|
+00|29990|-2387|Iles Torres|NH|YJ|
+00|-8581|-4476|Ilha Comprida|BR|PY2|America/Sao_Paulo
+00|-9025|150|Ilha Curua|BR|PQ8|America/Belem
+00|2110|-3001|Ilha da Baia dos Tigres|AO|D2|
+00|5929|-4683|Ilha da Inhaca|MZ|C9|
+00|-5457|-3690|Ilha Da Trindade|BR|PY0M|
+00|-5617|7099|Ilha Das Flores|PO|CU8|
+00|-9072|361|Ilha de Maraca|BR|PQ8|America/Belem
+00|-8724|-4969|Ilha de Santa Catarina|BR|PP5|America/Sao_Paulo
+00|-8747|-4733|Ilha de Sao Francisco|BR|PP5|America/Sao_Paulo
+00|-8160|-4292|Ilha de Sao Sebastiao|BR|PY2|America/Sao_Paulo
+00|1191|38|Ilha de Sao Tome|TP|S9|
+00|-8343|-4312|Ilha de Sao Vincente|BR|PY2|America/Sao_Paulo
+00|6383|-3898|Ilha do Bazaruto|MZ|C9|
+00|-7579|-489|Ilha do Caju|BR|PR8|America/Fortaleza
+00|-5600|7144|Ilha Do Corvo|PO|CU9|
+00|-5170|6944|Ilha Do Faial|PO|CU7|
+00|-5093|6924|Ilha Do Pico|PO|CU6|
+00|1331|291|Ilha do Principe|TP|S9|
+00|-7862|-415|Ilha do Santana|BR|PR8|America/Fortaleza
+00|-8122|-4286|Ilha dos Buzios|BR|PY2|America/Sao_Paulo
+00|-5836|-695|Ilha Fernando de Noronha|BR|PY0F|
+00|-7961|-4166|Ilha Grande|BR|PY1|America/Sao_Paulo
+00|-9279|-181|Ilha Grande de Gurupa|BR|PY8|America/Belem
+00|-9031|89|Ilha Janaucu|BR|PY8|America/Belem
+00|-8931|-7|Ilha Mexiana|BR|PY8|America/Belem
+01|-25829|-5022|Ilots de Bass|FP|FO[A]|
+00|21345|-3162|Imperieuse Reef|AS|VK9[R]|
+00|2005|11682|Indre Vikna|NO|LA|
+00|30900|1261|Ine|RM|V7|
+00|16686|2320|Interview I.|IN|VU4|
+00|4560|6609|Ios|GR|SV8|
+00|24921|-663|Irian Jaya|ID|YB|Asia/Jayapura
+00|-14533|-6072|Isla Alejandra Selkirk|CI|CE0Z|
+00|-19467|4484|Isla Altamura|MX|XF1|America/Mazatlan
+00|-20405|5274|Isla Angel de la Guarda|MX|XF1|America/Tijuana
+00|-12871|3164|Isla Beata|DR|HI|
+00|-13346|-8047|Isla Benjamin|CI|CE|
+00|-13163|-7610|Isla Butachaugues|CI|CE|
+00|-13533|-8601|Isla Byron|CI|CE|
+00|-13934|768|Isla Cacahual|CO|HK|
+00|-13559|-8705|Isla Campana|CI|CE|
+00|-13197|-9735|Isla Carlos|CI|CE|
+00|-20006|4669|Isla Carmen|MX|XF1|America/Mazatlan
+00|-14605|1355|Isla Cebaco|PM|HP|
+00|-20745|5076|Isla Cedros|MX|XF1|America/Tijuana
+00|-19774|4365|Isla Cerralvo|MX|XF1|America/Mazatlan
+00|-13396|-9114|Isla Chatham|CI|CE|
+00|-20657|3301|Isla Clarion|MX|XF4|
+00|-11511|1938|Isla Coche|VE|YV|
+00|-20085|4387|Isla Creciente|MX|XF1|America/Mazatlan
+00|-12712|-9701|Isla Dawson|CI|CE|
+00|-547|6465|Isla de Alboran|SP|EA6|
+00|-2431|5293|Isla de Aleganza|SP|EA8|
+00|1014|-261|Isla de Annobon|EK|3C0|
+00|-13300|-7665|Isla de Chiloe|CI|CE|
+00|-14713|1346|Isla de Coiba|PM|HP0|
+00|-15638|3676|Isla de Cozumel|MX|XF3|America/Cancun
+00|-11752|3296|Isla de Culebra|RQ|KP4|
+00|-15461|2963|Isla de Guanaja|HO|HR6|
+00|-3098|5059|Isla de la Gomera|SP|EA8|
+00|-11571|-9865|Isla de los Estados|AR|LU#XP|America/Argentina/Buenos_Aires
+00|-11537|1983|Isla de Margarita|VE|YV|
+00|-15404|2069|Isla de Ometepe|NU|YN|
+00|-14646|2403|Isla de Providencia|CO|HK0[A]|
+00|-15556|2944|Isla de Roatan|HO|HR6|
+00|-14706|2257|Isla de San Andres|CO|HK0[A]|
+00|-15648|2897|Isla de Utila|HO|HR6|
+00|-11777|3262|Isla de Vieques|RQ|KP4|
+00|-16503|3368|Isla del Carmen|MX|XF2|America/Merida
+00|-15670|997|Isla del Coco|CS|TI9|
+00|-14947|2190|Isla del Maiz Grande|NU|YN|
+00|-14936|2214|Isla del Maiz Pequena|NU|YN|
+00|-14201|1501|Isla del Rey|PM|HP8|
+00|-13305|-9548|Isla Desolacion|CI|CE|
+00|-13529|-9261|Isla Diego de Almagro|CI|CE|
+00|-13554|-9113|Isla Duque de Dias|CI|CE|
+00|-17538|3857|Isla el Dolo|Mexico|XF2|America/Mexico_City
+00|-15775|2389|Isla El Tigre|HO|HR4|
+00|-15070|2147|Isla el Venado|NU|YN|
+00|-16142|-248|Isla Espanola|EC|HC8|
+00|-19861|4404|Isla Espritu Santo|MX|XF1|America/Mazatlan
+00|-16476|-67|Isla Fernandina|EC|HC8|
+00|-2431|5266|Isla Graciosa|SP|EA8|
+00|-21294|5227|Isla Guadalupe|MX|XF1|America/Tijuana
+00|-13455|-7846|Isla Guafo|CI|CE|
+00|-13314|-7893|Isla Guaiteca|CI|CE|
+00|-13515|-8073|Isla Guamblin|CI|CE|
+00|-13440|-9165|Isla Hanover|CI|CE|
+00|-12420|-9959|Isla Hospe|CI|CE|
+00|-19795|4869|Isla Huivulai|MX|XF1|America/Hermosillo
+00|-13321|-8214|Isla Humos|CI|CE|
+00|-13460|-8031|Isla Ipun|CI|CE|
+00|-16415|-80|Isla Isabela|EC|HC8|
+00|-13396|-8162|Isla Isquiliac|CI|CE|
+00|-13392|-8481|Isla Javier|CI|CE|
+00|-14723|1307|Isla Jicaron|PM|HP0|
+00|-17576|3924|Isla Juan Ramirez|MX|XF2|America/Mexico_City
+00|-11628|2133|Isla la Blanquilla|VE|YV|
+00|-11907|2124|Isla La Orchila|VE|YV|
+00|-11755|1967|Isla La Tortuga|VE|YV|
+00|-12051|-9950|Isla Lennox|CI|CE|
+00|-13523|-9040|Isla Madre de Dios|CI|CE|
+00|-13156|-8038|Isla Magdalena|CI|CE|
+00|-15304|2011|Isla Mancarron|NU|YN|
+00|-16285|56|Isla Marchena|EC|HC8|
+00|-19129|3831|Isla Maria Cleofas|MX|XF1|America/Mazatlan
+00|-19187|3890|Isla Maria Madre|MX|XF1|America/Mazatlan
+00|-19160|3858|Isla Maria Magdelena|MX|XF1|America/Mazatlan
+00|-15787|2374|Isla Meanguera|ES|YS|
+00|-13315|-8125|Isla Melchor|CI|CE|
+00|-12220|3255|Isla Mona|RQ|KP4|
+00|-20650|5714|Isla Montague|MX|XF1|America/Hermosillo
+00|-13570|-8957|Isla Mornington|CI|CE|
+00|-15614|3820|Isla Mujeres|MX|XF3|America/Cancun
+00|-12188|-9920|Isla Navarino|CI|CE|
+00|-11976|-9941|Isla Nueva|CI|CE|
+00|-13282|-9634|Isla Nunez|CI|CE|
+00|-19870|4422|Isla Partida|MX|XF1|America/Mazatlan
+00|-14237|1511|Isla Pedro Gonzalez|PM|HP8|
+00|-12049|-9910|Isla Picton|CI|CE|
+00|-16339|108|Isla Pinta|EC|HC8|
+00|-14416|-513|Isla Puna|EC|HC|
+00|-13347|-9590|Isla Recalada|CI|CE|
+00|-13384|-8210|Isla Rivero|CI|CE|
+00|-20196|3422|Isla Roca Partide|MX|XF4|
+00|-18984|-4763|Isla Sala y Gomez|CI|CE0Y|
+00|-14380|-4742|Isla San Ambrosio|CI|CE0X|
+00|-19947|3477|Isla San Benedicto|MX|XF4|
+00|-16099|-148|Isla San Cristobal|EC|HC8|
+00|-20263|5167|Isla San Esteban|MX|XF1|America/Hermosillo
+00|-14416|-4726|Isla San Felix|CI|CE0X|
+00|-19603|4574|Isla San Ignacio|MX|XF1|America/Mazatlan
+00|-14237|1486|Isla San Jose|PM|HP8|
+00|-19915|4499|Isla San Jose|MX|XF1|America/Mazatlan
+00|-19204|3914|Isla San Juanito|MX|XF1|America/Mazatlan
+00|-20307|5155|Isla San Lorenzo|MX|XF1|America/Tijuana
+00|-19945|4616|Isla Santa Catalina|MX|XF1|America/Mazatlan
+00|-16266|-114|Isla Santa Cruz|EC|HC8|
+00|-16211|-148|Isla Santa Fe|EC|HC8|
+00|-13118|-9677|Isla Santa Ines|CI|CE|
+00|-20135|4398|Isla Santa Margarita|MX|XF1|America/Mazatlan
+00|-16280|-232|Isla Santa Maria|EC|HC8|
+00|-20194|4485|Isla Santa Maria|MX|XF1|America/Mazatlan
+00|-16328|-47|Isla Santiago|EC|HC8|
+00|-12362|3267|Isla Saona|DR|HI|
+00|-13456|-8714|Isla Serrano|CI|CE|
+00|-19976|3384|Isla Socorro|MX|XF4|
+00|-12813|-9880|Isla Stewart|CI|CE|
+00|-19456|4489|Isla Talchichilre|MX|XF1|America/Mazatlan
+00|-20229|5221|Isla Tiburon|MX|XF1|America/Hermosillo
+00|-12900|1970|Isla Toas|VE|YV|
+00|-13265|-8208|Isla Traiguen|CI|CE|
+00|-13315|-8151|Isla Victoria|CI|CE|
+00|-13490|-8886|Isla Wellington|CI|CE|
+00|-15770|2401|Isla Zacate Grande|HO|HR4|
+00|-15449|2112|Isla Zapatera|NU|YN|
+00|-1075|10358|Island of Rona|UK|GM|
+01|-15554|2932|Islas de la Bahia|HO|HR6|
+01|-12382|-10160|Islas Diego Ramirez|CI|CE|
+01|-11996|2122|Islas Los Roques|VE|YV|
+01|-19165|3872|Islas Marias|MX|XF1|America/Mazatlan
+00|-1128|10036|Islay|UK|GM|
+00|-11454|2773|Isle Aves|VE|YV0|
+00|-16326|5231|Isle Dernieresi|US|W5|America/Chicago
+00|-10979|8193|Isle Madame|CA|VE1|America/Glace_Bay
+00|-819|9763|Isle of Man|IM|GD|
+00|151|9252|Isle of Sheppey|UK|G|
+00|-15990|8641|Isle Royale|US|W8|America/Menominee
+00|1768|7747|Isola Capraia|IT|IA5|
+00|1849|7702|Isola d'Elba|IT|IA5|
+00|2504|7331|Isola d'Ischia|IT|IC8|
+00|2372|6967|Isola d'Ustica|IT|IE9|
+00|1961|7624|Isola del Giglio|IT|IA5|
+00|1855|7620|Isola di Montecristo|IT|IA5|
+00|2158|6622|Isola di Pantelleria|IT|IH9|
+00|1488|7045|Isola di San Pietro|IT|IM0|
+00|2217|6827|Isola Favignana|IT|IF9|
+00|2689|6927|Isola Lipari|IT|ID9|
+00|2170|6834|Isola Marettimo|IT|IF9|
+00|1813|7667|Isola Pianosa|IT|IA5|
+00|2670|6940|Isola Salina|IT|ID9|
+00|2739|6982|Isola Stromboli|IT|ID9|
+00|2695|6912|Isola Vulcano|IT|ID9|
+00|2334|7363|Isole di Ponza|IT|IB0|
+01|30525|1088|Jaluit Atoll|RM|V7|
+00|-13911|3260|Jamaica|JM|6Y|
+00|-10392|-11541|James Ross I.|AY|CE9|
+00|-19866|12245|Jameson I.|CA|VY0|America/Inuvik
+00|-1534|12779|Jan Mayen|JN|JX|
+00|-28805|-69|Jarvis I.|DQ|KH5|
+01|-10958|-9215|Jason Is.|FA|VP8[F]|
+00|19786|-1320|Java|ID|YB|
+00|9792|4404|Jazirat Abu Zaby|TC|A6|
+00|7693|2470|Jazirat Al Hanish Al Kabir|YM|7O|
+00|9809|4414|Jazirat Fahid|TC|A6|
+00|7694|2518|Jazirat Jabal Zuqar|YM|7O|
+00|1959|6078|Jazirat Jarbah|TS|3V|
+00|6117|4814|Jazirat Safajah|EG|SU|
+00|6117|4948|Jazirat Shakir|EG|SU|
+00|6220|5033|Jazirat Tiran|SA|HZ|
+00|10165|4873|Jazirehye Hormoz|IR|EP|
+00|9057|5264|Jazirehye Khark|IR|EP|
+00|9716|4774|Jazirehye Kish|IR|EP|
+00|10146|4834|Jazirehye Larak|IR|EP|
+00|9588|4828|Jazirehye Lavan|IR|EP|
+00|10041|4819|Jazirehye Qeshm|IR|EP|
+00|30515|1814|Jemo|RM|V7|
+00|-18363|12365|Jenny Lind I.|CA|VY0|America/Cambridge_Bay
+00|-14412|12538|Jens Munk I.|CA|VY0|America/Iqaluit
+00|-383|8859|Jersey|UK|GJ|
+00|30413|1367|Jih|RM|V7|
+00|2032|11637|Joa|NO|LA|
+00|27571|-2022|Joanett I.|PP|P2|
+00|-30516|3011|Johnston I.|JQ|KH3|
+00|-10039|-11390|Joinville I.|AY|CE9|
+00|21807|1075|Jolo|RP|DU|
+00|1257|9662|Juist|GM|DL|
+00|-1060|10075|Jura|UK|GM|
+00|2017|6254|Juzur Qarqanah|TS|3V|
+00|17709|2250|Kadan Kyun|BM|XZ|
+00|-31741|9323|Kagalaska|US|KL|America/Adak
+00|-30549|9538|Kagamil I.|US|KL|America/Adak
+00|-28192|3700|Kahoolawe|US|KH6|
+00|17729|2242|Kala Kyun|BM|XZ|
+00|17579|2798|Kalegauk I.|BM|XZ|
+00|-27355|10877|Kalgin Lake|US|KL|America/Anchorage
+-00|20603|90|Kalimantan|BX|YB|
+00|4854|6661|Kalimnos|GR|SV5|
+00|-32211|-3413|Kambara I.|FJ|3D2|
+00|-32245|-3108|Kanacea|FJ|3D2|
+00|-31927|9323|Kanaga|US|KL|America/Adak
+00|32080|-3428|Kandavu I.|FJ|3D2|
+00|24720|-6435|Kangaroo I.|AS|VK5|
+00|17723|2099|Kanmaw Kyun|BM|XZ|
+00|18542|2040|Kaoh Kong|CB|XU|
+00|18586|1930|Kaoh Rung|CB|XU|
+00|18679|1886|Kaoh Thmei|CB|XU|
+00|27853|194|Kapingamarangi Reef|FM|V6|Pacific/Pohnpei
+00|31481|-7354|Kapiti I.|NZ|ZL|
+00|26274|-836|Karkar I.|PP|P2|
+00|4888|6410|Karpathos|GR|SV5|
+00|4848|6370|Kasos|GR|SV5|
+00|16809|1430|Katchell I.|IN|VU4|
+00|-25969|-2961|Katiu|FP|FO[P]|Pacific/Tahiti
+00|-28717|3970|Kauai|US|KH6|
+00|-26119|-2850|Kauehi|FP|FO[P]|Pacific/Tahiti
+00|-26370|-2844|Kaukura|FP|FO[P]|Pacific/Tahiti
+00|-28896|3896|Kaula|US|KH6|
+00|17732|1983|Kauye Kyun|BM|XZ|
+00|30752|1602|Kaven|RM|V7|
+00|-25993|10783|Kayak I.|US|KL|America/Anchorage
+00|28712|-987|Ke Ila I.|BP|H44|
+00|4381|6769|Kea|GR|SV8|
+00|-10793|-9237|Keppel I.|FA|VP8[F]|
+01|19078|550|Kepulauan Anambas|ID|YB|
+01|24205|-1112|Kepulauan Aru|ID|YB|
+01|23639|-731|Kepulauan Gorong|ID|YB|
+01|23923|-1017|Kepulauan Kai|ID|YB|
+01|18815|35|Kepulauan Lingga|ID|YB|
+01|19610|494|Kepulauan Natuna Selatan|ID|YB|
+01|19474|710|Kepulauan Natuna Utara|ID|YB|
+01|18766|166|Kepulauan Riau|ID|YB|
+01|19179|-1008|Kepulauan Seribu|ID|YB|
+01|19361|180|Kepulauan Tambelan|ID|YB|
+01|23647|-1353|Kepulauan Tanimbar|ID|YB|
+01|23821|-998|Kepulauan Tayandu|ID|YB|
+01|23703|-828|Kepulauan Watubela|ID|YB|
+00|-998|10151|Kerrera|UK|GM|
+00|-14357|10360|Kidney I.|CA|VY0|America/Iqaluit
+00|-11636|10869|Killinek I.|CA|VO2|America/Goose_Bay
+00|-22960|9394|King|CA|VE7|America/Vancouver
+00|-18311|14002|King Christian I.|CA|VY0|America/Cambridge_Bay
+00|-10492|-11172|King George I.|AY|VP8[H]|
+00|25917|-7170|King I.|AS|VK7|Australia/Currie
+00|-17532|12450|King William I.|CA|VY0|America/Rankin_Inlet
+00|-29232|1149|Kingman Reef|KQ|KH5K|
+00|30921|1269|Kirage|RM|V7|
+00|27193|-1553|Kiriwina I.|PP|P2|
+00|31942|9355|Kiska I.|US|KL|America/Adak
+00|25815|-1543|Kiwai I.|PP|P2|
+00|-26597|10861|Knight|US|KL|America/Anchorage
+00|17943|1731|Ko Ang Tong|TH|HS|
+00|18423|2169|Ko Chang|TH|HS|
+00|18462|2099|Ko Kut|TH|HS|
+00|17832|1359|Ko Lanta Yai|TH|HS|
+00|17943|1714|Ko Phaluai|TH|HS|
+00|18005|1751|Ko Phangan|TH|HS|
+00|17712|1753|Ko Phayom|TH|HS|
+00|17691|1637|Ko Phra Thong|TH|HS|
+00|17702|1435|Ko Phuket|TH|HS|
+00|17858|1179|Ko Rawi|TH|HS|
+00|18002|1710|Ko Samui|TH|HS|
+00|17618|1701|Ko Surin Nua|TH|HS|
+00|17614|1693|Ko Surin Tai|TH|HS|
+00|17894|1302|Ko Talibong|TH|HS|
+00|17937|1189|Ko Terutao|TH|HS|
+00|17748|1465|Ko Yao Noi|TH|HS|
+00|17742|1442|Ko Yao Yai|TH|HS|
+00|18096|1289|Ko Yo|TH|HS|
+00|7034|3792|Kobbein Reef|SA|HZ|
+00|-14114|12528|Koch I.|CA|VY0|America/Iqaluit
+00|-27626|10327|Kodiak I.|US|KL|America/Anchorage
+00|28273|-1440|Kolombangara I.|BP|H44|
+00|5179|14200|Kongsoya|SV|JW|
+00|22272|-2901|Koolan I.|AS|VK6|
+00|32293|-3118|Koro|FJ|3D2|
+00|-28876|9955|Korovin I.|US|KL|America/Nome
+00|4885|6622|Kos|GR|SV5|
+00|29335|958|Kosrae|FM|V6|Pacific/Kosrae
+00|-24426|10289|Kruzof I.|US|KL|America/Juneau
+00|-24129|10164|Kuiu I.|US|KL|America/Juneau
+00|31127|560|Kuma|KR|T30|
+00|-23587|9368|Kunghit I.|CA|VE7|America/Vancouver
+00|17578|2136|Kunthi Kyun|BM|XZ|
+00|27345|1269|Kuop Atoll|FM|V6|Pacific/Chuuk
+00|-24025|10217|Kupreanof I.|US|KL|America/Juneau
+00|-32098|5113|Kure I.|US|KH7K|
+00|31214|39|Kuria|KR|T30|
+01|27134|8345|Kuril Is.|UR|UA0|Asia/Sakhalin
+00|3342|12547|Kvaloy|NO|LA|
+00|4305|12714|Kvaloya|NO|LA|
+00|5858|14428|Kvitya|SV|JW|
+00|30192|1573|Kwajalein|RM|V7|Pacific/Kwajalein
+00|-32206|-5658|L'Esperance|NZ|ZL8|
+00|-10987|2938|La Desirade|GP|FG|
+00|-11501|9040|La Grande Ile|CA|VE2|America/Halifax
+00|-3215|5157|La Palma|SP|EA8|
+01|21987|-3036|Lacepede Is.|AS|VK6|
+00|29924|1609|Lae Atoll|RM|V7|
+00|1985|10310|Laeso|DA|OZ|
+00|32112|-1441|Lafanga|TV|T2|
+00|3319|14454|Lagoya|SV|JW|
+00|-32183|-3279|Lakeba|FJ|3D2|
+00|-28248|3750|Lanai|US|KH6|
+00|17673|1950|Lanbi Kyun|BM|XZ|
+00|16744|2459|Landfall I.|IN|VU4|
+00|1935|9875|Langeland|DA|OZ|
+00|1359|9674|Langeoog|GM|DL|
+00|2687|12385|Langoya|NO|LA|
+00|22045|2658|Lantao I.|RP|DU|
+00|-2457|5227|Lanzarote|SP|EA8|
+00|-13511|-12764|Latady I.|AY|CE9|
+00|26013|-200|Laualau I.|PP|P2|
+00|-8029|-10930|Laurie I.|AY|VP8[O]|
+00|-12002|-11916|Lavoisier I.|AY|CE9|
+00|-30910|4640|Laysan I.|US|KH6|
+00|2108|11716|Leka|NO|LA|
+00|28987|-1576|Leli I.|BP|H44|
+00|4550|7198|Lemnos|GR|SV8|
+00|17683|2092|Letsokaw Kyun|BM|XZ|
+00|30283|1396|Leuen|RM|V7|
+00|-1195|10461|Lewis with Harris|UK|GM|
+01|22460|1944|Leyte|RP|DU|
+00|22460|1944|Leyte|RP|DU|
+00|-12128|-12023|Liard I.|AY|CE9|
+00|30104|-3767|Lifou|NC|FK|
+00|-15758|3109|Lighthouse Reef|BH|V3|
+00|27469|-565|Lihir I.|PP|P2|
+00|30449|1788|Likiep Atoll|RM|V7|
+00|-20353|12653|Linaluk I.|CA|VE8|
+00|21563|2061|Linapacan I.|RP|DU|
+00|26826|-3678|Lindeman I.|AS|VK4|Australia/Lindeman
+00|26012|-250|Liot I.|PP|P2|
+00|-31312|4693|Lisianski I.|US|KH6|
+00|16643|1927|Little Andaman I.|IN|VU4|
+00|31514|-6515|Little Barrier I.|NZ|ZL|
+00|-14407|3543|Little Cayman|CJ|ZF8|
+00|-17367|13590|Little Cornwallis I.|CA|VY0|America/Rankin_Inlet
+00|-13138|3870|Little Inagua|BF|C6|
+00|-28694|9900|Little Koniuji I.|US|KL|America/Nome
+00|16860|1322|Little Nicobar I.|IN|VU4|
+00|-31699|9329|Little Tanga|US|KL|America/Adak
+00|-10889|-11269|Livingston I.|AY|VP8[H]|
+00|26181|-2640|Lizard I.|AS|VK4|Australia/Brisbane
+00|29992|-2404|Loh|NH|YJ|
+00|-11639|11244|Loks Land I.|CA|VY0|America/Pangnirtung
+00|2057|9862|Lolland|DA|OZ|
+00|20932|-1545|Lombok|ID|YB|
+00|-13516|4189|Long I.|BF|C6|
+00|26482|-958|Long I.|PP|P2|
+00|-12045|8928|Long I.|CA|VE2|America/Montreal
+00|26826|-3678|Long I.|AS|VK4|Australia/Lindeman
+00|-13130|7355|Long Island|US|W2|
+00|22638|-2502|Long Reef|AS|VK6|
+00|-22117|8728|Lopez I.|US|W7|America/Los_Angeles
+00|28633|-5681|Lord Howe I.|AS|VK9[L]|
+00|17625|1880|Lord Loughborough I.|BM|XZ|
+00|-18941|13938|Lougheed I.|CA|VY0|America/Cambridge_Bay
+00|-23716|9532|Louise I.|CA|VE7|America/Vancouver
+01|27599|-2041|Louisiade Archipelago|PP|P2|
+00|-11179|-11389|Low I.|AY|VP8[H]|
+00|-17554|13418|Lowther I.|CA|VY0|America/Rankin_Inlet
+00|28748|-990|Luaniua I.|BP|H44|
+00|21634|2478|Lubang I.|RP|DU|
+00|-1014|10120|Luing|UK|GM|
+00|21700|2806|Luzon|RP|DU|
+00|-3752|-13409|Lyddan I.|AY|CE9|
+00|-23683|9479|Lyell I.|CA|VE7|America/Vancouver
+00|-20032|14041|Mackenzie King I.|CA|VE8,VY0|America/Inuvik
+00|28601|-9831|Macquarie I.|AS|VK0|
+00|8435|-3379|Madagascar|MA|5R|
+00|-3058|5895|Madeira I.|MD|CT3|
+00|-16324|8427|Madeline|US|W9|America/Chicago
+00|30265|-2728|MaeAo|NH|YJ|
+00|7155|-1407|Mafia I.|TZ|5H3|
+00|-24296|-4160|Magareva|FP|FO[P]|Pacific/Gambier
+01|-11105|8537|Magdalen Is.|CA|VE2|America/Halifax
+00|27053|-2991|Magdelaine Cay I.|AS|VK4|Australia/Brisbane
+00|4641|12790|Mageroya|NO|LA|
+00|26429|-3446|Magnetic I.|AS|VK4|Australia/Brisbane
+00|-32248|-3142|Mago|FJ|3D2|
+00|27023|1617|Magur I.|FM|V6|Pacific/Chuuk
+00|9983|-841|Mahe I.|SE|S7|
+00|31145|166|Maiana|KR|T30|
+00|17687|2255|Maingy I.|BM|XZ|
+00|-396|10756|Mainland|UK|GM|
+00|-4173|2740|Maio|CV|D4|
+00|30804|1281|Majuro|RM|V7|
+00|-26687|-2848|Makatea|FP|FO[P]|Pacific/Tahiti
+00|31134|589|Makin|KR|T30|
+00|28977|-1615|Malaita I.|BP|H44|
+00|30148|-2922|Malakula|NH|YJ|
+00|-27896|-732|Malden I.|KR|T32|
+00|27581|-625|Malendok I.|PP|P2|
+00|17691|2351|Mali Kyun|BM|XZ|
+00|525|7130|Mallorca|SP|EA6|
+00|30088|-2824|Malo|NH|YJ|
+00|30787|1566|Maloelap Atoll|RM|V7|
+00|-14687|716|Malpelo I.|CO|HK0[M]|
+00|2601|6461|Malta|MT|9H|
+00|26112|-736|Manam I.|PP|P2|
+00|-28426|-3944|Mangaia|CW|E51[S]|
+00|-26271|-2601|Manihi|FP|FO[P]|Pacific/Tahiti
+00|-28979|-1867|Manihiki|CW|E51[N]|
+00|-14834|8236|Manitoulin|CA|VE3|America/Montreal
+00|-14360|11159|Mansel I.|CA|VY0|America/Iqaluit
+00|-28609|-3466|Manuae|CW|E51[S]|
+00|-25425|-3457|Manuhangi|FP|FO[P]|Pacific/Tahiti
+00|29063|-1722|Mara Masike I.|BP|H44|
+00|31199|351|Marakei|KR|T30|
+00|9589|4373|Marawwah|TC|A6|
+00|30236|-3870|Mare|NC|FK|
+00|-24513|-3966|Maria|FP|FO[P]|Pacific/Gambier
+00|26655|-7671|Maria I.|AS|VK7|
+01|26189|3042|Mariana Is.|CQ|KH0|
+00|-11026|2870|Marie Galante|GP|FG|
+00|21957|2409|Marinduque I.|RP|DU|
+00|6792|-8441|Marion I.|SF|ZS8|
+00|27418|-3448|Marion Reef|AS|VK4|Australia/Brisbane
+00|4974|7311|Marmara Adasi|TU|TA0|
+00|-27332|10479|Marmot I.|US|KL|America/Anchorage
+00|-30699|4573|Maro Reef|US|KH6|
+00|-25605|-3262|Marokau|FP|FO[P]|Pacific/Tahiti
+00|-25829|-5022|Marotiri|FP|FO[A]|
+00|-16537|5321|Marsh I.|US|W5|America/Chicago
+00|-12721|7451|Martha's Vineyard|US|W1|
+00|-5372|-3689|Martin Vas|BR|PY0M|
+00|-10984|2635|Martinique|MB|FM|
+00|-25071|-3466|Marutea|FP|FO[P]|Pacific/Tahiti
+00|22250|2189|Masbate|RP|DU|
+01|22250|2189|Masbate|RP|DU|
+00|10583|3678|Masirah|MU|A4|
+00|-18566|13678|Massey I.|CA|VY0|America/Cambridge_Bay
+00|-17391|5084|Matagorda I.|US|W5|America/Chicago
+00|-26758|-2678|Mataiva|FP|FO[P]|Pacific/Tahiti
+00|31692|-6759|Matakana I.|NZ|ZL|
+00|30255|1015|Matamat|RM|V7|
+00|30835|-4020|Matthew|NC|FK|
+00|-17223|12506|Matty I.|CA|VY0|America/Rankin_Inlet
+00|-29848|-1970|Matu Ko|CW|E51[N]|
+00|32358|-3449|Matuku|FJ|3D2|
+00|-24551|-3863|MatureiVavao|FP|FO[P]|Pacific/Gambier
+00|-28142|3747|Maui|US|KH6|
+00|-28318|-3629|Mauke|CW|E51[S]|
+00|10359|-3645|Mauritius|MP|3B8|
+00|22246|-2791|Mavis Reef|AS|VK6|
+00|-13131|4026|Mayaguana I.|BF|C6|
+00|31724|-6711|Mayor I.|NZ|ZL|
+00|8124|-2308|Mayotte|MF|FH|
+00|-23444|9663|McCauley I.|CA|VE7|America/Vancouver
+01|13125|-9672|McDonald Is.|AS|VK0|
+01|29060|12741|Medvezhi Ostrova|UR|UA0|Asia/Magadan
+00|-17895|14383|Meighen I.|CA|VY0|America/Rankin_Inlet
+00|-18856|12328|Melbourne I.|CA|VY0|America/Cambridge_Bay
+00|28052|-3132|Mellish Reef|AS|VK9[M]|
+00|1468|9670|Mellum|GM|DL|
+00|-20076|13613|Melville I.|CA|VE8,VY0|America/Inuvik
+00|23568|-2079|Melville I.|AS|VK8|
+00|732|7191|Menorca|SP|EA6|
+00|-9764|8555|Merasheen I.|CA|VO1|
+00|31641|-6587|Mercury Is.|NZ|ZL|
+01|17649|2075|Mergui Archipelago|BM|XZ|
+00|21528|-3081|Mermaid Reef|AS|VK9[R]|
+00|-15439|8597|Michipicoten|CA|VE3|America/Montreal
+00|-12914|3923|Middle Caicos|TK|VP5|
+00|13184|-107|Midu|MV|8Q|
+00|-31919|5077|Midway I.|MQ|KH4|
+00|-23894|10198|Mikof I.|US|KL|America/Juneau
+00|4569|6742|Mikonos|GR|SV8|
+00|30914|1096|Mili|RM|V7|
+01|30949|1098|Mili Atoll|RM|V7|
+00|18135|-11796|Mill I.|AY|CE9|
+00|-13997|11516|Mill I.|CA|VY0|America/Iqaluit
+00|-17386|13640|Milne I.|CA|VY0|America/Rankin_Inlet
+00|4399|6608|Milos|GR|SV8|
+00|22365|1384|Mindanao|RP|DU|
+00|21768|2316|Mindoro|RP|DU|
+00|27774|1467|Minto Reef|FM|V6|Pacific/Pohnpei
+00|-10137|8452|Miquelon I.|SB|FP|
+00|-11616|8634|Miscou I.|CA|VE9|
+00|27487|-1920|Misima I.|PP|P2|
+00|-28390|-3566|Mitiaro|CW|E51[S]|
+00|-28586|10053|Mitrofania I.|US|KL|America/Nome
+00|25608|-1833|Moa I.|AS|VK4|Australia/Brisbane
+00|32383|-3347|Moala|FJ|3D2|
+00|27339|1340|Moen I.|FM|V6|Pacific/Pohnpei
+00|7865|-2220|Moheli|CN|D6|
+00|-28261|3805|Molokai|US|KH6|
+00|7138|-729|Mombasa I.|KE|5Z|
+00|2219|9895|Mon|DA|OZ|
+00|22003|-6144|Mondrain I.|AS|VK6|
+00|28001|-1325|Mono I.|BP|H44|
+00|-4743|-10519|Montagu I.|FA|VP8[S]|
+00|-26574|10780|Montague I.|US|KL|America/Anchorage
+00|27039|-6525|Montague I.|AS|VK2|Australia/Sydney
+01|20793|-3678|Montebello Is.|AS|VK6|
+00|-11194|3014|Montserrat|MH|VP2M|
+00|-11781|11632|Moodie I.|CA|VY0|America/Pangnirtung
+00|-27708|-3024|Mopelia|FP|FO[P]|Pacific/Tahiti
+00|27612|-4893|Moreton I.|AS|VK4|Australia/Brisbane
+00|25092|-2979|Mornington I.|AS|VK4|Australia/Brisbane
+00|1569|10229|Mors|DA|OZ|
+00|-23721|9484|Morseby I.|CA|VE7|America/Vancouver
+00|27664|955|Mortlock I.|FM|V6|Pacific/Pohnpei
+00|2348|12236|Moskenesoya|NO|LA|
+00|30181|-2459|Mota Lava|NH|YJ|
+00|-32129|-3358|Mothe I.|FJ|3D2|
+00|31755|-6773|Motiti I.|NZ|ZL|
+00|-27315|-2963|Motu Ome|FP|FO[P]|Pacific/Tahiti
+00|-25983|-3080|Motutunga|FP|FO[P]|Pacific/Tahiti
+00|29956|-3731|Mouly|NC|FK|
+00|-12294|7982|Mount Desert I.|US|W1|
+00|4181|10549|Muhu||ES0|
+00|6707|3744|Mukawwar|SU|ST|
+00|25586|-1822|Mulgrave I.|AS|VK4|Australia/Brisbane
+00|-1081|10162|Mull|UK|GM|
+00|26457|-377|Munus I.|PP|P2|
+00|-24985|-3932|Mururoa|FP|FO[P]|Pacific/Gambier
+00|26939|-266|Mussan I.|PP|P2|
+00|-17500|4954|Mustang I.|US|W5|America/Chicago
+00|16734|3592|Myengun Kyun|BM|XZ|
+00|-28807|9914|Nagai I.|US|KL|America/Nome
+00|32293|-3207|Nairai|FJ|3D2|
+00|4430|10714|Naissaar||ES2|
+00|-25331|-3309|Nake|FP|FO[P]|Pacific/Tahiti
+00|-26532|10920|Naked I.|US|KL|America/Anchorage
+01|27067|1552|Namonuito Atoll|FM|V6|Pacific/Pohnpei
+00|30258|1013|Namorik Atoll|RM|V7|
+00|30261|1012|Namoril|RM|V7|
+00|29751|2107|Namu|RM|V7|
+00|30264|1435|Namu AToll|RM|V7|
+00|16837|1435|Nancowry I.|IN|VU4|
+00|-12617|7438|Nantucket I.|US|W1|
+00|31735|-1129|Nanumanga|TV|T2|
+00|31704|-1023|Nanumea|TV|T2|
+00|-25416|-2551|Napuka|FP|FO[P]|Pacific/Tahiti
+00|30975|1120|Narappu|RM|V7|
+00|16970|2417|Narcondam I.|IN|VU4|
+00|-29777|-2078|Nassau I.|CW|E51[N]|
+00|30048|-94|Nauru|NR|C2|
+00|31902|-3080|Naviti|FJ|3D2|
+00|4585|6671|Naxos|GR|SV8|
+00|-32226|-3233|Nayau|FJ|3D2|
+00|-32170|-3719|Ndoi I.|FJ|3D2|
+00|-29646|4243|Necker I.|US|KH6|
+00|22135|1803|Negros|RP|DU|
+00|-22340|8949|Nelson I.|CA|VE7|America/Vancouver
+00|-10622|-11213|Nelson I.|AY|VP8[H]|
+00|29875|-1938|Nendo I.|BP|H40|
+00|-11264|3086|Nevis|SC|V4|
+00|27066|-942|New Britain|PP|P2|
+00|28361|-1493|New Georgia I.|BP|H44|
+01|25707|-996|New Guinea I.|ID|P2|Pacific/Port_Moresby
+00|27038|-455|New Hanover I.|PP|P2|
+00|-11026|-9309|New I.|FA|VP8[F]|
+00|27348|-667|New Ireland I.|PP|P2|
+00|-13934|4506|New Providence I.|BF|C6|
+00|-10082|8695|Newfoundland I.|CA|VO1|
+00|28289|1040|Ngatik I.|FM|V6|Pacific/Pohnpei
+00|32274|-3245|Ngau|FJ|3D2|
+00|28834|-1631|Nggela I.|BP|H44|
+01|24743|1520|Ngulu Atoll|FM|V6|Pacific/Chuuk
+00|-26345|-2904|Niau|FP|FO[P]|Pacific/Tahiti
+01|16798|1441|Nicobar Is.|IN|VU4|
+00|-28826|3942|Nihau|US|KH6|
+00|-25710|-3005|Nihiru|FP|FO[P]|Pacific/Tahiti
+00|31757|-249|Nikunau|KR|T30|
+00|3724|6913|Nisis Ithaki|GR|SV8|
+00|3908|6618|Nisis Sapientza|GR|SV8|
+00|3918|6611|Nisis SkhiAa|GR|SV8|
+00|4229|6790|Nisos Aiyina|GR|SV8|
+00|4194|6455|Nisos Antikthira|GR|SV8|
+00|4482|6593|Nisos Folegandros|GR|SV8|
+00|4226|6720|Nisos Idhra|GR|SV8|
+00|3704|6888|Nisos Kefallinia|GR|SV8|
+00|4679|6908|Nisos Khios|GR|SV8|
+00|4421|6626|Nisos Kimolos|GR|SV8|
+00|4140|6527|Nisos Kithira|GR|SV8|
+00|4397|6731|Nisos Kithnos|GR|SV8|
+00|4721|7051|Nisos Lesvos|GR|SV8|
+00|3715|6967|Nisos Levkas|GR|SV8|
+00|4543|7181|Nisos Limnos|GR|SV8|
+00|3493|7174|Nisos Othonoi|GR|SV8|
+00|3629|7057|Nisos Paxoi|GR|SV8|
+00|4435|6618|Nisos Poliaigos|GR|SV8|
+00|4226|6755|Nisos Poros|GR|SV8|
+00|4228|6829|Nisos Salamis|GR|SV8|
+00|4603|7282|Nisos Samothraki|GR|SV8|
+00|4405|6688|Nisos Serifos|GR|SV8|
+00|4485|6739|Nisos Siros|GR|SV8|
+00|4221|7050|Nisos Skiathos|GR|SV8|
+00|4264|7045|Nisos Skopelos|GR|SV8|
+00|4164|6707|Nisos Spetsai|GR|SV8|
+00|4498|6778|Nisos Tinos|GR|SV8|
+00|3746|6802|Nisos Zakinthos|GR|SV8|
+00|-31616|-2807|Niuafoou|TN|A3|
+00|-30576|-3430|Niue|NE|E6|
+00|31913|-1098|Niutao|TV|T2|
+00|-22824|8952|Nootka I.|CA|VE7|America/Vancouver
+00|4053|14372|Nordaustlandet|SV|JW|
+00|1303|9668|Norderney|GM|DL|
+00|3451|12636|Nordkvaloy|NO|LA|
+00|30231|-5226|Norfolk I.|AS|VK9[N]|
+00|16605|2081|Norht Sentinel I.|IN|VU4|
+00|27184|-1792|Normanby I.|PP|P2|
+00|16722|2329|North Andaman I.|IN|VU4|
+00|-11535|10760|North Aulatsivik I.|CA|VO2|America/Goose_Bay
+00|-12951|3940|North Caicos|TK|VP5|
+00|24021|-2070|North Gouldburn I.|AS|VK8|
+00|10177|-1864|North I.|MP|3B6|
+00|-16224|13798|North Kent I.|CA|VY0|America/Rankin_Inlet
+00|28815|-2214|North Reef|BP|H44|
+00|-14400|9597|North Twin I.|CA|VY0|America/Iqaluit
+00|-1315|10367|North Uist|UK|GM|
+00|26101|-273|North West Reef|PP|P2|
+00|-14363|2858|Northeast Cay|JM|6Y|
+00|-13760|4518|Northern Eleuthera I.|BF|C6|
+00|-12953|13928|Northumberland I.|GL|OX|America/Thule
+00|8690|-2395|Nosy Be|MA|5R|
+00|-14046|11393|Nottingham I.|CA|VY0|America/Iqaluit
+00|10477|13464|Novaya Zemlya|UR|UA1|
+00|-27125|10684|Nuka I.|US|KL|America/Anchorage
+00|-25224|-1596|Nuku Hiva|FP|FO[M]|
+00|32106|-1448|Nukufetau|TV|T2|
+00|28713|-821|Nukumanu I.|PP|P2|
+00|-30934|-1655|Nukunonu|TL|ZK3|
+00|27897|694|Nukuoro Atoll|FM|V6|Pacific/Pohnpei
+00|-24984|-3471|Nukutavake|FP|FO[P]|Pacific/Gambier
+00|-29969|10817|Nunivak I.|US|KL|America/Nome
+00|31115|333|Nuotea|KR|T30|
+00|-28432|3867|Oahu|US|KH6|
+00|30078|-1772|Obelisk I.|BP|H40|
+00|3006|10221|Oeland I.|SW|SM7|
+00|-23533|-4308|Oeno Atoll|PC|VP6[P]|
+00|-30542|-2552|Ofu|AQ|KH8|
+00|23037|4766|Okinawa|JA|JR6|
+00|25107|7586|Okushirito|JA|JA8|
+00|28816|-1617|Olevuga I.|BP|H44|
+00|26256|1384|Olimarao|FM|V6|Pacific/Pohnpei
+00|-30534|-2552|Olosega|AQ|KH8|
+00|22119|1324|Olutanga I.|RP|DU|
+00|31208|46|Oneaka|KR|T30|
+00|-32113|-3448|Ongea Levu|FJ|3D2|
+00|32130|-3401|Ono|FJ|3D2|
+00|31603|-337|Onotoa|KR|T30|
+00|990|9438|Oostelijk Flevoland|NL|PA|
+00|-22119|8757|Orcas I.|US|W7|America/Los_Angeles
+01|27981|1353|Oroluk Atoll|FM|V6|Pacific/Pohnpei
+00|2094|10473|Orust I.|SW|SM6|
+00|6502|11734|Ostrov Anzerskiy|UR|UA1|
+00|-31033|11661|Ostrov Arakamchechen|UR|UA0|Asia/Anadyr
+00|30349|12563|Ostrov Ayon|UR|UA0|Asia/Anadyr
+00|10800|8216|Ostrov Barsakelmes|UR|UN|Asia/Aqtobe
+00|11332|14697|Ostrov Belayazemiya|UR|RI1FJ|
+00|24446|13611|Ostrov Belkovskiy|UR|UA0|Asia/Magadan
+00|12739|13188|Ostrov Belyy|UR|UA9|Asia/Yekaterinburg
+00|26804|13808|Ostrov Bennetta|UR|UA0|Asia/Magadan
+00|14741|13562|Ostrov Bolsheko|UR|UA0|Asia/Yekaterinburg
+00|18422|14163|Ostrov Bolshevik|UR|UA0|Asia/Krasnoyarsk
+00|19345|13913|Ostrov Bolshoy|UR|UA0|Asia/Krasnoyarsk
+00|20240|13378|Ostrov Bolshoy Begichev|UR|UA0|Asia/Krasnoyarsk
+00|25488|13241|Ostrov Bolshoy Lyakhovskiy|UR|UA0|Asia/Magadan
+00|24789|9883|Ostrov Bolshoy Shantar|UR|UA0|Asia/Vladivostok
+00|27151|8362|Ostrov Chernyye Bratya|UR|UA0|Asia/Sakhalin
+00|29225|12718|Ostrov Chetyrekhstolbovoy|UR|UA0|Asia/Magadan
+00|10621|12463|Ostrov Dolgiy|UR|UA1|
+00|21592|13157|Ostrov Dzhangylakh|UR|UA0|Asia/Yakutsk
+00|10200|14630|Ostrov Dzheksona|UR|RI1FJ|
+00|27712|8811|Ostrov Ek Arma|UR|UA0|Asia/Sakhalin
+00|24647|9900|Ostrov Feklistoba|UR|UA0|Asia/Vladivostok
+00|10460|14453|Ostrov Gallya|UR|RI1FJ|
+00|11518|14569|Ostrov Greem Bell|UR|RI1FJ|
+00|16094|13903|Ostrov Isachenko|UR|UA0|Asia/Yekaterinburg
+00|29529|10593|Ostrov Karaginskiy|UR|UA0|Asia/Kamchatka
+00|27444|8522|Ostrov Ketoy|UR|UA0|Asia/Sakhalin
+00|27814|8842|Ostrov Kharimkotan|UR|UA0|Asia/Sakhalin
+00|8869|12441|Ostrov Kolguyev|UR|UA1|
+00|17045|14516|Ostrov Komsomolets|UR|UA0|Asia/Krasnoyarsk
+00|25403|13578|Ostrov Kotelnyy|UR|UA0|Asia/Magadan
+00|28903|12757|Ostrov Krestovskiy|UR|UA0|Asia/Magadan
+00|26278|7934|Ostrov Kunashir|UR|UA0|Asia/Sakhalin
+00|10956|14584|Ostrov Laronsyer|UR|RI1FJ|
+00|29084|12742|Ostrov Leontyeva|UR|UA0|Asia/Magadan
+00|10158|14438|Ostrov Makklintoka|UR|RI1FJ|
+00|25307|13337|Ostrov Malyy Lyakhovskiy|UR|UA0|Asia/Magadan
+00|19269|14062|Ostrov Malyy Taymyr|UR|UA0|Asia/Krasnoyarsk
+00|27580|8656|Ostrov Matua|UR|UA0|Asia/Sakhalin
+00|9490|12813|Ostrov Mezhdusharskiy|UR|UA1|
+00|7664|12013|Ostrov Morzhovets|UR|UA1|
+00|9139|14401|Ostrov Nortbruk|UR|RI1FJ|
+00|26732|13531|Ostrov Novaya Sibir|UR|UA0|Asia/Magadan
+00|9551|7006|Ostrov Ogurchinskiy|UR|EZ|
+00|17357|14290|Ostrov Oktyabrskoy Revolyutsii|UR|UA0|Asia/Krasnoyarsk
+00|13972|13042|Ostrov Oleniy|UR|UA9|Asia/Yekaterinburg
+00|27855|8902|Ostrov Onekotan|UR|UA0|Asia/Sakhalin
+00|28021|9070|Ostrov Paramushir|UR|UA0|Asia/Sakhalin
+00|20881|13379|Ostrov Peschanyy|UR|UA0|Asia/Irkutsk
+00|16621|14375|Ostrov Pioner|UR|UA0|Asia/Krasnoyarsk
+00|27547|8596|Ostrov Rasshua|UR|UA0|Asia/Sakhalin
+00|10559|14719|Ostrov Rudolfa|UR|RI1FJ|
+00|17263|13874|Ostrov Russkiy|UR|UA0|Asia/Krasnoyarsk
+00|10682|14403|Ostrov Salm|UR|RI1FJ|
+00|9206|12318|Ostrov Sengeiskiy|UR|UA1|
+00|27738|8787|Ostrov Shiashkotan|UR|UA0|Asia/Sakhalin
+00|16332|14606|Ostrov Shmidta|UR|UA0|Asia/Krasnoyarsk
+00|28139|9135|Ostrov Shumshu|UR|UA0|Asia/Sakhalin
+00|14235|13122|Ostrov Sibiryakova|UR|UA0|Asia/Yekaterinburg
+00|27360|8455|Ostrov Simushir|UR|UA0|Asia/Sakhalin
+00|6425|11714|Ostrov Solovetskiy|UR|UA1|
+00|10093|14563|Ostrov Solsberi|UR|RI1FJ|
+00|19148|14088|Ostrov Starokadomskogo|UR|UA0|Asia/Krasnoyarsk
+00|24446|13332|Ostrov Stolbovoy|UR|UA0|Asia/Magadan
+00|17272|13716|Ostrov Taymyr|UR|UA0|Asia/Krasnoyarsk
+00|27001|8262|Ostrov Urup|UR|UA0|Asia/Sakhalin
+00|14347|14561|Ostrov Ushakova|UR|UA9|Asia/Yekaterinburg
+00|10706|12613|Ostrov Vaygach|UR|UA1|
+00|6610|14427|Ostrov Viktoriya|SV|JW|
+00|13830|14322|Ostrov Vize|UR|UA9|Asia/Yekaterinburg
+00|16854|14074|Ostrov Voronina|UR|UA0|Asia/Krasnoyarsk
+00|10644|8135|Ostrov Vozrozhdeniya|UR|UK|Asia/Samarkand
+00|24746|12871|Ostrov Yarok|UR|UA0|Asia/Magadan
+00|27108|10634|Ostrov Zavyalova|UR|UA0|Asia/Magadan
+00|29917|9903|Ostrova Beringa|UR|UA0|Asia/Kamchatka
+01|16048|13889|Ostrova Sergeya Kirova|UR|UA0|Asia/Krasnoyarsk
+00|2996|7799|Otok Brac|YO|9A|
+00|2592|8080|Otok Cres|YO|9A|
+00|3021|7771|Otok Hvar|YO|9A|
+00|3045|7730|Otok Korcula|YO|9A|
+00|2761|7885|Otok Kornat|YO|9A|
+00|2632|8117|Otok Krk|YO|9A|
+00|3037|7695|Otok Lastovo|YO|9A|
+00|2598|8027|Otok Losinj|YO|9A|
+00|3156|7694|Otok Mljet|YO|9A|
+00|2699|8010|Otok Pag|YO|9A|
+00|2764|7911|Otok Pasman|YO|9A|
+00|2657|8060|Otok Rab|YO|9A|
+00|2933|7807|Otok Solta|YO|9A|
+00|2729|7936|Otok Ugljan|YO|9A|
+00|2907|7748|Otok Vis|YO|9A|
+00|2821|7857|Otok Zirje|YO|9A|
+01|-14439|10733|Ottawa Is.|CA|VY0|America/Iqaluit
+00|1637|11460|Otteroya|NO|LA|
+00|29984|-3700|Ouvea|NC|FK|
+00|32184|-3184|Ovalau|FJ|3D2|
+00|28084|-1225|Ovau I.|BP|H44|
+00|17687|2024|Owen I.|BM|XZ|
+00|30281|-2965|Paama|NH|YJ|
+00|22380|1916|Pacijan I.|RP|DU|
+00|-17511|4796|Padre I.|US|W5|America/Chicago
+00|28403|1266|Pakin Reef|FM|V6|Pacific/Pohnpei
+01|24200|1359|Palau Is.|PS|T8|
+00|18742|414|Palau Tinggi|MY|9M2|
+00|21320|1777|Palawan|RP|DU|
+00|26385|-3360|Palm I.|AS|VK4|Australia/Brisbane
+00|-29369|-3253|Palmerston I.|CW|E51[N]|
+00|-29179|1056|Palmyra I.|LQ|KH8|
+00|28430|1211|Pamuk Imwintiati I.|FM|V6|Pacific/Pohnpei
+00|22051|2012|Panay|RP|DU|
+00|22282|1726|Panglao I.|RP|DU|
+00|21697|1137|Pangutaran I.|RP|DU|
+00|-25325|-3446|Paraoa|FP|FO[P]|Pacific/Tahiti
+00|28276|-1488|Parara I.|BP|H44|
+00|17685|2151|Parker I.|BM|XZ|
+00|4535|6671|Paros|GR|SV8|
+00|-14426|8152|Parry I.|CA|VE3|America/Montreal
+00|21810|1046|Pata I.|RP|DU|
+00|7391|-382|Pate I.|KE|5Z|
+00|-11051|10169|Paul I.|CA|VO2|America/Goose_Bay
+00|28640|-1630|Pavuvu I.|BP|H44|
+00|-31647|5015|Pearl and Hermes Reef|US|KH6|
+00|-23455|9881|Pearse I.|CA|VE7|America/Vancouver
+00|-10733|-9232|Pebble I.|FA|VP8[F]|
+00|-14878|7520|Pelee|CA|VE3|America/Montreal
+00|24166|1265|Peleliu I.|PS|T8|
+00|7156|-930|Pemba I.|TZ|5H1|
+00|21528|4241|Peng hu Tao|TW|BV9A|
+00|-28435|-1614|Penrhyn|CW|E51[N]|
+00|30274|-2831|Pentecoe|NH|YJ|
+00|27054|-3900|Percy I.|AS|VK4|Australia/Brisbane
+00|7816|2277|Perim I.|YM|7O|
+00|-26627|10927|Perry I.|US|KL|America/Anchorage
+00|-16311|-12393|Peter I I.|AY|3Y[P]|
+00|-15924|5438|Petit Bois I.|US|W5|America/Chicago
+00|29571|-3333|Petrie Reef|NC|FK|
+00|26143|-6932|Phillip I.|AS|VK3|
+00|-16037|8683|Pie|CA|VE3|America/Montreal
+00|26576|1457|Pikelot|FM|V6|Pacific/Chuuk
+00|-13399|14171|Pim I.|CA|VY0|America/Iqaluit
+00|-23415|-4512|Pitcairn I.|PC|VP6[P]|
+00|-23373|9641|Pitt I.|CA|VE7|America/Vancouver
+00|-31712|-7971|Pitt I.|NZ|ZL7|
+00|28030|-1954|Pockington Reef|PP|P2|
+00|2058|9719|Poel|GM|DL|
+00|28481|1238|Pohnpei I.|FM|V6|Pacific/Pohnpei
+00|-16424|5274|Pointe au Fer I.|US|W5|America/Chicago
+00|21948|2672|Polillo I.|RP|DU|
+00|-23085|9488|Pooley I.|CA|VE7|America/Vancouver
+00|-23486|9714|Porcher I.|CA|VE7|America/Vancouver
+00|22402|1921|Poro I.|RP|DU|
+00|-14147|2860|Portland Rock|JM|6Y|
+00|-12141|-12187|Pourquoi I.|AY|CE9|
+00|-8102|-10921|Powell I.|AY|VP8[O]|
+00|10033|-777|Praslin I.|SE|S7|
+00|21008|3729|Pratas I.|CH|BQ9P|
+00|16866|2678|Preparis I.|BM|XZ|
+00|-17434|13150|Prescott I.|CA|VY0|America/Rankin_Inlet
+01|-30646|10292|Pribilof Is.|US|KL|America/Nome
+00|-23164|9427|Price I.|CA|VE7|America/Vancouver
+00|-13709|12200|Prince Charles I.|CA|VY0|America/Iqaluit
+00|-11374|8371|Prince Edward I.|CA|VY2|
+00|6825|-8393|Prince Edward I.|SF|ZS8|
+01|6800|-8421|Prince Edward Is.|SF|ZS8|
+00|-23902|9993|Prince of Wales I.|US|KL|America/Juneau
+00|25593|-1923|Prince of Wales I.|AS|VK4|Australia/Brisbane
+00|-17916|13069|Prince of Wales I.|CA|VY0|America/Rankin_Inlet
+00|-21458|13803|Prince Patrick I.|CA|VE8|
+00|-23194|9531|Princess Royal|CA|VE7|America/Vancouver
+00|2039|14139|Prins Karls Forland|SV|JW|
+00|9189|-1659|Providence I.|SE|S7|
+00|-13002|3924|Providenciales|TK|VP5|
+00|4603|6943|Psara|GR|SV8|
+00|-11958|3280|Puerto Rico|RQ|KP4|
+00|26345|1355|Pugue|FM|V6|Pacific/Pohnpei
+00|-29851|-1959|Pukapuka|CW|E51[N]|
+00|-24987|-2666|Pukapuka|FP|FO[P]|Pacific/Tahiti
+00|-24663|-3297|Pukarua|FP|FO[P]|Pacific/Gambier
+01|26891|1363|Pulap Atoll|FM|V6|Pacific/Chuuk
+00|24024|-757|Pulau Adi|ID|YB|
+00|22173|-1498|Pulau Adonara|ID|YB|
+00|21203|690|Pulau Ahus|ID|YB|
+00|19120|499|Pulau Airabu|ID|YB|
+00|22453|-1494|Pulau Alor|ID|YB|
+00|22895|-695|Pulau Ambelau|ID|YB|
+00|23064|-656|Pulau Ambon|ID|YB|
+00|22588|853|Pulau Ariaga|ID|YB|
+00|22603|-1481|Pulau Atauro|ID|YB|
+00|23350|-1427|Pulau Babar|ID|YB|
+00|17395|377|Pulau Babi|ID|YB|
+00|22017|-639|Pulau Bahubulu|ID|YB|
+00|18800|17|Pulau Bakung|ID|YB|
+00|21049|1308|Pulau Balambangan|MY|9M6|
+00|23383|-817|Pulau Banda|ID|YB|
+00|21090|1301|Pulau Banggi|MY|9M6|
+00|19076|-414|Pulau Bangka|ID|YB|
+00|17479|371|Pulau Bangkaru|ID|YB|
+00|21126|634|Pulau Bangkdulis|ID|YB|
+00|22160|-329|Pulau Bangkulu|ID|YB|
+00|20402|-1525|Pulau Barung|ID|YB|
+00|18650|-56|Pulau Basu|ID|YB|
+00|18725|195|Pulau Batam|ID|YB|
+00|23518|-152|Pulau Batanta|ID|YB|
+00|21920|-87|Pulau Batudaka|ID|YB|
+00|20279|-1043|Pulau Bawean|ID|YB|
+00|18625|148|Pulau Bela|ID|YB|
+00|18405|259|Pulau Bengkalis|ID|YB|
+00|22323|-1071|Pulau Binongko|ID|YB|
+00|18801|184|Pulau Bintan|ID|YB|
+00|22963|-220|Pulau Bisa|ID|YB|
+00|23023|-536|Pulau Boano|ID|YB|
+00|17730|-111|Pulau Boyo|ID|YB|
+00|17113|1027|Pulau Breueh|ID|YB|
+00|20044|463|Pulau Bruit|MY|9M8|
+00|18702|176|Pulau Bulan|ID|YB|
+00|21366|804|Pulau Bum Bum|MY|9M6|
+00|21210|634|Pulau Bunyu|ID|YB|
+00|22795|-620|Pulau Buru|ID|YB|
+00|22120|-907|Pulau Butung|ID|YB|
+00|23151|-1286|Pulau Damar|ID|YB|
+00|21831|-1949|Pulau Dana|ID|YB|
+00|17966|1119|Pulau Dayang Bunting|MY|9M2|
+00|19038|531|Pulau Djemandja|ID|YB|
+00|23001|403|Pulau Doi|ID|YB|
+00|18405|-970|Pulau Enggano|ID|YB|
+00|18763|134|Pulau Galang|ID|YB|
+00|18765|120|Pulau GalangBaru|ID|YB|
+00|23504|-86|Pulau Gam|ID|YB|
+00|20887|1084|Pulau Gaya|MY|9M6|
+00|23297|-16|Pulau Gebe|ID|YB|
+00|23653|-723|Pulau Gorong|ID|YB|
+00|23125|-644|Pulau Haruku|ID|YB|
+00|21137|1205|Pulau Jambongan|MY|9M6|
+00|21949|-948|Pulau Kabaena|ID|YB|
+00|21715|190|Pulau Kabetan|ID|YB|
+00|22823|681|Pulau Kaburuang|ID|YB|
+00|21767|-1314|Pulau Kalao|ID|YB|
+00|22275|-997|Pulau Kaledupa|ID|YB|
+00|20770|-1246|Pulau Kangean|ID|YB|
+00|23880|-624|Pulau Karas|ID|YB|
+00|19599|-288|Pulau Karimata|ID|YB|
+00|18608|190|Pulau KarimunBesar|ID|YB|
+00|19881|-1053|Pulau Karimunjawa|ID|YB|
+00|23696|-807|Pulau Kasiui|ID|YB|
+00|22895|-71|Pulau Kasruta|ID|YB|
+00|22937|8|Pulau Kayoa|ID|YB|
+00|22989|-577|Pulau Kelang|ID|YB|
+00|22895|-1452|Pulau Kisar|ID|YB|
+00|24206|-1154|Pulau Koba|ID|YB|
+00|23373|-215|Pulau Kofiau|ID|YB|
+00|21506|-1546|Pulau Komodo|ID|YB|
+00|24971|-1491|Pulau Komoran|ID|YB|
+00|22822|767|Pulau Krakelong|ID|YB|
+00|18616|139|Pulau kundur|ID|YB|
+00|22039|-619|Pulau Labengke|ID|YB|
+00|20738|957|Pulau Labuan|MY|9M6|
+00|23068|-1484|Pulau Lakor|ID|YB|
+00|17961|1145|Pulau Langkawi|MY|9M2|
+00|23735|-1292|Pulau Larat|ID|YB|
+00|17392|391|Pulau Lasia|ID|YB|
+00|21307|63|Pulau Laut|ID|YB|
+00|19227|-533|Pulau Lepar|ID|YB|
+00|22984|-1476|Pulau Leti|ID|YB|
+00|19273|-516|Pulau Liat|ID|YB|
+00|18850|-28|Pulau Lingga|ID|YB|
+00|22244|-1510|Pulau Lomblen|ID|YB|
+00|20414|-1270|Pulau Madura|ID|YB|
+00|24168|-1111|Pulau Maikoor|ID|YB|
+00|22927|58|Pulau Makian|ID|YB|
+00|23640|-741|Pulau Manawoka|ID|YB|
+00|22903|-128|Pulau Mandioli|ID|YB|
+00|22652|-335|Pulau Mangole|ID|YB|
+00|22962|-596|Pulau Manipa|ID|YB|
+00|22198|-312|Pulau Mansaleang|ID|YB|
+00|22162|-646|Pulau Manui|ID|YB|
+00|18868|178|Pulau Mapur|ID|YB|
+00|21349|405|Pulau Maratua|ID|YB|
+00|22279|-364|Pulau Masepe|ID|YB|
+00|17868|-326|Pulau Masokut|ID|YB|
+00|20819|-884|Pulau Matasiri|ID|YB|
+00|19727|-205|Pulau Maya|ID|YB|
+00|18187|-722|Pulau Mega|ID|YB|
+00|22287|-350|Pulau Melilis|ID|YB|
+00|19338|-519|Pulau Mendanau|ID|YB|
+00|18579|109|Pulau Mendo|ID|YB|
+00|22789|1004|Pulau Miangas|ID|YB|
+00|19400|540|Pulau Midai|ID|YB|
+00|23414|-337|Pulau Misool|ID|YB|
+00|23030|-1473|Pulau Moa|ID|YB|
+00|21165|-1488|Pulau Mojo|ID|YB|
+00|23684|-1213|Pulau Molu|ID|YB|
+00|23120|416|Pulau Morotai|ID|YB|
+00|19127|594|Pulau Mubur|ID|YB|
+00|18519|54|Pulau Muda|ID|YB|
+00|22055|-904|Pulau Muna|ID|YB|
+00|17733|299|Pulau Musala|ID|YB|
+00|23377|-813|Pulau Naira|ID|YB|
+00|19474|710|Pulau Natuna Besar|ID|YB|
+00|17550|188|Pulau Nias|ID|YB|
+00|18015|-480|Pulau North Pagai|ID|YB|
+00|24338|-270|Pulau Num|ID|YB|
+00|24281|-187|Pulau Numfoor|ID|YB|
+00|21181|730|Pulau Numukan|ID|YB|
+00|19606|-1392|Pulau Nusakambangan|ID|YB|
+00|22998|-276|Pulau Obi|ID|YB|
+00|22919|-252|Pulau Obilatu|ID|YB|
+00|18421|210|Pulau Padang|ID|YB|
+00|18934|-1189|Pulau Panaitan|ID|YB|
+00|23621|-723|Pulau Panjang|ID|YB|
+00|22339|-1506|Pulau Pantar|ID|YB|
+00|18620|161|Pulau Papan|ID|YB|
+00|19646|-232|Pulau Pelapis|ID|YB|
+00|22172|-251|Pulau Peleng|ID|YB|
+00|24271|-1149|Pulau Penambulai|ID|YB|
+00|19663|-216|Pulau Penebangan|ID|YB|
+00|20798|-1573|Pulau Penida|ID|YB|
+00|18047|965|Pulau Pinang|MY|9M2|
+00|18521|179|Pulau Rangsang|ID|YB|
+00|23067|422|Pulau Rau|ID|YB|
+00|18752|157|Pulau Rempang|ID|YB|
+00|21546|-1566|Pulau Rintja|ID|YB|
+00|22935|-1365|Pulau Roma|ID|YB|
+00|24219|-427|Pulau Roon|ID|YB|
+00|24157|-332|Pulau Rumberpon|ID|YB|
+00|18285|345|Pulau Rupat|ID|YB|
+00|23690|-475|Pulau Sabuda|ID|YB|
+00|21689|-1103|Pulau Salajar|ID|YB|
+00|23554|-202|Pulau Salawati|ID|YB|
+00|22800|705|Pulau Salebabu|ID|YB|
+00|22296|-368|Pulau Salue Kecil|ID|YB|
+00|22675|-401|Pulau Sanana|ID|YB|
+00|21434|-1476|Pulau Sangeang|ID|YB|
+00|22601|636|Pulau Sangihe|ID|YB|
+00|23155|-641|Pulau Saparua|ID|YB|
+00|18828|23|Pulau Sebangka|ID|YB|
+00|21199|759|Pulau Sebatik|MY|9M6|
+00|21206|738|Pulau Sebatik|ID|YB|
+00|20947|-632|Pulau Sebuku|ID|YB|
+00|22380|-360|Pulau Seho|ID|YB|
+00|23575|-1480|Pulau Selaru|ID|YB|
+00|18801|-54|Pulau Selayar|ID|YB|
+00|23565|-1355|Pulau Selu|ID|YB|
+00|18822|139|Pulau Sendjolong|ID|YB|
+00|23589|-1381|Pulau Sera|ID|YB|
+00|18550|111|Pulau Serapung|ID|YB|
+00|19628|454|Pulau Serasan|ID|YB|
+00|23208|-1480|Pulau Sermata|ID|YB|
+00|19571|-308|Pulau Serutu|ID|YB|
+00|19124|568|Pulau Siantan|ID|YB|
+00|22573|489|Pulau Siau|ID|YB|
+00|17810|-244|Pulau Siberut|ID|YB|
+00|17950|-425|Pulau Siduamata|ID|YB|
+00|21669|189|Pulau Simatang|ID|YB|
+00|17296|475|Pulau Simeule|ID|YB|
+00|18796|-91|Pulau Singkep|ID|YB|
+00|17945|-396|Pulau Sipura|ID|YB|
+00|22146|-1534|Pulau Solor|ID|YB|
+00|18059|-550|Pulau South Pagai|ID|YB|
+00|19590|526|Pulau Subi Besar|ID|YB|
+00|18680|148|Pulau Sugi|ID|YB|
+00|18665|143|Pulau Sugibawah|ID|YB|
+00|24401|-138|Pulau Supiori|ID|YB|
+00|18866|-1041|Pulau Tabuan|ID|YB|
+00|18092|-568|Pulau Taitaitanopo|ID|YB|
+00|21978|-61|Pulau Talatakoh|ID|YB|
+00|22469|-328|Pulau Taliabu|ID|YB|
+00|19361|180|Pulau TambelanBesar|ID|YB|
+00|17711|-76|Pulau Tanahbala|ID|YB|
+00|21727|-1274|Pulau Tanahjampea|ID|YB|
+00|17716|-34|Pulau Tanahmasa|ID|YB|
+00|22574|423|Pulau Tanulandang|ID|YB|
+00|21169|601|Pulau Tarakan|ID|YB|
+00|22270|-347|Pulau Telapo|ID|YB|
+00|18789|59|Pulau Temiang|ID|YB|
+00|22919|145|Pulau Ternate|ID|YB|
+00|22933|123|Pulau Tidore|ID|YB|
+00|20817|1030|Pulau Tiga|MY|9M6|
+00|21325|837|Pulau Timbun Mata|MY|9M6|
+00|18751|504|Pulau Tioman|MY|9M2|
+00|23713|-852|Pulau Tioor|ID|YB|
+00|18699|149|Pulau Tjombol|ID|YB|
+00|18491|165|Pulau Tobingtinggi|ID|YB|
+00|21951|-66|Pulau Togin|ID|YB|
+00|24171|-1178|Pulau Trangan|ID|YB|
+00|17500|384|Pulau Tuangku|ID|YB|
+00|18557|137|Pulau Tupang|ID|YB|
+00|21889|-30|Pulau Unauna|ID|YB|
+00|18629|118|Pulau Ungar|ID|YB|
+00|23447|19|Pulau Uranie|ID|YB|
+00|24187|-375|Pulau Waar|ID|YB|
+00|23540|-42|Pulau Waigeo|ID|YB|
+00|22014|-49|Pulau Waleabahi|ID|YB|
+00|21994|-43|Pulau Waleakodi|ID|YB|
+00|22244|-956|Pulau Wangiwangi|ID|YB|
+00|17153|1052|Pulau We|ID|YB|
+00|22735|-1403|Pulau Wetar|ID|YB|
+00|24243|-1203|Pulau Workai|ID|YB|
+00|23627|-1321|Pulau Wotap|ID|YB|
+00|22159|-740|Pulau Wowoni|ID|YB|
+00|23594|-1342|Pulau Wuliaru|ID|YB|
+00|23654|-1363|Pulau Yamdena|ID|YB|
+00|24509|-315|Pulau Yapen|ID|YB|
+00|24903|-1422|Pulau Yos Sudarso|ID|YB|
+00|-10989|-13056|Pullen I.|AY|CE9|
+00|17678|1891|Pulo Buda|BM|XZ|
+00|26853|1328|Pulusuk Atoll|FM|V6|Pacific/Pohnpei
+00|26878|1208|Pulusuk I.|FM|V6|Pacific/Chuuk
+00|26856|1326|Puluwat I.|FM|V6|Pacific/Pohnpei
+00|25824|-1517|Purutu I.|PP|P2|
+00|-1085|10335|Raasay|UK|GM|
+00|-27256|-3028|Raiatea|FP|FO[P]|Pacific/Tahiti
+00|-26583|-4296|Raivavae|FP|FO[A]|
+00|-28995|-1805|Rakahanga|CW|E51[N]|
+00|30945|1280|Rakaru|RM|V7|
+00|26605|-413|Rambutyo I.|PP|P2|
+00|16872|3445|Ramree I.|BM|XZ|
+00|-9670|8666|Random I.|CA|VO1|
+00|-26563|-2701|Raniroa|FP|FO[P]|Pacific/Tahiti
+00|28183|-1453|Ranongga I.|BP|H44|
+00|-32022|-5267|Raoul I.|NZ|ZL8|
+00|-25977|-4968|Rapa|FP|FO[A]|
+00|22346|2377|RapuRapu I.|RP|DU|
+00|-26099|-2911|Raraka|FP|FO[P]|Pacific/Tahiti
+00|-25651|-2892|Raroia|FP|FO[P]|Pacific/Tahiti
+00|-28762|-3820|Rarotonga|CW|E51[S]|
+00|-1121|9951|Rathlin I.|UK|GM|
+00|31199|359|Rawannawi|KR|T30|
+00|-24550|-3333|Reao|FP|FO[P]|Pacific/Gambier
+00|3394|12612|Rebbenesoy|NO|LA|
+00|30290|-3070|Recif Cook|NH|YJ|
+01|29415|-3522|Recif des Francais|NC|FK|
+00|-24030|-4069|Recif Ebrill|FP|FO[P]|Pacific/Gambier
+00|-27223|-4108|Recif Moses|FP|FO[A]|
+00|29369|-3314|Recifs D'Entrecasteaux|NC|FK|
+01|29501|-3513|Recifs de Cook|NC|FK|
+00|29809|-3567|Recifs de l'Astrolabe|NC|FK|
+00|-22496|9022|Redonda|CA|VE7|America/Vancouver
+00|-25756|-3208|Reitoru|FP|FO[P]|Pacific/Tahiti
+00|-11857|-11825|Renaldo I.|AY|CE9|
+00|28315|-1543|Rendova I.|BP|H44|
+00|28849|-2098|Rennell I.|BP|H44|
+00|-11712|11071|Resolution I.|CA|VY0|America/Pangnirtung
+00|29984|-8221|Resolution I.|NZ|ZL|
+00|9997|-3801|Reunion|RE|FR|
+00|-23648|10003|Revillagigedo I.|US|KL|America/Juneau
+00|5033|6511|Rhodes|GR|SV5|
+00|-1142|10259|Rhum|UK|GM|
+00|31120|349|Ribono|KR|T30|
+00|-24278|12458|Richards I.|CA|VE8|
+00|-19961|12331|Richardson I.|CA|VY0|America/Inuvik
+00|-27514|-4073|Rimatara|FP|FO[A]|
+00|3463|12591|Ringvassoy|NO|LA|
+01|-10980|1596|Rio Orinoco Delta Is.|VE|YV|
+00|-21471|12036|Ritch I.|CA|VE8|
+00|26085|-7323|Robbins I.|AS|VK7|
+00|-10710|-11230|Robert I.|AY|VP8[H]|
+00|-10729|-11731|Robertson I.|AY|CE9|
+00|-22407|13302|Robillard I.|CA|VE8|
+00|-23107|9465|Roderick I.|CA|VE7|America/Vancouver
+00|3068|12384|Rolla|NO|LA|
+00|4336|12775|Rolvsoya|NO|LA|
+00|21967|2230|Romblon|RP|DU|
+00|28687|-1120|Roncador Reef|BP|H44|
+00|-11085|2216|Ronde I.|GJ|J3|
+00|30036|2008|Rongelap|RM|V7|
+00|30033|2036|Rongelap Atoll|RM|V7|
+00|30140|2043|Rongerik|RM|V7|
+00|-30270|-2614|Rose I.|AQ|KH8|
+00|27747|-2048|Rossel I.|PP|P2|
+00|26137|2547|Rota I.|CQ|KH0|
+00|-13304|-12571|Rothschild I.|AY|CE9|
+00|22161|-1923|Roti|ID|YB|
+00|20808|-5760|Rottnest I.|AS|VK6|
+00|1186|9638|Rottumeroog|NL|PA|
+00|31872|-2250|Rotuma|FJ|3D2[R]|
+00|-547|10649|Rousay|UK|GM|
+00|-14187|12440|Rowley I.|CA|VY0|America/Iqaluit
+00|21480|-3120|Rowley Shoals I.|AS|VK9[R]|
+00|30333|-8417|Ruapuke I.|NZ|ZL|
+00|2420|9801|Ruegen|GM|DL|
+00|29767|2071|Rukoji|RM|V7|
+00|-13475|4262|Rum Cay|BF|C6|
+00|-27247|-4045|Rurutu|FP|FO[A]|
+00|-17737|13313|Russell I.|CA|VY0|America/Rankin_Inlet
+01|28644|-1628|Russell Is.|BP|H44|
+00|16677|2058|Rutland I.|IN|VU4|
+00|17688|2138|Sabik I.|BM|XZ|
+00|-10787|7910|Sable I.|CA|CY0|America/Halifax
+00|22093|2480|Saboon I.|RP|DU|
+00|17738|2160|Saganthit Kyun|BM|XZ|
+00|-11310|3223|Saint Barthelemy|GP|FJ|
+00|-11294|3116|Saint Christopher|SC|V4|
+00|-11651|3192|Saint Croix|VQ|KP2|
+00|-11639|5825|Saint Davids I.|BD|VP9|
+00|-11650|3301|Saint John|VQ|KP2|
+00|-1546|10406|Saint Kilda|UK|GM|
+00|-11687|3303|Saint Thomas|VQ|KP2|
+00|-11016|2386|Saint Vincent|VC|J8|
+00|26235|2732|Saipan|CQ|KH0|
+00|7544|3039|Sajid|SA|HZ|
+00|30083|-2691|Sakau|NH|YJ|
+00|-4128|3010|Sal|CV|D4|
+00|-13860|11436|Salisbury I.|CA|VY0|America/Iqaluit
+00|13001|-958|Salomon I.|IO|VQ9|
+00|-22227|8789|Saltspring I.|CA|VE7|America/Vancouver
+00|22631|1267|Samal I.|RP|DU|
+00|-13273|4155|Samana Cay|BF|C6|
+00|22502|2124|Samar|RP|DU|
+00|9551|2188|Samhah|YM|7O|
+00|4828|6790|Samos|GR|SV8|
+00|1906|10058|Samso|DA|OZ|
+00|-21324|5928|San Clemente I.|US|W6|
+00|29130|-1894|San Cristobal I.|BP|H44|
+00|28731|-1523|San Jorge I.|BP|H44|
+00|-17449|5039|San Jose I.|US|W5|America/Chicago
+00|-22153|8736|San Juan I.|US|W7|America/Los_Angeles
+01|-22096|8697|San Juan Is.|US|W7|America/Los_Angeles
+00|-21665|6129|San Miguel I.|US|W6|
+00|-21509|5985|San Nicolas|US|W6|
+00|-13408|4328|San Salvador|BF|C6|
+00|-29284|9798|Sanak I.|US|KL|America/Nome
+00|-458|10665|Sanday|UK|GM|
+00|2556|12079|Sandhornoy|NO|LA|
+00|26720|-3192|Sandy Cay I.|AS|VK4|Australia/Brisbane
+00|29247|-1950|Santa Ane|BP|H44|
+00|-21318|6012|Santa Catalina|US|W6|
+00|-21549|6125|Santa Cruz I.|US|W6|
+01|29944|-2012|Santa Cruz Is.|BP|H40|
+00|28650|-1449|Santa Isabel I.|BP|H44|
+00|-4519|6656|Santa Maria|PO|CU1|
+00|30149|-2562|Santa Maria|NH|YJ|
+00|-4530|3070|Santo Antao|CV|D4|
+00|-5047|6956|Sao Jorge|PO|CU5|
+00|-4590|6805|Sao Miguel|PO|CU2|
+00|-4381|2988|Sao Nicolau|CV|D4|
+00|-5285|176|Sao Pedro|BR|PY0S|
+00|-4251|2720|Sao Tiago|CV|D4|
+00|-4497|3033|Sao Vicente|CV|D4|
+00|22585|979|Sarangani I.|RP|DU|
+00|1616|7211|Sardinia|IT|IS|
+00|26242|3005|Sarigan I.|CQ|KH0|
+00|-12603|13782|Saunders I.|GL|OX|America/Thule
+00|-4759|-10405|Saunders I.|FA|VP8[S]|
+00|17612|2262|Saurin I.|BM|XZ|
+00|-31045|-2454|Savaii|WS|5W|
+00|28768|-1646|Savo I.|BP|H44|
+00|21932|-1893|Sawu|ID|YB|
+00|-1074|10314|Scalpay|UK|GM|
+00|-1028|10112|Scarba|UK|GM|
+00|1518|9710|Scharhorn|GM|DL|
+00|1121|9627|Schiermonnikoog|NL|PA|
+00|26688|-7614|Schouten I.|AS|VK7|
+00|30223|-13950|Scott I.|AY|CE9|
+00|21918|-2517|Scott Reef|AS|VK6|
+00|30047|-8139|Secretary I.|NZ|ZL|
+00|-31043|9417|Seguam|US|KL|America/Adak
+00|-1011|10133|Seil|UK|GM|
+00|4191|12682|Seiland|NO|LA|
+00|872|10914|Seloy|NO|LA|
+00|22214|-1844|Semau|ID|YB|
+00|3142|12475|Senja|NO|LA|
+01|28436|1214|Senyavin Is.|FM|V6|Pacific/Pohnpei
+00|21975|-2454|Seringapatam Reef|AS|VK6|
+01|17783|14331|Severnaya Zemlya|UR|UA0|Asia/Krasnoyarsk
+00|-10209|-11567|Seymour I.|AY|CE9|
+00|-2276|1356|Sherbro I.|SL|9L|
+00|27290|1325|Shichiyo I.|FM|V6|Pacific/Pohnpei
+00|26418|7882|Shikotanto|UR|UA0|Asia/Sakhalin
+00|26240|3260|Shomushon I.|CQ|KH0|
+00|28039|-1269|Shortland I.|BP|H44|
+00|-27450|10540|Shuyak I.|US|KL|America/Anchorage
+00|21755|997|Siasi I.|RP|DU|
+00|21506|860|Sibutu I.|RP|DU|
+00|22062|2229|Sibuyan I.|RP|DU|
+00|30418|2626|Sibylla|RM|V7|
+00|2527|6745|Sicily|IT|IT9|
+00|27150|-1907|Sideia I.|PP|P2|
+00|-8194|-10931|Signy I.|AY|VP8[O]|
+00|29294|-1509|Sikaiana I.|BP|H44|
+00|4485|6631|Sikinos|GR|SV8|
+00|9944|-806|Silhouette I.|SE|S7|
+00|-28669|9883|Simeonof I.|US|KL|America/Nome
+00|5007|6586|Simi|GR|SV5|
+00|-15783|8783|Simpson|CA|VE3|America/Montreal
+00|18688|243|Singapore|SN|9V|
+00|-11334|3148|Sint Eustatius|NA|PJ5|
+00|-11354|3247|Sint Maarten|NA|PJ7|
+00|22245|1655|Siquijor|RP|DU|
+00|9471|4378|Sir Bani Yas|TC|A6|
+01|24623|-2820|Sir Edward Pellew Group|AS|VK8|
+00|22773|-2499|Sir Graham Moore I.|AS|VK6|
+00|17733|1950|Sir Robert Campbell I.|BM|XZ|
+00|-27566|10278|Sitkalidak I.|US|KL|America/Anchorage
+00|-27721|10175|Sitkinak I.|US|KL|America/Anchorage
+00|2114|9999|Sjaelland|DA|OZ|
+00|3737|14529|Sjuoyane|SV|JW|
+00|4420|6997|Skiros|GR|SV8|
+00|-1119|10325|Skye|UK|GM|
+01|-14360|10353|Sleeper Is.|CA|VY0|America/Iqaluit
+00|28856|-1643|Small Nggela I.|BP|H44|
+00|-11249|-11338|Smith I.|AY|VP8[H]|
+00|-14123|10938|Smith I.|CA|VY0|America/Iqaluit
+00|-14037|6098|Smith I.|US|W4|America/New_York
+00|1448|11413|Smola|NO|LA|
+00|-14115|-13098|Smyley I.|AY|CE9|
+00|26379|-6975|Snake I.|AS|VK3|
+00|29988|-8645|Snare I.|NZ|ZL|
+00|-10291|-11600|Snow Hill I.|AY|CE9|
+00|-11037|-11296|Snow I.|AY|VP8[H]|
+00|9706|2252|Socotra|YM|7O|
+00|891|11005|Sola|NO|LA|
+00|30043|-8383|Solander I.|NZ|ZL|
+00|27597|-5415|Solitary I.|AS|VK2|Australia/Sydney
+00|-11674|5813|Somerset I.|BD|VP9|
+00|-16733|13152|Somerset I.|CA|VY0|America/Rankin_Inlet
+00|23800|955|Sonsorol Is.|PS|T8|
+00|25267|1469|Sorol|FM|V6|Pacific/Chuuk
+00|4098|12722|Soroya|NO|LA|
+00|16679|2135|South Andaman I.|IN|VU4|
+00|-11069|10222|South Aulatsivik I.|CA|VO2|America/Goose_Bay
+00|-6647|-9806|South Georgia|FA|VP8[G]|
+00|-10960|-9219|South Jason|FA|VP8[F]|
+00|-532|10581|South Ronakdsay|UK|GM|
+00|-14367|10344|South Sleeper I.|CA|VY0|America/Iqaluit
+00|-14375|9563|South Twin I.|CA|VY0|America/Iqaluit
+00|-1319|10306|South Uist|UK|GM|
+00|-15066|11615|Southampton I.|CA|VY0|America/Iqaluit
+00|-13521|-13180|Spaatz I.|AY|CE9|
+00|-10753|-9397|Speedwell I.|FA|VP8[F]|
+00|-14219|12286|Spicer I.|CA|VY0|America/Iqaluit
+00|1393|9678|Spiekeroog|GM|DL|
+00|2900|14096|Spitsbergen|SV|JW|
+00|-22903|7759|St. George I.|US|W7|America/Los_Angeles
+00|-1029|-2873|St. Helena|SH|ZD7|
+00|-15827|8781|St. Ignace|CA|VE3|America/Montreal
+00|-15110|8315|St. Joseph|CA|VE3|America/Montreal
+00|-30648|11406|St. Lawrence I.|US|KL|America/Nome
+00|-10976|2504|St. Lucia|ST|J6|
+00|-11354|3254|St. Martin|GP|FS|
+00|-31073|10882|St. Matthew I.|US|KL|America/Nome
+00|-10828|8498|St. Paul I.|CA|CY9|America/Halifax
+00|-30646|10292|St. Paul I.|US|KL|America/Nome
+00|24049|-5811|St. Peter's I.|AS|VK5|
+00|-10114|8420|St. Pierre I.|SB|FP|
+00|-15326|5339|St. Vincent I.|US|W4|America/New_York
+00|-11013|-9341|Staats I.|FA|VP8[F]|
+00|-28061|-1013|Starbuck I.|KR|T32|
+00|-10931|-12774|Steele I.|AY|CE9|
+00|-19037|13195|Stefansson I.|CA|VY0|America/Cambridge_Bay
+00|-23530|9749|Stephens I.|CA|VE7|America/Vancouver
+00|30213|-8456|Stewart I.|NZ|ZL|
+00|4091|12658|Stjernoya|NO|LA|
+00|914|10860|Store Sotra|NO|LA|
+00|27621|-4968|Stradbroke I.|AS|VK4|Australia/Brisbane
+00|-468|10641|Stronsay|UK|GM|
+00|-29255|11446|Stuart I.|US|KL|America/Nome
+00|29649|-12137|Sturge I.|AY|CE9|
+00|-23999|9948|Suemez I.|US|KL|America/Juneau
+00|1126|11237|Sula|NO|LA|
+00|22072|157|Sulawesi|ID|YB|
+00|18115|-25|Sumatra|ID|YB|
+00|21579|-1764|Sumba|ID|YB|
+00|21235|-1547|Sumbawa|ID|YB|
+00|-28287|10179|Sutwik I.|US|KL|America/Nome
+00|-29358|-2388|Suwarrow|CW|E51[N]|
+00|4807|14169|Svenskoya|SV|JW|
+00|-15105|3135|Swan Is.|HO|HR6|
+00|-23155|9459|Swindle I.|CA|VE7|America/Vancouver
+00|-30824|-801|Sydney I.|KR|T31|
+00|27364|-526|Tabar I.|PP|P2|
+01|31480|-240|Tabiteuea|KR|T30|
+00|21972|2213|Tablas I.|RP|DU|
+00|-17176|13897|Table I.|CA|VY0|America/Rankin_Inlet
+00|31396|-112|Taboiaki|KR|T30|
+00|-25760|-2941|Taenga|FP|FO[P]|Pacific/Tahiti
+00|-31626|9351|Tagalak|US|KL|America/Adak
+00|27627|-2067|Tagula I.|PP|P2|
+00|-27268|-2993|Tahaa|FP|FO[P]|Pacific/Tahiti
+00|-26059|-3040|Tahanea|FP|FO[P]|Pacific/Tahiti
+00|-25037|-1792|Tahuata|FP|FO[M]|
+00|-26034|-2831|Taiaro|FP|FO[P]|Pacific/Tahiti
+00|30532|2011|Taka Atoll|RM|V7|
+00|-26132|-2629|Takapoto|FP|FO[P]|Pacific/Tahiti
+00|-26089|-2603|Takaroa|FP|FO[P]|Pacific/Tahiti
+00|-25597|-2844|Takume|FP|FO[P]|Pacific/Tahiti
+00|-28490|-3569|Takutea|CW|E51[S]|
+00|31674|-449|Tamana|KR|T30|
+00|-32025|9316|Tanaga|US|KL|America/Adak
+00|30483|-3508|Tanna|NH|YJ|
+00|30411|2632|Taongi|RM|V7|
+00|-26536|-2730|Tapuaa|FP|FO[P]|Pacific/Tahiti
+00|-1266|10422|Taransay|UK|GM|
+00|31134|284|Tarawa|KR|T30|
+00|26415|-7560|Tasmania I.|AS|VK7|
+00|-24919|-3121|Tatakoto|FP|FO[P]|Pacific/Tahiti
+00|27354|-500|Tatau I.|PP|P2|
+00|-30508|-2565|Tau|AQ|KH8|
+00|-25472|-3126|Tauere|FP|FO[P]|Pacific/Tahiti
+00|30096|-1791|Taumako I.|BP|H40|
+00|21607|936|Tawitawi I.|RP|DU|
+00|29989|-2384|Tegua|NH|YJ|
+00|-25547|-3030|Tehuata|FP|FO[P]|Pacific/Tahiti
+00|31128|321|Teiro|KR|T30|
+00|-25663|-3116|Tekokota|FP|FO[P]|Pacific/Tahiti
+00|-24209|-4203|Temoe|FP|FO[P]|Pacific/Gambier
+00|31406|-133|Temotu|KR|T30|
+00|-24615|-3836|Tenararo|FP|FO[P]|Pacific/Gambier
+00|-24577|-3842|Tenaruga|FP|FO[P]|Pacific/Gambier
+00|17614|2303|Tenasserim I.|BM|XZ|
+00|-2972|5091|Tenerife|SP|EA8|
+00|-26612|-2687|Teohiti|FP|FO[P]|Pacific/Tahiti
+00|-25454|-2539|Tepota|FP|FO[P]|Pacific/Tahiti
+00|-4897|6969|Terceira|PO|CU3|
+00|16761|1490|Teressa I.|IN|VU4|
+00|967|9612|Terschelling|NL|PA|
+00|28359|-1574|Tetepare I.|BP|H44|
+00|-26925|-3054|Tetiaroa|FP|FO[P]|Pacific/Tahiti
+00|-26503|-2745|Tevaro|FP|FO[P]|Pacific/Tahiti
+00|-22391|8936|Texada I.|CA|VE7|America/Vancouver
+00|866|9556|Texel|NL|PA|
+00|32135|-3038|Thakau Levu Reef|FJ|3D2|
+00|17646|1766|Than Kyun|BM|XZ|
+00|4437|7323|Thasos|GR|SV8|
+00|17644|2222|Thayawthadangyi Kyun|BM|XZ|
+01|9572|2186|The Brothers|YM|7O|
+00|4576|6553|Thira|GR|SV8|
+00|24501|-6294|Thistle I.|AS|VK5|
+00|26082|-7277|Three Hummock I.|AS|VK7|
+00|30992|-6147|Three Kings Is.|NZ|ZL|
+00|-4924|-10701|Thule I.|FA|VP8[S]|
+00|25599|-1902|Thursday I.|AS|VK4|Australia/Brisbane
+00|22264|2253|Ticao I.|RP|DU|
+00|-29713|9738|Tigalda I.|US|KL|America/Nome
+00|-26659|-2693|Tikehau|FP|FO[P]|Pacific/Tahiti
+00|16850|1529|Tillanchang I.|IN|VU4|
+00|4927|6556|Tilos|GR|SV5|
+00|22550|-1592|Timor|ID|YB,4W|Asia/Dili
+00|26211|2699|Tinian I.|CQ|KH0|
+00|4523|6768|Tinos|GR|SV8|
+00|-1235|10169|Tiree|UK|GM|
+00|2939|12324|Tjeldoya|NO|LA|
+00|2094|10440|Tjorn I.|SW|SM6|
+00|2286|11873|Tjotta|NO|LA|
+00|26308|1345|Toas|FM|V6|Pacific/Pohnpei
+00|-26267|-2855|Toau|FP|FO[P]|Pacific/Tahiti
+00|-10923|2024|Tobago|TD|9Y|
+00|30001|-2417|Toga|NH|YJ|
+01|-30935|-1620|Tokelau Is.|TL|ZK3|
+00|-24308|-4167|Tokoroua|FP|FO[P]|Pacific/Gambier
+00|2312|11927|Tomma|NO|LA|
+00|-11633|3316|Tortola|VI|VP2V|
+00|27090|-4008|Townshend I.|AS|VK4|Australia/Brisbane
+00|-32369|-3414|Toyota I.|FJ|3D2|
+00|30082|-1777|Treasures I.|BP|H40|
+00|-11055|1879|Trinidad|TD|9Y|
+00|-10927|-11475|Trinity I.|AY|CE9|
+01|-2207|-6679|Tristan Da Cunha|UK|ZD9B|
+00|-2207|-6679|Tristan I.|UK|ZD9B|
+00|22713|-2475|Troughton I.|AS|VK6|
+01|27333|1322|Truk Is.|FM|V6|Pacific/Chuuk
+00|-25954|-2999|Tuanake|FP|FO[P]|Pacific/Tahiti
+00|-27010|-3694|Tubuai|FP|FO[A]|
+00|-27827|10170|Tugidak I.|US|KL|America/Anchorage
+00|28826|-1640|Tulagi I.|BP|H44|
+00|21934|1087|Tungkil I.|RP|DU|
+00|-10995|10096|Tunungayualok I.|CA|VO2|America/Goose_Bay
+00|-24937|-3750|Tureia|FP|FO[P]|Pacific/Tahiti
+01|-15814|3134|Turneffe Is.|BH|V3|
+00|27381|-3086|Turtle Islet|AS|VK4|Australia/Brisbane
+00|30108|-2802|Tutuba|NH|YJ|
+00|-30725|-2577|Tutuila|AQ|KH8|
+00|-32173|-3780|Tuvanaira|FJ|3D2|
+00|-32190|-3784|Tuvanaitholo|FJ|3D2|
+00|1002|10799|Tysnesoy|NO|LA|
+00|-25122|-1604|Ua Huka|FP|FO[M]|
+00|-25216|-1690|Ua Pa|FP|FO[M]|
+00|29114|-1846|Ugi I.|BP|H44|
+00|29816|1633|Ujae Atoll|RM|V7|
+00|28958|1773|Ujelang|RM|V7|
+00|-32210|9243|Ulak|US|KL|America/Adak
+00|29152|-1759|Ulava I.|BP|H44|
+01|25158|1790|Ulithi Atoll|FM|V6|Pacific/Chuuk
+00|26942|1547|Ulul I.|FM|V6|Pacific/Chuuk
+00|-1118|10166|Ulva|UK|GM|
+00|-31685|9338|Umak|US|KL|America/Adak
+00|26626|-1021|Umboi I.|PP|P2|
+00|-30321|9574|Umnak I.|US|KL|America/Nome
+00|-30065|9652|Unalaska I.|US|KL|America/Nome
+00|-28919|9947|Unga I.|US|KL|America/Nome
+00|-29520|9850|Unimak I.|US|KL|America/Nome
+00|-11057|2268|Union I.|VC|J8|
+00|-30914|-2508|Upolu|WS|5W|
+00|30120|-2434|Ureparapara|NH|YJ|
+00|-27407|10609|Ushagat I.|US|KL|America/Anchorage
+00|30575|2022|Utirik|RM|V7|
+00|29976|-2038|Utupua I.|BP|H40|
+00|28392|-1338|Vaghena I.|BP|H44|
+00|921|11158|Vagsoy|NO|LA|
+00|-24597|-3840|Vahaga|FP|FO[P]|Pacific/Gambier
+00|-24987|-3377|Vahitahi|FP|FO[P]|Pacific/Tahiti
+00|-25058|-3482|Vairaatea|FP|FO[P]|Pacific/Tahiti
+00|32165|-1345|Vaitupu|TV|T2|
+00|-22257|8829|Valdes I.|CA|VE7|America/Vancouver
+00|-25047|-3745|Vanavana|FP|FO[P]|Pacific/Tahiti
+00|-22652|8926|Vancouver I.|CA|VE7|America/Vancouver
+00|28441|-1555|Vangunu I.|BP|H44|
+00|30031|-2094|Vanikoro I.|BP|H40|
+00|3578|12632|Vanna|NO|LA|
+00|-15091|11858|Vansittart I.|CA|VY0|America/Iqaluit
+00|-32214|-3102|Vanua Balavu|FJ|3D2|
+00|32263|-2985|Vanua Levu|FJ|3D2|
+00|32179|-3110|Vanua Levu Barrier Reef|FJ|3D2|
+00|-22039|8538|Vashon I.|US|W7|America/Los_Angeles
+00|30148|-2489|Vasnua Lava|NH|YJ|
+00|28805|-1602|Vatilaul I.|BP|H44|
+00|-32078|-3571|Vatoa I.|FJ|3D2|
+00|31975|-3338|Vatulele|FJ|3D2|
+00|2149|11817|Vega|NO|LA|
+00|-10327|-11491|Vega I.|AY|CE9|
+00|28198|-1397|Vella Lavella I.|BP|H44|
+00|2285|10072|Ven I.|SW|SM7|
+00|2495|12278|Vestvagoya|NO|LA|
+00|-19800|12765|Victoria I.|CA|VE8,VY0|America/Inuvik
+00|1101|11263|Vigra|NO|LA|
+00|-11588|3325|Virgin Gorda|VI|VP2V|
+01|22252|1708|Visayan Is.|RP|DU|
+00|-4887|-10207|Visokoi I.|FA|VP8[S]|
+00|32036|-3202|Viti Levu|FJ|3D2|
+00|899|9587|Vlieland|NL|PA|
+00|4178|10621|Vormsi||ES3|
+00|-27441|-1808|Vostok I.|KR|T32|
+00|29994|3475|Wake I.|WQ|KH9|
+00|30407|-4074|Walpole I.|NC|FK|
+00|1424|9681|Wangerooge|GM|DL|
+00|8651|5399|Warbah|KU|9K|
+00|24724|-6212|Wardang I.|AS|VK5|
+00|24015|-2090|Warruwi (S. Goulburn) I.|AS|VK8|
+00|-28872|847|Washington I.|KR|T32|
+00|-15644|8168|Washington I.|US|W8|America/Menominee
+00|31882|-3111|Waya|FJ|3D2|
+00|-10980|-9336|Weddell I.|FA|VP8[F]|
+01|25095|-3019|Wellesley Is.|AS|VK4|Australia/Brisbane
+01|24600|-2022|Wessel Is.|AS|VK8|
+00|-13042|3901|West Caicos|TK|VP5|
+00|-10822|-9322|West Falkland|FA|VP8[F]|
+00|26414|1455|West Faya|FM|V6|Pacific/Pohnpei
+00|-10925|-9246|West Point I.|FA|VP8[F]|
+00|-532|10673|Westray|UK|GM|
+00|-22058|8670|Whidbey I.|US|W7|America/Los_Angeles
+00|30122|-14060|White I.|AY|CE9|
+00|-15278|11841|White I.|CA|VY0|America/Iqaluit
+00|31896|-6754|White I.|NZ|ZL|
+01|26820|-3636|Whitsunday Is.|AS|VK4|Australia/Lindeman
+00|13175|-122|Wilingili|MV|8Q|
+00|27003|-2919|Willis I.|AS|VK9[W]|
+00|-6880|-9723|Willis I.|FA|VP8[G]|
+00|-28986|-3713|Winslow Reef|CW|E51[S]|
+00|-31498|-286|Winslow Reef|KR|T31|
+00|9195|-1591|Wizard Reef|SE|S7|
+00|25905|1329|Woleai I.|FM|V6|Pacific/Chuuk
+00|-13757|7949|Wolfe I.|CA|VE3|America/Montreal
+00|27497|-1638|Woodlark I.|PP|P2|
+00|21960|-6111|Woody I.|AS|VK6|
+00|29878|1819|Wotho|RM|V7|
+00|30342|1338|Wotja|RM|V7|
+00|30643|1719|Wotje|RM|V7|
+00|-32399|12816|Wrangel I.|UR|UA0|Asia/Anadyr
+00|-23787|10134|Wrangell I.|US|KL|America/Juneau
+00|25711|-308|Wuvulu I.|PP|P2|
+00|32095|-3026|Yadua|FJ|3D2|
+00|24865|1710|Yap I.|FM|V6|Pacific/Chuuk
+00|31952|-3017|Yasawa|FJ|3D2|
+00|29241|-11934|Young I.|AY|CE9|
+00|-17764|13378|Young I.|CA|VY0|America/Rankin_Inlet
+00|1977|11686|Ytre Vikna|NO|LA|
+00|-30726|9471|Yunaska|US|KL|America/Adak
+00|17677|1821|Zadetkale Kyun|BM|XZ|
+00|17677|1791|Zadetkyi|BM|XZ|
+00|7088|-1097|Zanzibar|TZ|5H1|
+00|-23910|10142|Zarembo I.|US|KL|America/Juneau
+00|-4962|-10133|Zavodovski I.|FA|VP8[S]|
+00|8426|14516|Zemlya Aleksandry|UR|RI1FJ|
+00|8853|14489|Zemlya Georga|UR|RI1FJ|
+00|10936|14516|Zemlya Vilcheka|UR|RI1FJ|

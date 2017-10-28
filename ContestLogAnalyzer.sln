@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContestLogAnalyzer", "ContestLogAnalyzer\ContestLogAnalyzer.csproj", "{471524A9-AA7E-488B-AE71-E2371C578C75}"
 EndProject
@@ -16,6 +16,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalysisEngine", "AnalysisEngine\AnalysisEngine.csproj", "{32EFD3E7-8D94-44BA-940F-E0F807EDCA99}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrintEngine", "PrintEngine\PrintEngine.csproj", "{0829F3EA-1697-4323-9FC6-E405634ECFAB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Support", "Support", "{0946721F-78BF-45D7-9B8C-472357D2F1FA}"
+	ProjectSection(SolutionItems) = preProject
+		Support\CallParser\Prefix.lst = Support\CallParser\Prefix.lst
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -101,5 +106,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {647D50D9-9D24-406C-B0EE-447837C29FBE}
 	EndGlobalSection
 EndGlobal

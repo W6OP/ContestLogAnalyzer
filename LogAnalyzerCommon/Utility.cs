@@ -148,7 +148,7 @@ namespace W6OP.ContestLogAnalyzer
             foreach (char c in s)
                 if (c != ' ' || lastChar != ' ')
                     sb.Append(lastChar = c);
-            return sb.ToString();
+            return sb.ToString().Trim();
         }
     } // end class
 }
