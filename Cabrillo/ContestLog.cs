@@ -151,6 +151,12 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        // used for the HQP
+        public int TotalPoints { get; set; }
+
+        // for determining multipliers for HQP
+        public bool  IsHQPEntity { get; set; }
+
         /// <summary>
         /// Holds the soap box comment the log owner made
         /// </summary>

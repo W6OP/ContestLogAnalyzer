@@ -184,7 +184,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             Enum.TryParse(ComboBoxSelectContest.SelectedValue.ToString(), out _ActiveContest);
 
-            _LogProcessor._ActiveContest = _ActiveContest;
+            _LogProcessor.InitializeLogProcessor(_ActiveContest);
 
             switch (_ActiveContest)
             {

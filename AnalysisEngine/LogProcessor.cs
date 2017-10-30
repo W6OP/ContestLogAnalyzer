@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CallParser;
 using W6OP.PrintEngine;
+using NetworkLookup;
 
 namespace W6OP.ContestLogAnalyzer
 {
@@ -20,6 +21,7 @@ namespace W6OP.ContestLogAnalyzer
         //public event ErrorRaised OnErrorRaised;
 
         public PrintManager _PrintManager = null;
+        public QRZ _QRZ = null;
 
         public string _FailReason { get; set; }
 
@@ -44,11 +46,20 @@ namespace W6OP.ContestLogAnalyzer
         {
             _FailingLine = "";
             _WorkingLine = "";
-
-            _Parser = new CallParser.CallsignParser();
-            _Parser.PrefixFile = @"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"; //"prefix.lst";  // @"C:\Users\pbourget\Documents\Visual Studio 2012\Projects\Ham Radio\DXACollector\Support\CallParser\prefix.lst";
         }
 
+        public void InitializeLogProcessor(ContestName contestName)
+        {
+            _ActiveContest = contestName;
+
+            if (_ActiveContest == ContestName.HQP)
+            {
+                _Parser = new CallParser.CallsignParser();
+                _Parser.PrefixFile = @"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"; //"prefix.lst";  // @"C:\Users\pbourget\Documents\Visual Studio 2012\Projects\Ham Radio\DXACollector\Support\CallParser\prefix.lst";
+
+                _QRZ = new QRZ();
+            }
+        }
         /// <summary>
         /// Create a list of all of the log files in the working folder. Once the list is
         /// filled pass the list on to another thread.
@@ -232,7 +243,7 @@ namespace W6OP.ContestLogAnalyzer
                     // later break out to nwe method and add switch statement
                     if (_ActiveContest == ContestName.HQP)
                     {
-                        SetDXCCInformation(contestLog.QSOCollection);
+                        SetDXCCInformation(contestLog.QSOCollection, contestLog);
                     }
 
 
@@ -257,99 +268,126 @@ namespace W6OP.ContestLogAnalyzer
         /// Call parser handling
         /// </summary>
         /// <param name="qsoCollection"></param>
-        private void SetDXCCInformation(List<QSO> qsoCollection)
+        private void SetDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
         {
             CallParser.PrefixInfo prefixInfo = null;
             bool isValidHQPEntity = false;
-            // HQP logs are backwards - need to fix this elsewhere eventually
-            //string ContactName = null;
-            //string OperatorName = null;
-            //string ContactCall = null;
-            //string OperatorCall = null;
+            string[] info = new string[2] { "0", "0" };
+            //HashSet<string> qsoSet = new HashSet<string>();
 
+            contestLog.IsHQPEntity = false;
+            contestLog.TotalPoints = 0;
 
             foreach (QSO qso in qsoCollection)
             {
+                info = new string[2] { "0", "0" };
+
                 qso.OperatorCountry = qso.OperatorName;
                 qso.DXCountry = qso.ContactName;
 
-                isValidHQPEntity = Enum.IsDefined(typeof(HQPMults), qso.OperatorName);
+                qso.HQPPoints = GetPoints(qso.Mode);
 
-                // if op name not in enum list of Hawaii entities
-                if (!isValidHQPEntity && qso.ContactName == "DX")
+                qso.IsHQPEntity = false;
+
+                isValidHQPEntity = Enum.IsDefined(typeof(HQPMults), qso.OperatorCountry);
+                contestLog.IsHQPEntity = isValidHQPEntity;
+
+                // -----------------------------------------------------------------------------------
+                // DX station contacting Hawaiin station
+                // if contact name (DXCountry) not in enum list of Hawaii entities (HIL, MAU, etc.)
+                // QSO: 14242 PH 2017-08-26 1830 N5KXI 59 OK KH7XS 59  DX
+                // this QSO is invalid - complete
+                if (!isValidHQPEntity && qso.DXCountry == "DX")
                 {
-                    qso.EntityIsInValid = true;
+                    qso.EntityIsInValid = true;  
                 }
 
-                if (isValidHQPEntity && qso.ContactName == "DX")
+                // -----------------------------------------------------------------------------------
+                // Hawaiin station contacts a non Hawaiin station and puts "DX" as country instead of actual country
+                // QSO:  7039 CW 2017-08-26 0524 AH7U 599 LHN ZL3PAH 599 DX
+                if (isValidHQPEntity)
                 {
-                    prefixInfo = GetPrefixInformation(qso.ContactCall);
+                    qso.HQPEntity = qso.OperatorCountry;
+                    qso.IsHQPEntity = isValidHQPEntity;
 
-                    if (prefixInfo != null && prefixInfo.Territory == "United States of America")
+                    if (qso.DXCountry == "DX")
                     {
-                        //    info = QRZLookup(call, info);
+                        prefixInfo = GetPrefixInformation(qso.ContactCall);
+
+                        if (prefixInfo != null)
+                        {
+                            if (prefixInfo.Territory != null)
+                            {
+                                qso.DXCountry = prefixInfo.Territory.ToString();
+
+                                if (qso.DXCountry == "Canada" || qso.DXCountry == "United States of America")
+                                {
+                                    info = _QRZ.QRZLookup(qso.ContactCall, info);
+                                    qso.DXCountry = info[0];
+                                }
+                            }
+                        }
                     }
 
-                    if (prefixInfo != null)
-                    {
-                        if (prefixInfo.Territory != null)
-                        {
-                            qso.DXCountry = prefixInfo.Territory.ToString();
-                            qso.ContactName = qso.DXCountry; // is this correct???
-                        }
-
-                        if (prefixInfo.Province != null)
-                        {
-                            qso.DXProvince = prefixInfo.Province.ToString();
-                            qso.ContactName = qso.DXProvince; // is this correct???
-                        }
-
-                        if (prefixInfo.ProvinceCode != null)
-                        {
-                            qso.DXProvinceCode = prefixInfo.ProvinceCode.ToString();
-                            qso.ContactName = qso.DXProvinceCode; // is this correct???
-                        }
-
-                        if (prefixInfo.City != null)
-                        {
-                            qso.DXCity = prefixInfo.City.ToString();
-                        }
-                    }
+                    // query in scoring or count will be off if dupes eliminated
+                    //contestLog.TotalPoints += 1;   
                 }
 
-               if (!isValidHQPEntity && qso.OperatorName == "DX")
+                // -----------------------------------------------------------------------------------
+                // Non Hawaii log uses "DX" for their own location (Op Name) instead of their real country
+                // HI8A.log - QSO: 14000 CW 2017-08-27 1712 HI8A 599 DX KH6LC 599 HIL
+                if (!isValidHQPEntity && qso.Status != QSOStatus.InvalidQSO)
                 {
-                    prefixInfo = GetPrefixInformation(qso.OperatorCall);
-
-                    //if (prefixInfo != null && prefixInfo.Territory == "United States of America")
-                    //{
-                    //    //    info = QRZLookup(call, info);
-                    //}
-
-                    if (prefixInfo != null)
+                    if (qso.OperatorCountry == "DX")
                     {
-                        if (prefixInfo.Territory != null)
-                        {
-                            qso.OperatorCountry = prefixInfo.Territory.ToString();
-                        }
+                        prefixInfo = GetPrefixInformation(qso.OperatorCall);
 
-                        if (prefixInfo.Province != null)
+                        if (prefixInfo != null)
                         {
-                            qso.OperatorProvince = prefixInfo.Province.ToString();
-                        }
-
-                        if (prefixInfo.ProvinceCode != null)
-                        {
-                            qso.OperatorProvinceCode = prefixInfo.ProvinceCode.ToString();
-                        }
-
-                        if (prefixInfo.City != null)
-                        {
-                            qso.OperatorCity = prefixInfo.City.ToString();
+                            if (prefixInfo.Territory != null)
+                            {
+                                qso.OperatorCountry = prefixInfo.Territory.ToString();
+                                if (qso.DXCountry == "Canada" || qso.DXCountry == "United States of America")
+                                {
+                                    info = _QRZ.QRZLookup(qso.ContactCall, info);
+                                    qso.DXCountry = info[0];
+                                }
+                            }
                         }
                     }
                 }
             }
+        }
+
+        // determine points by mode for the HQP
+        private int GetPoints(string mode)
+        {
+            Int32 points = 0;
+            CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), mode);
+
+            switch (catMode)
+            {
+                case CategoryMode.CW:
+                    points = 3;
+                    break;
+                case CategoryMode.RTTY:
+                    points = 3;
+                    break;
+                case CategoryMode.RY:
+                    points = 3;
+                    break;
+                case CategoryMode.PH:
+                    points = 2;
+                    break;
+                case CategoryMode.SSB:
+                    points = 2;
+                    break;
+                default:
+                    points = 0;
+                    break;
+            }
+
+            return points;
         }
 
         private PrefixInfo GetPrefixInformation(string call)

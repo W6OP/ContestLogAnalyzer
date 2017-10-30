@@ -343,25 +343,9 @@ namespace W6OP.ContestLogAnalyzer
         //    set { _ReceivedSerialNumber = value; }
         //}
 
-        public Int32 DXCC { get; set; }
-
         public string DXCountry { get; set; }
 
-        public string DXProvince { get; set; }
-
-        public string DXProvinceCode { get; set; }
-
-        public string DXCity { get; set; }
-
-        public string OperatorDXCC { get; set; }
-
         public string OperatorCountry { get; set; }
-
-        public string OperatorProvince { get; set; }
-
-        public string OperatorProvinceCode { get; set; }
-
-        public string OperatorCity { get; set; }
 
         /// <summary>
         /// For HQP contest
@@ -372,6 +356,11 @@ namespace W6OP.ContestLogAnalyzer
         /// For HQP Contest
         /// </summary>
         public string HQPEntity { get; set; }
+
+        /// <summary>
+        /// For HQP Contest
+        /// </summary>
+        public bool IsHQPEntity { get; set; }
 
         private string _ContactCall;
         public string ContactCall

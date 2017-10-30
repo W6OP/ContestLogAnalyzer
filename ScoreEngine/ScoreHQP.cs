@@ -36,9 +36,18 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     ValidateDuplicates(contestLog);
 
-                    MarkMultipliers(contestLog);
+                    if (contestLog.IsHQPEntity)
+                    {
+                        // everthing is a multiplier
+                        MarkMultipliersHQP(contestLog);
+                    }
+                    else
+                    {
+                        // one per band/mode (total 3 per band)
+                        MarkMultipliersNonHQP(contestLog);
+                    }
 
-                    //AddPoints(contestLog);
+                    TotalHQPoints(contestLog);
 
                     CalculateScore(contestLog);
 
@@ -48,9 +57,20 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        private void AddPoints(ContestLog contestLog)
+        /// <summary>
+        /// Look through all the qsos and total up all the points.
+        /// </summary>
+        /// <param name="contestLog"></param>
+        private void TotalHQPoints(ContestLog contestLog)
         {
-            
+            List<QSO> qsoList = contestLog.QSOCollection;
+
+            List<QSO> query = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+
+            foreach (var qso in query)
+            {
+                contestLog.TotalPoints += qso.HQPPoints;
+            }
         }
 
         /// <summary>
@@ -61,7 +81,8 @@ namespace W6OP.ContestLogAnalyzer
         /// QSO: 	14033	CW	2015-09-05	1313	AA3B	145	BUD	I5EFO	15	EMIL	This is a duplicate QSO
         /// QSO: 	14000	CW	2015-09-05	1313	I5EFO	15	EMIL AA3B	88	BUD
         /// 
-        /// MOVE THIS - should be right after we check for dupes in loganalyser.cs
+        /// MOVE THIS - should be right after we check for dupes in loganalyser.cs ???
+        /// Each station can be worked three times per band using each mode - SSB, CW and Digital
         /// </summary>
         /// <param name="contestLog"></param>
         private void ValidateDuplicates(ContestLog contestLog)
@@ -77,6 +98,7 @@ namespace W6OP.ContestLogAnalyzer
                                                         q.OperatorCall == q.MatchingQSO.ContactCall &&
                                                         q.ContactName == q.MatchingQSO.OperatorName &&
                                                         q.OperatorName == q.MatchingQSO.ContactName &&
+                                                        q.Mode == q.MatchingQSO.Mode &&
                                                         q.Status != QSOStatus.ValidQSO).ToList();
 
             if (invalidQSOs.Count > 1)
@@ -103,29 +125,52 @@ namespace W6OP.ContestLogAnalyzer
         /// Find all the calls for the session. For each call see if it is valid.
         /// If it is a valid call set it as a multiplier.
         /// 
-        /// Multipliers are awarded for working each Hawai‘i Multiplier on each band, regardless 
-        ///of mode.The maximum possible is 84 (6 Bands × 14 Hawai‘i Multipliers = 84).
         /// </summary>
         /// <param name="qsoList"></param>
-        private void MarkMultipliers(ContestLog contestLog)
+        private void MarkMultipliersHQP(ContestLog contestLog)
         {
             List<QSO> qsoList = contestLog.QSOCollection;
 
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Status, x.Mode, x.DXCountry })
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.DXCountry, x.Status })
              .Where(g => g.Count() >= 1)
              .Select(y => y.Key)
              .ToList();
 
             foreach (var qso in query)
             {
-                List<QSO> multiList = qsoList.Where(item => item.DXCountry != "Hawaii" && item.ContactCall == qso.ContactCall && item.Mode == qso.Mode && item.Status == QSOStatus.ValidQSO).ToList();
+                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.DXCountry == qso.DXCountry && item.Status == QSOStatus.ValidQSO).ToList();
 
                 if (multiList.Any())
                 {
                     // now set the first one as a multiplier
                     multiList.First().IsMultiplier = true;
+                }
+            }
+        }
 
-                    // add points for mode
+        /// <summary>
+        /// Multipliers are awarded for working each Hawai‘i Multiplier on each band, regardless 
+        /// of mode.The maximum possible is 84 (6 Bands × 14 Hawai‘i Multipliers = 84).
+        /// </summary>
+        /// <param name="contestLog"></param>
+        private void MarkMultipliersNonHQP(ContestLog contestLog)
+        {
+            List<QSO> qsoList = contestLog.QSOCollection;
+
+            // target is HPQ
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Status, x.Band, x.Mode })
+             .Where(g => g.Count() >= 1)
+             .Select(y => y.Key)
+             .ToList();
+
+            foreach (var qso in query)
+            {
+                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Status == QSOStatus.ValidQSO && item.Band == qso.Band && item.Mode == qso.Mode).ToList();
+
+                if (multiList.Any())
+                {
+                    // now set the first one as a multiplier
+                    multiList.First().IsMultiplier = true;
                 }
             }
         }
@@ -144,25 +189,18 @@ namespace W6OP.ContestLogAnalyzer
             totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
             multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
 
-            //if (!qso.HasMatchingQso)
-            //{
-            //}
-            // need to subtract dupes and invalid logs
-            //uniqueCount = contestLog.QSOCollection
-            //    .Where(q => q.Status == QSOStatus.ValidQSO)
-            //    .GroupBy(p=> p.ContactCall, StringComparer.OrdinalIgnoreCase)
-            //    .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase).Count();
-
             contestLog.Multipliers = multiplierCount;
             if (multiplierCount != 0)
             {
-                contestLog.ActualScore = totalValidQSOs * multiplierCount;
+                if (!contestLog.IsHQPEntity)
+                {
+                    if (contestLog.TotalPoints > 84)
+                    {
+                        contestLog.TotalPoints = 84;
+                    }
+                }
+                contestLog.ActualScore = multiplierCount * contestLog.TotalPoints;
             }
-            else
-            {
-                contestLog.ActualScore = totalValidQSOs;
-            }
-
         }
     } // end class
 }

@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Support", "Support", "{0946
 		Support\CallParser\Prefix.lst = Support\CallParser\Prefix.lst
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkLookup", "NetworkLookup\NetworkLookup.csproj", "{F34C4D57-5CC5-48E2-8873-EF483ECD8254}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +105,18 @@ Global
 		{0829F3EA-1697-4323-9FC6-E405634ECFAB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{0829F3EA-1697-4323-9FC6-E405634ECFAB}.Release|x86.ActiveCfg = Release|Any CPU
 		{0829F3EA-1697-4323-9FC6-E405634ECFAB}.Release|x86.Build.0 = Release|Any CPU
+		{F34C4D57-5CC5-48E2-8873-EF483ECD8254}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F34C4D57-5CC5-48E2-8873-EF483ECD8254}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F34C4D57-5CC5-48E2-8873-EF483ECD8254}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F34C4D57-5CC5-48E2-8873-EF483ECD8254}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F34C4D57-5CC5-48E2-8873-EF483ECD8254}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F34C4D57-5CC5-48E2-8873-EF483ECD8254}.Debug|x86.Build.0 = Debug|Any CPU
+		{F34C4D57-5CC5-48E2-8873-EF483ECD8254}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F34C4D57-5CC5-48E2-8873-EF483ECD8254}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F34C4D57-5CC5-48E2-8873-EF483ECD8254}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F34C4D57-5CC5-48E2-8873-EF483ECD8254}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F34C4D57-5CC5-48E2-8873-EF483ECD8254}.Release|x86.ActiveCfg = Release|Any CPU
+		{F34C4D57-5CC5-48E2-8873-EF483ECD8254}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
