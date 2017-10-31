@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?define ProductVersion = "1.0.48"?>
+<?define ProductVersion = "1.0.51"?>
 <?define ProductUpgradeCode = "e7d24a3a-1258-402f-8cbc-8a4a603f6542"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Product Id="*" Name="Contest Log Analzer" Language="1033" Version="$(var.ProductVersion)" Manufacturer="W6OP" UpgradeCode="$(var.ProductUpgradeCode)">
@@ -33,15 +33,17 @@
     
 		<Feature Id="ProductFeature" Title="ContestLogAnalzer" Level="1" Description='Setup program for the W6OP Contest Log Analyzer.' ConfigurableDirectory='INSTALLFOLDER'>
 			<ComponentGroupRef Id="ProductComponents" />
-     <ComponentRef Id="ApplicationShortcut" />
+      <ComponentRef Id="ApplicationShortcut" />
+      <ComponentRef Id="CommonComponents" />
 		</Feature>
 	</Product>
 
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFilesFolder">
-        <Directory Id="W6OP" Name="W6OP">
-				  <Directory Id="INSTALLFOLDER" Name="Contest Log Analzer" />
+         <Directory Id="W6OP" Name="W6OP">
+			      <Directory Id="INSTALLFOLDER" Name="Contest Log Analzer" />
+            <Directory Id="W6OPCommonFolder" Name="W6OP Common" />
         </Directory>
 			</Directory>
       <Directory Id="ProgramMenuFolder">
@@ -60,11 +62,13 @@
        <File Id='AnalysisEngine' Name='AnalysisEngine.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\AnalysisEngine.dll' KeyPath='no'></File>
        <File Id='Cabrillo' Name='Cabrillo.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\Cabrillo.dll' KeyPath='no'></File>
        <File Id='ScoreEngine' Name='ScoreEngine.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\ScoreEngine.dll' KeyPath='no'></File>
+       <File Id='NetworkLookup' Name='NetworkLookup.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\NetworkLookup.dll' KeyPath='no'></File>
        <File Id='PrintEngine' Name='PrintEngine.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\PrintEngine.dll' KeyPath='no'></File>
        <File Id='itextsharp' Name='itextsharp.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\itextsharp.dll' KeyPath='no'></File>
        <File Id='csvhelper' Name='csvhelper.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\csvhelper.dll' KeyPath='no'></File>
        <File Id='DocumentFormat.OpenXml' Name='DocumentFormat.OpenXml.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\DocumentFormat.OpenXml.dll' KeyPath='no'></File>
        <File Id='Licensertf' Name='License.rtf' DiskId='1' Source='$(var.ContestLogAnalyzer.ProjectDir)License.rtf'/>
+       <File Id='Prefixlst' Name='Prefix.lst' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\DXACollector\Support\Prefix.lst'/>
      </Component> 
 		</ComponentGroup>
 	</Fragment>
@@ -79,6 +83,44 @@
                   Target="[#ContestLogAnalyzer]"
                   WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
         <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+
+  <!-- http://wix.tramontana.co.hu/tutorial/com-expression-syntax-miscellanea/components-of-a-different-color -->
+  <!--Typelibs are supported directly in WiX, there is no need to use Heat or any other tool to gather all their internal information:-->
+  <Fragment Id="CommonFilesLocation">
+    <DirectoryRef Id="W6OPCommonFolder">
+      <Component Id="CommonComponents" Guid="c7b73ede-fe01-4586-b0a8-46c0665afb71">
+        <File Id="fil0AB9ABF09725DE860C2A8A92ECD981D1" Source="C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\DXAPlayer\DXAPlayer\Support\CallParser\CallPars.dll">
+          <TypeLib Id="{E54E4420-0CBE-4824-A6EB-1D2838EA6970}" Description="CallPars Library" HelpDirectory="TARGETDIR" Language="0" MajorVersion="1" MinorVersion="0">
+            <Class Id="{563E172C-AB98-4F39-BB73-5449B703897F}" Context="InprocServer32" Description="CallsignParser Object" ThreadingModel="apartment" Version="1.0">
+              <ProgId Id="CallPars.CallsignParser" Description="CallsignParser Object" />
+            </Class>
+            <Interface Id="{4F41B504-3BA8-4509-93B4-892E74D15BF8}" Name="ICallsignParser" ProxyStubClassId32="{00020424-0000-0000-C000-000000000046}" />
+            <Interface Id="{BF673154-0E73-43A0-8F0A-D9786494D059}" Name="IPrefixInfo" ProxyStubClassId32="{00020424-0000-0000-C000-000000000046}" />
+          </TypeLib>
+        </File>
+
+        <File Id='fil2083C4B279065FBF6F1F3D446462AB28' Name='CallParser.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\DXAPlayer\DXAPlayer\Support\CallParser\CallParser.dll'></File>
+        <RegistryValue Root="HKCR" Key="CLSID\{3FCF29DF-953A-49A9-9AC1-E572884ED1CE}\InprocServer32\1.0.0.0" Name="Class" Value="CallParser.PrefixInfoClass" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{3FCF29DF-953A-49A9-9AC1-E572884ED1CE}\InprocServer32\1.0.0.0" Name="Assembly" Value="CallParser, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{3FCF29DF-953A-49A9-9AC1-E572884ED1CE}\InprocServer32\1.0.0.0" Name="RuntimeVersion" Value="v4.0.30319" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{3FCF29DF-953A-49A9-9AC1-E572884ED1CE}\InprocServer32\1.0.0.0" Name="CodeBase" Value="file:///[#fil2083C4B279065FBF6F1F3D446462AB28]" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{3FCF29DF-953A-49A9-9AC1-E572884ED1CE}\InprocServer32" Name="Class" Value="CallParser.PrefixInfoClass" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{3FCF29DF-953A-49A9-9AC1-E572884ED1CE}\InprocServer32" Name="Assembly" Value="CallParser, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{3FCF29DF-953A-49A9-9AC1-E572884ED1CE}\InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{3FCF29DF-953A-49A9-9AC1-E572884ED1CE}\InprocServer32" Name="CodeBase" Value="file:///[#fil2083C4B279065FBF6F1F3D446462AB28]" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{563E172C-AB98-4F39-BB73-5449B703897F}\InprocServer32\1.0.0.0" Name="Class" Value="CallParser.CallsignParserClass" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{563E172C-AB98-4F39-BB73-5449B703897F}\InprocServer32\1.0.0.0" Name="Assembly" Value="CallParser, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{563E172C-AB98-4F39-BB73-5449B703897F}\InprocServer32\1.0.0.0" Name="RuntimeVersion" Value="v4.0.30319" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{563E172C-AB98-4F39-BB73-5449B703897F}\InprocServer32\1.0.0.0" Name="CodeBase" Value="file:///[#fil2083C4B279065FBF6F1F3D446462AB28]" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{563E172C-AB98-4F39-BB73-5449B703897F}\InprocServer32" Name="Class" Value="CallParser.CallsignParserClass" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{563E172C-AB98-4F39-BB73-5449B703897F}\InprocServer32" Name="Assembly" Value="CallParser, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{563E172C-AB98-4F39-BB73-5449B703897F}\InprocServer32" Name="RuntimeVersion" Value="v4.0.30319" Type="string" Action="write" />
+        <RegistryValue Root="HKCR" Key="CLSID\{563E172C-AB98-4F39-BB73-5449B703897F}\InprocServer32" Name="CodeBase" Value="file:///[#fil2083C4B279065FBF6F1F3D446462AB28]" Type="string" Action="write" />
+        <RemoveFolder Id='W6OPCommonFolder' Directory='W6OP' On='uninstall' />
         <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </DirectoryRef>

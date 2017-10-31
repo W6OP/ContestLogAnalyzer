@@ -144,6 +144,8 @@ copy "$(TargetDir)/LogAnalyzerCommon.dll" ..\..\..\Deploy
 copy "$(TargetDir)/LogAnalyzerCommon.pdb" ..\..\..\Deploy
 copy "$(TargetDir)/ScoreEngine.dll" ..\..\..\Deploy
 copy "$(TargetDir)/ScoreEngine.pdb" ..\..\..\Deploy
+copy "$(TargetDir)/NetworkLookup.dll" ..\..\..\Deploy
+copy "$(TargetDir)/NetworkLookup.pdb" ..\..\..\Deploy
 copy "$(TargetDir)/AnalysisEngine.dll" ..\..\..\Deploy
 copy "$(TargetDir)/AnalysisEngine.pdb" ..\..\..\Deploy
 copy "$(TargetDir)/PrintEngine.dll" ..\..\..\Deploy
