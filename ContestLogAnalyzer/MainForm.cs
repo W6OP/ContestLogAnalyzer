@@ -101,17 +101,11 @@ namespace W6OP.ContestLogAnalyzer
             //    _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
             //}
 
-            if (_PrintManager == null)
-            {
-                _PrintManager = new PrintManager();
-                _LogProcessor._PrintManager = _PrintManager;
-            }
-
-            if (_PrintManager == null)
-            {
-                _PrintManager = new PrintManager();
-                _LogProcessor._PrintManager = _PrintManager;
-            }
+            //if (_PrintManager == null)
+            //{
+            //    _PrintManager = new PrintManager();
+            //    _LogProcessor._PrintManager = _PrintManager;
+            //}
 
             ComboBoxSelectContest.DataSource = Enum.GetValues(typeof(ContestName))
                 .Cast<ContestName>()
@@ -183,8 +177,7 @@ namespace W6OP.ContestLogAnalyzer
         private void ComboBoxSelectContest_SelectedIndexChanged(object sender, EventArgs e)
         {
             Enum.TryParse(ComboBoxSelectContest.SelectedValue.ToString(), out _ActiveContest);
-
-            _LogProcessor.InitializeLogProcessor(_ActiveContest);
+            _PrintManager = null;
 
             switch (_ActiveContest)
             {
@@ -197,16 +190,23 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     ComboBoxSelectSession.Enabled = true;
                     break;
-                default:
+                case ContestName.HQP:
                     if (_HQP == null)
                     {
                         TabControlMain.SelectTab(TabPageScoring);
                         _HQP = new ScoreHQP();
                         _HQP.OnProgressUpdate += _HQP_OnProgressUpdate;
                     }
-                    ComboBoxSelectSession.Enabled = false;
+                    ComboBoxSelectSession.Enabled = true;
+                    break;
+                default:
                     break;
             }
+
+            _LogProcessor.InitializeLogProcessor(_ActiveContest);
+
+            _PrintManager = new PrintManager(_ActiveContest);
+            _LogProcessor._PrintManager = _PrintManager;
         }
 
         #endregion
@@ -235,7 +235,7 @@ namespace W6OP.ContestLogAnalyzer
                         return;
                     }
                     session = EnumHelper.GetDescription(_Session);
-                    _WorkingFolder = Path.Combine(_BaseWorkingFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName),  session);
+                    _WorkingFolder = Path.Combine(_BaseWorkingFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
                     _InspectFolder = Path.Combine(_BaseInspectFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
                     _ReportFolder = Path.Combine(_BaseReportFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
                     _ReviewFolder = Path.Combine(_BaseReviewFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
@@ -252,7 +252,7 @@ namespace W6OP.ContestLogAnalyzer
                 default:
                     break;
             }
-            
+
 
             LoadLogFiles();
         }
@@ -264,7 +264,7 @@ namespace W6OP.ContestLogAnalyzer
         private void LoadLogFiles()
         {
             Int32 fileCount = 0;
-            string  session = EnumHelper.GetDescription(_Session);
+            string session = EnumHelper.GetDescription(_Session);
 
             try
             {
@@ -809,7 +809,7 @@ namespace W6OP.ContestLogAnalyzer
                 ProgressBarLoad.PerformStep();
             }
 
-            
+
             //LabelProgress.Text = count.ToString();
         }
 
@@ -950,8 +950,15 @@ namespace W6OP.ContestLogAnalyzer
         {
             try
             {
-                //_PrintManager.PrintScoreSheet(_ContestLogs, true);
-                _PrintManager.PrintPdfScoreSheet(_ContestLogs);
+                switch (_ActiveContest)
+                {
+                    case ContestName.CW_OPEN:
+                        _PrintManager.PrintCWOpenPdfScoreSheet(_ContestLogs);
+                        break;
+                    case ContestName.HQP:
+                        _PrintManager.PrintHQPPdfScoreSheet(_ContestLogs);
+                        break;
+                }
             }
             catch (Exception ex)
             {
@@ -977,7 +984,7 @@ namespace W6OP.ContestLogAnalyzer
             LoadCSVFile();
         }
 
-       
+
 
         private void LoadCSVFile()
         {
@@ -996,7 +1003,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             finally
             {
-              
+
             }
         }
 
@@ -1038,7 +1045,7 @@ namespace W6OP.ContestLogAnalyzer
         private void ButtonPreScoreReports_Click(object sender, EventArgs e)
         {
             CreateCallNameFile();
-            
+
         }
 
         /// <summary>
