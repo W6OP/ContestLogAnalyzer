@@ -245,8 +245,6 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         SetDXCCInformation(contestLog.QSOCollection, contestLog);
                     }
-
-
                     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                     contestLogs.Add(contestLog);
@@ -257,8 +255,20 @@ namespace W6OP.ContestLogAnalyzer
             }
             catch (Exception ex)
             {
+                string message = ex.Message;
+
                 logFileName = fileName;
-                MoveFileToInpectFolder(fileName, ex.Message);
+
+                if (ex.Message.IndexOf("Input string was not in a correct format.") != -1)
+                {
+                    message = ex.Message + "\r\nThere is probably an alpha character in the header where it should be numeric.";
+                }
+                if (ex.Message.IndexOf("Object reference not set to an instance of an object.") != -1)
+                {
+                    message = ex.Message + "\r\nA required field is missing from the header. Possibly the Contest Name.";
+                }
+
+                MoveFileToInpectFolder(fileName, message);
             }
 
             return logFileName;
@@ -363,28 +373,36 @@ namespace W6OP.ContestLogAnalyzer
         private int GetPoints(string mode)
         {
             Int32 points = 0;
-            CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), mode);
 
-            switch (catMode)
+            try
             {
-                case CategoryMode.CW:
-                    points = 3;
-                    break;
-                case CategoryMode.RTTY:
-                    points = 3;
-                    break;
-                case CategoryMode.RY:
-                    points = 3;
-                    break;
-                case CategoryMode.PH:
-                    points = 2;
-                    break;
-                case CategoryMode.SSB:
-                    points = 2;
-                    break;
-                default:
-                    points = 0;
-                    break;
+                CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), mode);
+
+                switch (catMode)
+                {
+                    case CategoryMode.CW:
+                        points = 3;
+                        break;
+                    case CategoryMode.RTTY:
+                        points = 3;
+                        break;
+                    case CategoryMode.RY:
+                        points = 3;
+                        break;
+                    case CategoryMode.PH:
+                        points = 2;
+                        break;
+                    case CategoryMode.SSB:
+                        points = 2;
+                        break;
+                    default:
+                        points = 0;
+                        break;
+                }
+            }
+            catch (Exception)
+            {
+                throw new Exception("The mode " + mode + " is not valid for this contest.");
             }
 
             return points;
