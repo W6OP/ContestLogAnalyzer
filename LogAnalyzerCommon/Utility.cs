@@ -24,9 +24,9 @@ namespace W6OP.ContestLogAnalyzer
                 throw new InvalidOperationException();
             }
 
-            if (String.IsNullOrEmpty(description)) {
-                throw new NullReferenceException("A required field is missing from the header. Possibly the Contest Name.");
-            }
+            //if (String.IsNullOrEmpty(description)) {
+            //    throw new NullReferenceException("A required field is missing from the header. Possibly the Contest Name.");
+            //}
             // remove tabs
             description = description.Replace("\t", " ");
 

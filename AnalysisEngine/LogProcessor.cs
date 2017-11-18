@@ -109,7 +109,7 @@ namespace W6OP.ContestLogAnalyzer
             string fileName = fileInfo.Name;
             string logFileName = null;
             string version = null;
-            string reason = "Unable to build valid header."; ;
+            string reason = "Unable to build valid header.";
             Int32 progress = 0;
             Int32 count = 0;
 
@@ -148,6 +148,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (contestLog.LogHeader != null && AnalyzeHeader(contestLog, out reason) == true)
                     {
                         contestLog.LogHeader.HeaderIsValid = true;
+                        _FailReason = "This log has a valid header.";
                     }
                     else
                     {
@@ -548,7 +549,7 @@ namespace W6OP.ContestLogAnalyzer
                         Mode = Utility.GetValueFromDescription<CategoryMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
                         Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
                         Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
-                        ClaimedScore = Convert.ToInt32(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First(), 14, "0")),
+                        ClaimedScore = Convert.ToInt32(CheckForNumeric(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First(), 14, "0"))),
                         Club = CheckForNull(lineList.Where(l => l.StartsWith("CLUB:")).DefaultIfEmpty("CLUB: NONE").First(), 5, "NONE"),
                         Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
                         CreatedBy = CheckForNull(lineList.Where(l => l.StartsWith("CREATED-BY:")).DefaultIfEmpty("CREATED-BY: NONE").First(), 11, "NONE"),
@@ -568,6 +569,22 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return logHeader.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Some logs have 5,234 for a score and some have "Not Required"
+        /// when it should be an integer
+        /// </summary>
+        /// <param name="inputString"></param>
+        /// <returns></returns>
+        private object CheckForNumeric(string inputString)
+        {
+            // first get rid of commas ie. 5,234
+            inputString = inputString.Replace(",", "");
+
+            int i = 0;
+            bool result = int.TryParse(inputString, out i); 
+            return i;
         }
 
         /// <summary>
@@ -605,7 +622,7 @@ namespace W6OP.ContestLogAnalyzer
                     Mode = Utility.GetValueFromDescription<CategoryMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
                     Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
                     Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
-                    ClaimedScore = Convert.ToInt32(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First().Replace(",", ""), 14, "0")), // some guys do score as 52,000
+                    ClaimedScore = Convert.ToInt32(CheckForNumeric(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First().Replace(",", ""), 14, "0"))), // some guys do score as 52,000
                     Club = CheckForNull(lineList.Where(l => l.StartsWith("CLUB:")).DefaultIfEmpty("CLUB: NONE").First(), 5, "NONE"),
                     Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
                     CreatedBy = CheckForNull(lineList.Where(l => l.StartsWith("CREATED-BY:")).DefaultIfEmpty("CREATED-BY: NONE").First(), 11, "NONE"),
@@ -655,6 +672,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             List<QSO> qsoList = null;
             List<string> tempList = new List<string>();
+            string tempLine = null;
 
             _WorkingLine = "";
 
@@ -664,7 +682,8 @@ namespace W6OP.ContestLogAnalyzer
                 // later lets make a more elegant solution
                 foreach (string line in lineList)
                 {
-                    tempList.Add(Utility.RemoveRepeatedSpaces(line));
+                    tempLine = line.Replace("\t", "");
+                    tempList.Add(Utility.RemoveRepeatedSpaces(tempLine));
                 }
 
                 lineList = tempList;
@@ -733,13 +752,13 @@ namespace W6OP.ContestLogAnalyzer
             {
                 // if there is a format exception it means the CWT template may have been used
                 // this swaps the name and serial number columns
-                if (ex is FormatException && reverse == false)
+                if (ex is FormatException && reverse == false && _ActiveContest == ContestName.CW_OPEN)
                 {
                     qsoList = CollectQSOs(lineList, session, true);
                 }
                 else
                 {
-                    if (_FailingLine.IndexOf(_WorkingLine) != -1)
+                    if (_FailingLine.IndexOf(_WorkingLine) == -1)
                     {
                         _FailingLine += Environment.NewLine + _WorkingLine;
                     }

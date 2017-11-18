@@ -197,7 +197,7 @@ namespace W6OP.ContestLogAnalyzer
                         _HQP = new ScoreHQP();
                         _HQP.OnProgressUpdate += _HQP_OnProgressUpdate;
                     }
-                    ComboBoxSelectSession.Enabled = true;
+                    ComboBoxSelectSession.Enabled = false;
                     break;
                 default:
                     break;

@@ -142,7 +142,7 @@
             // columnHeader7
             // 
             this.columnHeader7.Text = "Status";
-            this.columnHeader7.Width = 380;
+            this.columnHeader7.Width = 803;
             // 
             // ComboBoxSelectContest
             // 
