@@ -109,7 +109,7 @@ namespace W6OP.ContestLogAnalyzer
             string fileName = fileInfo.Name;
             string logFileName = null;
             string version = null;
-            string reason = "Unable to build valid header.";
+            string reason = "Unable to build valid header. Check the Inspect folder for details.";
             Int32 progress = 0;
             Int32 count = 0;
 
@@ -148,7 +148,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (contestLog.LogHeader != null && AnalyzeHeader(contestLog, out reason) == true)
                     {
                         contestLog.LogHeader.HeaderIsValid = true;
-                        _FailReason = "This log has a valid header.";
+                        _FailReason = "This log has a valid header. Check the Inspect folder for details.";
                     }
                     else
                     {
@@ -182,7 +182,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (contestLog.QSOCollection == null || contestLog.QSOCollection.Count == 0)
                     {
                         // may want to expand on this for a future report
-                        _FailReason = "QSO collection is null or empty. The QSOs may be in an invalid format."; // create enum
+                        _FailReason = "One or more QSOs may be in an invalid format."; // create enum
                         if (_FailingLine.Length > 0)
                         {
                             _FailReason += Environment.NewLine + _FailingLine;
@@ -264,9 +264,13 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     message = ex.Message + "\r\nThere is probably an alpha character in the header where it should be numeric.";
                 }
-                if (ex.Message.IndexOf("Object reference not set to an instance of an object.") != -1)
+                else  if (ex.Message.IndexOf("Object reference not set to an instance of an object.") != -1)
                 {
-                    message = ex.Message + "\r\nA required field is missing from the header. Possibly the Contest Name.";
+                    message = "\r\nA required field is missing from the header. Possibly the Contest Name.";
+                }
+                else 
+                {
+                    message = ex.Message;
                 }
 
                 MoveFileToInpectFolder(fileName, message);
@@ -577,7 +581,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="inputString"></param>
         /// <returns></returns>
-        private object CheckForNumeric(string inputString)
+        private int CheckForNumeric(string inputString)
         {
             // first get rid of commas ie. 5,234
             inputString = inputString.Replace(",", "");
@@ -690,18 +694,16 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (!reverse)
                 {
-                    //try // DEBUGGING ONLY
-                    //{
                     IEnumerable<QSO> qso =
                          from line in lineList
                          let split = line.Split(' ')
                          select new QSO()
                          {
-                             // maybe .toUpper() will be needed
-                             Frequency = CheckCompleteQSO(split, line),
+                             Status = CheckCompleteQSO(split, line),
+                             Frequency = CheckFrequency(split[1], line),
                              Mode = split[2],
                              QsoDate = split[3],
-                             QsoTime = split[4],
+                             QsoTime = CheckTime(split[4], line),
                              OperatorCall = split[5],
                              SentSerialNumber = ConvertSerialNumber(split[6]),
                              OperatorName = split[7],
@@ -712,41 +714,31 @@ namespace W6OP.ContestLogAnalyzer
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
-                    //}
-                    //catch(Exception eex)
-                    //{
-                    //    string a = eex.Message;OnErrorRaised
-                    //} 
                 }
                 else
                 {
                     IEnumerable<QSO> qso =
                          from line in lineList
                          let split = line.Split(' ')
-                         select new QSO()
-                         {
-                             // maybe .toUpper() will be needed
-                             Frequency = CheckCompleteQSO(split, line),
-                             Mode = split[2],
-                             QsoDate = split[3],
-                             QsoTime = split[4],
-                             OperatorCall = split[5],
-
-                             OperatorName = split[6],
-                             SentSerialNumber = ConvertSerialNumber(split[7]),
-
-                             ContactCall = split[8],
-
-                             ContactName = split[9],
-                             ReceivedSerialNumber = ConvertSerialNumber(split[10]),
-
-                             CallIsInValid = CheckCallSignFormat(split[5]),
-                             SessionIsValid = CheckForvalidSession(session, split[4])
+                         
+                        select new QSO()
+                        {
+                            Status =  CheckCompleteQSO(split, line),
+                            Frequency = CheckFrequency(split[1], line),
+                            Mode = split[2],
+                            QsoDate = split[3],
+                            QsoTime = CheckTime(split[4], line),
+                            OperatorCall = split[5],
+                            OperatorName = split[6],
+                            SentSerialNumber = ConvertSerialNumber(split[7]),
+                            ContactCall = split[8],
+                            ContactName = split[9],
+                            ReceivedSerialNumber = ConvertSerialNumber(split[10]),
+                            CallIsInValid = CheckCallSignFormat(split[5]),
+                            SessionIsValid = CheckForvalidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -774,16 +766,46 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="split"></param>
         /// <param name="line"></param>
         /// <returns></returns>
-        private string CheckCompleteQSO(string[] split, string line)
+        private QSOStatus CheckCompleteQSO(string[] split, string line)
         {
+            QSOStatus status = QSOStatus.ValidQSO;
+
             _WorkingLine = line;
 
             if (split.Length != 11)
             {
+                status = QSOStatus.InvalidQSO;
+                _FailingLine += Environment.NewLine + "One or more columns are missing.";
                 _FailingLine += Environment.NewLine + line;
             }
 
-            return split[1];
+            return status;
+        }
+
+        private string CheckFrequency(string frequency, string line)
+        {
+            _WorkingLine = line;
+
+            if  (CheckForNumeric(frequency) == 0)
+            {
+                _FailingLine += Environment.NewLine + "Frequency is not correctly formatted.";
+                _FailingLine += Environment.NewLine + line;
+            }
+
+            return frequency;
+        }
+
+        private string CheckTime(string time, string line)
+        {
+            _WorkingLine = line;
+
+            if (CheckForNumeric(time) == 0)
+            {
+                _FailingLine += Environment.NewLine + "The time is not correctly formatted. Possibly alpha instead of numeric";
+                _FailingLine += Environment.NewLine + line;
+            }
+
+            return time;
         }
 
         /// <summary>
