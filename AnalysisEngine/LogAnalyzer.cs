@@ -11,6 +11,7 @@ namespace W6OP.ContestLogAnalyzer
     public class LogAnalyzer
     {
         private ILookup<string, string> _BadCallList;
+        public ContestName ActiveContest;
         public ILookup<string, string> BadCallList
         {
             set
@@ -29,8 +30,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public LogAnalyzer()
         {
-            // need case insensitive BOB and Bob
-            //_CallTable = new SortedDictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+
         }
 
         /// <summary>
@@ -179,14 +179,19 @@ namespace W6OP.ContestLogAnalyzer
                     qsoListX = contestLog.QSOCollectionX;
 
                     MarkDuplicateQSOs(qsoList);
-                    //MarkDuplicateQSOs(qsoListX);
 
                     MarkIncorrectCallSigns(qsoList, call);
-                    //MarkIncorrectCallSigns(qsoListX, call);
-
-                    MarkIncorrectSentName(qsoList, name);
-                    //MarkIncorrectSentName(qsoListX, name);
-
+                    
+                    switch (ActiveContest)
+                    {
+                        case ContestName.CW_OPEN:
+                            MarkIncorrectSentName(qsoList, name);
+                            break;
+                        case ContestName.HQP:
+                            MarkIncorrectSentEntity(qsoList, name);
+                            break;
+                    }
+                   
                     MatchQSOs(qsoList, contestLogList, call, name);
 
                     // moved to score engine
@@ -478,7 +483,16 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     found = true;
                     qso.IncorrectName = qso.ContactName + " --> " + matchName;
-                    qso.OpNameIsInValid = true;
+
+                    switch (ActiveContest)
+                    {
+                        case ContestName.CW_OPEN:
+                            qso.OpNameIsInValid = true;
+                            break;
+                        case ContestName.HQP:
+                            qso.EntityIsInValid = true;
+                            break;
+                    }
                 }
             }
 
@@ -500,6 +514,7 @@ namespace W6OP.ContestLogAnalyzer
             // query for time difference
             matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
                         q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5);
+
             if (matchQSO != null)
             {
                 // store the matching QSO
@@ -556,7 +571,13 @@ namespace W6OP.ContestLogAnalyzer
                 //    //string zz = Soundex(qso.IncorrectName);
                 //    //string xx = Soundex(qso.ContactName);
                 //}
-                return RejectReason.OperatorName;
+                switch (ActiveContest)
+                {
+                    case ContestName.CW_OPEN:
+                        return RejectReason.OperatorName;
+                    case ContestName.HQP:
+                        return RejectReason.EntityName;
+                }
             }
 
             // query for incorrect call
@@ -599,34 +620,42 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        private void MarkIncorrectSentEntity(List<QSO> qsoList, string name)
+        {
+            List<QSO> qsos = qsoList.Where(q => q.OperatorName.ToUpper() != name).ToList();
 
+            if (qsos.Any())
+            {
+                qsos.Select(c => { c.EntityIsInValid = false; return c; }).ToList();
+            }
+        }
 
         /// <summary>
         /// Find all the calls for the session. For each call see if it is valid.
         /// If it is a valid call set it as a multiplier.
         /// </summary>
         /// <param name="qsoList"></param>
-        private void MarkMultipliers(List<QSO> qsoList)
-        {
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Status })
-             .Where(g => g.Count() >= 1)
-             .Select(y => y.Key)
-             .ToList();
+        //private void MarkMultipliers(List<QSO> qsoList)
+        //{
+        //    var query = qsoList.GroupBy(x => new { x.ContactCall, x.Status })
+        //     .Where(g => g.Count() >= 1)
+        //     .Select(y => y.Key)
+        //     .ToList();
 
 
-            // THIS NEEDS TESTING !!!
+        //    // THIS NEEDS TESTING !!!
 
-            foreach (var qso in query)
-            {
-                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Status == QSOStatus.ValidQSO).ToList();
+        //    foreach (var qso in query)
+        //    {
+        //        List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Status == QSOStatus.ValidQSO).ToList();
 
-                if (multiList.Any())
-                {
-                    // now set the first one as a multiplier
-                    multiList.First().IsMultiplier = true;
-                }
-            }
-        }
+        //        if (multiList.Any())
+        //        {
+        //            // now set the first one as a multiplier
+        //            multiList.First().IsMultiplier = true;
+        //        }
+        //    }
+        //}
 
         #region Soundex
 

@@ -329,6 +329,7 @@ namespace W6OP.ContestLogAnalyzer
             set { _OperatorCall = value; }
         }
 
+        //later add Entity for HQP
         private string _OperatorName;
         public string OperatorName 
         {

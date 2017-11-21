@@ -429,7 +429,16 @@ namespace W6OP.PrintEngine
                 using (StreamWriter sw = File.CreateText(reportFileName))
                 {
                     // maybe add contest year later
-                    sw.WriteLine("CWO log checking results for " + callsign + " in session " + session.ToString());
+                    switch (_ActiveContest)
+                    {
+                        case ContestName.CW_OPEN:
+                            sw.WriteLine("CWOpen log checking results for " + callsign + " in session " + session.ToString());
+                            break;
+                        case ContestName.HQP:
+                            sw.WriteLine("Hawaii QSO Party log checking results for " + callsign);
+                            break;
+                    }
+
                     sw.WriteLine("");
 
                     if (!String.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
@@ -442,14 +451,46 @@ namespace W6OP.PrintEngine
                     {
                         foreach (QSO qso in inValidQsoList)
                         {
+                            //switch (_ActiveContest)
+                            //{
+                            //    case ContestName.CW_OPEN:
                             // print QSO line and reject reason
                             message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
                                         qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
+                            //        break;
+                            //    case ContestName.HQP:
+                            //        // print QSO line and reject reason
+                            //        message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
+                            //                    qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
+                            //        break;
+                            //}
 
                             // should only be one reason so lets change the collection type
                             foreach (var key in qso.RejectReasons.Keys)
                             {
                                 if (key == RejectReason.OperatorName)
+                                {
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
+                                    }
+                                    else
+                                    {
+                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectName;
+                                    }
+                                }
+                                else if (key == RejectReason.EntityName)
+                                {
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
+                                    }
+                                    else
+                                    {
+                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectName;
+                                    }
+                                }
+                                else if (key == RejectReason.InvalidEntity)
                                 {
                                     if (qso.MatchingQSO != null)
                                     {

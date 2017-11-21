@@ -94,19 +94,6 @@ namespace W6OP.ContestLogAnalyzer
                 _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
             }
 
-            //if (_CWOpen == null)
-            //{
-            //    TabControlMain.SelectTab(TabPageScoring);
-            //    _CWOpen = new ScoreCWOpen();
-            //    _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
-            //}
-
-            //if (_PrintManager == null)
-            //{
-            //    _PrintManager = new PrintManager();
-            //    _LogProcessor._PrintManager = _PrintManager;
-            //}
-
             ComboBoxSelectContest.DataSource = Enum.GetValues(typeof(ContestName))
                 .Cast<ContestName>()
                 .Select(p => new { Key = (int)p, Value = p.ToString() })
@@ -498,6 +485,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             UpdateLabel("");
 
+            _LogAnalyser.ActiveContest = _ActiveContest;
             _LogAnalyser.PreProcessContestLogs(_ContestLogs);
 
             UpdateListViewAnalysis("", "", "", true);
@@ -1092,6 +1080,8 @@ namespace W6OP.ContestLogAnalyzer
             {
                 session = "";
             }
+
+            _LogAnalyser.ActiveContest = _ActiveContest;
 
             // list of all call/name pairs
             List<Tuple<string, string>> distinctCallNamePairs = _LogAnalyser.CollectAllCallNamePairs(_ContestLogs);

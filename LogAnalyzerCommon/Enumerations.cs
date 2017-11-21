@@ -22,6 +22,8 @@ namespace W6OP.ContestLogAnalyzer
         SerialNumber,
         [Description("The operator name does not match")]
         OperatorName,
+        [Description("The location name does not match")]
+        EntityName,
         //[Description("The sent serial number does not match")]
         //Sent,
         [Description("This is a duplicate QSO")]
