@@ -1013,25 +1013,38 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private ILookup<string, string> LoadFile()
         {
-            // List<string> lineList = new List<string>();
+            List<string> lineList = new List<string>();
             char[] SpaceDelimiter = new char[] { ' ' };
+            char[] commaDelimiter = new char[] { ',' };
             ILookup<string, string> lines = null;
 
             if (OpenCSVFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 if (File.Exists(OpenCSVFileDialog.FileName))
                 {
-                    lines = File.ReadLines(OpenCSVFileDialog.FileName)
+                    lineList = File.ReadAllLines(OpenCSVFileDialog.FileName).Select(i => i.ToString()).ToList();
+
+                    if (lineList[0].IndexOf(",") == -1)
+                    {
+                        lines = File.ReadLines(OpenCSVFileDialog.FileName)
                       .Select(csvLine => csvLine.Split(SpaceDelimiter, StringSplitOptions.RemoveEmptyEntries))
                       .Distinct()
                       .ToLookup(s => s[0], s => s[1]);
+                    }
+
+                    if (lineList[0].IndexOf(",") != -1)
+                    {
+                        lines = File.ReadLines(OpenCSVFileDialog.FileName)
+                      .Select(csvLine => csvLine.Split(commaDelimiter, StringSplitOptions.RemoveEmptyEntries))
+                      .Distinct()
+                      .ToLookup(s => s[0], s => s[1]);
+                    }
                 }
             }
 
             // return empty list
             return lines;
         }
-
 
         #endregion
 
