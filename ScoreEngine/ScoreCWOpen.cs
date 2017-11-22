@@ -14,7 +14,6 @@ namespace W6OP.ContestLogAnalyzer
 
         public ScoreCWOpen()
         {
-            // matchingLogs.AddRange(_ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.ReceivedSerialNumber == sent && a.Band == band && a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO)).ToList()); // && a.IsValidQSO == false
             // DON'T SCORE CHECKLOGS
         }
 

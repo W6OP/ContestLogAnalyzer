@@ -240,7 +240,6 @@ namespace W6OP.ContestLogAnalyzer
                     break;
             }
 
-
             LoadLogFiles();
         }
 
@@ -310,7 +309,6 @@ namespace W6OP.ContestLogAnalyzer
 
                 _LogProcessor._WorkingFolder = _WorkingFolder;
                 _LogProcessor._InspectionFolder = _InspectFolder;
-
 
                 if (_LogFileList == null)
                 {
@@ -1073,7 +1071,7 @@ namespace W6OP.ContestLogAnalyzer
         private void BackgroundWorkerPreAnalysis_DoWork(object sender, DoWorkEventArgs e)
         {
             // calls with <= 3 hits
-            List<Tuple<string, string>> suspectCallList = null;
+            //List<Tuple<string, string>> suspectCallList = null;
             string session = _Session.ToString();
 
             if (_Session == Session.Session_0)
@@ -1089,12 +1087,12 @@ namespace W6OP.ContestLogAnalyzer
             _PrintManager.ListUniqueCallNamePairs(distinctCallNamePairs, _ReportFolder, session);
 
             // list of all calls with number of hits and all names with number of hits
-            List<Tuple<string, Int32, string, Int32>> callNameCountList = _LogAnalyser.CollectCallNameHitData(distinctCallNamePairs, _ContestLogs, out suspectCallList);
+            //List<Tuple<string, Int32, string, Int32>> callNameCountList = _LogAnalyser.CollectCallNameHitData(distinctCallNamePairs, _ContestLogs, out suspectCallList);
+            List<Tuple<string, Int32, string, Int32>> callNameCountList = _LogAnalyser.CollectCallNameHitData(distinctCallNamePairs, _ContestLogs);
             UpdateListViewLoad("List Call Name Occurences", "", false);
             _PrintManager.ListCallNameOccurences(callNameCountList, _ReportFolder, session);
 
-            List<QSO> suspectQSOs = _LogAnalyser.CollectSuspectQSOs(suspectCallList, _ContestLogs);
-            //_PrintManager.Li
+            //List<QSO> suspectQSOs = _LogAnalyser.CollectSuspectQSOs(suspectCallList, _ContestLogs);
 
         }
 

@@ -24,19 +24,13 @@ namespace W6OP.ContestLogAnalyzer
         public QRZ _QRZ = null;
 
         public string _FailReason { get; set; }
-
         public string _FailingLine { get; set; }
-
         public string _LogSourceFolder { get; set; }
-
         public string _InspectionFolder { get; set; }
-
         public string _WorkingFolder { get; set; }
-
         public ContestName _ActiveContest { get; set; }
 
         private string _WorkingLine = null;
-
         private CallParser.CallsignParser _Parser;
 
         /// <summary>
@@ -463,15 +457,7 @@ namespace W6OP.ContestLogAnalyzer
                 File.Move(Path.Combine(_WorkingFolder, fileName), logFileName);
             }
 
-
             _PrintManager.PrintInspectionReport(fileName + ".txt", _FailReason + Environment.NewLine + " - " + exception);
-
-
-            // create a text file with the reason for the rejection
-            //using (StreamWriter sw = File.CreateText(inspectReasonFileName))
-            //{
-            //    sw.WriteLine(FailReason);
-            //}
         }
 
         /// <summary>
@@ -897,8 +883,5 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         #endregion
-
-
-
     } // end class
 }
