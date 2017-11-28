@@ -550,17 +550,13 @@ namespace W6OP.ContestLogAnalyzer
             {
                 case ContestName.CW_OPEN:
                     matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
-                       q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5);
+                       q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) > 5);
                     break;
                 case ContestName.HQP:
                     matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.Mode == qso.Mode &&
-                       q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5);
+                       q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) > 5);
                     break;
             }
-
-            // query for time difference
-            //matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
-            //            q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) > 5);
 
             if (matchQSO != null)
             {
@@ -569,9 +565,6 @@ namespace W6OP.ContestLogAnalyzer
                 ts = qso.QSODateTime.Subtract(matchQSO.QSODateTime);
                 qso.ExcessTimeSpan = Math.Abs(ts.Minutes);
 
-                // temporarily remove time check
-                //return RejectReason.InvalidTime; 
-                // also need to check for incorrect S/N and name
                 return RejectReason.InvalidTime;
             }
 
@@ -580,9 +573,9 @@ namespace W6OP.ContestLogAnalyzer
             {
                 matchQSO = (QSO)contestLog.QSOCollection.Where(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall == qso.OperatorCall &&
                             Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) > 1).FirstOrDefault(); //
+
                 if (matchQSO != null)
                 {
-                    // store the matching QSO
                     qso.MatchingQSO = matchQSO;
                     return RejectReason.SerialNumber;
                 }
@@ -593,16 +586,16 @@ namespace W6OP.ContestLogAnalyzer
             {
                 case ContestName.CW_OPEN:
                     matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
-                         q.ContactCall == qso.OperatorCall); //
+                         q.ContactCall == qso.OperatorCall);
                     break;
                 case ContestName.HQP:
                     matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && q.Mode == qso.Mode &&
-                        q.ContactCall == qso.OperatorCall); //
+                        q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
                     break;
             }
+
             if (matchQSO != null)
             {
-                // store the matching QSO
                 qso.MatchingQSO = matchQSO;
                 return RejectReason.Band;
             }
@@ -616,12 +609,12 @@ namespace W6OP.ContestLogAnalyzer
                     break;
                 case ContestName.HQP:
                     matchQSO = contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.Mode == qso.Mode && q.ContactCall == qso.OperatorCall &&
-                       q.ContactName == qso.OperatorName && q.OperatorName != qso.ContactName); //
+                       q.ContactName == qso.OperatorName && q.OperatorName != qso.ContactName);
                     break;
             }
+
             if (matchQSO != null)
             {
-                // store the matching QSO
                 qso.MatchingQSO = matchQSO;
                 qso.IncorrectName = qso.ContactName;
                 //if (Soundex(qso.IncorrectName) == Soundex(qso.MatchingQSO.OperatorName))
@@ -640,7 +633,6 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // query for incorrect call
-           
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
@@ -652,6 +644,7 @@ namespace W6OP.ContestLogAnalyzer
                         q.Mode == qso.Mode); // 
                     break;
             }
+
             if (matchQSO != null)
             {
                 // determine which guy is at fault
@@ -683,8 +676,6 @@ namespace W6OP.ContestLogAnalyzer
 
             if (qsos.Any())
             {
-                //qsos.Select(c => { c.CallIsInValid = false; return c; }).ToList();
-                // was previous line - why wasn't this caught?
                 qsos.Select(c => { c.OpNameIsInValid = false; return c; }).ToList();
             }
         }
@@ -698,33 +689,6 @@ namespace W6OP.ContestLogAnalyzer
                 qsos.Select(c => { c.EntityIsInValid = false; return c; }).ToList();
             }
         }
-
-        /// <summary>
-        /// Find all the calls for the session. For each call see if it is valid.
-        /// If it is a valid call set it as a multiplier.
-        /// </summary>
-        /// <param name="qsoList"></param>
-        //private void MarkMultipliers(List<QSO> qsoList)
-        //{
-        //    var query = qsoList.GroupBy(x => new { x.ContactCall, x.Status })
-        //     .Where(g => g.Count() >= 1)
-        //     .Select(y => y.Key)
-        //     .ToList();
-
-
-        //    // THIS NEEDS TESTING !!!
-
-        //    foreach (var qso in query)
-        //    {
-        //        List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Status == QSOStatus.ValidQSO).ToList();
-
-        //        if (multiList.Any())
-        //        {
-        //            // now set the first one as a multiplier
-        //            multiList.First().IsMultiplier = true;
-        //        }
-        //    }
-        //}
 
         #region Soundex
 
