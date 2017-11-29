@@ -67,12 +67,26 @@
             this.ButtonLoadBadcalls = new System.Windows.Forms.Button();
             this.OpenCSVFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.ButtonPreScoreReports = new System.Windows.Forms.Button();
-            this.ButtonCreateBadCallList = new System.Windows.Forms.Button();
+            this.ButtonCompareLogs = new System.Windows.Forms.Button();
             this.BackgroundWorkerPreAnalysis = new System.ComponentModel.BackgroundWorker();
+            this.TextBoxLog1 = new System.Windows.Forms.TextBox();
+            this.TextBoxLog2 = new System.Windows.Forms.TextBox();
+            this.TabPageCompare = new System.Windows.Forms.TabPage();
+            this.ListViewCompare = new System.Windows.Forms.ListView();
+            this.columnHeader15 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader16 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader17 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader18 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader19 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader20 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader21 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader22 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader23 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TabControlMain.SuspendLayout();
             this.TabPageLogStatus.SuspendLayout();
             this.TabPageAnalysis.SuspendLayout();
             this.TabPageScoring.SuspendLayout();
+            this.TabPageCompare.SuspendLayout();
             this.SuspendLayout();
             // 
             // LogFolderBrowserDialog
@@ -95,14 +109,14 @@
             this.TextBoxLogFolder.Location = new System.Drawing.Point(24, 86);
             this.TextBoxLogFolder.Name = "TextBoxLogFolder";
             this.TextBoxLogFolder.Size = new System.Drawing.Size(394, 23);
-            this.TextBoxLogFolder.TabIndex = 1;
+            this.TextBoxLogFolder.TabIndex = 4;
             // 
             // ButtonSelectFolder
             // 
             this.ButtonSelectFolder.Location = new System.Drawing.Point(424, 86);
             this.ButtonSelectFolder.Name = "ButtonSelectFolder";
             this.ButtonSelectFolder.Size = new System.Drawing.Size(31, 23);
-            this.ButtonSelectFolder.TabIndex = 2;
+            this.ButtonSelectFolder.TabIndex = 5;
             this.ButtonSelectFolder.Text = ". . .";
             this.ButtonSelectFolder.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.ButtonSelectFolder.UseVisualStyleBackColor = true;
@@ -113,7 +127,7 @@
             this.ButtonLoadLogs.Location = new System.Drawing.Point(24, 124);
             this.ButtonLoadLogs.Name = "ButtonLoadLogs";
             this.ButtonLoadLogs.Size = new System.Drawing.Size(119, 23);
-            this.ButtonLoadLogs.TabIndex = 3;
+            this.ButtonLoadLogs.TabIndex = 6;
             this.ButtonLoadLogs.Text = "Load Contest Logs";
             this.ButtonLoadLogs.UseVisualStyleBackColor = true;
             this.ButtonLoadLogs.Click += new System.EventHandler(this.ButtonLoadLogs_Click);
@@ -151,7 +165,7 @@
             this.ComboBoxSelectContest.Location = new System.Drawing.Point(24, 36);
             this.ComboBoxSelectContest.Name = "ComboBoxSelectContest";
             this.ComboBoxSelectContest.Size = new System.Drawing.Size(131, 23);
-            this.ComboBoxSelectContest.TabIndex = 7;
+            this.ComboBoxSelectContest.TabIndex = 1;
             this.ComboBoxSelectContest.SelectedIndexChanged += new System.EventHandler(this.ComboBoxSelectContest_SelectedIndexChanged);
             // 
             // label3
@@ -175,7 +189,7 @@
             this.ButtonStartAnalysis.Location = new System.Drawing.Point(162, 124);
             this.ButtonStartAnalysis.Name = "ButtonStartAnalysis";
             this.ButtonStartAnalysis.Size = new System.Drawing.Size(119, 23);
-            this.ButtonStartAnalysis.TabIndex = 9;
+            this.ButtonStartAnalysis.TabIndex = 7;
             this.ButtonStartAnalysis.Text = "Start Log Analysis";
             this.ButtonStartAnalysis.UseVisualStyleBackColor = true;
             this.ButtonStartAnalysis.Click += new System.EventHandler(this.ButtonStartAnalysis_Click);
@@ -186,7 +200,7 @@
             this.ButtonScoreLogs.Location = new System.Drawing.Point(299, 124);
             this.ButtonScoreLogs.Name = "ButtonScoreLogs";
             this.ButtonScoreLogs.Size = new System.Drawing.Size(119, 23);
-            this.ButtonScoreLogs.TabIndex = 10;
+            this.ButtonScoreLogs.TabIndex = 8;
             this.ButtonScoreLogs.Text = "Score Contest Logs";
             this.ButtonScoreLogs.UseVisualStyleBackColor = true;
             this.ButtonScoreLogs.Click += new System.EventHandler(this.ButtonScoreLogs_Click);
@@ -306,12 +320,12 @@
             this.ProgressBarLoad.Name = "ProgressBarLoad";
             this.ProgressBarLoad.Size = new System.Drawing.Size(428, 23);
             this.ProgressBarLoad.Step = 1;
-            this.ProgressBarLoad.TabIndex = 13;
+            this.ProgressBarLoad.TabIndex = 1399;
             // 
             // LabelProgress
             // 
             this.LabelProgress.AutoSize = true;
-            this.LabelProgress.Location = new System.Drawing.Point(493, 105);
+            this.LabelProgress.Location = new System.Drawing.Point(461, 106);
             this.LabelProgress.Name = "LabelProgress";
             this.LabelProgress.Size = new System.Drawing.Size(38, 15);
             this.LabelProgress.TabIndex = 14;
@@ -322,6 +336,7 @@
             this.TabControlMain.Controls.Add(this.TabPageLogStatus);
             this.TabControlMain.Controls.Add(this.TabPageAnalysis);
             this.TabControlMain.Controls.Add(this.TabPageScoring);
+            this.TabControlMain.Controls.Add(this.TabPageCompare);
             this.TabControlMain.Location = new System.Drawing.Point(24, 163);
             this.TabControlMain.Name = "TabControlMain";
             this.TabControlMain.SelectedIndex = 0;
@@ -372,7 +387,7 @@
             this.ComboBoxSelectSession.Location = new System.Drawing.Point(162, 36);
             this.ComboBoxSelectSession.Name = "ComboBoxSelectSession";
             this.ComboBoxSelectSession.Size = new System.Drawing.Size(90, 23);
-            this.ComboBoxSelectSession.TabIndex = 16;
+            this.ComboBoxSelectSession.TabIndex = 2;
             this.ComboBoxSelectSession.SelectedIndexChanged += new System.EventHandler(this.ComboBoxSelectSession_SelectedIndexChanged);
             // 
             // label2
@@ -386,7 +401,7 @@
             // 
             // ButtonLoadBadcalls
             // 
-            this.ButtonLoadBadcalls.Location = new System.Drawing.Point(496, 36);
+            this.ButtonLoadBadcalls.Location = new System.Drawing.Point(733, 36);
             this.ButtonLoadBadcalls.Name = "ButtonLoadBadcalls";
             this.ButtonLoadBadcalls.Size = new System.Drawing.Size(119, 23);
             this.ButtonLoadBadcalls.TabIndex = 18;
@@ -403,23 +418,23 @@
             // ButtonPreScoreReports
             // 
             this.ButtonPreScoreReports.Enabled = false;
-            this.ButtonPreScoreReports.Location = new System.Drawing.Point(277, 35);
+            this.ButtonPreScoreReports.Location = new System.Drawing.Point(566, 36);
             this.ButtonPreScoreReports.Name = "ButtonPreScoreReports";
-            this.ButtonPreScoreReports.Size = new System.Drawing.Size(178, 23);
-            this.ButtonPreScoreReports.TabIndex = 19;
-            this.ButtonPreScoreReports.Text = "Generate Pre Score Reports";
+            this.ButtonPreScoreReports.Size = new System.Drawing.Size(141, 23);
+            this.ButtonPreScoreReports.TabIndex = 3;
+            this.ButtonPreScoreReports.Text = "Create Pre Score Report";
             this.ButtonPreScoreReports.UseVisualStyleBackColor = true;
             this.ButtonPreScoreReports.Click += new System.EventHandler(this.ButtonPreScoreReports_Click);
             // 
-            // ButtonCreateBadCallList
+            // ButtonCompareLogs
             // 
-            this.ButtonCreateBadCallList.Location = new System.Drawing.Point(792, 36);
-            this.ButtonCreateBadCallList.Name = "ButtonCreateBadCallList";
-            this.ButtonCreateBadCallList.Size = new System.Drawing.Size(178, 23);
-            this.ButtonCreateBadCallList.TabIndex = 20;
-            this.ButtonCreateBadCallList.Text = "Generate Bad Call List";
-            this.ButtonCreateBadCallList.UseVisualStyleBackColor = true;
-            this.ButtonCreateBadCallList.Visible = false;
+            this.ButtonCompareLogs.Location = new System.Drawing.Point(566, 87);
+            this.ButtonCompareLogs.Name = "ButtonCompareLogs";
+            this.ButtonCompareLogs.Size = new System.Drawing.Size(94, 23);
+            this.ButtonCompareLogs.TabIndex = 11;
+            this.ButtonCompareLogs.Text = "Compare Logs";
+            this.ButtonCompareLogs.UseVisualStyleBackColor = true;
+            this.ButtonCompareLogs.Click += new System.EventHandler(this.ButtonCompareLogs_Click);
             // 
             // BackgroundWorkerPreAnalysis
             // 
@@ -429,13 +444,105 @@
             this.BackgroundWorkerPreAnalysis.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorkerPreAnalysis_ProgressChanged);
             this.BackgroundWorkerPreAnalysis.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerPreAnalysis_RunWorkerCompleted);
             // 
+            // TextBoxLog1
+            // 
+            this.TextBoxLog1.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
+            this.TextBoxLog1.Location = new System.Drawing.Point(666, 87);
+            this.TextBoxLog1.MaxLength = 15;
+            this.TextBoxLog1.Name = "TextBoxLog1";
+            this.TextBoxLog1.Size = new System.Drawing.Size(90, 23);
+            this.TextBoxLog1.TabIndex = 9;
+            // 
+            // TextBoxLog2
+            // 
+            this.TextBoxLog2.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
+            this.TextBoxLog2.Location = new System.Drawing.Point(762, 87);
+            this.TextBoxLog2.MaxLength = 15;
+            this.TextBoxLog2.Name = "TextBoxLog2";
+            this.TextBoxLog2.Size = new System.Drawing.Size(90, 23);
+            this.TextBoxLog2.TabIndex = 10;
+            // 
+            // TabPageCompare
+            // 
+            this.TabPageCompare.Controls.Add(this.ListViewCompare);
+            this.TabPageCompare.Location = new System.Drawing.Point(4, 24);
+            this.TabPageCompare.Name = "TabPageCompare";
+            this.TabPageCompare.Size = new System.Drawing.Size(955, 526);
+            this.TabPageCompare.TabIndex = 3;
+            this.TabPageCompare.Text = "Compare";
+            this.TabPageCompare.UseVisualStyleBackColor = true;
+            // 
+            // ListViewCompare
+            // 
+            this.ListViewCompare.BackColor = System.Drawing.SystemColors.Info;
+            this.ListViewCompare.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader15,
+            this.columnHeader16,
+            this.columnHeader17,
+            this.columnHeader18,
+            this.columnHeader19,
+            this.columnHeader20,
+            this.columnHeader21,
+            this.columnHeader22,
+            this.columnHeader23});
+            this.ListViewCompare.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ListViewCompare.GridLines = true;
+            this.ListViewCompare.Location = new System.Drawing.Point(0, 0);
+            this.ListViewCompare.Name = "ListViewCompare";
+            this.ListViewCompare.Size = new System.Drawing.Size(955, 526);
+            this.ListViewCompare.TabIndex = 0;
+            this.ListViewCompare.UseCompatibleStateImageBehavior = false;
+            this.ListViewCompare.View = System.Windows.Forms.View.Details;
+            // 
+            // columnHeader15
+            // 
+            this.columnHeader15.Text = "Band";
+            // 
+            // columnHeader16
+            // 
+            this.columnHeader16.Text = "Mode";
+            // 
+            // columnHeader17
+            // 
+            this.columnHeader17.Text = "Date";
+            this.columnHeader17.Width = 100;
+            // 
+            // columnHeader18
+            // 
+            this.columnHeader18.Text = "Time";
+            // 
+            // columnHeader19
+            // 
+            this.columnHeader19.Text = "Exchange";
+            this.columnHeader19.Width = 91;
+            // 
+            // columnHeader20
+            // 
+            this.columnHeader20.Text = "Sent";
+            // 
+            // columnHeader21
+            // 
+            this.columnHeader21.Text = "Contact";
+            this.columnHeader21.Width = 89;
+            // 
+            // columnHeader22
+            // 
+            this.columnHeader22.Text = "Exchange";
+            this.columnHeader22.Width = 97;
+            // 
+            // columnHeader23
+            // 
+            this.columnHeader23.Text = "Recv\'d";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
             this.ClientSize = new System.Drawing.Size(1008, 729);
-            this.Controls.Add(this.ButtonCreateBadCallList);
+            this.Controls.Add(this.TextBoxLog2);
+            this.Controls.Add(this.TextBoxLog1);
+            this.Controls.Add(this.ButtonCompareLogs);
             this.Controls.Add(this.ButtonPreScoreReports);
             this.Controls.Add(this.ButtonLoadBadcalls);
             this.Controls.Add(this.label2);
@@ -460,6 +567,7 @@
             this.TabPageLogStatus.ResumeLayout(false);
             this.TabPageAnalysis.ResumeLayout(false);
             this.TabPageScoring.ResumeLayout(false);
+            this.TabPageCompare.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -506,8 +614,21 @@
         private System.Windows.Forms.Button ButtonLoadBadcalls;
         private System.Windows.Forms.OpenFileDialog OpenCSVFileDialog;
         private System.Windows.Forms.Button ButtonPreScoreReports;
-        private System.Windows.Forms.Button ButtonCreateBadCallList;
+        private System.Windows.Forms.Button ButtonCompareLogs;
         private System.ComponentModel.BackgroundWorker BackgroundWorkerPreAnalysis;
+        private System.Windows.Forms.TextBox TextBoxLog1;
+        private System.Windows.Forms.TextBox TextBoxLog2;
+        private System.Windows.Forms.TabPage TabPageCompare;
+        private System.Windows.Forms.ListView ListViewCompare;
+        private System.Windows.Forms.ColumnHeader columnHeader15;
+        private System.Windows.Forms.ColumnHeader columnHeader16;
+        private System.Windows.Forms.ColumnHeader columnHeader17;
+        private System.Windows.Forms.ColumnHeader columnHeader18;
+        private System.Windows.Forms.ColumnHeader columnHeader19;
+        private System.Windows.Forms.ColumnHeader columnHeader20;
+        private System.Windows.Forms.ColumnHeader columnHeader21;
+        private System.Windows.Forms.ColumnHeader columnHeader22;
+        private System.Windows.Forms.ColumnHeader columnHeader23;
     }
 }
 

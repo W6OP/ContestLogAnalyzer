@@ -725,7 +725,7 @@ namespace W6OP.ContestLogAnalyzer
 
             if (InvokeRequired)
             {
-                this.BeginInvoke(new Action<ContestLog, bool>(this.UpdateListViewScore), contestLog, clear);
+                BeginInvoke(new Action<ContestLog, bool>(this.UpdateListViewScore), contestLog, clear);
                 return;
             }
 
@@ -1107,6 +1107,95 @@ namespace W6OP.ContestLogAnalyzer
             {
                 UpdateListViewLoad("Reports completed.", "", false);
             }
+        }
+
+        #endregion
+
+        #region Compare Logs
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ButtonCompareLogs_Click(object sender, EventArgs e)
+        {
+            if (_ContestLogs == null || _ContestLogs.Count() == 0)
+            {
+                MessageBox.Show("You must load and analyze the logs before you can compare.", "Missing Log Files", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (String.IsNullOrEmpty(TextBoxLog1.Text) || String.IsNullOrEmpty(TextBoxLog2.Text))
+            {
+                MessageBox.Show("You must enter both call signs before you can compare.", "Missing Call Sign", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            CompareLogs(TextBoxLog1.Text.Trim(), TextBoxLog2.Text.Trim());
+        }
+
+        private void CompareLogs(string call1, string call2)
+        {
+            ContestLog log1 = null;
+            ContestLog log2 = null;
+            int group = 0;
+
+            ListViewCompare.Items.Clear();
+            ListViewCompare.Groups.Clear();
+
+            ListViewCompare.Groups.Add(new ListViewGroup(call1, HorizontalAlignment.Left));
+            ListViewCompare.Groups.Add(new ListViewGroup(call2, HorizontalAlignment.Left));
+
+            TabControlMain.SelectTab(TabPageCompare);
+
+            log1 = (ContestLog)_ContestLogs.FirstOrDefault(q => q.LogOwner == call1);
+            log2 = (ContestLog)_ContestLogs.FirstOrDefault(q => q.LogOwner == call2);
+
+            if (log1 != null)
+            {
+                List<QSO> list1 = log1.QSOCollection.Where(q => q.OperatorCall == call1 && q.ContactCall == call2).ToList();
+                if (list1 != null && list1.Count > 0)
+                {
+                    group = 0;
+                   
+                    foreach (QSO qso in list1)
+                    {
+                        UpdateListViewCompare(qso, group);
+                    }
+                }
+            }
+
+            if (log2 != null)
+            {
+                List<QSO> list2 = log2.QSOCollection.Where(q => q.ContactCall == call1 && q.OperatorCall == call2).ToList();
+                if (list2 != null && list2.Count > 0)
+                {
+                    group = 1;
+                   
+                    foreach (QSO qso in list2)
+                    {
+                        UpdateListViewCompare(qso, group);
+                    }
+                }
+            }
+        }
+
+        private void UpdateListViewCompare(QSO qso, int group)
+        {
+            ListViewItem item = new ListViewItem(qso.Band.ToString());
+            item.Group = ListViewCompare.Groups[group];
+
+            item.SubItems.Add(qso.Mode);
+            item.SubItems.Add(qso.QsoDate.ToString());
+            item.SubItems.Add(qso.QsoTime.ToString());
+            item.SubItems.Add(qso.SentSerialNumber.ToString());
+            item.SubItems.Add(qso.OperatorCountry);
+            item.SubItems.Add(qso.ContactCall);
+            item.SubItems.Add(qso.ReceivedSerialNumber.ToString());
+            item.SubItems.Add(qso.ContactName);
+
+            ListViewCompare.Items.Insert(0, item);
         }
 
         #endregion
