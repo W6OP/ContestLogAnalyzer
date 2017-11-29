@@ -1044,7 +1044,6 @@ namespace W6OP.ContestLogAnalyzer
         private void ButtonPreScoreReports_Click(object sender, EventArgs e)
         {
             CreateCallNameFile();
-
         }
 
         /// <summary>
@@ -1058,9 +1057,6 @@ namespace W6OP.ContestLogAnalyzer
 
             BackgroundWorkerPreAnalysis.RunWorkerAsync();
         }
-
-        //List<QSO> _DistinctQSOs;
-
 
         /// <summary>
         /// Create a reportWith all the calls and all the names and summarize

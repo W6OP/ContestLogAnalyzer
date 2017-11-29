@@ -320,6 +320,19 @@ namespace W6OP.ContestLogAnalyzer
             QSO matchQSO = null;
             QSO matchQSO_X = null;
 
+
+            List<QSO> list1 = qsoList.Where(q => q.OperatorCall == "AA1AR" && q.ContactCall == "KH7XS").ToList();
+            if (list1 != null && list1.Count > 0)
+            {
+                var a = 1;
+            }
+
+            List<QSO> list2 = qsoList.Where(q => q.ContactCall == "AA1AR" && q.OperatorCall == "KH7XS").ToList();
+            if (list2 != null && list2.Count > 0)
+            {
+                var a = 1;
+            }
+
             foreach (QSO qso in qsoList)
             {
                 // get the other log that matches this QSO contact call
@@ -659,6 +672,7 @@ namespace W6OP.ContestLogAnalyzer
                     matchQSO.MatchingQSO = qso;
                     matchQSO.RejectReasons.Clear(); // should not be a collection ?? or lets actually look for multiple reasons
                     matchQSO.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+                    reason = RejectReason.NoQSOMatch;
                 }
             }
 
