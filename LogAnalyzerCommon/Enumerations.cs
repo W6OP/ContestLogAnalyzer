@@ -12,7 +12,7 @@ namespace W6OP.ContestLogAnalyzer
     {
         [Description("The band does not match")]
         Band,
-        [Description("The QSO does not match the other log")]
+        [Description("This QSO is not in the other operators log")]
         NoQSOMatch,
         [Description("FYI: call not in any other log - scored as unique")]
         NoQSO,
@@ -318,21 +318,35 @@ namespace W6OP.ContestLogAnalyzer
 
     public enum HQPMults
     {
+        [Description("HIL")]
         HIL,
+        [Description("HON")]
         HON,
+        [Description("KAL")]
         KAL,
+        [Description("KAU")]
         KAU,
+        [Description("KOH")]
         KOH,
+        [Description("KON")]
         KON,
+        [Description("LAN")]
         LAN,
+        [Description("LHN")]
         LHN,
+        [Description("MAU")]
         MAU,
+        [Description("MOL")]
         MOL,
+        [Description("NII")]
         NII,
+        [Description("PRL")]
         PRL,
+        [Description("VOL")]
         VOL,
-        WHN,
-        Undefined
+        [Description("WHN")]
+        WHN//,
+        //Undefined
     }
 
     public class Enumerations

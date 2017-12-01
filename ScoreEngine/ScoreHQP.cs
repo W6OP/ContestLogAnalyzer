@@ -130,6 +130,7 @@ namespace W6OP.ContestLogAnalyzer
         private void MarkMultipliersHQP(ContestLog contestLog)
         {
             List<QSO> qsoList = contestLog.QSOCollection;
+            HashSet<string> entities = new HashSet<string>();
 
             var query = qsoList.GroupBy(x => new { x.ContactCall, x.DXCountry, x.Status })
              .Where(g => g.Count() >= 1)
@@ -142,8 +143,20 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (multiList.Any())
                 {
-                    // now set the first one as a multiplier
-                    multiList.First().IsMultiplier = true;
+                   if (Enum.IsDefined(typeof(HQPMults), qso.DXCountry))
+                    {
+                        if (!entities.Contains(qso.DXCountry))
+                        {
+                            // if not in hashset, add it
+                            entities.Add(qso.DXCountry);
+                            // now set the first one as a multiplier
+                            multiList.First().IsMultiplier = true;
+                        }
+                    } else
+                    {
+                        // now set the first one as a multiplier
+                        multiList.First().IsMultiplier = true;
+                    }
                 }
             }
         }

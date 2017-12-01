@@ -248,7 +248,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             List<QSO> dupeList = new List<QSO>();
 
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Band, x.Mode })
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Band, x.Mode, x.DuplicateQsoList })
              .Where(g => g.Count() > 1)
              .Select(y => y.Key)
              .ToList();
@@ -268,16 +268,14 @@ namespace W6OP.ContestLogAnalyzer
                 if (dupeList.Any())
                 {
                     // SOMEHOW WANT TO add all the dupes to the QSO
-                    //dupeList.Select(c => { c.QSOIsDupe = true; return c; }).ToList();
-                    //foreach(QSO q in dupeList)
-                    //{
-                    //    qso.DuplicateQsoList.Add(q);
-                    //}
+                    foreach (QSO q in dupeList)
+                    {
+                        qso.DuplicateQsoList.Add(q);
+                    }
                     // set all as dupes
                     // should list all of these
                     dupeList.Select(c => { c.QSOIsDupe = true && c.Status == QSOStatus.ValidQSO; return c; }).ToList();
                     // now reset the first one as not a dupe
-                    // NEEDS ENHANCING - what if first QSO isInvalid but Dupe isn't ?  && c.Status == QSOStatus.ValidQSO
                     dupeList.First().QSOIsDupe = false;
                     // let me know it has dupes for the rejected qso report
                     dupeList.First().QSOHasDupes = true;
@@ -321,13 +319,13 @@ namespace W6OP.ContestLogAnalyzer
             QSO matchQSO_X = null;
 
 
-            List<QSO> list1 = qsoList.Where(q => q.OperatorCall == "WA6OUD" && q.ContactCall == "KH7XS").ToList();
+            List<QSO> list1 = qsoList.Where(q => q.OperatorCall == "AA1AR" && q.ContactCall == "KH7XS").ToList();
             if (list1 != null && list1.Count > 0)
             {
                 var a = 1;
             }
 
-            List<QSO> list2 = qsoList.Where(q => q.ContactCall == "WA6OUD" && q.OperatorCall == "KH7XS").ToList();
+            List<QSO> list2 = qsoList.Where(q => q.ContactCall == "AA1AR" && q.OperatorCall == "KH7XS").ToList();
             if (list2 != null && list2.Count > 0)
             {
                 var a = 1;
@@ -653,7 +651,7 @@ namespace W6OP.ContestLogAnalyzer
                     break;
             }
 
-            if (matchQSO != null)
+            if (matchQSO != null) // this QSO is not in the other log
             {
                 // determine which guy is at fault
                 if (qso.ContactCall != matchQSO.OperatorCall)
@@ -666,7 +664,7 @@ namespace W6OP.ContestLogAnalyzer
                     matchQSO.HasMatchingQso = true;
                     matchQSO.MatchingQSO = qso;
                     matchQSO.RejectReasons.Clear(); // should not be a collection ?? or lets actually look for multiple reasons
-                    matchQSO.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+                    matchQSO.RejectReasons.Add(RejectReason.NoQSOMatch, EnumHelper.GetDescription(RejectReason.NoQSOMatch));
                     reason = RejectReason.NoQSOMatch;
                 }
             }
