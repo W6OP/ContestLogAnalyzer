@@ -192,11 +192,11 @@ namespace W6OP.ContestLogAnalyzer
                             MarkIncorrectSentEntity(qsoList, name);
                             break;
                     }
-                   
+
                     MatchQSOs(qsoList, contestLogList, call, name);
-
+   
                     validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
-
+                    
                     // ReportProgress with Callsign
                     OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
                 }
@@ -317,20 +317,7 @@ namespace W6OP.ContestLogAnalyzer
             List<ContestLog> tempLog = new List<ContestLog>();
             QSO matchQSO = null;
             QSO matchQSO_X = null;
-
-
-            List<QSO> list1 = qsoList.Where(q => q.OperatorCall == "AA1AR" && q.ContactCall == "KH7XS").ToList();
-            if (list1 != null && list1.Count > 0)
-            {
-                var a = 1;
-            }
-
-            List<QSO> list2 = qsoList.Where(q => q.ContactCall == "AA1AR" && q.OperatorCall == "KH7XS").ToList();
-            if (list2 != null && list2.Count > 0)
-            {
-                var a = 1;
-            }
-
+            
             foreach (QSO qso in qsoList)
             {
                 // get the other log that matches this QSO contact call
@@ -358,7 +345,7 @@ namespace W6OP.ContestLogAnalyzer
                                                   q.ContactCall == qso.OperatorCall && q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
                             break;
                     }
-                   
+
                     if (matchQSO != null) // found it
                     {
                         // store the matching QSO
@@ -388,7 +375,7 @@ namespace W6OP.ContestLogAnalyzer
                     // can't find a matching log
                     // find all the logs this operator is in so we can try to get a match without call signs
                     // don't want to exclude invalid QSOs as we are checking all logs and all QSOs
-                    tempLog = contestLogList.Where(q => q.QSOCollection.Any(a => a.ContactCall == qso.ContactCall)).ToList();
+                    tempLog = contestLogList.Where(q => q.QSOCollection.Any(p => p.ContactCall == qso.ContactCall)).ToList();
 
                     if (tempLog.Count <= 1) // 1 would mean this call sign only in this log
                     {
@@ -397,7 +384,11 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             qso.Status = QSOStatus.ReviewQSO;
                             qso.RejectReasons.Clear();
-                            qso.IsMultiplier = true;
+                            if (ActiveContest == ContestName.CW_OPEN)
+                            {
+                                // give them the point anyway
+                                qso.IsMultiplier = true;
+                            }
                             qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
                         }
                         else

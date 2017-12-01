@@ -132,18 +132,27 @@ namespace W6OP.ContestLogAnalyzer
             List<QSO> qsoList = contestLog.QSOCollection;
             HashSet<string> entities = new HashSet<string>();
 
+            contestLog.Multipliers = 0;
+            contestLog.HQPMultipliers = 0;
+            contestLog.NonHQPMultipliers = 0;
+            contestLog.TotalPoints = 0;
+
             var query = qsoList.GroupBy(x => new { x.ContactCall, x.DXCountry, x.Status })
              .Where(g => g.Count() >= 1)
              .Select(y => y.Key)
              .ToList();
 
+           //int multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO)).ToList().Count();
+           
+            List<QSO> qsoList2 = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO)).ToList();
+
             foreach (var qso in query)
             {
                 List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.DXCountry == qso.DXCountry && item.Status == QSOStatus.ValidQSO).ToList();
-
+                
                 if (multiList.Any())
                 {
-                   if (Enum.IsDefined(typeof(HQPMults), qso.DXCountry))
+                    if (Enum.IsDefined(typeof(HQPMults), qso.DXCountry))
                     {
                         if (!entities.Contains(qso.DXCountry))
                         {
@@ -151,14 +160,26 @@ namespace W6OP.ContestLogAnalyzer
                             entities.Add(qso.DXCountry);
                             // now set the first one as a multiplier
                             multiList.First().IsMultiplier = true;
+                            // for debugging
+                            contestLog.HQPMultipliers += 1;
                         }
-                    } else
+                    }
+                    else
                     {
-                        // now set the first one as a multiplier
-                        multiList.First().IsMultiplier = true;
+                        if (!entities.Contains(qso.DXCountry))
+                        {
+                            // if not in hashset, add it
+                            entities.Add(qso.DXCountry);
+                            // now set the first one as a multiplier
+                            multiList.First().IsMultiplier = true;
+                            // for debugging
+                            contestLog.NonHQPMultipliers += 1;
+                        }
                     }
                 }
             }
+
+            var b = 1;
         }
 
         /// <summary>
@@ -169,9 +190,11 @@ namespace W6OP.ContestLogAnalyzer
         private void MarkMultipliersNonHQP(ContestLog contestLog)
         {
             List<QSO> qsoList = contestLog.QSOCollection;
+            HashSet<string> entities = new HashSet<string>();
+            string consolidated = null;
 
             // target is HPQ
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Status, x.Band, x.Mode })
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.DXCountry, x.Status, x.Band, x.Mode })
              .Where(g => g.Count() >= 1)
              .Select(y => y.Key)
              .ToList();
@@ -179,12 +202,40 @@ namespace W6OP.ContestLogAnalyzer
             foreach (var qso in query)
             {
                 List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Status == QSOStatus.ValidQSO && item.Band == qso.Band && item.Mode == qso.Mode).ToList();
-
                 if (multiList.Any())
                 {
-                    // now set the first one as a multiplier
-                    multiList.First().IsMultiplier = true;
+                    if (Enum.IsDefined(typeof(HQPMults), qso.DXCountry))
+                    {
+                        // key for hashset
+                        consolidated = qso.DXCountry + qso.Band;
+                        if (!entities.Contains(consolidated))
+                        {   
+                            // if not in hashset, add it
+                            entities.Add(consolidated);
+                            // now set the first one as a multiplier
+                            multiList.First().IsMultiplier = true;
+                            // for debugging
+                            contestLog.HQPMultipliers += 1;
+
+                            if (contestLog.HQPMultipliers > 84)
+                            {
+                                var a = 1;
+                            }
+                        }
+                    }
                 }
+                //else
+                //{
+                //    // now set the first one as a multiplier
+                //    multiList.First().IsMultiplier = true;
+                //    // for debugging
+                //    contestLog.NonHQPMultipliers += 1;
+                //}
+                //if (multiList.Any())
+                //{
+                //    // now set the first one as a multiplier
+                //    multiList.First().IsMultiplier = true;
+                //}
             }
         }
 
@@ -200,16 +251,16 @@ namespace W6OP.ContestLogAnalyzer
             Int32 totalValidQSOs = 0;
 
             totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
-            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
+            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO)).ToList().Count();
 
             contestLog.Multipliers = multiplierCount;
             if (multiplierCount != 0)
             {
                 if (!contestLog.IsHQPEntity)
                 {
-                    if (contestLog.TotalPoints > 84)
+                    if (contestLog.Multipliers > 84)
                     {
-                        contestLog.TotalPoints = 84;
+                        contestLog.Multipliers = 84;
                     }
                 }
                 contestLog.ActualScore = multiplierCount * contestLog.TotalPoints;

@@ -126,7 +126,7 @@ namespace W6OP.ContestLogAnalyzer
             Int32 totalValidQSOs = 0;
 
             totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
-            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier== true && q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
+            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier== true && (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO)).ToList().Count();
 
             //if (!qso.HasMatchingQso)
             //{

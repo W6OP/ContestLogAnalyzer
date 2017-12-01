@@ -13,6 +13,8 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public ContestLog()
         {
+            HQPMultipliers = 0;
+            NonHQPMultipliers = 0;
         }
 
         /// <summary>
@@ -150,6 +152,10 @@ namespace W6OP.ContestLogAnalyzer
                 //ActualScore = _Multipliers * count;
             }
         }
+
+        // For debugging use in HQP
+        public Int32 HQPMultipliers { get; set; }
+        public Int32 NonHQPMultipliers { get; set; }
 
         // used for the HQP
         public int TotalPoints { get; set; }

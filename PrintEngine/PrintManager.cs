@@ -451,20 +451,9 @@ namespace W6OP.PrintEngine
                     {
                         foreach (QSO qso in inValidQsoList)
                         {
-                            //switch (_ActiveContest)
-                            //{
-                            //    case ContestName.CW_OPEN:
-                            // print QSO line and reject reason
                             message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
                                         qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
-                            //        break;
-                            //    case ContestName.HQP:
-                            //        // print QSO line and reject reason
-                            //        message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
-                            //                    qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
-                            //        break;
-                            //}
-
+                                   
                             // should only be one reason so lets change the collection type
                             foreach (var key in qso.RejectReasons.Keys)
                             {
@@ -659,12 +648,30 @@ namespace W6OP.PrintEngine
             Int32 score = 0;
 
             totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
-            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
+            multiplierCount = contestLog.Multipliers;   //.QSOCollection.Where(q => q.IsMultiplier == true && q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
             score = contestLog.ActualScore;
 
             sw.WriteLine(message);
 
-            message = String.Format("Final:   Valid QSOs: {0}   Mults: {1}   Score: {2}", totalValidQSOs.ToString(), multiplierCount.ToString(), score.ToString());
+            switch (_ActiveContest)
+            {
+                case ContestName.CW_OPEN:
+                    message = String.Format("Final:   Valid QSOs: {0}   Mults: {1}   Score: {2}", totalValidQSOs.ToString(), multiplierCount.ToString(), score.ToString());
+                    break;
+                case ContestName.HQP:
+                    if (contestLog.IsHQPEntity)
+                    {
+                        message = String.Format("Final:   Valid QSOs: {0}   HQP Mults: {1}   NonHQP Mults: {2}   Total Mults: {3}   Score: {4}",
+                        totalValidQSOs.ToString(), contestLog.HQPMultipliers.ToString(), contestLog.NonHQPMultipliers.ToString(), multiplierCount.ToString(), score.ToString());
+                    }
+                    else
+                    {
+                        message = String.Format("Final:   Valid QSOs: {0}   HQP Mults: {1} Total Mults: {2}   Score: {3}",
+                        totalValidQSOs.ToString(), contestLog.HQPMultipliers.ToString(), multiplierCount.ToString(), score.ToString());
+                    }
+                    break;
+            }
+
             sw.WriteLine(message);
 
             message = String.Format("Category:   {0}   Power: {1} ", contestLog.LogHeader.OperatorCategory, contestLog.LogHeader.Power);
