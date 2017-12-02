@@ -30,6 +30,8 @@ namespace W6OP.ContestLogAnalyzer
 
         public QSO MatchingQSO { get; set; } = null;
 
+        public QSO DupeListLocation { get; set; } = null;
+
         public List<QSO> DuplicateQsoList { get; set; } = new List<QSO>();
 
         /// <summary>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?define ProductVersion = "1.0.61"?>
+<?define ProductVersion = "1.0.62"?>
 <?define ProductUpgradeCode = "e7d24a3a-1258-402f-8cbc-8a4a603f6542"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Product Id="*" Name="Contest Log Analzer" Language="1033" Version="$(var.ProductVersion)" Manufacturer="W6OP" UpgradeCode="$(var.ProductUpgradeCode)">

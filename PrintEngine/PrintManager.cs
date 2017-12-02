@@ -330,7 +330,7 @@ namespace W6OP.PrintEngine
                     {
                         // only look at valid QSOs
                         validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
-                       
+
                         table.AddCell(new Phrase(contestlog.LogOwner, fontTable));
                         table.AddCell(new Phrase(contestlog.Operator, fontTable));
                         table.AddCell(new Phrase(contestlog.Station, fontTable));
@@ -453,7 +453,7 @@ namespace W6OP.PrintEngine
                         {
                             message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
                                         qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
-                                   
+
                             // should only be one reason so lets change the collection type
                             foreach (var key in qso.RejectReasons.Keys)
                             {
@@ -523,23 +523,37 @@ namespace W6OP.PrintEngine
                                 }
                             }
 
-
-                            sw.WriteLine(message + "\t" + value.ToString());
+                            sw.WriteLine(value.ToString());
+                            sw.WriteLine(message);
 
                             // print info on the original that was duped - the one that was counted
-                            if (qso.MatchingQSO != null)
+                            if (qso.MatchingQSO != null || qso.DupeListLocation != null)
                             {
                                 QSO dupeQSO = qso.MatchingQSO;
+                                if (qso.DupeListLocation == null)
+                                {
+                                    message = "QSO: " + "\t" + dupeQSO.Frequency + "\t" + dupeQSO.Mode + "\t" + dupeQSO.QsoDate + "\t" + dupeQSO.QsoTime + "\t" + dupeQSO.OperatorCall + "\t" + dupeQSO.SentSerialNumber.ToString() + "\t" +
+                                           dupeQSO.OperatorName + "\t" + dupeQSO.ContactCall + "\t" + dupeQSO.ReceivedSerialNumber.ToString() + "\t" + dupeQSO.ContactName;
 
-                                message = "QSO: " + "\t" + dupeQSO.Frequency + "\t" + dupeQSO.Mode + "\t" + dupeQSO.QsoDate + "\t" + dupeQSO.QsoTime + "\t" + dupeQSO.OperatorCall + "\t" + dupeQSO.SentSerialNumber.ToString() + "\t" +
-                                       dupeQSO.OperatorName + "\t" + dupeQSO.ContactCall + "\t" + dupeQSO.ReceivedSerialNumber.ToString() + "\t" + dupeQSO.ContactName;
+                                    sw.WriteLine(message);
+                                }
+                                else
+                                {
+                                    sw.WriteLine("Duplicate QSOs");
+                                    foreach (QSO item in qso.DupeListLocation.DuplicateQsoList)
+                                    {
+                                        dupeQSO = item;
+                                       // string temp = dupeQSO.RejectReasons[RejectReason.DuplicateQSO].ToString();
 
-                                //if (qso.ExcessTimeSpan > 0)
-                                //{
-                                //    message = message + "\t" + qso.ExcessTimeSpan.ToString() + " minutes difference";
-                                //}
+                                        //if (temp != null)
+                                        //{
+                                            message = "QSO: " + "\t" + dupeQSO.Frequency + "\t" + dupeQSO.Mode + "\t" + dupeQSO.QsoDate + "\t" + dupeQSO.QsoTime + "\t" + dupeQSO.OperatorCall + "\t" + dupeQSO.SentSerialNumber.ToString() + "\t" +
+                                               dupeQSO.OperatorName + "\t" + dupeQSO.ContactCall + "\t" + dupeQSO.ReceivedSerialNumber.ToString() + "\t" + dupeQSO.ContactName;
 
-                                sw.WriteLine(message);
+                                            sw.WriteLine(message);
+                                        //}
+                                    }
+                                }
                             }
 
                             sw.WriteLine("");
@@ -548,7 +562,6 @@ namespace W6OP.PrintEngine
                     else
                     {
                         sw.WriteLine("Golden log with zero errors in session " + session.ToString() + ". Congratulations!");
-
                     }
 
                     AddFooter(contestLog, sw);
