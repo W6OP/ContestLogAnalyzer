@@ -104,7 +104,7 @@ namespace W6OP.ContestLogAnalyzer
 
             foreach (var qso in query)
             {
-                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Status == QSOStatus.ValidQSO).ToList();
+                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
 
                 if (multiList.Any())
                 {
@@ -126,18 +126,9 @@ namespace W6OP.ContestLogAnalyzer
             Int32 totalValidQSOs = 0;
 
             totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
-            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier== true && (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO)).ToList().Count();
-
-            //if (!qso.HasMatchingQso)
-            //{
-            //}
-                // need to subtract dupes and invalid logs
-                //uniqueCount = contestLog.QSOCollection
-                //    .Where(q => q.Status == QSOStatus.ValidQSO)
-                //    .GroupBy(p=> p.ContactCall, StringComparer.OrdinalIgnoreCase)
-                //    .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase).Count();
-
-                contestLog.Multipliers = multiplierCount;
+            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO)).ToList().Count();
+            
+            contestLog.Multipliers = multiplierCount;
             if (multiplierCount != 0)
             {
                 contestLog.ActualScore = totalValidQSOs * multiplierCount;

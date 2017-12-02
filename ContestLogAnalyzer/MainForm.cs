@@ -213,6 +213,8 @@ namespace W6OP.ContestLogAnalyzer
             TabControlMain.SelectTab(TabPageLogStatus);
             _LogFileList = null;
 
+            UpdateLabel("Loading Contest Logs");
+
             switch (_ActiveContest)
             {
                 case ContestName.CW_OPEN:
@@ -429,6 +431,8 @@ namespace W6OP.ContestLogAnalyzer
                 Cursor = Cursors.Default;
             }
 
+            UpdateLabel("");
+
             ProgressBarLoad.Maximum = _ContestLogs.Count;
             ProgressBarLoad.Value = _ContestLogs.Count;
 
@@ -574,6 +578,8 @@ namespace W6OP.ContestLogAnalyzer
             TabControlMain.SelectTab(TabPageScoring);
             UpdateListViewScore(new ContestLog(), true);
 
+            UpdateLabel("Scoring Contest Logs");
+
             Cursor = Cursors.WaitCursor;
             ResetProgressBar(true);
             // now score each log
@@ -642,8 +648,9 @@ namespace W6OP.ContestLogAnalyzer
                 UpdateListViewScore("Final score report has been generated.", false);
             }
 
-            Cursor = Cursors.Default;
+            UpdateLabel("");
 
+            Cursor = Cursors.Default;
         }
 
         #endregion

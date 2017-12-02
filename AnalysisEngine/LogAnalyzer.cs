@@ -248,7 +248,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             List<QSO> dupeList = new List<QSO>();
 
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Band, x.Mode, x.DuplicateQsoList })
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Band, x.Mode })
              .Where(g => g.Count() > 1)
              .Select(y => y.Key)
              .ToList();
@@ -267,18 +267,18 @@ namespace W6OP.ContestLogAnalyzer
                
                 if (dupeList.Any())
                 {
-                    // SOMEHOW WANT TO add all the dupes to the QSO
-                    foreach (QSO q in dupeList)
-                    {
-                        qso.DuplicateQsoList.Add(q);
-                    }
                     // set all as dupes
-                    // should list all of these
                     dupeList.Select(c => { c.QSOIsDupe = true && c.Status == QSOStatus.ValidQSO; return c; }).ToList();
                     // now reset the first one as not a dupe
                     dupeList.First().QSOIsDupe = false;
                     // let me know it has dupes for the rejected qso report
                     dupeList.First().QSOHasDupes = true;
+                    // add all the dupes to the QSO
+                    foreach (var item in dupeList.Skip(1))
+                    {
+                        dupeList[0].DuplicateQsoList.Add(item);
+                    }
+                        //dupeList[0].DuplicateQsoList = (List<QSO>)dupeList.Skip(1);
                 }
             }
         }

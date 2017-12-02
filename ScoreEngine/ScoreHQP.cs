@@ -224,18 +224,6 @@ namespace W6OP.ContestLogAnalyzer
                         }
                     }
                 }
-                //else
-                //{
-                //    // now set the first one as a multiplier
-                //    multiList.First().IsMultiplier = true;
-                //    // for debugging
-                //    contestLog.NonHQPMultipliers += 1;
-                //}
-                //if (multiList.Any())
-                //{
-                //    // now set the first one as a multiplier
-                //    multiList.First().IsMultiplier = true;
-                //}
             }
         }
 

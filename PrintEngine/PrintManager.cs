@@ -513,6 +513,10 @@ namespace W6OP.PrintEngine
                                         //value = qso.RejectReasons[key];
                                     }
                                 }
+                                else if (key == RejectReason.DuplicateQSO)
+                                {
+                                    value = qso.RejectReasons[key];
+                                }
                                 else
                                 {
                                     value = qso.RejectReasons[key];
@@ -661,13 +665,13 @@ namespace W6OP.PrintEngine
                 case ContestName.HQP:
                     if (contestLog.IsHQPEntity)
                     {
-                        message = String.Format("Final:   Valid QSOs: {0}   HQP Mults: {1}   NonHQP Mults: {2}   Total Mults: {3}   Score: {4}",
-                        totalValidQSOs.ToString(), contestLog.HQPMultipliers.ToString(), contestLog.NonHQPMultipliers.ToString(), multiplierCount.ToString(), score.ToString());
+                        message = String.Format("Final:   Valid QSOs: {0}   HQP Mults: {1}   NonHQP Mults: {2}   Total Mults: {3}   Points: {4}   Score: {5}",
+                        totalValidQSOs.ToString(), contestLog.HQPMultipliers.ToString(), contestLog.NonHQPMultipliers.ToString(), multiplierCount.ToString(), contestLog.TotalPoints.ToString(), score.ToString());
                     }
                     else
                     {
-                        message = String.Format("Final:   Valid QSOs: {0}   HQP Mults: {1} Total Mults: {2}   Score: {3}",
-                        totalValidQSOs.ToString(), contestLog.HQPMultipliers.ToString(), multiplierCount.ToString(), score.ToString());
+                        message = String.Format("Final:   Valid QSOs: {0}   HQP Mults: {1} Total Mults: {2}   Points: {3}   Score: {4}",
+                        totalValidQSOs.ToString(), contestLog.HQPMultipliers.ToString(), multiplierCount.ToString(), contestLog.TotalPoints.ToString(), score.ToString());
                     }
                     break;
             }
