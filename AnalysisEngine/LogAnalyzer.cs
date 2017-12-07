@@ -178,8 +178,7 @@ namespace W6OP.ContestLogAnalyzer
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
                     qsoList = contestLog.QSOCollection;
-
-                    //MarkDuplicateQSOs(qsoList);
+                    //qsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
 
                     MarkIncorrectCallSigns(qsoList, call);
                     
@@ -229,7 +228,8 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
-                    qsoList = contestLog.QSOCollection;
+                    //qsoList = contestLog.QSOCollection;
+                    qsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
 
                     MatchQSOs(qsoList, contestLogList, call, name);
 
@@ -606,7 +606,7 @@ namespace W6OP.ContestLogAnalyzer
                 return RejectReason.Band;
             }
 
-            // query for incorrect name
+            // query for incorrect name or entity (HQP)
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:

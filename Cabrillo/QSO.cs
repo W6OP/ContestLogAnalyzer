@@ -25,8 +25,12 @@ namespace W6OP.ContestLogAnalyzer
             get { return _RejectReasons; }
         }
 
-        //private QSOStatus _Status = QSOStatus.ValidQSO;
-        public QSOStatus Status { get; set; } = QSOStatus.ValidQSO;
+        private QSOStatus _Status = QSOStatus.ValidQSO;
+        public QSOStatus Status {
+            get => _Status;
+            set => _Status = value;
+        }
+        //public QSOStatus Status { get; set; } = QSOStatus.ValidQSO;
 
         public QSO MatchingQSO { get; set; } = null;
 
