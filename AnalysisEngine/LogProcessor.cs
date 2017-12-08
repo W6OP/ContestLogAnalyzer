@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CallParser;
 using W6OP.PrintEngine;
 using NetworkLookup;
+using System.Collections;
 
 namespace W6OP.ContestLogAnalyzer
 {
@@ -32,6 +33,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private string _WorkingLine = null;
         private CallParser.CallsignParser _Parser;
+        private Hashtable _CallSignSet;
 
         /// <summary>
         /// Default constructor.
@@ -40,6 +42,8 @@ namespace W6OP.ContestLogAnalyzer
         {
             _FailingLine = "";
             _WorkingLine = "";
+
+            _CallSignSet = new Hashtable();
         }
 
         public void InitializeLogProcessor(ContestName contestName)
@@ -136,7 +140,7 @@ namespace W6OP.ContestLogAnalyzer
                         contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
                     }
 
-                    List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+                   // List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
 
                     // make sure minimum amout of information is correct
                     if (contestLog.LogHeader != null && AnalyzeHeader(contestLog, out reason) == true)
@@ -258,11 +262,11 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     message = ex.Message + "\r\nThere is probably an alpha character in the header where it should be numeric.";
                 }
-                else  if (ex.Message.IndexOf("Object reference not set to an instance of an object.") != -1)
+                else if (ex.Message.IndexOf("Object reference not set to an instance of an object.") != -1)
                 {
                     message = "\r\nA required field is missing from the header. Possibly the Contest Name.";
                 }
-                else 
+                else
                 {
                     message = ex.Message;
                 }
@@ -280,6 +284,8 @@ namespace W6OP.ContestLogAnalyzer
         private void SetDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
         {
             CallParser.PrefixInfo prefixInfo = null;
+            CallParser.PrefixInfo prefixInfo2 = null;
+
             bool isValidHQPEntity = false;
             string[] info = new string[2] { "0", "0" };
             //HashSet<string> qsoSet = new HashSet<string>();
@@ -308,7 +314,7 @@ namespace W6OP.ContestLogAnalyzer
                 // this QSO is invalid - complete
                 if (!isValidHQPEntity && qso.DXCountry == "DX")
                 {
-                    qso.EntityIsInValid = true;  
+                    qso.EntityIsInValid = true;
                 }
 
                 // -----------------------------------------------------------------------------------
@@ -331,15 +337,24 @@ namespace W6OP.ContestLogAnalyzer
 
                                 if (qso.DXCountry == "Canada" || qso.DXCountry == "United States of America")
                                 {
-                                    info = _QRZ.QRZLookup(qso.ContactCall, info);
-                                    qso.DXCountry = info[0];
+                                    qso.Country = qso.DXCountry; // persist if USA or Canada
+                                    qso.RealDXCountry = qso.DXCountry;
+
+                                    if (!_CallSignSet.Contains(qso.ContactCall))
+                                    {
+                                        info = _QRZ.QRZLookup(qso.ContactCall, info);
+                                        qso.DXCountry = info[0];
+
+                                        _CallSignSet.Add(qso.ContactCall, qso.DXCountry);
+                                    }
+                                    else
+                                    {
+                                        qso.DXCountry = (String)_CallSignSet[qso.ContactCall];
+                                    }
                                 }
                             }
                         }
                     }
-
-                    // query in scoring or count will be off if dupes eliminated
-                    //contestLog.TotalPoints += 1;   
                 }
 
                 // -----------------------------------------------------------------------------------
@@ -358,11 +373,40 @@ namespace W6OP.ContestLogAnalyzer
                                 qso.OperatorCountry = prefixInfo.Territory.ToString();
                                 if (qso.DXCountry == "Canada" || qso.DXCountry == "United States of America")
                                 {
-                                    info = _QRZ.QRZLookup(qso.ContactCall, info);
-                                    qso.DXCountry = info[0];
+                                    qso.Country = qso.DXCountry; // persist if USA or Canada
+                                    qso.RealDXCountry = qso.DXCountry;
+
+                                    if (!_CallSignSet.Contains(qso.ContactCall))
+                                    {
+                                        info = _QRZ.QRZLookup(qso.ContactCall, info);
+                                        qso.DXCountry = info[0];
+
+                                        _CallSignSet.Add(qso.ContactCall, qso.DXCountry);
+                                    }
+                                    else
+                                    {
+                                        qso.DXCountry = (String)_CallSignSet[qso.ContactCall];
+                                    }
                                 }
                             }
                         }
+                    }
+                }
+                else
+                {   // need this to do log matching - SearchForIncorrectName()
+                    prefixInfo = GetPrefixInformation(qso.ContactCall);
+                    prefixInfo2 = GetPrefixInformation(qso.OperatorCall);
+
+                    if (prefixInfo != null && prefixInfo.Territory != null)
+                    {
+                        qso.RealDXCountry = prefixInfo.Territory.ToString();
+                        var q = 2;
+                    }
+
+                    if (prefixInfo2 != null && prefixInfo2.Territory != null)
+                    {
+                        qso.Country = prefixInfo2.Territory.ToString();
+                        var f = 2;
                     }
                 }
             }
@@ -573,7 +617,7 @@ namespace W6OP.ContestLogAnalyzer
             inputString = inputString.Replace(",", "");
 
             int i = 0;
-            bool result = int.TryParse(inputString, out i); 
+            bool result = int.TryParse(inputString, out i);
             return i;
         }
 
@@ -690,10 +734,10 @@ namespace W6OP.ContestLogAnalyzer
                              Mode = split[2],
                              QsoDate = split[3],
                              QsoTime = CheckTime(split[4], line),
-                             OperatorCall = split[5],
+                             OperatorCall = RemovePreOrSuffix(split[5]),
                              SentSerialNumber = ConvertSerialNumber(split[6]),
                              OperatorName = split[7],
-                             ContactCall = split[8],
+                             ContactCall = RemovePreOrSuffix(split[8]),
                              ReceivedSerialNumber = ConvertSerialNumber(split[9]),
                              ContactName = split[10],
                              CallIsInValid = CheckCallSignFormat(split[5]),
@@ -706,22 +750,22 @@ namespace W6OP.ContestLogAnalyzer
                     IEnumerable<QSO> qso =
                          from line in lineList
                          let split = line.Split(' ')
-                         
-                        select new QSO()
-                        {
-                            Status =  CheckCompleteQSO(split, line),
-                            Frequency = CheckFrequency(split[1], line),
-                            Mode = split[2],
-                            QsoDate = split[3],
-                            QsoTime = CheckTime(split[4], line),
-                            OperatorCall = split[5],
-                            OperatorName = split[6],
-                            SentSerialNumber = ConvertSerialNumber(split[7]),
-                            ContactCall = split[8],
-                            ContactName = split[9],
-                            ReceivedSerialNumber = ConvertSerialNumber(split[10]),
-                            CallIsInValid = CheckCallSignFormat(split[5]),
-                            SessionIsValid = CheckForvalidSession(session, split[4])
+
+                         select new QSO()
+                         {
+                             Status = CheckCompleteQSO(split, line),
+                             Frequency = CheckFrequency(split[1], line),
+                             Mode = split[2],
+                             QsoDate = split[3],
+                             QsoTime = CheckTime(split[4], line),
+                             OperatorCall = split[5],
+                             OperatorName = split[6],
+                             SentSerialNumber = ConvertSerialNumber(split[7]),
+                             ContactCall = split[8],
+                             ContactName = split[9],
+                             ReceivedSerialNumber = ConvertSerialNumber(split[10]),
+                             CallIsInValid = CheckCallSignFormat(split[5]),
+                             SessionIsValid = CheckForvalidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
                 }
@@ -744,6 +788,32 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return qsoList;
+        }
+
+        /// <summary>
+        /// Remove the prefix or suffix from call signs so they can be compared.
+        /// Sometimes it is KH6/N6JI and sometimes N6JI/KH6.
+        /// </summary>
+        /// <param name="callSign"></param>
+        /// <returns></returns>
+        private string RemovePreOrSuffix(string callSign)
+        {
+            if (callSign.IndexOf("/") != -1)
+            {
+                int temp1 = callSign.Substring(0, callSign.IndexOf("/")).Length;
+                int temp2 = callSign.Substring(callSign.IndexOf("/")).Length;
+
+                if (temp1 > temp2)
+                {
+                    return callSign.Substring(0, callSign.IndexOf("/"));
+                }
+                else
+                {
+                    return callSign.Substring(callSign.IndexOf("/") + 1);
+                }
+            }
+
+            return callSign;
         }
 
         /// <summary>
@@ -772,7 +842,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             _WorkingLine = line;
 
-            if  (CheckForNumeric(frequency) == 0)
+            if (CheckForNumeric(frequency) == 0)
             {
                 _FailingLine += Environment.NewLine + "Frequency is not correctly formatted.";
                 _FailingLine += Environment.NewLine + line;

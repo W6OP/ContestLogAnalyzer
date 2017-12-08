@@ -126,7 +126,7 @@
             // 
             this.ButtonLoadLogs.Location = new System.Drawing.Point(24, 124);
             this.ButtonLoadLogs.Name = "ButtonLoadLogs";
-            this.ButtonLoadLogs.Size = new System.Drawing.Size(119, 23);
+            this.ButtonLoadLogs.Size = new System.Drawing.Size(131, 23);
             this.ButtonLoadLogs.TabIndex = 6;
             this.ButtonLoadLogs.Text = "Load Contest Logs";
             this.ButtonLoadLogs.UseVisualStyleBackColor = true;
@@ -318,7 +318,7 @@
             // 
             this.ProgressBarLoad.Location = new System.Drawing.Point(424, 124);
             this.ProgressBarLoad.Name = "ProgressBarLoad";
-            this.ProgressBarLoad.Size = new System.Drawing.Size(428, 23);
+            this.ProgressBarLoad.Size = new System.Drawing.Size(456, 23);
             this.ProgressBarLoad.Step = 1;
             this.ProgressBarLoad.TabIndex = 1399;
             // 
@@ -490,17 +490,17 @@
             // ButtonPreScoreReports
             // 
             this.ButtonPreScoreReports.Enabled = false;
-            this.ButtonPreScoreReports.Location = new System.Drawing.Point(277, 36);
+            this.ButtonPreScoreReports.Location = new System.Drawing.Point(258, 36);
             this.ButtonPreScoreReports.Name = "ButtonPreScoreReports";
-            this.ButtonPreScoreReports.Size = new System.Drawing.Size(141, 23);
+            this.ButtonPreScoreReports.Size = new System.Drawing.Size(160, 23);
             this.ButtonPreScoreReports.TabIndex = 3;
-            this.ButtonPreScoreReports.Text = "Create Pre Score Report";
+            this.ButtonPreScoreReports.Text = "Create Pre Analysis Report";
             this.ButtonPreScoreReports.UseVisualStyleBackColor = true;
             this.ButtonPreScoreReports.Click += new System.EventHandler(this.ButtonPreScoreReports_Click);
             // 
             // ButtonCompareLogs
             // 
-            this.ButtonCompareLogs.Location = new System.Drawing.Point(562, 36);
+            this.ButtonCompareLogs.Location = new System.Drawing.Point(594, 36);
             this.ButtonCompareLogs.Name = "ButtonCompareLogs";
             this.ButtonCompareLogs.Size = new System.Drawing.Size(94, 23);
             this.ButtonCompareLogs.TabIndex = 11;
@@ -519,7 +519,7 @@
             // TextBoxLog1
             // 
             this.TextBoxLog1.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.TextBoxLog1.Location = new System.Drawing.Point(666, 36);
+            this.TextBoxLog1.Location = new System.Drawing.Point(694, 36);
             this.TextBoxLog1.MaxLength = 15;
             this.TextBoxLog1.Name = "TextBoxLog1";
             this.TextBoxLog1.Size = new System.Drawing.Size(90, 23);
@@ -528,7 +528,7 @@
             // TextBoxLog2
             // 
             this.TextBoxLog2.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.TextBoxLog2.Location = new System.Drawing.Point(762, 36);
+            this.TextBoxLog2.Location = new System.Drawing.Point(790, 36);
             this.TextBoxLog2.MaxLength = 15;
             this.TextBoxLog2.Name = "TextBoxLog2";
             this.TextBoxLog2.Size = new System.Drawing.Size(90, 23);

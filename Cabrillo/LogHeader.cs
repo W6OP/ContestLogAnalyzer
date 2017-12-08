@@ -51,7 +51,16 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    _OperatorCallSign = value.Substring(0, value.IndexOf("/"));
+                    int temp1 = value.Substring(0, value.IndexOf("/")).Length;
+                    int temp2 = value.Substring(value.IndexOf("/")).Length;
+                   
+                    if (temp1 > temp2)
+                    {
+                        _OperatorCallSign = value.Substring(0, value.IndexOf("/"));
+                    } else
+                    {
+                        _OperatorCallSign = value.Substring(value.IndexOf("/") + 1);
+                    } 
                 }
             }
         }

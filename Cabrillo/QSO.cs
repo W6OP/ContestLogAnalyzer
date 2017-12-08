@@ -26,7 +26,8 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         private QSOStatus _Status = QSOStatus.ValidQSO;
-        public QSOStatus Status {
+        public QSOStatus Status
+        {
             get => _Status;
             set => _Status = value;
         }
@@ -289,11 +290,12 @@ namespace W6OP.ContestLogAnalyzer
         //    set { _Mode = value; }
         //}
 
-        
+
         private DateTime _QSODateTime;
         public DateTime QSODateTime
         {
-            get {
+            get
+            {
                 string qtime = QsoTime.Insert(2, ":");
 
                 DateTime.TryParse(QsoDate + " " + qtime, out _QSODateTime);
@@ -339,21 +341,36 @@ namespace W6OP.ContestLogAnalyzer
 
         //later add Entity for HQP
         private string _OperatorName;
-        public string OperatorName 
+        public string OperatorName
         {
             get { return _OperatorName.ToUpper(); }
             set { _OperatorName = value; }
         }
 
-        //private Int32 _ReceivedSerialNumber;
+        /// <summary>
+        /// Not used for HQP
+        /// </summary>
         public Int32 ReceivedSerialNumber { get; set; }
-        //{
-        //    get { return _ReceivedSerialNumber; }
-        //    set { _ReceivedSerialNumber = value; }
-        //}
+        
+        /// <summary>
+        /// Top level country - Used in HQP
+        /// Applied to US and Canadian stations so I can check the state or province
+        /// </summary>
+        public string Country { get; set; }
 
+        /// <summary>
+        /// The real or top level country of the  contact or DX station
+        /// </summary>
+        public string RealDXCountry { get; set; }
+
+        /// <summary>
+        /// Contact country - HQP - This can be state or Canadian province 2 letter code
+        /// </summary>
         public string DXCountry { get; set; }
 
+        /// <summary>
+        /// Operator country as defined by HQP
+        /// </summary>
         public string OperatorCountry { get; set; }
 
         /// <summary>

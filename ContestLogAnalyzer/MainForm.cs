@@ -1035,7 +1035,6 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
 
-            // return empty list
             return lines;
         }
 
