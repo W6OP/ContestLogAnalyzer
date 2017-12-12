@@ -276,7 +276,7 @@ namespace W6OP.ContestLogAnalyzer
                     // let me know it has dupes for the rejected qso report
                     dupeList.First().QSOHasDupes = true;
                     // add all the dupes to the QSO
-                    foreach (var item in dupeList)
+                    foreach (var item in dupeList.Skip(1))
                     {
                         dupeList.First().DuplicateQsoList.Add(item);
                         item.DupeListLocation = dupeList.First();
@@ -677,7 +677,7 @@ namespace W6OP.ContestLogAnalyzer
                     matchQSO.MatchingQSO = qso;
                     matchQSO.RejectReasons.Clear(); // should not be a collection ?? or lets actually look for multiple reasons
                     matchQSO.RejectReasons.Add(RejectReason.NoQSOMatch, EnumHelper.GetDescription(RejectReason.NoQSOMatch));
-                    reason = RejectReason.NoQSOMatch;
+                   // reason = RejectReason.NoQSOMatch;
                 }
             }
 

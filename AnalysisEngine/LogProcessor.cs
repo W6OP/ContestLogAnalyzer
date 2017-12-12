@@ -801,15 +801,15 @@ namespace W6OP.ContestLogAnalyzer
             if (callSign.IndexOf("/") != -1)
             {
                 int temp1 = callSign.Substring(0, callSign.IndexOf("/")).Length;
-                int temp2 = callSign.Substring(callSign.IndexOf("/")).Length;
+                int temp2 = callSign.Substring(callSign.IndexOf("/")).Length -1;
 
                 if (temp1 > temp2)
                 {
-                    return callSign.Substring(0, callSign.IndexOf("/"));
+                    callSign =  callSign.Substring(0, callSign.IndexOf("/"));
                 }
                 else
                 {
-                    return callSign.Substring(callSign.IndexOf("/") + 1);
+                    callSign = callSign.Substring(callSign.IndexOf("/") + 1);
                 }
             }
 

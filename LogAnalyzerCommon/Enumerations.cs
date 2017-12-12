@@ -26,7 +26,7 @@ namespace W6OP.ContestLogAnalyzer
         EntityName,
         //[Description("The sent serial number does not match")]
         //Sent,
-        [Description("This is a duplicate QSO")]
+        [Description("There were duplicates of this QSO")]
         DuplicateQSO,
         [Description("The call sign is invalid")]
         InvalidCall,

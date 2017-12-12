@@ -39,6 +39,8 @@ namespace W6OP.ContestLogAnalyzer
 
         public List<QSO> DuplicateQsoList { get; set; } = new List<QSO>();
 
+        public bool HasBeenPrinted { get; set; } = false;
+
         /// <summary>
         ///This is a duplicate QSO
         /// </summary>

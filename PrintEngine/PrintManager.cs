@@ -405,6 +405,7 @@ namespace W6OP.PrintEngine
         /// <param name="contestLog"></param>
         public void PrintLogSummaryReport(ContestLog contestLog, string callsign)
         {
+            QSO originalQSO = null;
             string reportFileName = null;
             string message = null;
             var value = "";
@@ -451,8 +452,22 @@ namespace W6OP.PrintEngine
                     {
                         foreach (QSO qso in inValidQsoList)
                         {
-                            message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
-                                        qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
+                            qso.HasBeenPrinted = false;
+                        }
+
+                        foreach (QSO qso in inValidQsoList)
+                        {
+                            //qso.HasBeenPrinted = false;
+                            if (qso.HasBeenPrinted)
+                            {
+                                continue;
+                            }
+
+                            if (qso.QSOHasDupes == false && qso.QSOIsDupe == false)
+                            {
+                                message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
+                                                                       qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
+                            }
 
                             // should only be one reason so lets change the collection type
                             foreach (var key in qso.RejectReasons.Keys)
@@ -515,7 +530,29 @@ namespace W6OP.PrintEngine
                                 }
                                 else if (key == RejectReason.DuplicateQSO)
                                 {
-                                    value = qso.RejectReasons[key];
+                                    message = null;
+
+                                    if (qso.HasBeenPrinted == false)
+                                    {
+                                        //value = qso.RejectReasons[key];
+                                        //originalQSO = qso.DupeListLocation;
+  
+
+                                        //message = "QSO: " + "\t" + originalQSO.Frequency + "\t" + originalQSO.Mode + "\t" + originalQSO.QsoDate + "\t" + originalQSO.QsoTime + "\t" + originalQSO.OperatorCall + "\t" + originalQSO.SentSerialNumber.ToString() + "\t" +
+                                        //           originalQSO.OperatorName + "\t" + originalQSO.ContactCall + "\t" + originalQSO.ReceivedSerialNumber.ToString() + "\t" + originalQSO.ContactName;
+
+                                        //sw.WriteLine(value.ToString());
+                                        //sw.WriteLine(message);
+
+                                        //message = String.Format("Here are the other QSOs that were made with {0} that match the mode and band", qso.DupeListLocation.ContactCall);
+                                        message = "Duplicates ignored for scoring purposes:";
+                                        sw.WriteLine(message);
+
+                                        message = null;
+
+                                        PrintDuplicates(qso.DupeListLocation, sw);
+                                        sw.WriteLine("");
+                                    }
                                 }
                                 else
                                 {
@@ -523,38 +560,53 @@ namespace W6OP.PrintEngine
                                 }
                             }
 
-                            sw.WriteLine(value.ToString());
-                            sw.WriteLine(message);
-
-                            // print info on the original that was duped - the one that was counted
-                            if (qso.MatchingQSO != null || qso.DupeListLocation != null)
+                            if (message != null)
                             {
-                                QSO dupeQSO = qso.MatchingQSO;
-                                if (qso.DupeListLocation == null)
+                                sw.WriteLine(value.ToString());
+                                sw.WriteLine(message);
+
+                                if (qso.MatchingQSO != null)
                                 {
-                                    message = "QSO: " + "\t" + dupeQSO.Frequency + "\t" + dupeQSO.Mode + "\t" + dupeQSO.QsoDate + "\t" + dupeQSO.QsoTime + "\t" + dupeQSO.OperatorCall + "\t" + dupeQSO.SentSerialNumber.ToString() + "\t" +
-                                           dupeQSO.OperatorName + "\t" + dupeQSO.ContactCall + "\t" + dupeQSO.ReceivedSerialNumber.ToString() + "\t" + dupeQSO.ContactName;
+                                    message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
+                                           qso.MatchingQSO.OperatorName + "\t" + qso.MatchingQSO.ContactCall + "\t" + qso.MatchingQSO.ReceivedSerialNumber.ToString() + "\t" + qso.MatchingQSO.ContactName;
 
                                     sw.WriteLine(message);
                                 }
-                                else
-                                {
-                                    sw.WriteLine("Duplicate QSOs");
-                                    foreach (QSO item in qso.DupeListLocation.DuplicateQsoList)
-                                    {
-                                        dupeQSO = item;
-                                       // string temp = dupeQSO.RejectReasons[RejectReason.DuplicateQSO].ToString();
-
-                                        //if (temp != null)
-                                        //{
-                                            message = "QSO: " + "\t" + dupeQSO.Frequency + "\t" + dupeQSO.Mode + "\t" + dupeQSO.QsoDate + "\t" + dupeQSO.QsoTime + "\t" + dupeQSO.OperatorCall + "\t" + dupeQSO.SentSerialNumber.ToString() + "\t" +
-                                               dupeQSO.OperatorName + "\t" + dupeQSO.ContactCall + "\t" + dupeQSO.ReceivedSerialNumber.ToString() + "\t" + dupeQSO.ContactName;
-
-                                            sw.WriteLine(message);
-                                        //}
-                                    }
-                                }
                             }
+
+                            // print info on the original that was duped - the one that was counted
+                            //if (qso.MatchingQSO != null || qso.DupeListLocation != null)
+                            //{
+                            //    //QSO dupeQSO = qso.MatchingQSO;
+                            //    if (qso.DupeListLocation == null)
+                            //    {
+                            //        // if (dupeQSO.HasBeenPrinted == false)
+                            //        // {
+                            //        qso.MatchingQSO.HasBeenPrinted = true;
+                            //        message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
+                            //               qso.MatchingQSO.OperatorName + "\t" + qso.MatchingQSO.ContactCall + "\t" + qso.MatchingQSO.ReceivedSerialNumber.ToString() + "\t" + qso.MatchingQSO.ContactName;
+
+                            //        sw.WriteLine(message);
+                            //        // }
+                            //    }
+                            //    else
+                            //    {
+                            //        //sw.WriteLine(String.Format("Here are all the other QSOs that were made with {0} that match the mode and band", qso.DupeListLocation.ContactCall));
+
+                            //        foreach (QSO item in qso.DupeListLocation.DuplicateQsoList)
+                            //        {
+                            //            //if (item.HasBeenPrinted == false)
+                            //            //{
+                            //            item.HasBeenPrinted = true;
+
+                            //            message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                            //                   item.OperatorName + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactName;
+
+                            //            sw.WriteLine(message);
+                            //            //}
+                            //        }
+                            //    }
+                            //}
 
                             sw.WriteLine("");
                         }
@@ -572,6 +624,24 @@ namespace W6OP.PrintEngine
                 throw;
             }
         }
+
+        private void PrintDuplicates(QSO dupeListLocation, StreamWriter sw)
+        {
+            string message = null;
+
+            foreach (QSO item in dupeListLocation.DuplicateQsoList)
+            {
+
+                item.HasBeenPrinted = true;
+
+                message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                       item.OperatorName + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactName;
+
+                sw.WriteLine(message);
+                //}
+            }
+        }
+
 
         /// <summary>
         /// Print a report for each log listing the QSOs rejected and the reason for rejection.
