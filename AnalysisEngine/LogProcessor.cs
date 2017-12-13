@@ -34,6 +34,7 @@ namespace W6OP.ContestLogAnalyzer
         private string _WorkingLine = null;
         private CallParser.CallsignParser _Parser;
         private Hashtable _CallSignSet;
+        private Hashtable _PrefixSet;
 
         /// <summary>
         /// Default constructor.
@@ -44,6 +45,7 @@ namespace W6OP.ContestLogAnalyzer
             _WorkingLine = "";
 
             _CallSignSet = new Hashtable();
+            _PrefixSet = new Hashtable();
         }
 
         public void InitializeLogProcessor(ContestName contestName)
@@ -140,7 +142,7 @@ namespace W6OP.ContestLogAnalyzer
                         contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
                     }
 
-                   // List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+                    // List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
 
                     // make sure minimum amout of information is correct
                     if (contestLog.LogHeader != null && AnalyzeHeader(contestLog, out reason) == true)
@@ -174,8 +176,13 @@ namespace W6OP.ContestLogAnalyzer
                     }
 
                     _FailingLine = "";
+
                     contestLog.QSOCollection = CollectQSOs(lineList, session, false);
+                    // add a reference to the parent log to each QSO
+                    contestLog.QSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
+
                     contestLog.QSOCollectionX = CollectQSOs(lineListX, session, false);
+                    contestLog.QSOCollectionX.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
 
                     if (contestLog.QSOCollection == null || contestLog.QSOCollection.Count == 0)
                     {
@@ -327,7 +334,15 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (qso.DXCountry == "DX")
                     {
-                        prefixInfo = GetPrefixInformation(qso.ContactCall);
+                        if (!_PrefixSet.Contains(qso.ContactCall))
+                        {
+                            prefixInfo = GetPrefixInformation(qso.ContactCall);
+                            _PrefixSet.Add(qso.ContactCall, prefixInfo);
+                        }
+                        else
+                        {
+                            prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.ContactCall];
+                        }
 
                         if (prefixInfo != null)
                         {
@@ -354,6 +369,9 @@ namespace W6OP.ContestLogAnalyzer
                                 }
                             }
                         }
+
+
+
                     }
                 }
 
@@ -801,11 +819,11 @@ namespace W6OP.ContestLogAnalyzer
             if (callSign.IndexOf("/") != -1)
             {
                 int temp1 = callSign.Substring(0, callSign.IndexOf("/")).Length;
-                int temp2 = callSign.Substring(callSign.IndexOf("/")).Length -1;
+                int temp2 = callSign.Substring(callSign.IndexOf("/")).Length - 1;
 
                 if (temp1 > temp2)
                 {
-                    callSign =  callSign.Substring(0, callSign.IndexOf("/"));
+                    callSign = callSign.Substring(0, callSign.IndexOf("/"));
                 }
                 else
                 {

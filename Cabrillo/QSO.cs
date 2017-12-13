@@ -19,6 +19,8 @@ namespace W6OP.ContestLogAnalyzer
             SessionIsValid = true;
         }
 
+        public ContestLog ParentLog { get; set; }
+
         private Dictionary<RejectReason, String> _RejectReasons = new Dictionary<RejectReason, String>();
         public Dictionary<RejectReason, String> RejectReasons
         {

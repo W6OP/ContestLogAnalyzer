@@ -315,7 +315,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qsoList"></param>
         private void MatchQSOs(List<QSO> qsoList, List<ContestLog> contestLogList, string operatorCall, string sentName)
         {
-            ContestLog contestLog = null;
+            ContestLog matchLog = null;
             RejectReason reason = RejectReason.None;
             List<ContestLog> tempLog = new List<ContestLog>();
             QSO matchQSO = null;
@@ -324,32 +324,32 @@ namespace W6OP.ContestLogAnalyzer
             foreach (QSO qso in qsoList)
             {
                 // get the other log that matches this QSO contact call
-                contestLog = contestLogList.FirstOrDefault(q => q.LogOwner == qso.ContactCall);
+                matchLog = contestLogList.FirstOrDefault(q => q.LogOwner == qso.ContactCall);
 
                 if (qso.ContactCall.IndexOf(@"/") != -1)             //                                |
                 {                           //                                |
                     continue;   // Skip the remainder of this iteration. -----+
                 }
 
-                if (contestLog != null)
+                if (matchLog != null)
                 {
                     switch (ActiveContest)
                     {
                         case ContestName.CW_OPEN:
                             // now see if a QSO matches this QSO
                             // leave the time check here for future use
-                            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
+                            matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
                                                   q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
 
-                            matchQSO_X = (QSO)contestLog.QSOCollectionX.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
+                            matchQSO_X = (QSO)matchLog.QSOCollectionX.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
                                                   q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
                             break;
                         case ContestName.HQP:
                             // now see if a QSO matches this QSO
-                            matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
+                            matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
                                                   q.ContactCall == qso.OperatorCall && q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
 
-                            matchQSO_X = (QSO)contestLog.QSOCollectionX.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
+                            matchQSO_X = (QSO)matchLog.QSOCollectionX.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
                                                   q.ContactCall == qso.OperatorCall && q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
                             break;
                     }
@@ -367,7 +367,7 @@ namespace W6OP.ContestLogAnalyzer
                     else
                     {
                         // narrow down search
-                        reason = FindRejectReason(contestLog, qso);
+                        reason = FindRejectReason(matchLog, qso);
 
                         // test for NONE because S/N can be off by one
                         if (reason != RejectReason.InvalidTime && reason != RejectReason.None)
@@ -560,23 +560,24 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Determine the reason to reject the QSO
         /// </summary>
-        /// <param name="contestLog"></param>
+        /// <param name="matchLog"></param>
         /// <param name="qso"></param>
         /// <returns></returns>
-        private RejectReason FindRejectReason(ContestLog contestLog, QSO qso)
+        private RejectReason FindRejectReason(ContestLog matchLog, QSO qso)
         {
             QSO matchQSO = null;
             RejectReason reason = RejectReason.None;
             TimeSpan ts;
+            bool isMatchQSO = false;
 
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
+                    matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
                        q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) > 5);
                     break;
                 case ContestName.HQP:
-                    matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.Mode == qso.Mode &&
+                    matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.Mode == qso.Mode &&
                        q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) > 5);
                     break;
             }
@@ -594,7 +595,7 @@ namespace W6OP.ContestLogAnalyzer
             // query for incorrect serial number
             if (ActiveContest == ContestName.CW_OPEN)
             {
-                matchQSO = (QSO)contestLog.QSOCollection.Where(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall == qso.OperatorCall &&
+                matchQSO = (QSO)matchLog.QSOCollection.Where(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall == qso.OperatorCall &&
                             Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) > 1).FirstOrDefault(); //
 
                 if (matchQSO != null)
@@ -608,30 +609,73 @@ namespace W6OP.ContestLogAnalyzer
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
+                    matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
                          q.ContactCall == qso.OperatorCall);
                     break;
                 case ContestName.HQP:
-                    matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && q.Mode == qso.Mode &&
+                    matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && q.Mode == qso.Mode &&
                         q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
                     break;
             }
 
             if (matchQSO != null)
             {
+                // determine who is at fault
+                isMatchQSO = DetermineBandFault(matchLog, qso, matchQSO);
+
                 qso.MatchingQSO = matchQSO;
-                return RejectReason.Band;
+
+                if (isMatchQSO)
+                {
+                    matchQSO.RejectReasons.Clear(); // should not be a collection ?? or lets actually look for multiple reasons
+                    matchQSO.RejectReasons.Add(RejectReason.Band, EnumHelper.GetDescription(RejectReason.Band));
+                }
+                else
+                {
+                    return RejectReason.Band;
+                }
+
+                return reason;
+            }
+
+            // query for incorrect mode
+            switch (ActiveContest)
+            {
+                case ContestName.HQP:
+                    matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.Mode != qso.Mode &&
+                        q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
+                    break;
+            }
+
+            if (matchQSO != null)
+            {
+                // determine who is at fault
+                isMatchQSO = DetermineModeFault(matchLog, qso, matchQSO);
+
+                qso.MatchingQSO = matchQSO;
+
+                if (isMatchQSO)
+                {
+                    matchQSO.RejectReasons.Clear(); // should not be a collection ?? or lets actually look for multiple reasons
+                    matchQSO.RejectReasons.Add(RejectReason.Mode, EnumHelper.GetDescription(RejectReason.Mode));
+                }
+                else
+                {
+                    return RejectReason.Mode;
+                }
+
+                return reason;
             }
 
             // query for incorrect name or entity (HQP)
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    matchQSO = contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && q.ContactCall == qso.OperatorCall &&
+                    matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && q.ContactCall == qso.OperatorCall &&
                        q.ContactName == qso.OperatorName && q.OperatorName != qso.ContactName); //
                     break;
                 case ContestName.HQP:
-                    matchQSO = contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.Mode == qso.Mode && q.ContactCall == qso.OperatorCall &&
+                    matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.Mode == qso.Mode && q.ContactCall == qso.OperatorCall &&
                        q.ContactName == qso.OperatorName && q.OperatorName != qso.ContactName);
                     break;
             }
@@ -654,11 +698,11 @@ namespace W6OP.ContestLogAnalyzer
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall != qso.OperatorCall &&
+                    matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall != qso.OperatorCall &&
                        Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1); // 
                     break;
                 case ContestName.HQP:
-                    matchQSO = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall != qso.OperatorCall &&
+                    matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall != qso.OperatorCall &&
                         q.Mode == qso.Mode); // 
                     break;
             }
@@ -677,11 +721,258 @@ namespace W6OP.ContestLogAnalyzer
                     matchQSO.MatchingQSO = qso;
                     matchQSO.RejectReasons.Clear(); // should not be a collection ?? or lets actually look for multiple reasons
                     matchQSO.RejectReasons.Add(RejectReason.NoQSOMatch, EnumHelper.GetDescription(RejectReason.NoQSOMatch));
-                   // reason = RejectReason.NoQSOMatch;
                 }
             }
 
             return reason;
+        }
+
+        /// <summary>
+        /// Determine who is at fault when a band or mode mismatch occurs.
+        /// The first QSO gets preference over the match QSO.
+        /// </summary>
+        /// <param name="qso"></param>
+        /// <param name="matchQSO"></param>
+        /// <param name="modeType"></param>
+        private bool DetermineModeFault(ContestLog matchLog, QSO qso, QSO matchQSO)
+        {
+            ContestLog contestLog = qso.ParentLog;
+            QSO previousQSO;
+            QSO nextQSO;
+            int qsoPoints = 1;
+            int matchQsoPoints = 1;
+            string frequency = "";
+            bool isMatchQSO = true;
+
+            // bonus point for having rig control frequency
+            frequency = qso.Frequency;
+            if (frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+            {
+                qsoPoints += 1;
+            }
+
+            frequency = matchQSO.Frequency;
+            if (frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+            {
+                matchQsoPoints += 1;
+            }
+
+            // get the previous and next qso for the qso
+            previousQSO = GetPrevious<QSO>(contestLog.QSOCollection, qso);
+            nextQSO = GetNext<QSO>(contestLog.QSOCollection, qso);
+
+            if (previousQSO != null)
+            {
+                if (previousQSO.Mode == qso.Mode)
+                {
+                    qsoPoints += 1;
+                }
+                else
+                {
+                    qsoPoints -= 1;
+                }
+            }
+            else
+            {
+                qsoPoints += 1;
+            }
+
+
+
+            if (nextQSO != null)
+            {
+                if (nextQSO.Mode == qso.Mode)
+                {
+                    qsoPoints += 1;
+                }
+                else
+                {
+                    qsoPoints -= 1;
+                }
+            }
+            else
+            {
+                qsoPoints += 1;
+            }
+
+            // get the previous and next qso for the matchQso
+            previousQSO = GetPrevious<QSO>(matchLog.QSOCollection, matchQSO);
+            nextQSO = GetNext<QSO>(matchLog.QSOCollection, matchQSO);
+
+            if (previousQSO != null)
+            {
+                if (previousQSO.Mode == matchQSO.Mode)
+                {
+                    matchQsoPoints += 1;
+                }
+                else
+                {
+                    matchQsoPoints -= 1;
+                }
+            }
+            else
+            {
+                matchQsoPoints -= 1;
+            }
+
+            if (nextQSO != null)
+            {
+                if (nextQSO.Mode == matchQSO.Mode)
+                {
+                    matchQsoPoints += 1;
+                }
+                else
+                {
+                    matchQsoPoints -= 1;
+                }
+            }
+            else
+            {
+                matchQsoPoints -= 1;
+            }
+
+
+            if (qsoPoints < matchQsoPoints)
+            {
+                isMatchQSO = false;
+            }
+
+            return isMatchQSO;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="matchLog"></param>
+        /// <param name="qso"></param>
+        /// <param name="matchQSO"></param>
+        /// <returns></returns>
+        private bool DetermineBandFault(ContestLog matchLog, QSO qso, QSO matchQSO)
+        {
+            ContestLog contestLog = qso.ParentLog;
+            QSO previousQSO;
+            QSO nextQSO;
+            int qsoPoints = 1;
+            int matchQsoPoints = 1;
+            string frequency = "";
+            bool isMatchQSO = true;
+
+            // bonus point for having rig control frequency
+            frequency = qso.Frequency;
+            if (frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+            {
+                qsoPoints += 1;
+            }
+
+            frequency = matchQSO.Frequency;
+            if (frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+            {
+                matchQsoPoints += 1;
+            }
+
+            // get the previous and next qso for the qso
+            previousQSO = GetPrevious<QSO>(contestLog.QSOCollection, qso);
+            nextQSO = GetNext<QSO>(contestLog.QSOCollection, qso);
+
+            if (previousQSO != null)
+            {
+                if (previousQSO.Band == qso.Band)
+                {
+                    qsoPoints += 1;
+                }
+                else
+                {
+                    qsoPoints -= 1;
+                }
+            }
+            else
+            {
+                qsoPoints += 1;
+            }
+
+            if (nextQSO != null)
+            {
+                if (nextQSO.Band == qso.Band)
+                {
+                    qsoPoints += 1;
+                }
+                else
+                {
+                    qsoPoints -= 1;
+                }
+            }
+            else
+            {
+                qsoPoints += 1;
+            }
+
+            // get the previous and next qso for the matchQso
+            previousQSO = GetPrevious<QSO>(matchLog.QSOCollection, matchQSO);
+            nextQSO = GetNext<QSO>(matchLog.QSOCollection, matchQSO);
+
+            if (previousQSO != null)
+            {
+                if (previousQSO.Band == matchQSO.Band)
+                {
+                    matchQsoPoints += 1;
+                }
+                else
+                {
+                    matchQsoPoints -= 1;
+                }
+            }
+            else
+            {
+                matchQsoPoints -= 1;
+            }
+
+            if (nextQSO != null)
+            {
+                if (nextQSO.Band == matchQSO.Band)
+                {
+                    matchQsoPoints += 1;
+                }
+                else
+                {
+                    matchQsoPoints -= 1;
+                }
+            }
+            else
+            {
+                matchQsoPoints -= 1;
+            }
+
+
+            if (qsoPoints < matchQsoPoints)
+            {
+                isMatchQSO = false;
+            }
+
+            return isMatchQSO;
+        }
+
+        private T GetNext<T>(IEnumerable<T> list, T current)
+        {
+            try
+            {
+                return list.SkipWhile(x => !x.Equals(current)).Skip(1).First();
+            }
+            catch
+            {
+                return default(T);
+            }
+        }
+
+        private T GetPrevious<T>(IEnumerable<T> list, T current)
+        {
+            try
+            {
+                return list.TakeWhile(x => !x.Equals(current)).Last();
+            }
+            catch
+            {
+                return default(T);
+            }
         }
 
         /// <summary>

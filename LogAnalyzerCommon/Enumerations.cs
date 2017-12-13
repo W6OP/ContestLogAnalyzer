@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
+using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace W6OP.ContestLogAnalyzer
 {
@@ -12,6 +9,8 @@ namespace W6OP.ContestLogAnalyzer
     {
         [Description("The band does not match")]
         Band,
+        [Description("The mode does not match")]
+        Mode,
         [Description("This QSO is not in the other operators log")]
         NoQSOMatch,
         [Description("FYI: call not in any other log - scored as unique")]
@@ -118,12 +117,13 @@ namespace W6OP.ContestLogAnalyzer
         typeof(DescriptionAttribute))).Description
      */
 
-    // added for K5OT
-    //[Description("UNASSISTED")]
-    //UnAssisted,
-    // added for K9OZ
-    //[Description("NONASSISTED")]
-    //NotAssisted,
+    
+    public enum FaultType
+    {
+        Band,
+        Mode
+    }
+
 
     public enum CategoryMode
     {
