@@ -35,7 +35,12 @@ namespace W6OP.ContestLogAnalyzer
         }
         //public QSOStatus Status { get; set; } = QSOStatus.ValidQSO;
 
-        public QSO MatchingQSO { get; set; } = null;
+        private QSO _MatchingQSO;
+        public QSO MatchingQSO
+        {
+            get => _MatchingQSO;
+            set => _MatchingQSO = value;
+        }
 
         public QSO DupeListLocation { get; set; } = null;
 

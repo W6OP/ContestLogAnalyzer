@@ -357,6 +357,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (matchQSO != null) // found it
                     {
                         // store the matching QSO
+                        qso.HasMatchingQso = true;
                         qso.MatchingQSO = matchQSO;
                     }
                     else if (matchQSO_X != null) // found it
@@ -624,6 +625,7 @@ namespace W6OP.ContestLogAnalyzer
                 isMatchQSO = DetermineBandFault(matchLog, qso, matchQSO);
 
                 qso.MatchingQSO = matchQSO;
+                qso.HasMatchingQso = true;
 
                 if (isMatchQSO)
                 {
@@ -676,7 +678,7 @@ namespace W6OP.ContestLogAnalyzer
                     break;
                 case ContestName.HQP:
                     matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.Mode == qso.Mode && q.ContactCall == qso.OperatorCall &&
-                       q.ContactName == qso.OperatorName && q.OperatorName != qso.ContactName);
+                       q.ContactName == qso.OperatorName && q.OperatorName != qso.ContactName && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
                     break;
             }
 
@@ -703,7 +705,7 @@ namespace W6OP.ContestLogAnalyzer
                     break;
                 case ContestName.HQP:
                     matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall != qso.OperatorCall &&
-                        q.Mode == qso.Mode); // 
+                        q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5); // 
                     break;
             }
 
@@ -730,6 +732,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Determine who is at fault when a band or mode mismatch occurs.
         /// The first QSO gets preference over the match QSO.
+        /// http://www.herlitz.nu/2011/12/01/getting-the-previous-and-next-record-from-list-using-linq/
         /// </summary>
         /// <param name="qso"></param>
         /// <param name="matchQSO"></param>
