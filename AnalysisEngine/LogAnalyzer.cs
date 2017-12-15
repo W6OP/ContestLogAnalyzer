@@ -397,8 +397,25 @@ namespace W6OP.ContestLogAnalyzer
                             {
                                 // give them the point anyway
                                 qso.IsMultiplier = true;
+                                qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
                             }
-                            qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+
+                            if (ActiveContest == ContestName.HQP)
+                            {
+                                if (qso.ContactName != qso.DXCountry)
+                                {
+                                    qso.Status = QSOStatus.InvalidQSO;
+                                    qso.EntityIsInValid = true;
+                                    qso.IncorrectName = qso.ContactName + " --> " + qso.DXCountry;
+                                    // not needed - qso.EntityIsInValid = true; does same thing
+                                    //qso.RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                                }
+                                else {
+                                    // they get the point
+                                    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                                }
+                            }
+                            
                         }
                         else
                         {
@@ -533,9 +550,18 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         found = true;
                         qso.IncorrectName = qso.ContactName + " --> " + matchName;
-
                         qso.EntityIsInValid = true;
+                    } else
+                    {
+                        if (qso.ContactName != matchName)
+                        {
+                            found = true;
+                            qso.IncorrectName = qso.ContactName + " --> " + matchName;
+
+                            qso.EntityIsInValid = true;
+                        }
                     }
+                    
                 }
                 else if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 > 50)
                 {
@@ -795,7 +821,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                qsoPoints += 1;
+                //qsoPoints += 1;
             }
 
             // get the previous and next qso for the matchQso
@@ -815,7 +841,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                matchQsoPoints -= 1;
+                matchQsoPoints += 1;
             }
 
             if (nextQSO != null)
@@ -831,7 +857,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                matchQsoPoints -= 1;
+                //matchQsoPoints += 1;
             }
 
 

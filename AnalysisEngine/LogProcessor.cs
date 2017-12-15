@@ -295,7 +295,6 @@ namespace W6OP.ContestLogAnalyzer
 
             bool isValidHQPEntity = false;
             string[] info = new string[2] { "0", "0" };
-            //HashSet<string> qsoSet = new HashSet<string>();
 
             contestLog.IsHQPEntity = false;
             contestLog.TotalPoints = 0;

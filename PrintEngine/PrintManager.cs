@@ -405,7 +405,6 @@ namespace W6OP.PrintEngine
         /// <param name="contestLog"></param>
         public void PrintLogSummaryReport(ContestLog contestLog, string callsign)
         {
-            QSO originalQSO = null;
             string reportFileName = null;
             string message = null;
             var value = "";
