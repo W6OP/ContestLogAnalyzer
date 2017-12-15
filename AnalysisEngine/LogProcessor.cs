@@ -368,9 +368,6 @@ namespace W6OP.ContestLogAnalyzer
                                 }
                             }
                         }
-
-
-
                     }
                 }
 
@@ -408,22 +405,41 @@ namespace W6OP.ContestLogAnalyzer
                             }
                         }
                     }
-                }
-                else
-                {   // need this to do log matching - SearchForIncorrectName()
-                    prefixInfo = GetPrefixInformation(qso.ContactCall);
-                    prefixInfo2 = GetPrefixInformation(qso.OperatorCall);
-
-                    if (prefixInfo != null && prefixInfo.Territory != null)
+                    else
                     {
-                        qso.RealDXCountry = prefixInfo.Territory.ToString();
-                        var q = 2;
-                    }
+                        if (!_PrefixSet.Contains(qso.ContactCall))
+                        {
+                            prefixInfo = GetPrefixInformation(qso.ContactCall);
+                            _PrefixSet.Add(qso.ContactCall, prefixInfo);
+                        }
+                        else
+                        {
+                            prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.ContactCall];
+                        }
 
-                    if (prefixInfo2 != null && prefixInfo2.Territory != null)
-                    {
-                        qso.Country = prefixInfo2.Territory.ToString();
-                        var f = 2;
+                        // need this to do log matching - SearchForIncorrectName()
+                        //prefixInfo = GetPrefixInformation(qso.ContactCall);
+                        //prefixInfo2 = GetPrefixInformation(qso.OperatorCall);
+
+                        if (prefixInfo != null && prefixInfo.Territory != null)
+                        {
+                            qso.RealDXCountry = prefixInfo.Territory.ToString();
+                        }
+
+                        if (!_PrefixSet.Contains(qso.OperatorCall))
+                        {
+                            prefixInfo = GetPrefixInformation(qso.OperatorCall);
+                            _PrefixSet.Add(qso.OperatorCall, prefixInfo);
+                        }
+                        else
+                        {
+                            prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.OperatorCall];
+                        }
+
+                        if (prefixInfo != null && prefixInfo.Territory != null)
+                        {
+                            qso.Country = prefixInfo.Territory.ToString();
+                        }
                     }
                 }
             }

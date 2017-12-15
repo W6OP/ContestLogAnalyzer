@@ -522,7 +522,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private bool SearchForIncorrectName(QSO qso, List<ContestLog> contestLogList)
         {
-            bool found = false;
+            bool wasFound = false;
             Int32 matchCount = 0;
             List<QSO> matchingQSOs = null;
             string matchName = null;
@@ -543,30 +543,41 @@ namespace W6OP.ContestLogAnalyzer
                     }
                 }
 
+                if (matchName == null)
+                {
+                    return wasFound;
+                }
+
                 // this is on for HQP
                 if (ActiveContest == ContestName.HQP && qso.RealDXCountry != null && (qso.RealDXCountry == "Canada" || qso.RealDXCountry == "United States of America"))
                 {
                     if (qso.DXCountry.Length > 2)
                     {
-                        found = true;
+                        wasFound = true;
                         qso.IncorrectName = qso.ContactName + " --> " + matchName;
                         qso.EntityIsInValid = true;
                     } else
                     {
                         if (qso.ContactName != matchName)
                         {
-                            found = true;
-                            qso.IncorrectName = qso.ContactName + " --> " + matchName;
+                            if (matchName.Length == 2)
+                            {
+                                wasFound = true;
+                                qso.IncorrectName = qso.ContactName + " --> " + matchName;
 
-                            qso.EntityIsInValid = true;
+                                qso.EntityIsInValid = true;
+                            }
+                            else
+                            {
+
+                            }
                         }
                     }
-                    
                 }
                 else if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 > 50)
                 {
                     //Console.WriteLine((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100);
-                    found = true;
+                    wasFound = true;
                     qso.IncorrectName = qso.ContactName + " --> " + matchName;
 
                     switch (ActiveContest)
@@ -581,7 +592,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
 
-            return found;
+            return wasFound;
         }
 
         /// <summary>
