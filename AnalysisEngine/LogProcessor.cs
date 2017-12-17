@@ -861,7 +861,7 @@ namespace W6OP.ContestLogAnalyzer
 
             _WorkingLine = line;
 
-            if (split.Length != 11)
+            if (split.Length < 11)
             {
                 status = QSOStatus.InvalidQSO;
                 _FailingLine += Environment.NewLine + "One or more columns are missing.";

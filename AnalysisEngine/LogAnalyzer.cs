@@ -410,12 +410,25 @@ namespace W6OP.ContestLogAnalyzer
                                     // not needed - qso.EntityIsInValid = true; does same thing
                                     //qso.RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
                                 }
-                                else {
-                                    // they get the point
-                                    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                                else
+                                {
+                                    // narrow down search
+                                    //if (SearchForBustedCall(qso, contestLogList) == false) // did not find it so is name incorrect
+                                    //{
+                                        qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                                    //}
+                                    
+                                    //else
+                                    //{
+                                    //    // qso.Status = QSOStatus.InvalidQSO;
+                                    //    // qso.RejectReasons.Clear();
+                                    //    // qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+                                    //    // they get the point
+                                    //    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                                    //}
                                 }
                             }
-                            
+
                         }
                         else
                         {
@@ -449,6 +462,10 @@ namespace W6OP.ContestLogAnalyzer
         private bool SearchForBustedCall(QSO qso, List<ContestLog> contestLogList)
         {
             bool found = false;
+            //float count = 0;
+            //float score = 0;
+            //float percent = 0;
+            //string call = "";
             List<QSO> matchingQSOs = null;
 
             // look for a log without a call sign parameter
@@ -456,13 +473,18 @@ namespace W6OP.ContestLogAnalyzer
             {
                 case ContestName.CW_OPEN:
                     matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorCall == qso.ContactCall &&
-                                      Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList();
+                                      Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 2).ToList();
                     break;
                 case ContestName.HQP:
-                    // look for a log without a call sign parameter
                     matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorCall == qso.ContactCall &&
-                                q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5).ToList();
-                    break;
+                                q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 2).ToList();
+
+                    //if (matchingQSOs == null || matchingQSOs.Count == 0)
+                    //{
+                    //    matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.ContactCall == qso.OperatorCall &&
+                    //           q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 2).ToList();
+                    //}
+                        break;
             }
 
             if (matchingQSOs != null && matchingQSOs.Count > 0)
@@ -473,6 +495,31 @@ namespace W6OP.ContestLogAnalyzer
                     qso.CallIsBusted = true;
                     qso.MatchingQSO = matchingQSOs[0];
                 }
+                //else
+                //{
+                //    count = 0;
+                //    score = 0;
+                //    percent = 0;
+
+                //    foreach (QSO match in matchingQSOs)
+                //    {
+                //        char[] qsoArray = qso.ContactCall.ToCharArray();
+                //        char[] matchArray = match.OperatorCall.ToCharArray();
+
+                //        var inter = qsoArray.Union(matchArray);
+
+                //        count = inter.ToArray().Count();
+
+                //        if (count > score)
+                //        {
+                //            score = count;
+
+                //            percent = Math.Abs((qsoArray.Length / score) * 100);
+
+                //            call = match.OperatorCall;
+                //        }
+                //    }
+                //}
             }
             else// did not find it
             {
@@ -539,6 +586,8 @@ namespace W6OP.ContestLogAnalyzer
                     if (qso.ContactName != matchingQSOs[i].ContactName)
                     {
                         matchCount++;
+
+                        // THIS NEEDS TO BE BETTER - WHAT AM I REALLY TRYING TO DO
                         matchName = matchingQSOs[i].ContactName;
                     }
                 }
@@ -556,7 +605,8 @@ namespace W6OP.ContestLogAnalyzer
                         wasFound = true;
                         qso.IncorrectName = qso.ContactName + " --> " + matchName;
                         qso.EntityIsInValid = true;
-                    } else
+                    }
+                    else
                     {
                         if (qso.ContactName != matchName)
                         {
@@ -603,10 +653,58 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private RejectReason FindRejectReason(ContestLog matchLog, QSO qso)
         {
+            RejectReason reason = RejectReason.None;
+            
+            // check times
+            reason = CheckForTimeMismatch(matchLog, qso);
+
+            if (reason == RejectReason.None)
+            {
+                // query for incorrect serial number
+                if (ActiveContest == ContestName.CW_OPEN)
+                {
+                    reason = CheckForSerialNumberMismatch(matchLog, qso);
+                }
+            }
+
+            if (reason == RejectReason.None)
+            {
+                // query for incorrect band
+                reason = CheckForBandMismatch(matchLog, qso);
+            }
+
+            if (reason == RejectReason.None)
+            {
+                // query for incorrect mode
+                reason = CheckForModeMismatch(matchLog, qso);
+            }
+
+            if (reason == RejectReason.None)
+            {
+                // query for incorrect name or entity (HQP)
+                reason = CheckForNameOrEntityMismatch(matchLog, qso);
+            }
+
+            if (reason == RejectReason.None)
+            {
+                // query for incorrect call
+                reason = CheckForCallMismatch(matchLog, qso);
+            }
+
+            return reason;
+        }
+
+        /// <summary>
+        /// See if the qso was rejected because the time stamps don't match.
+        /// </summary>
+        /// <param name="matchLog"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private RejectReason CheckForTimeMismatch(ContestLog matchLog, QSO qso)
+        {
             QSO matchQSO = null;
             RejectReason reason = RejectReason.None;
             TimeSpan ts;
-            bool isMatchQSO = false;
 
             switch (ActiveContest)
             {
@@ -627,23 +725,48 @@ namespace W6OP.ContestLogAnalyzer
                 ts = qso.QSODateTime.Subtract(matchQSO.QSODateTime);
                 qso.ExcessTimeSpan = Math.Abs(ts.Minutes);
 
-                return RejectReason.InvalidTime;
+                reason = RejectReason.InvalidTime;
             }
 
-            // query for incorrect serial number
-            if (ActiveContest == ContestName.CW_OPEN)
-            {
+            return reason;
+        }
+
+        /// <summary>
+        /// See if the qso was rejected because the serial numbers don't match.
+        /// This is for the CWOpen only
+        /// </summary>
+        /// <param name="matchLog"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private RejectReason CheckForSerialNumberMismatch(ContestLog matchLog, QSO qso)
+        {
+            QSO matchQSO = null;
+            RejectReason reason = RejectReason.None;
+
                 matchQSO = (QSO)matchLog.QSOCollection.Where(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall == qso.OperatorCall &&
                             Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) > 1).FirstOrDefault(); //
 
                 if (matchQSO != null)
                 {
                     qso.MatchingQSO = matchQSO;
-                    return RejectReason.SerialNumber;
+                    reason = RejectReason.SerialNumber;
                 }
-            }
 
-            // query for incorrect band
+            return reason;
+        }
+
+        /// <summary>
+        /// See if the qso was rejected because the band doesn't match.
+        /// </summary>
+        /// <param name="matchLog"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private RejectReason CheckForBandMismatch(ContestLog matchLog, QSO qso)
+        {
+            QSO matchQSO = null;
+            RejectReason reason = RejectReason.None;
+            bool isMatchQSO = false;
+
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
@@ -671,13 +794,25 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    return RejectReason.Band;
+                    reason = RejectReason.Band;
                 }
-
-                return reason;
             }
 
-            // query for incorrect mode
+            return reason;
+        }
+
+        /// <summary>
+        /// See if the qso was rejected because the mode doesn't match.
+        /// </summary>
+        /// <param name="matchLog"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private RejectReason CheckForModeMismatch(ContestLog matchLog, QSO qso)
+        {
+            QSO matchQSO = null;
+            RejectReason reason = RejectReason.None;
+            bool isMatchQSO = false;
+
             switch (ActiveContest)
             {
                 case ContestName.HQP:
@@ -700,13 +835,24 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    return RejectReason.Mode;
+                    reason = RejectReason.Mode;
                 }
-
-                return reason;
             }
 
-            // query for incorrect name or entity (HQP)
+            return reason;
+        }
+
+        /// <summary>
+        /// See if the qso was rejected because the name or entity depending on contest don't match.
+        /// </summary>
+        /// <param name="matchLog"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private RejectReason CheckForNameOrEntityMismatch(ContestLog matchLog, QSO qso)
+        {
+            QSO matchQSO = null;
+            RejectReason reason = RejectReason.None;
+
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
@@ -727,13 +873,28 @@ namespace W6OP.ContestLogAnalyzer
                 switch (ActiveContest)
                 {
                     case ContestName.CW_OPEN:
-                        return RejectReason.OperatorName;
+                        reason = RejectReason.OperatorName;
+                        break;
                     case ContestName.HQP:
-                        return RejectReason.EntityName;
+                        reason = RejectReason.EntityName;
+                        break;
                 }
             }
 
-            // query for incorrect call
+            return reason;
+        }
+
+        /// <summary>
+        /// See if the qso was rejected because the callsign doesn't match.
+        /// </summary>
+        /// <param name="matchLog"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private RejectReason CheckForCallMismatch(ContestLog matchLog, QSO qso)
+        {
+            QSO matchQSO = null;
+            RejectReason reason = RejectReason.None;
+
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
@@ -1030,6 +1191,11 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// Mark all QSOs that don't have the correct entity set as invalid.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        /// <param name="name"></param>
         private void MarkIncorrectSentEntity(List<QSO> qsoList, string name)
         {
             List<QSO> qsos = qsoList.Where(q => q.OperatorName.ToUpper() != name && q.Status == QSOStatus.ValidQSO).ToList();
