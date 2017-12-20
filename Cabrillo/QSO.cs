@@ -150,6 +150,11 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsEntityVerified = false;
+
         public bool EntityIsInValid
         {
             set
@@ -319,28 +324,12 @@ namespace W6OP.ContestLogAnalyzer
         /// 
         /// CHANGE TO DATE AND TIME LATER
         /// </summary>
-        //private string _QsoDate;
         public string QsoDate { get; set; }
-        //{
-        //    get { return _QsoDate; }
-        //    set { _QsoDate = value; }
-        //}
-
-        //private string _QsoTime;
+        
         public string QsoTime { get; set; }
-        //{
-        //    get { return _QsoTime; }
-        //    set { _QsoTime = value; }
-        //}
-        ///// ////////////////////////////////////////////////////
-
-        //private Int32 _SentSerialNumber;
+        
         public Int32 SentSerialNumber { get; set; }
-        //{
-        //    get { return _SentSerialNumber; }
-        //    set { _SentSerialNumber = value; }
-        //}
-
+        
         private string _OperatorCall;
         public string OperatorCall
         {
@@ -365,22 +354,28 @@ namespace W6OP.ContestLogAnalyzer
         /// Top level country - Used in HQP
         /// Applied to US and Canadian stations so I can check the state or province
         /// </summary>
-        public string Country { get; set; }
-
-        /// <summary>
-        /// The real or top level country of the  contact or DX station
-        /// </summary>
-        public string RealDXCountry { get; set; }
-
-        /// <summary>
-        /// Contact country - HQP - This can be state or Canadian province 2 letter code
-        /// </summary>
-        public string DXCountry { get; set; }
+        public string RealOperatorEntity { get; set; }
 
         /// <summary>
         /// Operator country as defined by HQP
+        /// Length is 2 characters for US and Canada
+        /// or 3 characters if it is a HQP entity
+        /// This is equivalent to the Operator Name for the CWOpen
         /// </summary>
-        public string OperatorCountry { get; set; }
+        public string OperatorEntity { get; set; }
+
+        /// <summary>
+        /// The real or top level country of the  contact or DX station
+        /// This is the long name
+        /// </summary>
+        public string RealDXEntity { get; set; }
+
+        /// <summary>
+        /// Contact country - HQP - This can be state or Canadian province 2 letter code
+        /// or 3 letter HQP entity code
+        /// This is equivalent to the Contact Name for the CWOpen
+        /// </summary>
+        public string DXEntity { get; set; }
 
         /// <summary>
         /// For HQP contest

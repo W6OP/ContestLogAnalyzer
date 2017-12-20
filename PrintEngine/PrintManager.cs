@@ -783,35 +783,12 @@ namespace W6OP.PrintEngine
 
         #region Create Pre Analysis Reports
 
-        //public void CreateExcelDoc(string reportPath, string session)
-        //{
-        //    using (SpreadsheetDocument document = SpreadsheetDocument.Create(reportPath + @"\unique_" + session + ".xlsx", SpreadsheetDocumentType.Workbook))
-        //    {
-        //        WorkbookPart workbookPart = document.AddWorkbookPart();
-        //        workbookPart.Workbook = new Workbook();
-
-        //        WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
-        //        worksheetPart.Worksheet = new Worksheet(new SheetData());
-
-        //        Sheets sheets = workbookPart.Workbook.AppendChild(new Sheets());
-
-        //        Sheet sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Unique Calls" };
-
-        //        sheets.Append(sheet);
-
-        //        workbookPart.Workbook.Save();
-        //    }
-        //}
-
-        /// <summary>
-        /// Create an Excel spreadsheet that list every call/name pair and
-        /// how many times each was used.
-        /// </summary>
-        //private void CreateCallNameFile(List<ContestLog> contestLogs)
-        //{
-
-        //}
-
+         /// <summary>
+         /// 
+         /// </summary>
+         /// <param name="distinctQSOs"></param>
+         /// <param name="reportPath"></param>
+         /// <param name="session"></param>
         public void ListUniqueCallNamePairs(List<Tuple<string, string>> distinctQSOs, string reportPath, string session)
         {
             string fileName = reportPath + @"\Unique_Calls_" + session + ".xlsx";
@@ -893,22 +870,12 @@ namespace W6OP.PrintEngine
                 using (SpreadsheetDocument document = SpreadsheetDocument.Open(fs, true))
                 {
                     WorkbookPart workbookPart = document.WorkbookPart;
-                    //SharedStringTablePart sstpart = workbookPart.GetPartsOfType<SharedStringTablePart>().First();
-                    //SharedStringTable sst = sstpart.SharedStringTable;
-
-                    // WorksheetPart worksheetPart = workbookPart.WorksheetParts.First();
-                    //Worksheet sheet = worksheetPart.Worksheet;
-
-
+                    
                     // Add another worksheet with data
                     WorksheetPart worksheetPart = AddWorkSheetPart(workbookPart);
                     AddWorkSheet(workbookPart, worksheetPart, "Call-Name Counts");
 
                     SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
-                    //AddWorkSheet(workbookPart, worksheetPart, "Call-Name Counts");
-
-                    //// Get the sheetData cell table.
-                    //SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
 
                     for (int i = 0; i < callNameCountList.Count; i++)
                     {

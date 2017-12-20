@@ -33,7 +33,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private string _WorkingLine = null;
         private CallParser.CallsignParser _Parser;
-        private Hashtable _CallSignSet;
+        public Hashtable _CallSignSet;
         private Hashtable _PrefixSet;
 
         /// <summary>
@@ -249,7 +249,7 @@ namespace W6OP.ContestLogAnalyzer
                     // later break out to nwe method and add switch statement
                     if (_ActiveContest == ContestName.HQP)
                     {
-                        SetDXCCInformation(contestLog.QSOCollection, contestLog);
+                        SetDXCCInformationEx(contestLog.QSOCollection, contestLog);
                     }
                     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -291,7 +291,6 @@ namespace W6OP.ContestLogAnalyzer
         private void SetDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
         {
             CallParser.PrefixInfo prefixInfo = null;
-            CallParser.PrefixInfo prefixInfo2 = null;
 
             bool isValidHQPEntity = false;
             string[] info = new string[2] { "0", "0" };
@@ -302,23 +301,22 @@ namespace W6OP.ContestLogAnalyzer
             foreach (QSO qso in qsoCollection)
             {
                 info = new string[2] { "0", "0" };
-
-                qso.OperatorCountry = qso.OperatorName;
-                qso.DXCountry = qso.ContactName;
+                qso.IsHQPEntity = false;
+                qso.OperatorEntity = qso.OperatorName;
+                qso.DXEntity = qso.ContactName;
 
                 qso.HQPPoints = GetPoints(qso.Mode);
 
-                qso.IsHQPEntity = false;
-
-                isValidHQPEntity = Enum.IsDefined(typeof(HQPMults), qso.OperatorCountry);
+                // determine if this is a Hawawiin station
+                isValidHQPEntity = Enum.IsDefined(typeof(HQPMults), qso.OperatorEntity);
                 contestLog.IsHQPEntity = isValidHQPEntity;
 
                 // -----------------------------------------------------------------------------------
                 // DX station contacting Hawaiin station
-                // if contact name (DXCountry) not in enum list of Hawaii entities (HIL, MAU, etc.)
+                // if DXEntity is not in enum list of Hawaii entities (HIL, MAU, etc.)
                 // QSO: 14242 PH 2017-08-26 1830 N5KXI 59 OK KH7XS 59  DX
                 // this QSO is invalid - complete
-                if (!isValidHQPEntity && qso.DXCountry == "DX")
+                if (!isValidHQPEntity && qso.DXEntity == "DX")
                 {
                     qso.EntityIsInValid = true;
                 }
@@ -328,47 +326,51 @@ namespace W6OP.ContestLogAnalyzer
                 // QSO:  7039 CW 2017-08-26 0524 AH7U 599 LHN ZL3PAH 599 DX
                 if (isValidHQPEntity)
                 {
-                    qso.HQPEntity = qso.OperatorCountry;
+                    qso.HQPEntity = qso.OperatorEntity;
                     qso.IsHQPEntity = isValidHQPEntity;
 
-                    if (qso.DXCountry == "DX")
+                    //if (qso.DXCountry == "DX")
+                    //{
+                    if (!_PrefixSet.Contains(qso.ContactCall))
                     {
-                        if (!_PrefixSet.Contains(qso.ContactCall))
-                        {
-                            prefixInfo = GetPrefixInformation(qso.ContactCall);
-                            _PrefixSet.Add(qso.ContactCall, prefixInfo);
-                        }
-                        else
-                        {
-                            prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.ContactCall];
-                        }
+                        prefixInfo = GetPrefixInformation(qso.ContactCall);
+                        _PrefixSet.Add(qso.ContactCall, prefixInfo);
+                    }
+                    else
+                    {
+                        prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.ContactCall];
+                    }
 
-                        if (prefixInfo != null)
+                    if (prefixInfo != null)
+                    {
+                        if (prefixInfo.Territory != null)
                         {
-                            if (prefixInfo.Territory != null)
+                            qso.DXEntity = prefixInfo.Territory.ToString();
+                            qso.IsEntityVerified = true;
+
+                            if (qso.DXEntity == "Canada" || qso.DXEntity == "United States of America")
                             {
-                                qso.DXCountry = prefixInfo.Territory.ToString();
+                                qso.RealOperatorEntity = qso.DXEntity; // persist if USA or Canada
+                                qso.RealDXEntity = qso.DXEntity;
 
-                                if (qso.DXCountry == "Canada" || qso.DXCountry == "United States of America")
+                                if (qso.DXEntity == "DX")
                                 {
-                                    qso.Country = qso.DXCountry; // persist if USA or Canada
-                                    qso.RealDXCountry = qso.DXCountry;
-
                                     if (!_CallSignSet.Contains(qso.ContactCall))
                                     {
                                         info = _QRZ.QRZLookup(qso.ContactCall, info);
-                                        qso.DXCountry = info[0];
+                                        qso.DXEntity = info[0];
 
-                                        _CallSignSet.Add(qso.ContactCall, qso.DXCountry);
+                                        _CallSignSet.Add(qso.ContactCall, qso.DXEntity);
                                     }
                                     else
                                     {
-                                        qso.DXCountry = (String)_CallSignSet[qso.ContactCall];
+                                        qso.DXEntity = (String)_CallSignSet[qso.ContactCall];
                                     }
                                 }
                             }
                         }
                     }
+                    //}
                 }
 
                 // -----------------------------------------------------------------------------------
@@ -376,7 +378,7 @@ namespace W6OP.ContestLogAnalyzer
                 // HI8A.log - QSO: 14000 CW 2017-08-27 1712 HI8A 599 DX KH6LC 599 HIL
                 if (!isValidHQPEntity && qso.Status != QSOStatus.InvalidQSO)
                 {
-                    if (qso.OperatorCountry == "DX")
+                    if (qso.OperatorEntity == "DX")
                     {
                         prefixInfo = GetPrefixInformation(qso.OperatorCall);
 
@@ -384,22 +386,26 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             if (prefixInfo.Territory != null)
                             {
-                                qso.OperatorCountry = prefixInfo.Territory.ToString();
-                                if (qso.DXCountry == "Canada" || qso.DXCountry == "United States of America")
+                                // this is for non US and Canada
+                                qso.OperatorEntity = prefixInfo.Territory.ToString();
+                                qso.RealOperatorEntity = qso.OperatorEntity;
+                                qso.IsEntityVerified = true;
+
+                                if (qso.DXEntity == "Canada" || qso.DXEntity == "United States of America")
                                 {
-                                    qso.Country = qso.DXCountry; // persist if USA or Canada
-                                    qso.RealDXCountry = qso.DXCountry;
+                                    qso.RealOperatorEntity = qso.DXEntity; // persist if USA or Canada
+                                    qso.RealDXEntity = qso.DXEntity;
 
                                     if (!_CallSignSet.Contains(qso.ContactCall))
                                     {
                                         info = _QRZ.QRZLookup(qso.ContactCall, info);
-                                        qso.DXCountry = info[0];
+                                        qso.DXEntity = info[0];
 
-                                        _CallSignSet.Add(qso.ContactCall, qso.DXCountry);
+                                        _CallSignSet.Add(qso.ContactCall, qso.DXEntity);
                                     }
                                     else
                                     {
-                                        qso.DXCountry = (String)_CallSignSet[qso.ContactCall];
+                                        qso.DXEntity = (String)_CallSignSet[qso.ContactCall];
                                     }
                                 }
                             }
@@ -423,7 +429,8 @@ namespace W6OP.ContestLogAnalyzer
 
                         if (prefixInfo != null && prefixInfo.Territory != null)
                         {
-                            qso.RealDXCountry = prefixInfo.Territory.ToString();
+                            qso.RealDXEntity = prefixInfo.Territory.ToString();
+                            qso.IsEntityVerified = true;
                         }
 
                         if (!_PrefixSet.Contains(qso.OperatorCall))
@@ -438,8 +445,184 @@ namespace W6OP.ContestLogAnalyzer
 
                         if (prefixInfo != null && prefixInfo.Territory != null)
                         {
-                            qso.Country = prefixInfo.Territory.ToString();
+                            qso.RealOperatorEntity = prefixInfo.Territory.ToString();
+                            qso.IsEntityVerified = true;
                         }
+                    }
+                }
+            }
+        }
+
+        private void SetDXCCInformationEx(List<QSO> qsoCollection, ContestLog contestLog)
+        {
+            CallParser.PrefixInfo prefixInfo = null;
+
+            bool isValidHQPEntity = false;
+            string[] info = new string[2] { "0", "0" };
+
+            contestLog.IsHQPEntity = false;
+            contestLog.TotalPoints = 0;
+
+            foreach (QSO qso in qsoCollection)
+            {
+                info = new string[2] { "0", "0" };
+                qso.IsHQPEntity = false;
+                qso.OperatorEntity = qso.OperatorName;
+                qso.DXEntity = qso.ContactName;
+
+                qso.HQPPoints = GetPoints(qso.Mode);
+
+                // determine if this is a Hawawiin station
+                isValidHQPEntity = Enum.IsDefined(typeof(HQPMults), qso.OperatorEntity);
+                contestLog.IsHQPEntity = isValidHQPEntity;
+
+                // -----------------------------------------------------------------------------------
+                // DX station contacting Hawaiin station
+                // if DXEntity is not in enum list of Hawaii entities (HIL, MAU, etc.)
+                // QSO: 14242 PH 2017-08-26 1830 N5KXI 59 OK KH7XS 59  DX
+                // this QSO is invalid - complete
+                if (!isValidHQPEntity && qso.DXEntity == "DX")
+                {
+                    qso.EntityIsInValid = true;
+                }
+
+                // set operator information
+                if (!_PrefixSet.Contains(qso.OperatorCall))
+                {
+                    prefixInfo = GetPrefixInformation(qso.OperatorCall);
+                    _PrefixSet.Add(qso.OperatorCall, prefixInfo);
+                }
+                else
+                {
+                    prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.OperatorCall];
+                }
+
+                if (prefixInfo != null && prefixInfo.Territory != null)
+                {
+                    qso.RealOperatorEntity = prefixInfo.Territory.ToString();
+
+                    if (isValidHQPEntity)
+                    {
+                        // for AC7N
+                        qso.RealOperatorEntity = "Hawaii";
+                    }
+                }
+
+                // set contact information
+                if (!_PrefixSet.Contains(qso.ContactCall))
+                {
+                    prefixInfo = GetPrefixInformation(qso.ContactCall);
+                    _PrefixSet.Add(qso.ContactCall, prefixInfo);
+                }
+                else
+                {
+                    prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.ContactCall];
+                }
+
+                if (prefixInfo != null && prefixInfo.Territory != null)
+                {
+                    qso.RealDXEntity = prefixInfo.Territory.ToString();
+
+                    if (Enum.IsDefined(typeof(HQPMults), qso.OperatorEntity) == true)
+                    {
+                        qso.RealDXEntity = "Hawaii";
+                    }
+                }
+
+                // set additional DXEntity information
+                // Hawaiin station contacts a non Hawaiin station and puts "DX" as country instead of actual country
+                // QSO:  7039 CW 2017-08-26 0524 AH7U 599 LHN ZL3PAH 599 DX
+                if (isValidHQPEntity)
+                {
+                    qso.HQPEntity = qso.OperatorEntity;
+                    qso.IsHQPEntity = true;
+
+                    if (prefixInfo != null && prefixInfo.Territory != null)
+                    {
+                        SetHQPEntityInfo(qso, prefixInfo);
+                    }
+                }
+                else
+                {
+                    SetNonHQPEntityInfo(qso, prefixInfo);
+                }
+            }
+        }
+
+        private void SetNonHQPEntityInfo(QSO qso, PrefixInfo prefixInfo)
+        {
+            string[] info = new string[2] { "0", "0" };
+
+            // Non Hawaii log uses "DX" for their own location (Op Name) instead of their real country
+            // HI8A.log - QSO: 14000 CW 2017-08-27 1712 HI8A 599 DX KH6LC 599 HIL
+            if (qso.Status != QSOStatus.InvalidQSO)
+            {
+                if (qso.OperatorEntity == "DX")
+                {
+                    prefixInfo = GetPrefixInformation(qso.OperatorCall);
+
+                    if (prefixInfo != null)
+                    {
+                        if (prefixInfo.Territory != null)
+                        {
+                            // this is for non US and Canada
+                            qso.OperatorEntity = prefixInfo.Territory.ToString();
+                            //qso.RealOperatorEntity = qso.OperatorEntity;
+                            qso.IsEntityVerified = true;
+
+                            if (qso.DXEntity == "Canada" || qso.DXEntity == "United States of America")
+                            {
+                                qso.RealOperatorEntity = qso.DXEntity; // persist if USA or Canada
+                                qso.RealDXEntity = qso.DXEntity;
+
+                                if (!_CallSignSet.Contains(qso.ContactCall))
+                                {
+                                    info = _QRZ.QRZLookup(qso.ContactCall, info);
+
+                                    if (info[0] != null)
+                                    {
+                                        qso.DXEntity = info[0].ToUpper();
+                                        _CallSignSet.Add(qso.ContactCall, qso.DXEntity);
+                                    }
+                                }
+                                else
+                                {
+                                    qso.DXEntity = (String)_CallSignSet[qso.ContactCall];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SetHQPEntityInfo(QSO qso, PrefixInfo prefixInfo)
+        {
+            string[] info = new string[2] { "0", "0" };
+
+            qso.RealDXEntity = prefixInfo.Territory.ToString();
+            qso.IsEntityVerified = true;
+
+            if (qso.RealDXEntity == "Canada" || qso.RealDXEntity == "United States of America")
+            {
+                //qso.RealOperatorEntity = qso.DXEntity; // persist if USA or Canada
+                //qso.RealDXEntity = qso.DXEntity;
+
+                if (qso.DXEntity == "DX")
+                {
+                    if (!_CallSignSet.Contains(qso.ContactCall))
+                    {
+                        info = _QRZ.QRZLookup(qso.ContactCall, info);
+                        if (info[0] != null)
+                        {
+                            qso.DXEntity = info[0].ToUpper();
+
+                            _CallSignSet.Add(qso.ContactCall, qso.DXEntity);
+                        }
+                    }
+                    else
+                    {
+                        qso.DXEntity = (String)_CallSignSet[qso.ContactCall];
                     }
                 }
             }
@@ -607,7 +790,7 @@ namespace W6OP.ContestLogAnalyzer
                         LogFileName = logFileName,
                         Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
                         Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: UNKNOWN").First().Substring(9).Trim(),
-                        OperatorCallSign = CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN").ToUpper(),
+                        OperatorCallSign = RemovePreOrSuffix(CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN")).ToUpper(),
                         OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY:")).DefaultIfEmpty("CATEGORY: SINGLE-OP").First().Substring(9).Trim().ToUpper()),
                         // this is for when the CATEGORY-ASSISTED: is missing or has no value
                         Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: ASSISTED").First(), 18, "ASSISTED")),   //.Substring(18).Trim().ToUpper()),
@@ -680,7 +863,7 @@ namespace W6OP.ContestLogAnalyzer
                     LogFileName = logFileName,
                     Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
                     Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: UNKNOWN").First().Substring(9).Trim(),
-                    OperatorCallSign = CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN").ToUpper(),
+                    OperatorCallSign = RemovePreOrSuffix(CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN")).ToUpper(),
                     OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY-OPERATOR:")).DefaultIfEmpty("CATEGORY-OPERATOR: SINGLE-OP").First().Substring(18).Trim().ToUpper()),
                     // this is for when the CATEGORY-ASSISTED: is missing or has no value
                     Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: ASSISTED").First(), 18, "ASSISTED")),
@@ -767,10 +950,10 @@ namespace W6OP.ContestLogAnalyzer
                              Mode = split[2],
                              QsoDate = split[3],
                              QsoTime = CheckTime(split[4], line),
-                             OperatorCall = RemovePreOrSuffix(split[5]),
+                             OperatorCall = RemovePreOrSuffix(split[5]).ToUpper(),
                              SentSerialNumber = ConvertSerialNumber(split[6]),
                              OperatorName = split[7],
-                             ContactCall = RemovePreOrSuffix(split[8]),
+                             ContactCall = RemovePreOrSuffix(split[8]).ToUpper(),
                              ReceivedSerialNumber = ConvertSerialNumber(split[9]),
                              ContactName = split[10],
                              CallIsInValid = CheckCallSignFormat(split[5]),
@@ -821,6 +1004,11 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return qsoList;
+        }
+
+        private string SetNameCase(string v)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

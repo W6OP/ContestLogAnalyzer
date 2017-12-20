@@ -137,7 +137,7 @@ namespace W6OP.ContestLogAnalyzer
             contestLog.NonHQPMultipliers = 0;
             contestLog.TotalPoints = 0;
 
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.DXCountry, x.Status })
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.DXEntity, x.Status })
              .Where(g => g.Count() >= 1)
              .Select(y => y.Key)
              .ToList();
@@ -148,16 +148,16 @@ namespace W6OP.ContestLogAnalyzer
 
             foreach (var qso in query)
             {
-                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.DXCountry == qso.DXCountry && item.Status == QSOStatus.ValidQSO).ToList();
+                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.DXEntity == qso.DXEntity && item.Status == QSOStatus.ValidQSO).ToList();
                 
                 if (multiList.Any())
                 {
-                    if (Enum.IsDefined(typeof(HQPMults), qso.DXCountry))
+                    if (Enum.IsDefined(typeof(HQPMults), qso.DXEntity))
                     {
-                        if (!entities.Contains(qso.DXCountry))
+                        if (!entities.Contains(qso.DXEntity))
                         {
                             // if not in hashset, add it
-                            entities.Add(qso.DXCountry);
+                            entities.Add(qso.DXEntity);
                             // now set the first one as a multiplier
                             multiList.First().IsMultiplier = true;
                             // for debugging
@@ -166,10 +166,10 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        if (!entities.Contains(qso.DXCountry))
+                        if (!entities.Contains(qso.DXEntity))
                         {
                             // if not in hashset, add it
-                            entities.Add(qso.DXCountry);
+                            entities.Add(qso.DXEntity);
                             // now set the first one as a multiplier
                             multiList.First().IsMultiplier = true;
                             // for debugging
@@ -194,7 +194,7 @@ namespace W6OP.ContestLogAnalyzer
             string consolidated = null;
 
             // target is HPQ
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.DXCountry, x.Status, x.Band, x.Mode })
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.DXEntity, x.Status, x.Band, x.Mode })
              .Where(g => g.Count() >= 1)
              .Select(y => y.Key)
              .ToList();
@@ -204,10 +204,10 @@ namespace W6OP.ContestLogAnalyzer
                 List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Status == QSOStatus.ValidQSO && item.Band == qso.Band && item.Mode == qso.Mode).ToList();
                 if (multiList.Any())
                 {
-                    if (Enum.IsDefined(typeof(HQPMults), qso.DXCountry))
+                    if (Enum.IsDefined(typeof(HQPMults), qso.DXEntity))
                     {
                         // key for hashset
-                        consolidated = qso.DXCountry + qso.Band;
+                        consolidated = qso.DXEntity + qso.Band;
                         if (!entities.Contains(consolidated))
                         {   
                             // if not in hashset, add it

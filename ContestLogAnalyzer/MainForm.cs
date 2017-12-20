@@ -91,6 +91,7 @@ namespace W6OP.ContestLogAnalyzer
             if (_LogAnalyser == null)
             {
                 _LogAnalyser = new LogAnalyzer();
+                _LogAnalyser._CallSignSet = _LogProcessor._CallSignSet;
                 _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
             }
 
@@ -978,7 +979,9 @@ namespace W6OP.ContestLogAnalyzer
         }
 
 
-
+        /// <summary>
+        /// Load a CSV file with a list of known bad calls.
+        /// </summary>
         private void LoadCSVFile()
         {
             ILookup<string, string> badCallList;
@@ -991,7 +994,6 @@ namespace W6OP.ContestLogAnalyzer
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.Message, "Load CSV File", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 UpdateListViewLoad("Unable to load bad call file.", ex.Message, false);
             }
             finally
@@ -1073,7 +1075,6 @@ namespace W6OP.ContestLogAnalyzer
         private void BackgroundWorkerPreAnalysis_DoWork(object sender, DoWorkEventArgs e)
         {
             // calls with <= 3 hits
-            //List<Tuple<string, string>> suspectCallList = null;
             string session = _Session.ToString();
 
             if (_Session == Session.Session_0)
@@ -1089,13 +1090,9 @@ namespace W6OP.ContestLogAnalyzer
             _PrintManager.ListUniqueCallNamePairs(distinctCallNamePairs, _ReportFolder, session);
 
             // list of all calls with number of hits and all names with number of hits
-            //List<Tuple<string, Int32, string, Int32>> callNameCountList = _LogAnalyser.CollectCallNameHitData(distinctCallNamePairs, _ContestLogs, out suspectCallList);
             List<Tuple<string, Int32, string, Int32>> callNameCountList = _LogAnalyser.CollectCallNameHitData(distinctCallNamePairs, _ContestLogs);
             UpdateListViewLoad("List Call Name Occurences", "", false);
             _PrintManager.ListCallNameOccurences(callNameCountList, _ReportFolder, session);
-
-            //List<QSO> suspectQSOs = _LogAnalyser.CollectSuspectQSOs(suspectCallList, _ContestLogs);
-
         }
 
         private void BackgroundWorkerPreAnalysis_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -1196,7 +1193,7 @@ namespace W6OP.ContestLogAnalyzer
             item.SubItems.Add(qso.QsoDate.ToString());
             item.SubItems.Add(qso.QsoTime.ToString());
             item.SubItems.Add(qso.SentSerialNumber.ToString());
-            item.SubItems.Add(qso.OperatorCountry);
+            item.SubItems.Add(qso.OperatorEntity);
             item.SubItems.Add(qso.ContactCall);
             item.SubItems.Add(qso.ReceivedSerialNumber.ToString());
             item.SubItems.Add(qso.ContactName);
