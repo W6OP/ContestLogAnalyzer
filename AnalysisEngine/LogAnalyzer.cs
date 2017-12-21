@@ -324,6 +324,14 @@ namespace W6OP.ContestLogAnalyzer
 
             foreach (QSO qso in qsoList)
             {
+                if (qso.Status == QSOStatus.InvalidQSO && qso.RejectReasons.Count > 0) 
+                {
+                    if (qso.RejectReasons.ContainsKey(RejectReason.InvalidCall))
+                    {
+                        return;
+                    }
+                }
+
                 // get the other log that matches this QSO contact call
                 matchLog = contestLogList.FirstOrDefault(q => q.LogOwner == qso.ContactCall);
 

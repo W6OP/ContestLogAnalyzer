@@ -507,6 +507,12 @@ namespace W6OP.ContestLogAnalyzer
                         qso.RealOperatorEntity = "Hawaii";
                     }
                 }
+                else
+                {
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.RejectReasons.Clear();
+                    qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                }
 
                 // set contact information
                 if (!_PrefixSet.Contains(qso.ContactCall))
@@ -523,10 +529,16 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     qso.RealDXEntity = prefixInfo.Territory.ToString();
 
-                    if (Enum.IsDefined(typeof(HQPMults), qso.OperatorEntity) == true)
-                    {
-                        qso.RealDXEntity = "Hawaii";
-                    }
+                    //if (Enum.IsDefined(typeof(HQPMults), qso.OperatorEntity) == true)
+                    //{
+                    //    qso.RealDXEntity = "Hawaii";
+                    //}
+                }
+                else
+                {
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.RejectReasons.Clear();
+                    qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
                 }
 
                 // set additional DXEntity information
@@ -956,7 +968,7 @@ namespace W6OP.ContestLogAnalyzer
                              ContactCall = RemovePreOrSuffix(split[8]).ToUpper(),
                              ReceivedSerialNumber = ConvertSerialNumber(split[9]),
                              ContactName = split[10],
-                             CallIsInValid = CheckCallSignFormat(split[5]),
+                             CallIsInValid = CheckCallSignFormat(RemovePreOrSuffix(split[5]).ToUpper()),
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
@@ -1021,16 +1033,38 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (callSign.IndexOf("/") != -1)
             {
-                int temp1 = callSign.Substring(0, callSign.IndexOf("/")).Length;
-                int temp2 = callSign.Substring(callSign.IndexOf("/")).Length - 1;
+                string call1 = callSign.Substring(0, callSign.IndexOf("/"));
+                string call2 = callSign.Substring(callSign.IndexOf("/"));
+                int temp1 = call1.Length;
+                int temp2 = call2.Length - 1;
+                bool containsInt;
 
-                if (temp1 > temp2)
+                try
                 {
-                    callSign = callSign.Substring(0, callSign.IndexOf("/"));
+                    if (temp1 > temp2)
+                    {
+                        callSign = call1;
+                    }
+                    else if (temp1 == temp2)
+                    {
+                        containsInt = call1.Any(char.IsDigit);
+                        if (containsInt)
+                        {
+                            callSign = call1;
+                        }
+                        else
+                        {
+                            callSign = call2.Substring(call2.IndexOf("/") + 1);
+                        }
+                    }
+                    else
+                    {
+                        callSign = call2.Substring(call2.IndexOf("/") + 1);
+                    }
                 }
-                else
+                catch(Exception ex)
                 {
-                    callSign = callSign.Substring(callSign.IndexOf("/") + 1);
+                    var e = ex.Message;
                 }
             }
 
@@ -1166,6 +1200,11 @@ namespace W6OP.ContestLogAnalyzer
 
             // should this pass "DR50RRDXA" it does not currently
             if (Regex.IsMatch(call.ToUpper(), regex, RegexOptions.IgnoreCase))
+            {
+                invalid = false;
+            }
+
+            if (call == "S57DX")
             {
                 invalid = false;
             }

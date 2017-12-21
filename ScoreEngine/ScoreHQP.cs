@@ -36,7 +36,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     // I don't think this is necessary right now
                     // not unless I have multiple reject reasons
-                    ValidateDuplicates(contestLog);
+                    //ValidateDuplicates(contestLog);
 
                     if (contestLog.IsHQPEntity)
                     {
@@ -132,34 +132,52 @@ namespace W6OP.ContestLogAnalyzer
         private void MarkMultipliersHQP(ContestLog contestLog)
         {
             List<QSO> qsoList = contestLog.QSOCollection;
+            List<QSO> multiList = new List<QSO>();
             HashSet<string> entities = new HashSet<string>();
+            string entity = "";
 
             contestLog.Multipliers = 0;
             contestLog.HQPMultipliers = 0;
             contestLog.NonHQPMultipliers = 0;
             contestLog.TotalPoints = 0;
 
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.DXEntity, x.Status })
+            var query = qsoList.GroupBy(x => new { x.ContactCall, x.DXEntity, x.RealDXEntity, x.Status })
              .Where(g => g.Count() >= 1)
              .Select(y => y.Key)
              .ToList();
 
            //int multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO)).ToList().Count();
            
-            List<QSO> qsoList2 = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO)).ToList();
+            //List<QSO> qsoList2 = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO)).ToList();
 
             foreach (var qso in query)
             {
-                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.DXEntity == qso.DXEntity && item.Status == QSOStatus.ValidQSO).ToList();
-                
+                if (qso.DXEntity != "DX")
+                {
+                    multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.DXEntity == qso.DXEntity && item.Status == QSOStatus.ValidQSO).ToList();
+                    entity = qso.DXEntity;
+                }
+                else
+                {
+                    multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.RealDXEntity == qso.RealDXEntity && item.Status == QSOStatus.ValidQSO).ToList();
+                    entity = qso.RealDXEntity;
+                }
+
                 if (multiList.Any())
                 {
-                    if (Enum.IsDefined(typeof(HQPMults), qso.DXEntity))
+                    if (Enum.IsDefined(typeof(HQPMults), entity))
                     {
-                        if (!entities.Contains(qso.DXEntity))
+                        if (!entities.Contains(entity))
                         {
                             // if not in hashset, add it
-                            entities.Add(qso.DXEntity);
+                            //if (entity != "DX")
+                            //{
+                                entities.Add(entity);
+                            //}
+                            //else
+                            //{
+                            //    entities.Add(entity);
+                            //}
                             // now set the first one as a multiplier
                             multiList.First().IsMultiplier = true;
                             // for debugging
@@ -168,10 +186,18 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        if (!entities.Contains(qso.DXEntity))
+                        if (!entities.Contains(entity))
                         {
                             // if not in hashset, add it
-                            entities.Add(qso.DXEntity);
+                            //if (entity != "DX")
+                            //{
+                                entities.Add(entity);
+                            //}
+                            //else
+                            //{
+                            //    entities.Add(entity);
+                            //}
+                            
                             // now set the first one as a multiplier
                             multiList.First().IsMultiplier = true;
                             // for debugging
