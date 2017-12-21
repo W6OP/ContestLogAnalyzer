@@ -408,17 +408,41 @@ namespace W6OP.ContestLogAnalyzer
 
                             if (ActiveContest == ContestName.HQP)
                             {
-                                if (qso.ContactName != qso.DXEntity)
+                                if (qso.RealDXEntity != "United States of America" && qso.RealDXEntity != "Canada" && qso.RealDXEntity != "Hawaii" && qso.RealDXEntity != "Alaska")
                                 {
-                                    qso.Status = QSOStatus.InvalidQSO;
-                                    qso.EntityIsInValid = true;
-                                    qso.IncorrectName = qso.ContactName + " --> " + qso.DXEntity;
-                                    // not needed - qso.EntityIsInValid = true; does same thing
-                                    //qso.RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                                    qso.RejectReasons.Clear();
+                                    qso.Status = QSOStatus.ValidQSO;
+
+                                    //if (qso.ContactName != qso.RealDXEntity)
+                                    //{
+
+                                    //    qso.Status = QSOStatus.InvalidQSO;
+                                    //    qso.EntityIsInValid = true;
+                                    //    qso.IncorrectName = qso.ContactName + " --> " + qso.RealDXEntity;
+                                    //    // not needed - qso.EntityIsInValid = true; does same thing
+                                    //    //qso.RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+
+                                    //}
+                                    //else
+                                    //{
+                                    //    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                                    //}
                                 }
                                 else
                                 {
-                                    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                                    if (qso.ContactName != qso.DXEntity)
+                                    {
+                                        qso.Status = QSOStatus.InvalidQSO;
+                                        qso.EntityIsInValid = true;
+                                        qso.IncorrectName = qso.ContactName + " --> " + qso.DXEntity;
+                                        // not needed - qso.EntityIsInValid = true; does same thing
+                                        //qso.RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+
+                                    }
+                                    else
+                                    {
+                                        qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                                    }
                                 }
                             }
 
@@ -572,34 +596,7 @@ namespace W6OP.ContestLogAnalyzer
                     return wasFound;
                 }
 
-                // this is on for HQP
-                if (ActiveContest == ContestName.HQP && qso.RealDXEntity != null && (qso.RealDXEntity == "Canada" || qso.RealDXEntity == "United States of America"))
-                {
-                    if (qso.DXEntity.Length > 2)
-                    {
-                        wasFound = true;
-                        qso.IncorrectName = qso.ContactName + " --> " + matchName;
-                        qso.EntityIsInValid = true;
-                    }
-                    else
-                    {
-                        if (qso.ContactName != matchName)
-                        {
-                            if (matchName.Length == 2)
-                            {
-                                wasFound = true;
-                                qso.IncorrectName = qso.ContactName + " --> " + matchName;
-
-                                qso.EntityIsInValid = true;
-                            }
-                            else
-                            {
-
-                            }
-                        }
-                    }
-                }
-                else if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 > 50)
+               if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 > 50)
                 {
                     //Console.WriteLine((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100);
                     wasFound = true;
@@ -632,64 +629,120 @@ namespace W6OP.ContestLogAnalyzer
             //matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.Status == QSOStatus.ValidQSO).ToList();
             matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
 
-            if (matchingQSOs.Count < 5)
+            // loop through and see if first few names match
+            for (int i = 0; i < matchingQSOs.Count; i++)
+            {
+                if (qso.ContactName != matchingQSOs[i].ContactName)
+                {
+                    matchCount++;
+                    matchName = matchingQSOs[i].ContactName;
+                }
+            }
+
+            if (matchName == null)
+            {
+                return wasFound;
+            }
+
+
+            //if (matchingQSOs.Count < 5)
+            //{
+            //if (qso.RealDXEntity != null && (qso.RealDXEntity == "Canada" || qso.RealDXEntity == "United States of America"))
+            //{
+            //    if (matchName.Length > 2)
+            //    {
+            //        if (!_CallSignSet.Contains(qso.ContactCall))
+            //        {
+            //            info = _QRZ.QRZLookup(qso.ContactCall, info);
+            //            if (info[0] != null)
+            //            {
+            //                matchName = info[0].ToUpper();
+            //                _CallSignSet.Add(qso.ContactCall, matchName);
+            //            }
+            //            else
+            //            {
+            //                return false;
+            //            }
+            //        }
+            //        else
+            //        {
+            //            matchName = (string)_CallSignSet[qso.ContactCall];
+            //        }
+
+            //        if (qso.ContactName != matchName)
+            //        {
+            //            wasFound = true;
+            //            qso.IncorrectName = qso.ContactName + " --> " + matchName;
+            //            qso.EntityIsInValid = true;
+            //        }
+
+            //        return wasFound;
+            //    }
+            //}
+
+            //// loop through and see if first few names match
+            //for (int i = 0; i < matchingQSOs.Count; i++)
+            //{
+            //    if (qso.ContactName != matchingQSOs[i].ContactName)
+            //    {
+            //        matchCount++;
+            //        matchName = matchingQSOs[i].ContactName;
+            //    }
+            //}
+
+            //if (matchName == null)
+            //{
+            //    return wasFound;
+            //}
+
+            if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 > 50)
             {
                 if (qso.RealDXEntity != null && (qso.RealDXEntity == "Canada" || qso.RealDXEntity == "United States of America"))
                 {
-                    if (!_CallSignSet.Contains(qso.ContactCall))
+                    if (matchName.Length > 2 || matchingQSOs.Count < 5 || qso.ContactCall.Length == 3)
                     {
-                        info = _QRZ.QRZLookup(qso.ContactCall, info);
-                        if (info[0] != null)
+                        if (!_CallSignSet.Contains(qso.ContactCall))
                         {
-                            matchName = info[0].ToUpper();
-                            _CallSignSet.Add(qso.ContactCall, matchName);
+                            info = _QRZ.QRZLookup(qso.ContactCall, info);
+                            if (info[0] != null)
+                            {
+                                matchName = info[0].ToUpper();
+                                _CallSignSet.Add(qso.ContactCall, matchName);
+                            }
+                            else
+                            {
+                                return false;
+                            }
                         }
                         else
                         {
-                            return false;
+                            matchName = (string)_CallSignSet[qso.ContactCall];
                         }
+
+                        if (qso.ContactName != matchName)
+                        {
+                            wasFound = true;
+                            qso.IncorrectName = qso.ContactName + " --> " + matchName;
+                            qso.EntityIsInValid = true;
+                        }
+
+                        return wasFound;
                     }
                     else
-                    {
-                        matchName = (string)_CallSignSet[qso.ContactCall];
-                    }
-
-                    if (qso.ContactName != matchName)
                     {
                         wasFound = true;
                         qso.IncorrectName = qso.ContactName + " --> " + matchName;
                         qso.EntityIsInValid = true;
                     }
-
-                    return wasFound;
-                }
-
-                // loop through and see if first few names match
-                for (int i = 0; i < matchingQSOs.Count; i++)
+                } 
+                else
                 {
-                    if (qso.ContactName != matchingQSOs[i].ContactName)
-                    {
-                        matchCount++;
-                        matchName = matchingQSOs[i].ContactName;
-                    }
-                }
-
-                if (matchName == null)
-                {
-                    return wasFound;
-                }
-
-                if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 > 50)
-                {
-                    //Console.WriteLine((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100);
                     wasFound = true;
                     qso.IncorrectName = qso.ContactName + " --> " + matchName;
-
-                   
-                            qso.EntityIsInValid = true;
-                           
+                    qso.EntityIsInValid = true;
                 }
             }
+            // }
 
             return wasFound;
         }

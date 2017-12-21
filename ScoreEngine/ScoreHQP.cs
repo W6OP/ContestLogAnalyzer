@@ -34,6 +34,8 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
+                    // I don't think this is necessary right now
+                    // not unless I have multiple reject reasons
                     ValidateDuplicates(contestLog);
 
                     if (contestLog.IsHQPEntity)
@@ -74,7 +76,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Make sure a guy doesn't get hit twice for the same bad QSO
+        /// Make sure a guy doesn't get hit twice for the same bad QSO - count the good dupe and not the bad dupe
         /// QSO: 	14028	CW	2015-09-05	1211	AA3B	25	BUD	I5EFO	3	EMIL	The received serial number is incorrect - 3 --> 15
         /// QSO: 	14000	CW	2015-09-05	1313	I5EFO	15	EMIL AA3B	88	BUD
         /// 
@@ -219,7 +221,7 @@ namespace W6OP.ContestLogAnalyzer
 
                             if (contestLog.HQPMultipliers > 84)
                             {
-                                var a = 1;
+                                contestLog.HQPMultipliers = 84;
                             }
                         }
                     }
