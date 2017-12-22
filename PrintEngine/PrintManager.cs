@@ -535,7 +535,7 @@ namespace W6OP.PrintEngine
                                     {
                                         //value = qso.RejectReasons[key];
                                         //originalQSO = qso.DupeListLocation;
-  
+
 
                                         //message = "QSO: " + "\t" + originalQSO.Frequency + "\t" + originalQSO.Mode + "\t" + originalQSO.QsoDate + "\t" + originalQSO.QsoTime + "\t" + originalQSO.OperatorCall + "\t" + originalQSO.SentSerialNumber.ToString() + "\t" +
                                         //           originalQSO.OperatorName + "\t" + originalQSO.ContactCall + "\t" + originalQSO.ReceivedSerialNumber.ToString() + "\t" + originalQSO.ContactName;
@@ -624,6 +624,11 @@ namespace W6OP.PrintEngine
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dupeListLocation"></param>
+        /// <param name="sw"></param>
         private void PrintDuplicates(QSO dupeListLocation, StreamWriter sw)
         {
             string message = null;
@@ -729,11 +734,23 @@ namespace W6OP.PrintEngine
         private void AddFooter(ContestLog contestLog, StreamWriter sw)
         {
             string message = "";
+            Int32 totalQSOs = 0;
             Int32 totalValidQSOs = 0;
+            Int32 totalInvalidQSOs = 0;
+            Int32 totalPhoneQSOS = 0;
+            Int32 totalCWQSOs = 0;
+            Int32 totalDigiQSOS = 0;
             Int32 multiplierCount = 0;
             Int32 score = 0;
 
+            totalQSOs = contestLog.QSOCollection.Count;
             totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
+            totalInvalidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList().Count();
+
+            totalPhoneQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "PH").ToList().Count();
+            totalCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "CW").ToList().Count();
+            totalDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "RY").ToList().Count();
+
             multiplierCount = contestLog.Multipliers;   //.QSOCollection.Where(q => q.IsMultiplier == true && q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
             score = contestLog.ActualScore;
 
@@ -742,25 +759,49 @@ namespace W6OP.PrintEngine
             switch (_ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    message = String.Format("Final:   Valid QSOs: {0}   Mults: {1}   Score: {2}", totalValidQSOs.ToString(), multiplierCount.ToString(), score.ToString());
+                    message = String.Format(" Final:   Valid QSOs: {0}   Mults: {1}   Score: {2}", totalValidQSOs.ToString(), multiplierCount.ToString(), score.ToString());
+                    sw.WriteLine(message);
                     break;
                 case ContestName.HQP:
                     if (contestLog.IsHQPEntity)
                     {
-                        message = String.Format("Final:   Valid QSOs: {0}   HQP Mults: {1}   NonHQP Mults: {2}   Total Mults: {3}   Points: {4}   Score: {5}",
-                        totalValidQSOs.ToString(), contestLog.HQPMultipliers.ToString(), contestLog.NonHQPMultipliers.ToString(), multiplierCount.ToString(), contestLog.TotalPoints.ToString(), score.ToString());
+                        //message = String.Format("Final:   Valid QSOs: {0}   HQP Mults: {1}   NonHQP Mults: {2}   Total Mults: {3}   Points: {4}   Score: {5}",
+                        //totalValidQSOs.ToString(), contestLog.HQPMultipliers.ToString(), contestLog.NonHQPMultipliers.ToString(), multiplierCount.ToString(), contestLog.TotalPoints.ToString(), score.ToString());
+                        message = String.Format(" Total QSOs: {0}   Valid QSOs: {1}  Invalid QSOs: {2}", totalQSOs.ToString(), totalValidQSOs.ToString(), totalInvalidQSOs.ToString());
+                        sw.WriteLine(message);
+
+                        message = String.Format(" Valid PH: {0}  Valid CW: {1}   Valid RY: {2}", totalPhoneQSOS.ToString(), totalCWQSOs.ToString(), totalDigiQSOS.ToString());
+                        sw.WriteLine(message);
+
+                        message = String.Format(" HQP Mults: {0}   NonHQP Mults: {1}   Total Mults: {2}", contestLog.HQPMultipliers.ToString(), contestLog.NonHQPMultipliers.ToString(), multiplierCount.ToString());
+                        sw.WriteLine(message);
+
+                        message = String.Format(" Points: {0}  Score: {1}", contestLog.TotalPoints.ToString(), score.ToString());
+                        sw.WriteLine(message);
                     }
                     else
                     {
-                        message = String.Format("Final:   Valid QSOs: {0}   HQP Mults: {1} Total Mults: {2}   Points: {3}   Score: {4}",
-                        totalValidQSOs.ToString(), contestLog.HQPMultipliers.ToString(), multiplierCount.ToString(), contestLog.TotalPoints.ToString(), score.ToString());
+                        //message = String.Format(" Final:   Valid QSOs: {0}   HQP Mults: {1} Total Mults: {2}   Points: {3}   Score: {4}",
+                        //totalValidQSOs.ToString(), contestLog.HQPMultipliers.ToString(), multiplierCount.ToString(), contestLog.TotalPoints.ToString(), score.ToString());
+                        message = String.Format(" Final:   Valid QSOs: {0}  Invalid QSOs: {1}",
+                       totalValidQSOs.ToString(), totalInvalidQSOs.ToString());
+                        sw.WriteLine(message);
+
+                        message = String.Format(" Valid PH: {0}  Valid CW: {1}   Valid RY: {2}", totalPhoneQSOS.ToString(), totalCWQSOs.ToString(), totalDigiQSOS.ToString());
+                        sw.WriteLine(message);
+
+                        message = String.Format(" HQP Mults: {0} Total Mults: {1}", contestLog.HQPMultipliers.ToString(), multiplierCount.ToString());
+                        sw.WriteLine(message);
+
+                        message = String.Format(" Points: {0}  Score: {1}", contestLog.TotalPoints.ToString(), score.ToString());
+                        sw.WriteLine(message);
                     }
                     break;
             }
 
-            sw.WriteLine(message);
+           
 
-            message = String.Format("Category:   {0}   Power: {1} ", contestLog.LogHeader.OperatorCategory, contestLog.LogHeader.Power);
+            message = String.Format(" Category:   {0}   Power: {1} ", contestLog.LogHeader.OperatorCategory, contestLog.LogHeader.Power);
             sw.WriteLine(message);
         }
 
@@ -783,12 +824,12 @@ namespace W6OP.PrintEngine
 
         #region Create Pre Analysis Reports
 
-         /// <summary>
-         /// 
-         /// </summary>
-         /// <param name="distinctQSOs"></param>
-         /// <param name="reportPath"></param>
-         /// <param name="session"></param>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="distinctQSOs"></param>
+        /// <param name="reportPath"></param>
+        /// <param name="session"></param>
         public void ListUniqueCallNamePairs(List<Tuple<string, string>> distinctQSOs, string reportPath, string session)
         {
             string fileName = reportPath + @"\Unique_Calls_" + session + ".xlsx";
@@ -870,7 +911,7 @@ namespace W6OP.PrintEngine
                 using (SpreadsheetDocument document = SpreadsheetDocument.Open(fs, true))
                 {
                     WorkbookPart workbookPart = document.WorkbookPart;
-                    
+
                     // Add another worksheet with data
                     WorksheetPart worksheetPart = AddWorkSheetPart(workbookPart);
                     AddWorkSheet(workbookPart, worksheetPart, "Call-Name Counts");

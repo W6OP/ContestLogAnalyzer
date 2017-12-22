@@ -65,9 +65,18 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="contestLog"></param>
         private void TotalHQPoints(ContestLog contestLog)
         {
-            List<QSO> qsoList = contestLog.QSOCollection;
+            //Int32 totalPhoneQSOS = 0;
+            //Int32 totalCWQSOs = 0;
+            //Int32 totalDigiQSOS = 0;
+            //Int32 totalPoints = 0;
 
-            List<QSO> query = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
+            //totalPhoneQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "PH").ToList().Count();
+            //totalCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "CW").ToList().Count();
+            //totalDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "RY").ToList().Count();
+
+            //totalPoints = (totalPhoneQSOS * 2) + (totalCWQSOs * 3) + (totalDigiQSOS * 3);
+
+            List<QSO> query = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
 
             foreach (var qso in query)
             {
@@ -154,12 +163,12 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (qso.DXEntity != "DX")
                 {
-                    multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.DXEntity == qso.DXEntity && item.Status == QSOStatus.ValidQSO).ToList();
+                    multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.DXEntity == qso.DXEntity && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
                     entity = qso.DXEntity;
                 }
                 else
                 {
-                    multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.RealDXEntity == qso.RealDXEntity && item.Status == QSOStatus.ValidQSO).ToList();
+                    multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.RealDXEntity == qso.RealDXEntity && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
                     entity = qso.RealDXEntity;
                 }
 
@@ -229,7 +238,7 @@ namespace W6OP.ContestLogAnalyzer
 
             foreach (var qso in query)
             {
-                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Status == QSOStatus.ValidQSO && item.Band == qso.Band && item.Mode == qso.Mode).ToList();
+                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO) && item.Band == qso.Band && item.Mode == qso.Mode).ToList();
                 if (multiList.Any())
                 {
                     if (Enum.IsDefined(typeof(HQPMults), qso.DXEntity))
@@ -264,10 +273,8 @@ namespace W6OP.ContestLogAnalyzer
         private void CalculateScore(ContestLog contestLog)
         {
             Int32 multiplierCount = 0;
-            Int32 totalValidQSOs = 0;
 
-            totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
-            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO)).ToList().Count();
+            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true).ToList().Count();
 
             contestLog.Multipliers = multiplierCount;
             if (multiplierCount != 0)
