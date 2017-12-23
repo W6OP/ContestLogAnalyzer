@@ -983,16 +983,16 @@ namespace W6OP.ContestLogAnalyzer
                          {
                              Status = CheckCompleteQSO(split, line),
                              Frequency = CheckFrequency(split[1], line),
-                             Mode = split[2],
+                             Mode = NormalizeMode(split[2]),
                              QsoDate = split[3],
                              QsoTime = CheckTime(split[4], line),
-                             OperatorCall = split[5],
+                             OperatorCall = RemovePreOrSuffix(split[5]).ToUpper(),
                              OperatorName = split[6],
                              SentSerialNumber = ConvertSerialNumber(split[7]),
-                             ContactCall = split[8],
+                             ContactCall = RemovePreOrSuffix(split[8]).ToUpper(),
                              ContactName = split[9],
                              ReceivedSerialNumber = ConvertSerialNumber(split[10]),
-                             CallIsInValid = CheckCallSignFormat(split[5]),
+                             CallIsInValid = CheckCallSignFormat(RemovePreOrSuffix(split[5]).ToUpper()),
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
@@ -1020,39 +1020,43 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// Normalize all the modes to make searches easier.
+        /// Only used in the HQP.
         /// </summary>
         /// <param name="mode"></param>
         /// <returns></returns>
         private string NormalizeMode(string mode)
         {
-            CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), mode);
-
-            switch (catMode)
+            if (_ActiveContest == ContestName.HQP)
             {
-                case CategoryMode.CW:
-                    mode = "CW";
-                    break;
-                case CategoryMode.RTTY:
-                    mode = "RY";
-                    break;
-                case CategoryMode.RY:
-                    mode = "RY";
-                    break;
-                case CategoryMode.PH:
-                    mode = "PH";
-                    break;
-                case CategoryMode.SSB:
-                    mode = "PH";
-                    break;
-                default:
-                    mode = "";
-                    break;
+                CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), mode);
+
+                switch (catMode)
+                {
+                    case CategoryMode.CW:
+                        mode = "CW";
+                        break;
+                    case CategoryMode.RTTY:
+                        mode = "RY";
+                        break;
+                    case CategoryMode.RY:
+                        mode = "RY";
+                        break;
+                    case CategoryMode.PH:
+                        mode = "PH";
+                        break;
+                    case CategoryMode.SSB:
+                        mode = "PH";
+                        break;
+                    default:
+                        mode = "";
+                        break;
+                }
             }
 
             return mode;
         }
 
-       
+
 
         /// <summary>
         /// Remove the prefix or suffix from call signs so they can be compared.
@@ -1070,32 +1074,25 @@ namespace W6OP.ContestLogAnalyzer
                 int temp2 = call2.Length - 1;
                 bool containsInt;
 
-                try
+                if (temp1 > temp2)
                 {
-                    if (temp1 > temp2)
+                    callSign = call1;
+                }
+                else if (temp1 == temp2)
+                {
+                    containsInt = call1.Any(char.IsDigit);
+                    if (containsInt)
                     {
                         callSign = call1;
-                    }
-                    else if (temp1 == temp2)
-                    {
-                        containsInt = call1.Any(char.IsDigit);
-                        if (containsInt)
-                        {
-                            callSign = call1;
-                        }
-                        else
-                        {
-                            callSign = call2.Substring(call2.IndexOf("/") + 1);
-                        }
                     }
                     else
                     {
                         callSign = call2.Substring(call2.IndexOf("/") + 1);
                     }
                 }
-                catch(Exception ex)
+                else
                 {
-                    var e = ex.Message;
+                    callSign = call2.Substring(call2.IndexOf("/") + 1);
                 }
             }
 

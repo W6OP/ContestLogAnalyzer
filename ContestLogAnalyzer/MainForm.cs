@@ -532,7 +532,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (e.Error != null)
             {
-                UpdateListViewAnalysis(e.Error.Message, "", "", false);
+                UpdateListViewAnalysis(e.Error.Message, "Error", "Error", false);
             }
             else
             {
@@ -542,7 +542,7 @@ namespace W6OP.ContestLogAnalyzer
                 UpdateListViewAnalysis("-----------------------", "", "", false);
                 UpdateListViewAnalysis("Log analysis completed!", "", "", false);
                 Cursor = Cursors.Default;
-                ButtonScoreLogs.Enabled = true; // might be cross thread
+                ButtonScoreLogs.Enabled = true;
                 UpdateLabel("");
             }
         }
