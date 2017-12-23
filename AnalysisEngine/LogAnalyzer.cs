@@ -712,7 +712,7 @@ namespace W6OP.ContestLogAnalyzer
                         if (!_CallSignSet.Contains(qso.ContactCall))
                         {
                             info = _QRZ.QRZLookup(qso.ContactCall, info);
-                            if (info[0] != null)
+                            if (info[0] != null && info[0] != "0")
                             {
                                 matchName = info[0].ToUpper();
                                 _CallSignSet.Add(qso.ContactCall, matchName);

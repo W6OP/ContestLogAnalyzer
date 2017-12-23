@@ -75,6 +75,7 @@ namespace NetworkLookup
             }
             catch (Exception ex)
             {
+                throw;
                 //_JLTrace.Write(String.Format("QRZLookup failed. - {0}", ex.Message));
             }
 

@@ -129,7 +129,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonSelectFolder_Click(object sender, EventArgs e)
         {
-            SelectLogFileSourceFolder();
+                SelectLogFileSourceFolder();
         }
 
         /// <summary>
@@ -215,6 +215,12 @@ namespace W6OP.ContestLogAnalyzer
             _LogFileList = null;
 
             UpdateLabel("Loading Contest Logs");
+
+            if (_ActiveContest == ContestName.Select)
+            {
+                MessageBox.Show("You must select a Contest to score.", "Select Contest", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                return;
+            }
 
             switch (_ActiveContest)
             {
