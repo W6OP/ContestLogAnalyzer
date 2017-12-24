@@ -13,7 +13,7 @@ using System.Collections;
 
 namespace W6OP.ContestLogAnalyzer
 {
-    //public delegate void ErrorRaised(string error);
+    public delegate void ErrorRaised(string error);
 
     public class LogProcessor
     {
@@ -55,7 +55,30 @@ namespace W6OP.ContestLogAnalyzer
             if (_ActiveContest == ContestName.HQP)
             {
                 _Parser = new CallParser.CallsignParser();
-                _Parser.PrefixFile = @"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"; //"prefix.lst";  // @"C:\Users\pbourget\Documents\Visual Studio 2012\Projects\Ham Radio\DXACollector\Support\CallParser\prefix.lst";
+                if (File.Exists(@"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
+                {
+                    _Parser.PrefixFile = @"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"; //"prefix.lst";  // @"C:\Users\pbourget\Documents\Visual Studio 2012\Projects\Ham Radio\DXACollector\Support\CallParser\prefix.lst";
+                }
+                else
+                {
+                    string target = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"W6OP\Prefix.lst");
+                    if (!File.Exists(target))
+                    {
+                        string source = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), @"W6OP\Prefix.lst");
+                        File.Copy(source, target);
+
+                        if (File.Exists(target))
+                        {
+                            _Parser.PrefixFile = target;
+                        }
+                        else
+                        {
+                            throw (new Exception("The prefix file cannot be found."));
+                        }
+                    }
+
+
+                }
 
                 _QRZ = new QRZ();
             }
@@ -528,11 +551,6 @@ namespace W6OP.ContestLogAnalyzer
                 if (prefixInfo != null && prefixInfo.Territory != null)
                 {
                     qso.RealDXEntity = prefixInfo.Territory.ToString();
-
-                    //if (Enum.IsDefined(typeof(HQPMults), qso.OperatorEntity) == true)
-                    //{
-                    //    qso.RealDXEntity = "Hawaii";
-                    //}
                 }
                 else
                 {
@@ -617,9 +635,6 @@ namespace W6OP.ContestLogAnalyzer
 
             if (qso.RealDXEntity == "Canada" || qso.RealDXEntity == "United States of America")
             {
-                //qso.RealOperatorEntity = qso.DXEntity; // persist if USA or Canada
-                //qso.RealDXEntity = qso.DXEntity;
-
                 if (qso.DXEntity == "DX")
                 {
                     if (!_CallSignSet.Contains(qso.ContactCall))

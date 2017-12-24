@@ -93,6 +93,7 @@ namespace W6OP.ContestLogAnalyzer
                 _LogAnalyser = new LogAnalyzer();
                 _LogAnalyser._CallSignSet = _LogProcessor._CallSignSet;
                 _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
+                _LogAnalyser.OnErrorRaised += _LogAnalyser_OnErrorRaised;
             }
 
             ComboBoxSelectContest.DataSource = Enum.GetValues(typeof(ContestName))
@@ -116,6 +117,11 @@ namespace W6OP.ContestLogAnalyzer
             ComboBoxSelectSession.ValueMember = "value";
 
             TabControlMain.SelectTab(TabPageLogStatus);
+        }
+
+        private void _LogAnalyser_OnErrorRaised(string error)
+        {
+            UpdateListViewAnalysis(error, "", "", false);
         }
 
         #endregion
@@ -191,7 +197,14 @@ namespace W6OP.ContestLogAnalyzer
                     break;
             }
 
-            _LogProcessor.InitializeLogProcessor(_ActiveContest);
+            try
+            {
+                _LogProcessor.InitializeLogProcessor(_ActiveContest);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Initialization Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
             _PrintManager = new PrintManager(_ActiveContest);
             _LogProcessor._PrintManager = _PrintManager;
@@ -497,7 +510,7 @@ namespace W6OP.ContestLogAnalyzer
             _LogAnalyser.ActiveContest = _ActiveContest;
             _LogAnalyser.PreProcessContestLogs(_ContestLogs);
 
-            UpdateListViewAnalysis("", "", "", true);
+            UpdateListViewAnalysis("", "", "", false);
             ResetProgressBar(true);
 
             _LogAnalyser.PreProcessContestLogsReverse(_ContestLogs);

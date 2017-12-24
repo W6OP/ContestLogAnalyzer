@@ -14,6 +14,8 @@ namespace W6OP.ContestLogAnalyzer
         public delegate void ProgressUpdate(string value, string qsoCount, string validQsoCount, Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
 
+        public event ErrorRaised OnErrorRaised;
+
         public ContestName ActiveContest;
 
         private ILookup<string, string> _BadCallList;
@@ -21,13 +23,8 @@ namespace W6OP.ContestLogAnalyzer
         private QRZ _QRZ = null;
 
         public Hashtable _CallSignSet;
-        //public ILookup<string, string> BadCallList
-        //{
-        //    set
-        //    {
-        //        BadCallList = value;
-        //    }
-        //}
+
+        // OnErrorRaised?.Invoke(progress);
 
         public ILookup<string, string> BadCallList { set => _BadCallList = value; }
 
@@ -167,40 +164,49 @@ namespace W6OP.ContestLogAnalyzer
             Int32 progress = 0;
             Int32 validQsos;
 
+            // Display the label
             OnProgressUpdate?.Invoke("1", "", "", 0);
 
-            foreach (ContestLog contestLog in contestLogList)
-            {
-                call = contestLog.LogOwner;
-                name = contestLog.LogHeader.NameSent.ToUpper();
-
-                progress++;
-
-                if (!contestLog.IsCheckLog && contestLog.IsValidLog)
+            try {
+                foreach (ContestLog contestLog in contestLogList)
                 {
-                    qsoList = contestLog.QSOCollection;
+                    call = contestLog.LogOwner;
+                    name = contestLog.LogHeader.NameSent.ToUpper();
 
-                    MarkIncorrectCallSigns(qsoList, call);
+                    progress++;
 
-                    switch (ActiveContest)
+                    if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                     {
-                        case ContestName.CW_OPEN:
-                            MarkIncorrectSentName(qsoList, name);
-                            break;
-                        case ContestName.HQP:
-                            MarkIncorrectSentEntity(qsoList, name);
-                            break;
+                        qsoList = contestLog.QSOCollection;
+
+                        MarkIncorrectCallSigns(qsoList, call);
+
+                        switch (ActiveContest)
+                        {
+                            case ContestName.CW_OPEN:
+                                MarkIncorrectSentName(qsoList, name);
+                                break;
+                            case ContestName.HQP:
+                                MarkIncorrectSentEntity(qsoList, name);
+                                break;
+                        }
+
+
+                        MatchQSOs(qsoList, contestLogList, call, name);
+
+                        MarkDuplicateQSOs(qsoList);
+
+                        validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
+
+                        // ReportProgress with Callsign
+                        OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
                     }
-
-                    MatchQSOs(qsoList, contestLogList, call, name);
-
-                    MarkDuplicateQSOs(qsoList);
-
-                    validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
-
-                    // ReportProgress with Callsign
-                    OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
                 }
+                
+            }
+            catch (Exception ex)
+            {
+                OnProgressUpdate?.Invoke("Error" + ex.Message, "", "", 0);
             }
         }
 
@@ -340,10 +346,10 @@ namespace W6OP.ContestLogAnalyzer
                     continue;   // Skip the remainder of this iteration. -----+
                 }
 
-                if (qso.OperatorCall.IndexOf(@"/") != -1)             //                                |
-                {                           //                                |
-                    var a = 2;   // DEBUG CODE. -----+
-                }
+                //if (qso.OperatorCall.IndexOf(@"/") != -1)             //                                |
+                //{                           //                                |
+                //    var a = 2;   // DEBUG CODE. -----+
+                //}
 
                 if (matchLog != null)
                 {
@@ -651,57 +657,6 @@ namespace W6OP.ContestLogAnalyzer
             {
                 return wasFound;
             }
-
-
-            //if (matchingQSOs.Count < 5)
-            //{
-            //if (qso.RealDXEntity != null && (qso.RealDXEntity == "Canada" || qso.RealDXEntity == "United States of America"))
-            //{
-            //    if (matchName.Length > 2)
-            //    {
-            //        if (!_CallSignSet.Contains(qso.ContactCall))
-            //        {
-            //            info = _QRZ.QRZLookup(qso.ContactCall, info);
-            //            if (info[0] != null)
-            //            {
-            //                matchName = info[0].ToUpper();
-            //                _CallSignSet.Add(qso.ContactCall, matchName);
-            //            }
-            //            else
-            //            {
-            //                return false;
-            //            }
-            //        }
-            //        else
-            //        {
-            //            matchName = (string)_CallSignSet[qso.ContactCall];
-            //        }
-
-            //        if (qso.ContactName != matchName)
-            //        {
-            //            wasFound = true;
-            //            qso.IncorrectName = qso.ContactName + " --> " + matchName;
-            //            qso.EntityIsInValid = true;
-            //        }
-
-            //        return wasFound;
-            //    }
-            //}
-
-            //// loop through and see if first few names match
-            //for (int i = 0; i < matchingQSOs.Count; i++)
-            //{
-            //    if (qso.ContactName != matchingQSOs[i].ContactName)
-            //    {
-            //        matchCount++;
-            //        matchName = matchingQSOs[i].ContactName;
-            //    }
-            //}
-
-            //if (matchName == null)
-            //{
-            //    return wasFound;
-            //}
 
             if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 > 50)
             {
