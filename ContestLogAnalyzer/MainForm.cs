@@ -285,8 +285,14 @@ namespace W6OP.ContestLogAnalyzer
                 _ContestLogs = new List<ContestLog>();
 
                 // create folders if necessary
+                // always clean the working folder
                 if (!Directory.Exists(_WorkingFolder))
                 {
+                    Directory.CreateDirectory(_WorkingFolder);
+                }
+                else
+                {
+                    Directory.Delete(_WorkingFolder, true);
                     Directory.CreateDirectory(_WorkingFolder);
                 }
 
@@ -354,9 +360,9 @@ namespace W6OP.ContestLogAnalyzer
                 Cursor = Cursors.WaitCursor;
                 BackgroundWorkerLoadLogs.RunWorkerAsync(fileCount);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                MessageBox.Show("Load or Pre-process Log Error", "Load and Pre-process Logs", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("Load or Pre-process Log Error", "Load and Pre-process Logs \r\n" + ex.Message, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
