@@ -168,5 +168,11 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public string SoapBox { get; set; }
 
+        private HashSet<string> _Entities = new HashSet<string>();
+        public HashSet<string> Entities { get => _Entities; set => _Entities = value; }
+
+        
+
+
     } // end class
 }

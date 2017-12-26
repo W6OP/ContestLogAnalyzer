@@ -740,6 +740,9 @@ namespace W6OP.PrintEngine
             Int32 totalPhoneQSOS = 0;
             Int32 totalCWQSOs = 0;
             Int32 totalDigiQSOS = 0;
+            Int32 totalValidPhoneQSOS = 0;
+            Int32 totalValidCWQSOs = 0;
+            Int32 totalValidDigiQSOS = 0;
             Int32 multiplierCount = 0;
             Int32 score = 0;
 
@@ -747,15 +750,29 @@ namespace W6OP.PrintEngine
             totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
             totalInvalidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList().Count();
 
-            totalPhoneQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "PH").ToList().Count();
-            totalCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "CW").ToList().Count();
-            totalDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "RY").ToList().Count();
+            totalPhoneQSOS = contestLog.QSOCollection.Where(q => q.Mode == "PH").ToList().Count();
+            totalCWQSOs = contestLog.QSOCollection.Where(q => q.Mode == "CW").ToList().Count();
+            totalDigiQSOS = contestLog.QSOCollection.Where(q => q.Mode == "RY").ToList().Count();
 
+            totalValidPhoneQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "PH").ToList().Count();
+            totalValidCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "CW").ToList().Count();
+            totalValidDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "RY").ToList().Count();
+
+            //Int32 why = totalDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode != "PH" && q.Mode != "CW" && q.Mode != "RY").ToList().Count();
+            //if (why > 0)
+            //{
+            //    var e = 1;
+            //}
             multiplierCount = contestLog.Multipliers;   //.QSOCollection.Where(q => q.IsMultiplier == true && q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
             score = contestLog.ActualScore;
 
             sw.WriteLine(message);
 
+            if (contestLog.IsCheckLog)
+            {
+                sw.WriteLine("CHECKLOG::: --------------------------");
+                sw.WriteLine(message);
+            }
             switch (_ActiveContest)
             {
                 case ContestName.CW_OPEN:
@@ -770,7 +787,7 @@ namespace W6OP.PrintEngine
                         message = String.Format(" Total QSOs: {0}   Valid QSOs: {1}  Invalid QSOs: {2}", totalQSOs.ToString(), totalValidQSOs.ToString(), totalInvalidQSOs.ToString());
                         sw.WriteLine(message);
 
-                        message = String.Format(" Valid PH: {0}  Valid CW: {1}   Valid RY: {2}", totalPhoneQSOS.ToString(), totalCWQSOs.ToString(), totalDigiQSOS.ToString());
+                        message = String.Format(" Valid PH: {0}({1})  Valid CW: {2}({3})   Valid RY: {4}({5})", totalValidPhoneQSOS.ToString(), totalPhoneQSOS.ToString(), totalValidCWQSOs.ToString(), totalCWQSOs.ToString(), totalValidDigiQSOS.ToString(), totalDigiQSOS.ToString());
                         sw.WriteLine(message);
 
                         message = String.Format(" HQP Mults: {0}   NonHQP Mults: {1}   Total Mults: {2}", contestLog.HQPMultipliers.ToString(), contestLog.NonHQPMultipliers.ToString(), multiplierCount.ToString());
@@ -787,7 +804,7 @@ namespace W6OP.PrintEngine
                        totalValidQSOs.ToString(), totalInvalidQSOs.ToString());
                         sw.WriteLine(message);
 
-                        message = String.Format(" Valid PH: {0}  Valid CW: {1}   Valid RY: {2}", totalPhoneQSOS.ToString(), totalCWQSOs.ToString(), totalDigiQSOS.ToString());
+                        message = String.Format(" Valid PH: {0}({1})  Valid CW: {2}({3})   Valid RY: {4}({5})", totalValidPhoneQSOS.ToString(), totalPhoneQSOS.ToString(), totalValidCWQSOs.ToString(), totalCWQSOs.ToString(), totalValidDigiQSOS.ToString(), totalDigiQSOS.ToString());
                         sw.WriteLine(message);
 
                         message = String.Format(" HQP Mults: {0} Total Mults: {1}", contestLog.HQPMultipliers.ToString(), multiplierCount.ToString());
@@ -799,10 +816,19 @@ namespace W6OP.PrintEngine
                     break;
             }
 
-           
-
             message = String.Format(" Category:   {0}   Power: {1} ", contestLog.LogHeader.OperatorCategory, contestLog.LogHeader.Power);
             sw.WriteLine(message);
+
+            sw.WriteLine("");
+            sw.WriteLine("Entities:");
+
+            if (contestLog.Entities != null)
+            {
+                foreach (string entity in contestLog.Entities)
+                {
+                    sw.WriteLine(entity);
+                }
+            }
         }
 
         #endregion

@@ -133,7 +133,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Find all the calls for the session. For each call see if it is valid.
+        /// Find all the entities. For each qso see if it is valid.
         /// If it is a valid call set it as a multiplier.
         /// 
         /// </summary>
@@ -142,7 +142,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             List<QSO> qsoList = contestLog.QSOCollection;
             List<QSO> multiList = new List<QSO>();
-            HashSet<string> entities = new HashSet<string>();
+           // HashSet<string> entities = new HashSet<string>();
             string entity = "";
 
             contestLog.Multipliers = 0;
@@ -150,7 +150,7 @@ namespace W6OP.ContestLogAnalyzer
             contestLog.NonHQPMultipliers = 0;
             contestLog.TotalPoints = 0;
 
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.DXEntity, x.RealDXEntity, x.Status })
+            var query = qsoList.GroupBy(x => new { x.DXEntity, x.RealDXEntity, x.Status })
              .Where(g => g.Count() >= 1)
              .Select(y => y.Key)
              .ToList();
@@ -163,12 +163,12 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (qso.DXEntity != "DX")
                 {
-                    multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.DXEntity == qso.DXEntity && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
+                    multiList = qsoList.Where(item => item.DXEntity == qso.DXEntity && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
                     entity = qso.DXEntity;
                 }
                 else
                 {
-                    multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.RealDXEntity == qso.RealDXEntity && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
+                    multiList = qsoList.Where(item => item.RealDXEntity == qso.RealDXEntity && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
                     entity = qso.RealDXEntity;
                 }
 
@@ -176,17 +176,10 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (Enum.IsDefined(typeof(HQPMults), entity))
                     {
-                        if (!entities.Contains(entity))
+                        if (!contestLog.Entities.Contains(entity))
                         {
                             // if not in hashset, add it
-                            //if (entity != "DX")
-                            //{
-                                entities.Add(entity);
-                            //}
-                            //else
-                            //{
-                            //    entities.Add(entity);
-                            //}
+                            contestLog.Entities.Add(entity);
                             // now set the first one as a multiplier
                             multiList.First().IsMultiplier = true;
                             // for debugging
@@ -195,18 +188,10 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        if (!entities.Contains(entity))
+                        if (!contestLog.Entities.Contains(entity))
                         {
                             // if not in hashset, add it
-                            //if (entity != "DX")
-                            //{
-                                entities.Add(entity);
-                            //}
-                            //else
-                            //{
-                            //    entities.Add(entity);
-                            //}
-                            
+                            contestLog.Entities.Add(entity);
                             // now set the first one as a multiplier
                             multiList.First().IsMultiplier = true;
                             // for debugging
@@ -216,7 +201,13 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
 
-            var b = 1;
+            contestLog.Multipliers = contestLog.NonHQPMultipliers + contestLog.HQPMultipliers;
+
+            if (contestLog.Entities.Count != (contestLog.HQPMultipliers + contestLog.NonHQPMultipliers))
+            {
+                var b = 1;
+            }
+           
         }
 
         /// <summary>
@@ -227,28 +218,28 @@ namespace W6OP.ContestLogAnalyzer
         private void MarkMultipliersNonHQP(ContestLog contestLog)
         {
             List<QSO> qsoList = contestLog.QSOCollection;
-            HashSet<string> entities = new HashSet<string>();
+           // HashSet<string> entities = new HashSet<string>();
             string consolidated = null;
 
             // target is HPQ
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.DXEntity, x.Status, x.Band, x.Mode })
+            var query = qsoList.GroupBy(x => new { x.DXEntity, x.Status, x.Band })
              .Where(g => g.Count() >= 1)
              .Select(y => y.Key)
              .ToList();
 
             foreach (var qso in query)
             {
-                List<QSO> multiList = qsoList.Where(item => item.ContactCall == qso.ContactCall && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO) && item.Band == qso.Band && item.Mode == qso.Mode).ToList();
+                List<QSO> multiList = qsoList.Where(item => (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO) && item.Band == qso.Band).ToList();
                 if (multiList.Any())
                 {
                     if (Enum.IsDefined(typeof(HQPMults), qso.DXEntity))
                     {
                         // key for hashset
-                        consolidated = qso.DXEntity + qso.Band;
-                        if (!entities.Contains(consolidated))
-                        {   
+                        consolidated = qso.DXEntity + " - " + qso.Band + "m";
+                        if (!contestLog.Entities.Contains(consolidated))
+                        {
                             // if not in hashset, add it
-                            entities.Add(consolidated);
+                            contestLog.Entities.Add(consolidated);
                             // now set the first one as a multiplier
                             multiList.First().IsMultiplier = true;
                             // for debugging
@@ -261,7 +252,10 @@ namespace W6OP.ContestLogAnalyzer
                         }
                     }
                 }
+
+                //contestLog.Multipliers = contestLog.HQPMultipliers;
             }
+            contestLog.Multipliers = contestLog.HQPMultipliers;
         }
 
         /// <summary>
@@ -272,12 +266,12 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private void CalculateScore(ContestLog contestLog)
         {
-            Int32 multiplierCount = 0;
+           // Int32 multiplierCount = 0;
 
-            multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true).ToList().Count();
+            //multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true).ToList().Count();
 
-            contestLog.Multipliers = multiplierCount;
-            if (multiplierCount != 0)
+            //contestLog.Multipliers = multiplierCount;
+            if (contestLog.Multipliers != 0)
             {
                 if (!contestLog.IsHQPEntity)
                 {
@@ -286,7 +280,7 @@ namespace W6OP.ContestLogAnalyzer
                         contestLog.Multipliers = 84;
                     }
                 }
-                contestLog.ActualScore = multiplierCount * contestLog.TotalPoints;
+                contestLog.ActualScore = contestLog.Multipliers * contestLog.TotalPoints;
             }
         }
     } // end class
