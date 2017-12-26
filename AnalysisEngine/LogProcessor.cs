@@ -54,33 +54,36 @@ namespace W6OP.ContestLogAnalyzer
 
             if (_ActiveContest == ContestName.HQP)
             {
+                _QRZ = new QRZ();
+
                 _Parser = new CallParser.CallsignParser();
-                if (File.Exists(@"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
+                if (File.Exists(@"C:\iUsers\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
                 {
                     _Parser.PrefixFile = @"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"; //"prefix.lst";  // @"C:\Users\pbourget\Documents\Visual Studio 2012\Projects\Ham Radio\DXACollector\Support\CallParser\prefix.lst";
                 }
                 else
                 {
+                    if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "W6OP")))
+                    {
+                        Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "W6OP"));
+                    }
+
                     string target = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"W6OP\Prefix.lst");
                     if (!File.Exists(target))
                     {
-                        string source = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), @"W6OP\Prefix.lst");
+                        string source = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), @"Prefix.lst");
                         File.Copy(source, target);
-
-                        if (File.Exists(target))
-                        {
-                            _Parser.PrefixFile = target;
-                        }
-                        else
-                        {
-                            throw (new Exception("The prefix file cannot be found."));
-                        }
                     }
 
-
+                    if (File.Exists(target))
+                    {
+                        _Parser.PrefixFile = target;
+                    }
+                    else
+                    {
+                        throw (new Exception("The prefix file cannot be found."));
+                    }
                 }
-
-                _QRZ = new QRZ();
             }
         }
         /// <summary>
@@ -607,7 +610,7 @@ namespace W6OP.ContestLogAnalyzer
 
                                 if (!_CallSignSet.Contains(qso.ContactCall))
                                 {
-                                    info = _QRZ.QRZLookup(qso.ContactCall, info);
+                                    info = _QRZ.QRZLookup(qso.ContactCall, info, 1);
 
                                     if (info[0] != null && info[0] != "0")
                                     {
@@ -639,7 +642,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (!_CallSignSet.Contains(qso.ContactCall))
                     {
-                        info = _QRZ.QRZLookup(qso.ContactCall, info);
+                        info = _QRZ.QRZLookup(qso.ContactCall, info, 1);
                         if (info[0] != null && info[0] != "0")
                         {
                             qso.DXEntity = info[0].ToUpper();

@@ -24,7 +24,7 @@ namespace NetworkLookup
         /// <param name="call"></param>
         /// <param name="prefixInfo"></param>
         /// <returns></returns>
-        public string[] QRZLookup(string call, string[] info)
+        public string[] QRZLookup(string call, string[] info, int retryCount)
         {
             WebResponse response;
             XDocument xdoc;
@@ -37,6 +37,8 @@ namespace NetworkLookup
 
             try
             {
+                retryCount += 1;
+
                 if (_QRZSessionKey == null)
                 {
                     _IsLoggedOn = QRZLogon();
@@ -73,10 +75,16 @@ namespace NetworkLookup
                     _QRZSessionKey = null;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw;
-                //_JLTrace.Write(String.Format("QRZLookup failed. - {0}", ex.Message));
+                if (retryCount < 3)
+                {
+                    info = QRZLookup(call, info, retryCount);
+                }
+                else
+                {
+                    throw;
+                }   
             }
 
             return info;
@@ -93,7 +101,7 @@ namespace NetworkLookup
             string password = "Car0less";
             bool isLoggedOn = false;
 
-            var requestUri = string.Format("http://xmldata.qrz.com/xml/current/?username={0};password={1};{2}={3}", userId, password, "DXA", "2.0");
+            var requestUri = string.Format("http://xmldata.qrz.com/xml/current/?username={0};password={1};{2}={3}", userId, password, "LogAnalyser", "2.0");
             var request = WebRequest.Create(requestUri);
             var response = request.GetResponse();
             XDocument xdoc = XDocument.Load(response.GetResponseStream());
