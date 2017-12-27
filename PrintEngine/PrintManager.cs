@@ -820,7 +820,7 @@ namespace W6OP.PrintEngine
             sw.WriteLine(message);
 
             sw.WriteLine("");
-            sw.WriteLine("Entities:");
+            sw.WriteLine("Multipliers:");
 
             if (contestLog.Entities != null)
             {

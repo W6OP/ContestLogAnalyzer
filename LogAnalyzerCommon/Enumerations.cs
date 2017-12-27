@@ -11,7 +11,7 @@ namespace W6OP.ContestLogAnalyzer
         Band,
         [Description("The mode does not match")]
         Mode,
-        [Description("This QSO is not in the other operators log")]
+        [Description("This QSO is not in the other operators log or the call may be busted")]
         NoQSOMatch,
         [Description("FYI: call not in any other log - scored as unique")]
         NoQSO,
