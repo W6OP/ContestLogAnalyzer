@@ -275,7 +275,7 @@ namespace W6OP.ContestLogAnalyzer
                     // later break out to nwe method and add switch statement
                     if (_ActiveContest == ContestName.HQP)
                     {
-                        SetDXCCInformationEx(contestLog.QSOCollection, contestLog);
+                        SetDXCCInformation(contestLog.QSOCollection, contestLog);
                     }
                     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -479,7 +479,7 @@ namespace W6OP.ContestLogAnalyzer
         //    }
         //}
 
-        private void SetDXCCInformationEx(List<QSO> qsoCollection, ContestLog contestLog)
+        private void SetDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
         {
             CallParser.PrefixInfo prefixInfo = null;
 
@@ -554,6 +554,21 @@ namespace W6OP.ContestLogAnalyzer
                 if (prefixInfo != null && prefixInfo.Territory != null)
                 {
                     qso.RealDXEntity = prefixInfo.Territory.ToString();
+                    if (Enum.IsDefined(typeof(HQPMults), qso.DXEntity))
+                    {
+                        qso.RealDXEntity = "Hawaii"; // AC7N
+                    }
+
+                    //if (!isValidHQPEntity)
+                    //{
+                    //    if (qso.RealDXEntity != "Hawaii") // for AC7N - N7JI
+                    //    {
+                    //        // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
+                    //        //qso.Status = QSOStatus.InvalidQSO;
+                    //        //qso.RejectReasons.Clear();
+                    //        //qso.RejectReasons.Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                    //    }
+                    //}  
                 }
                 else
                 {
@@ -563,7 +578,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
 
                 // set additional DXEntity information
-                // Hawaiin station contacts a non Hawaiin station and puts "DX" as country instead of actual country
+                // Hawaiian station contacts a non Hawaiian station and puts "DX" as country instead of actual country
                 // QSO:  7039 CW 2017-08-26 0524 AH7U 599 LHN ZL3PAH 599 DX
                 if (isValidHQPEntity)
                 {
@@ -577,17 +592,31 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    SetNonHQPEntityInfo(qso, prefixInfo);
+                    if (qso.RealDXEntity == "Hawaii")
+                    {
+                        SetNonHQPEntityInfo(qso, prefixInfo);
+                    }
+                    else
+                    {
+                        // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
+                        //qso.Status = QSOStatus.InvalidQSO;
+                        //qso.RejectReasons.Clear();
+                        //qso.RejectReasons.Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// Non Hawaii log uses "DX" for their own location (Op Entity) instead of their real country
+        /// HI8A.log - QSO: 14000 CW 2017-08-27 1712 HI8A 599 DX KH6LC 599 HIL
+        /// </summary>
+        /// <param name="qso"></param>
+        /// <param name="prefixInfo"></param>
         private void SetNonHQPEntityInfo(QSO qso, PrefixInfo prefixInfo)
         {
             string[] info = new string[2] { "0", "0" };
 
-            // Non Hawaii log uses "DX" for their own location (Op Name) instead of their real country
-            // HI8A.log - QSO: 14000 CW 2017-08-27 1712 HI8A 599 DX KH6LC 599 HIL
             if (qso.Status != QSOStatus.InvalidQSO)
             {
                 if (qso.OperatorEntity == "DX")

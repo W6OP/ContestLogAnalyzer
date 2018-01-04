@@ -35,6 +35,8 @@ namespace W6OP.ContestLogAnalyzer
         InvalidSession,
         [Description("The entity is incorrect")]
         InvalidEntity,
+        [Description("This QSO will not be counted")]
+        NotCounted,
         [Description("None")]
         None
     }

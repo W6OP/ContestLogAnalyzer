@@ -515,6 +515,11 @@ namespace W6OP.PrintEngine
                                         value = qso.RejectReasons[key];
                                     }
                                 }
+                                else if (key == RejectReason.NotCounted)
+                                {
+                                    value = qso.RejectReasons[key] + " - " + "Non Hawaiian Station";
+                                    break;
+                                }
                                 else if (key == RejectReason.BustedCallSign || key == RejectReason.NoQSO)
                                 {
                                     if (qso.MatchingQSO != null)
@@ -820,13 +825,13 @@ namespace W6OP.PrintEngine
             sw.WriteLine(message);
 
             sw.WriteLine("");
-            sw.WriteLine("Multipliers:");
+            sw.WriteLine(" Multipliers:");
 
             if (contestLog.Entities != null)
             {
                 foreach (string entity in contestLog.Entities)
                 {
-                    sw.WriteLine(entity);
+                    sw.WriteLine("--" + entity);
                 }
             }
         }
