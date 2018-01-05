@@ -119,7 +119,7 @@ namespace W6OP.ContestLogAnalyzer
         typeof(DescriptionAttribute))).Description
      */
 
-    
+
     public enum FaultType
     {
         Band,
@@ -320,6 +320,7 @@ namespace W6OP.ContestLogAnalyzer
 
     public enum HQPMults
     {
+        // Standard HQP Mults
         [Description("HIL")]
         HIL,
         [Description("HON")]
@@ -347,8 +348,43 @@ namespace W6OP.ContestLogAnalyzer
         [Description("VOL")]
         VOL,
         [Description("WHN")]
-        WHN//,
-        //Undefined
+        WHN,
+        // Non Standard HQPMults
+        [Description("HIL")]
+        HILO,
+        [Description("KOH")]
+        KOHALA,
+        [Description("KOH")]
+        KOHA,
+        [Description("MOL")]
+        MOLOKAI,
+        [Description("MOL")]
+        MOLO,
+        [Description("VOL")]
+        VOLCANO,
+        [Description("VOL")]
+        VOLC,
+        [Description("HON")]
+        HNL,
+        [Description("HON")]
+        HONO,
+        [Description("HON")]
+        HONOLULU,
+        [Description("KON")]
+        KONA,
+        [Description("KAL")]
+        KALA,
+        [Description("KAL")]
+        KALAWAO,
+        [Description("KAU")]
+        KAUI,
+        [Description("LAN")]
+        LANI,
+        [Description("MAU")]
+        MAUI,
+        [Description("PRL")]
+        PERL,
+        [Description("PRL")] PEARL
     }
 
     public class Enumerations
@@ -360,7 +396,7 @@ namespace W6OP.ContestLogAnalyzer
     /// Extension class to allow multiple desctription on enumerations.
     /// </summary>
     [AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
-    public class ContestDescription :Attribute
+    public class ContestDescription : Attribute
     {
         //Some people prefer to have a privataly declared variable to return and set, but this works fine for demonstration purposes
         public string ContestNameOne { get; set; }
