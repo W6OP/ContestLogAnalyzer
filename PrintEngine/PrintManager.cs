@@ -457,6 +457,8 @@ namespace W6OP.PrintEngine
                         foreach (QSO qso in inValidQsoList)
                         {
                             //qso.HasBeenPrinted = false;
+                            message = null;
+
                             if (qso.HasBeenPrinted)
                             {
                                 continue;

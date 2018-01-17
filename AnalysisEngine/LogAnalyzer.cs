@@ -729,8 +729,8 @@ namespace W6OP.ContestLogAnalyzer
         {
             RejectReason reason = RejectReason.None;
 
-            // check times
-            reason = CheckForTimeMismatch(matchLog, qso);
+            //// check times
+            //reason = CheckForTimeMismatch(matchLog, qso);
 
             if (reason == RejectReason.None)
             {
@@ -763,6 +763,12 @@ namespace W6OP.ContestLogAnalyzer
             {
                 // query for incorrect call
                 reason = CheckForCallMismatch(matchLog, qso);
+            }
+
+            if (reason == RejectReason.None)
+            {
+                // check times
+                reason = CheckForTimeMismatch(matchLog, qso);
             }
 
             return reason;
