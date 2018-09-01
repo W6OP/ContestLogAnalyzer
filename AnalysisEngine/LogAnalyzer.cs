@@ -338,13 +338,16 @@ namespace W6OP.ContestLogAnalyzer
                     }
                 }
 
-                if (!qso.IsHQPEntity  && qso.RealDXEntity != "Hawaii")
+                if (ActiveContest == ContestName.HQP)
                 {
-                    // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
-                    qso.Status = QSOStatus.InvalidQSO;
-                    qso.RejectReasons.Clear();
-                    qso.RejectReasons.Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
-                    continue;
+                    if (!qso.IsHQPEntity && qso.RealDXEntity != "Hawaii")
+                    {
+                        // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
+                        qso.Status = QSOStatus.InvalidQSO;
+                        qso.RejectReasons.Clear();
+                        qso.RejectReasons.Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                        continue;
+                    }
                 }
 
                 // get the other log that matches this QSO contact call
