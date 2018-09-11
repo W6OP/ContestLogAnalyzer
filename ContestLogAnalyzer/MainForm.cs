@@ -23,18 +23,20 @@ namespace W6OP.ContestLogAnalyzer
     public partial class MainForm : Form
     {
         // Constants to define the folders required by the application
-        private const string LOG_ANALYSER_WORKING_FOLDER_PATH = @"W6OP\LogAnalyser\Working";
-        private const string LOG_ANALYSER_INSPECT_FOLDER_PATH = @"W6OP\LogAnalyser\Inspect";
-        private const string LOG_ANALYSER_REPORT_FOLDER_PATH = @"W6OP\LogAnalyser\Report";
-        private const string LOG_ANALYSER_REVIEW_FOLDER_PATH = @"W6OP\LogAnalyser\Review";
-        private const string LOG_ANALYSER_SCORE_FOLDER_PATH = @"W6OP\LogAnalyser\Score";
+        private const string LOG_ANALYSER_BASE_FOLDER_PATH = @"W6OP\LogAnalyser\Contest";
+        private const string LOG_ANALYSER_WORKING_FOLDER_PATH = @"Working";
+        private const string LOG_ANALYSER_INSPECT_FOLDER_PATH = @"Inspect";
+        private const string LOG_ANALYSER_REPORT_FOLDER_PATH = @"Report";
+        private const string LOG_ANALYSER_REVIEW_FOLDER_PATH = @"Review";
+        private const string LOG_ANALYSER_SCORE_FOLDER_PATH = @"Score";
 
         // set the actual folders to use
-        private string _BaseWorkingFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_WORKING_FOLDER_PATH);
-        private string _BaseInspectFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_INSPECT_FOLDER_PATH);
-        private string _BaseReportFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_REPORT_FOLDER_PATH);
-        private string _BaseReviewFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_REVIEW_FOLDER_PATH);
-        private string _BaseScoreFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_SCORE_FOLDER_PATH);
+        private string _BaseFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_BASE_FOLDER_PATH);
+        private string _BaseWorkingFolder = LOG_ANALYSER_WORKING_FOLDER_PATH;
+        private string _BaseInspectFolder =  LOG_ANALYSER_INSPECT_FOLDER_PATH;
+        private string _BaseReportFolder = LOG_ANALYSER_REPORT_FOLDER_PATH;
+        private string _BaseReviewFolder =  LOG_ANALYSER_REVIEW_FOLDER_PATH;
+        private string _BaseScoreFolder =  LOG_ANALYSER_SCORE_FOLDER_PATH;
 
         private string _WorkingFolder = null;
         private string _InspectFolder = null;
@@ -244,19 +246,22 @@ namespace W6OP.ContestLogAnalyzer
                         return;
                     }
                     session = EnumHelper.GetDescription(_Session);
-                    _WorkingFolder = Path.Combine(_BaseWorkingFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
-                    _InspectFolder = Path.Combine(_BaseInspectFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
-                    _ReportFolder = Path.Combine(_BaseReportFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
-                    _ReviewFolder = Path.Combine(_BaseReviewFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
-                    _ScoreFolder = Path.Combine(_BaseScoreFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName), session);
+                    _BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
+                    _BaseFolder = Path.Combine(_BaseFolder, session);
+                    _WorkingFolder = Path.Combine(_BaseFolder, _BaseWorkingFolder);
+                    _InspectFolder = Path.Combine(_BaseFolder, _BaseInspectFolder);
+                    _ReportFolder = Path.Combine(_BaseFolder, _BaseReportFolder);
+                    _ReviewFolder = Path.Combine(_BaseFolder, _BaseReviewFolder);
+                    _ScoreFolder = Path.Combine(_BaseFolder, _BaseScoreFolder);
                     break;
                 case ContestName.HQP:
                     _Session = Session.Session_0;
-                    _WorkingFolder = _BaseWorkingFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName);
-                    _InspectFolder = _BaseInspectFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName);
-                    _ReportFolder = _BaseReportFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName);
-                    _ReviewFolder = _BaseReviewFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName);
-                    _ScoreFolder = _BaseScoreFolder.Replace("LogAnalyser", @"LogAnalyser\" + contestName);
+                    _BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
+                    _WorkingFolder = Path.Combine(_BaseFolder, _BaseWorkingFolder);
+                    _InspectFolder = Path.Combine(_BaseFolder, _BaseInspectFolder);
+                    _ReportFolder = Path.Combine(_BaseFolder, _BaseReportFolder);
+                    _ReviewFolder = Path.Combine(_BaseFolder, _BaseReviewFolder);
+                    _ScoreFolder = Path.Combine(_BaseFolder, _BaseScoreFolder);
                     break;
                 default:
                     break;
@@ -284,7 +289,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 _ContestLogs = new List<ContestLog>();
 
-                // create folders if necessary
+                // create folders if necessary  + "_" + DateTime.Now.Year
                 // always clean the working folder
                 if (!Directory.Exists(_WorkingFolder))
                 {
