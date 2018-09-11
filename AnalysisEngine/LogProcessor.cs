@@ -236,6 +236,15 @@ namespace W6OP.ContestLogAnalyzer
                         }
                     }
 
+                    // find out if columns are missing - do something else, need to use reject reason
+                    List<QSO> missingQSOS = contestLog.QSOCollection.Where(q => q.ContactName == "MISSING_COLUMN").ToList();
+                    if (missingQSOS.Count > 0)
+                    {
+                        _FailReason = "One or more columns are missing."; 
+                        contestLog.IsValidLog = false;
+                        throw new Exception(fileInfo.Name); // don't want this added to collection
+                    }
+
                     if (contestLog.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
                     {
                         contestLog.IsCheckLog = true;
@@ -302,6 +311,15 @@ namespace W6OP.ContestLogAnalyzer
                 else
                 {
                     message = ex.Message;
+                   if (contestLog.QSOCollection == null)
+                    {
+                        _FailReason = _FailReason + " - QSO collection is null.";
+                    }
+                    else {
+                        _FailReason = _FailReason + " - Unable to process log.";
+                    }
+                    
+
                 }
 
                 MoveFileToInpectFolder(fileName, message);
@@ -891,8 +909,14 @@ namespace W6OP.ContestLogAnalyzer
             // first get rid of commas ie. 5,234
             inputString = inputString.Replace(",", "");
 
-            int i = 0;
+            var i = 0;
             bool result = int.TryParse(inputString, out i);
+
+            if (!result)
+            {
+                i = 999999;
+            }
+
             return i;
         }
 
@@ -1001,7 +1025,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     IEnumerable<QSO> qso =
                          from line in lineList
-                         let split = line.Split(' ')
+                         let split = CheckQSOLength(line.Split(' '))
                          select new QSO()
                          {
                              Status = CheckCompleteQSO(split, line),
@@ -1014,7 +1038,7 @@ namespace W6OP.ContestLogAnalyzer
                              OperatorName = split[7],
                              ContactCall = RemovePreOrSuffix(split[8]).ToUpper(),
                              ReceivedSerialNumber = ConvertSerialNumber(split[9]),
-                             ContactName = split[10],
+                             ContactName =  split[10],
                              CallIsInValid = CheckCallSignFormat(RemovePreOrSuffix(split[5]).ToUpper()),
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
@@ -1024,7 +1048,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     IEnumerable<QSO> qso =
                          from line in lineList
-                         let split = line.Split(' ')
+                         let split = CheckQSOLength(line.Split(' '))
 
                          select new QSO()
                          {
@@ -1066,6 +1090,30 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
+        /// Make sure all columns are present
+        /// </summary>
+        /// <param name="split"></param>
+        /// <returns></returns>
+        private string[] CheckQSOLength(string[] split)
+        {
+            int missing = 0;
+
+            if (split.Length < 11)
+            {
+                missing = 11 - split.Length;
+                Array.Resize(ref split, 11);
+
+                for (int i = 11 - missing; i < 11; i++)
+                {
+                    split[i] = "missing_column";
+                }
+                
+            }
+
+            return split;
+        }
+
+        /// <summary>
         /// Normalize all the modes to make searches easier.
         /// Only used in the HQP.
         /// </summary>
@@ -1095,7 +1143,7 @@ namespace W6OP.ContestLogAnalyzer
                         mode = "PH";
                         break;
                     default:
-                        mode = "";
+                        mode = "Unknown";
                         break;
                 }
             }
@@ -1158,7 +1206,7 @@ namespace W6OP.ContestLogAnalyzer
 
             _WorkingLine = line;
 
-            if (split.Length < 11)
+            if (split[10] == "missing_column")
             {
                 status = QSOStatus.InvalidQSO;
                 _FailingLine += Environment.NewLine + "One or more columns are missing.";
@@ -1172,7 +1220,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             _WorkingLine = line;
 
-            if (CheckForNumeric(frequency) == 0)
+            if (CheckForNumeric(frequency) == 999999)
             {
                 _FailingLine += Environment.NewLine + "Frequency is not correctly formatted.";
                 _FailingLine += Environment.NewLine + line;
@@ -1185,7 +1233,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             _WorkingLine = line;
 
-            if (CheckForNumeric(time) == 0)
+            if (CheckForNumeric(time) == 999999)
             {
                 _FailingLine += Environment.NewLine + "The time is not correctly formatted. Possibly alpha instead of numeric";
                 _FailingLine += Environment.NewLine + line;

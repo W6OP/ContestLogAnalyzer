@@ -421,6 +421,22 @@ namespace W6OP.ContestLogAnalyzer
         {
             get { return _ContactName.ToUpper(); }
             set { _ContactName = value; }
+                //if (value != "missing_column")
+                //{
+                //    _ContactName = value;
+                //}
+                //else
+                //{
+                //    _ContactName = "MissingColumn";
+                //    if (!_RejectReasons.ContainsKey(RejectReason.MissingColumn))
+                //    {
+                //        _RejectReasons.Add(RejectReason.MissingColumn, EnumHelper.GetDescription(RejectReason.MissingColumn));
+                //        _Status = QSOStatus.InvalidQSO;
+                //    }
+                //}
+                
+
+           // }
         }
 
         /// <summary>

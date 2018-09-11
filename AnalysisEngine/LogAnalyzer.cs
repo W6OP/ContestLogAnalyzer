@@ -358,11 +358,6 @@ namespace W6OP.ContestLogAnalyzer
                     continue;   // Skip the remainder of this iteration. -----+
                 }
 
-                //if (qso.OperatorCall.IndexOf(@"/") != -1)             //                                |
-                //{                           //                                |
-                //    var a = 2;   // DEBUG CODE. -----+
-                //}
-
                 if (matchLog != null)
                 {
                     switch (ActiveContest)

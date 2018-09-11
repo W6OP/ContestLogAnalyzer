@@ -37,6 +37,8 @@ namespace W6OP.ContestLogAnalyzer
         InvalidEntity,
         [Description("This QSO will not be counted")]
         NotCounted,
+        [Description("Missing Column")]
+        MissingColumn,
         [Description("None")]
         None
     }

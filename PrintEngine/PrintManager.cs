@@ -167,29 +167,30 @@ namespace W6OP.PrintEngine
                 doc.AddKeywords(_Keywords);
                 doc.AddCreator("Contest Log Analyser");
                 doc.AddAuthor("W6OP");
-                //doc.AddHeader("Nothing", "No Header");
 
                 // define fonts
                 BaseFont bfTimes = BaseFont.CreateFont(BaseFont.COURIER, BaseFont.CP1252, false);
                 iTextSharp.text.Font times = new iTextSharp.text.Font(bfTimes, 9, iTextSharp.text.Font.BOLD, iTextSharp.text.BaseColor.BLACK);
 
                 PdfPTable table = BuildPdfTable();
-                //PdfPCell cell = null;
                 iTextSharp.text.Font fontTable = FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL, BaseColor.BLACK);
 
 
                 message = year + _Message + session;
-                para = new Paragraph(message, times);
-                //para.Font = new iTextSharp.text.Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 50);
-                // Setting paragraph's text alignment using iTextSharp.text.Element class
-                para.Alignment = Element.ALIGN_CENTER;
+                para = new Paragraph(message, times)
+                {
+                    // Setting paragraph's text alignment using iTextSharp.text.Element class
+                    Alignment = Element.ALIGN_CENTER
+                };
                 // Adding this 'para' to the Document object
                 doc.Add(para);
 
                 message = message = "Call" + "          " + "Operator" + "     " + "Station" + "     " + "Name" + "         " + "QSOs" + "    " + "Mults" + "     " + "Final" + "     " + "Power" + "   " + "Assisted";
-                para = new Paragraph(message, times);
-                // Setting paragraph's text alignment using iTextSharp.text.Element class
-                para.Alignment = Element.ALIGN_LEFT;
+                para = new Paragraph(message, times)
+                {
+                    // Setting paragraph's text alignment using iTextSharp.text.Element class
+                    Alignment = Element.ALIGN_LEFT
+                };
                 // Adding this 'para' to the Document object
                 doc.Add(para);
 
@@ -306,17 +307,21 @@ namespace W6OP.PrintEngine
 
 
                 message = year + _Message;
-                para = new Paragraph(message, times);
-                //para.Font = new iTextSharp.text.Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 50);
-                // Setting paragraph's text alignment using iTextSharp.text.Element class
-                para.Alignment = Element.ALIGN_CENTER;
+                para = new Paragraph(message, times)
+                {
+                    //para.Font = new iTextSharp.text.Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 50);
+                    // Setting paragraph's text alignment using iTextSharp.text.Element class
+                    Alignment = Element.ALIGN_CENTER
+                };
                 // Adding this 'para' to the Document object
                 doc.Add(para);
 
                 message = message = "Call" + "          " + "Operator" + "     " + "Station" + "     " + "Entity" + "         " + "QSOs" + "    " + "Mults" + "     " + "Points" + "     " + "Final" + "   " + "";
-                para = new Paragraph(message, times);
-                // Setting paragraph's text alignment using iTextSharp.text.Element class
-                para.Alignment = Element.ALIGN_LEFT;
+                para = new Paragraph(message, times)
+                {
+                    // Setting paragraph's text alignment using iTextSharp.text.Element class
+                    Alignment = Element.ALIGN_LEFT
+                };
                 // Adding this 'para' to the Document object
                 doc.Add(para);
 
@@ -374,11 +379,13 @@ namespace W6OP.PrintEngine
         /// <returns></returns>
         private PdfPTable BuildPdfTable()
         {
-            PdfPTable table = new PdfPTable(9);
-            //actual width of table in points
-            table.TotalWidth = 514;
-            //fix the absolute width of the table
-            table.LockedWidth = true;
+            PdfPTable table = new PdfPTable(9)
+            {
+                //actual width of table in points
+                TotalWidth = 514,
+                //fix the absolute width of the table
+                LockedWidth = true
+            };
 
             float[] widths = new float[] { 68f, 68f, 68f, 68f, 50f, 54f, 54f, 54f, 30f };
             table.SetWidths(widths);
