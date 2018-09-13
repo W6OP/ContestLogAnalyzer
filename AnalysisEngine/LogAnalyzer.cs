@@ -22,7 +22,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private QRZ _QRZ = null;
 
-        public Hashtable _CallSignSet;
+        public Hashtable CallSignSet;
 
         // OnErrorRaised?.Invoke(progress);
 
@@ -156,7 +156,7 @@ namespace W6OP.ContestLogAnalyzer
         /// Does it show up in any other logs? Good check to see if it is a valid callsign
         /// Build a collection of totaly unique calls
         /// </summary>
-        public void PreProcessContestLogs(List<ContestLog> contestLogList)
+        public void PreAnalyzeContestLogs(List<ContestLog> contestLogList)
         {
             List<QSO> qsoList = new List<QSO>();
             string call = null;
@@ -671,13 +671,13 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (matchName.Length > 2 || matchingQSOs.Count < 5 || qso.ContactCall.Length == 3)
                     {
-                        if (!_CallSignSet.Contains(qso.ContactCall))
+                        if (!CallSignSet.Contains(qso.ContactCall))
                         {
                             info = _QRZ.QRZLookup(qso.ContactCall, info, 1);
                             if (info[0] != null && info[0] != "0")
                             {
                                 matchName = info[0].ToUpper();
-                                _CallSignSet.Add(qso.ContactCall, matchName);
+                                CallSignSet.Add(qso.ContactCall, matchName);
                             }
                             else
                             {
@@ -686,7 +686,7 @@ namespace W6OP.ContestLogAnalyzer
                         }
                         else
                         {
-                            matchName = (string)_CallSignSet[qso.ContactCall];
+                            matchName = (string)CallSignSet[qso.ContactCall];
                         }
 
                         if (qso.ContactName != matchName)

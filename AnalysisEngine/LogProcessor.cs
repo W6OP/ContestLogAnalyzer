@@ -29,7 +29,7 @@ namespace W6OP.ContestLogAnalyzer
         public string _LogSourceFolder { get; set; }
         public string _InspectionFolder { get; set; }
         public string _WorkingFolder { get; set; }
-        public ContestName _ActiveContest { get; set; }
+        public ContestName ActiveContest { get; set; }
 
         private string _WorkingLine = null;
         private CallParser.CallsignParser _Parser;
@@ -48,58 +48,24 @@ namespace W6OP.ContestLogAnalyzer
             _PrefixSet = new Hashtable();
         }
 
-        public void InitializeLogProcessor(ContestName contestName)
-        {
-            _ActiveContest = contestName;
-
-            if (_ActiveContest == ContestName.HQP)
-            {
-                _QRZ = new QRZ();
-
-                _Parser = new CallParser.CallsignParser();
-                if (File.Exists(@"C:\iUsers\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
-                {
-                    _Parser.PrefixFile = @"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"; //"prefix.lst";  // @"C:\Users\pbourget\Documents\Visual Studio 2012\Projects\Ham Radio\DXACollector\Support\CallParser\prefix.lst";
-                }
-                else
-                {
-                    if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "W6OP")))
-                    {
-                        Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "W6OP"));
-                    }
-
-                    string target = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"W6OP\Prefix.lst");
-                    if (!File.Exists(target))
-                    {
-                        string source = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), @"Prefix.lst");
-                        File.Copy(source, target);
-                    }
-
-                    if (File.Exists(target))
-                    {
-                        _Parser.PrefixFile = target;
-                    }
-                    else
-                    {
-                        throw (new Exception("The prefix file cannot be found."));
-                    }
-                }
-            }
-        }
         /// <summary>
         /// Create a list of all of the log files in the working folder. Once the list is
         /// filled pass the list on to another thread.
         /// </summary>
-        public Int32 BuildFileList(Session session, out IEnumerable<System.IO.FileInfo> logFileList)
+        public int BuildFileList(Session session, out IEnumerable<FileInfo> logFileList)
         {
             string fileNameFormat = null;
             // Take a snapshot of the file system. http://msdn.microsoft.com/en-us/library/bb546159.aspx
             DirectoryInfo dir = new DirectoryInfo(_LogSourceFolder);
 
-            switch (_ActiveContest)
+            switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
                     fileNameFormat = "*_" + ((uint)session).ToString() + ".log";
+                    break;
+                case ContestName.HQP:
+                    InitializeHQPLogProcessor();
+                    fileNameFormat = "*.log";
                     break;
                 default:
                     fileNameFormat = "*.log";
@@ -192,7 +158,7 @@ namespace W6OP.ContestLogAnalyzer
                     lineListX = lineList.Where(x => (x.IndexOf("XQSO:", 0) != -1) || (x.IndexOf("X-QSO:", 0) != -1)).ToList();
                     lineList = lineList.Where(x => (x.IndexOf("QSO:", 0) != -1) && (x.IndexOf("XQSO:", 0) == -1) && (x.IndexOf("X-QSO:", 0) == -1)).ToList();
 
-                    switch (_ActiveContest)
+                    switch (ActiveContest)
                     {
                         case ContestName.CW_OPEN:
                             contestLog.Session = (int)session;
@@ -282,7 +248,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     // now add the DXCC information some contests need for multipliers
                     // later break out to nwe method and add switch statement
-                    if (_ActiveContest == ContestName.HQP)
+                    if (ActiveContest == ContestName.HQP)
                     {
                         SetDXCCInformation(contestLog.QSOCollection, contestLog);
                     }
@@ -328,175 +294,51 @@ namespace W6OP.ContestLogAnalyzer
             return logFileName;
         }
 
-        ///// <summary>
-        ///// Call parser handling
-        ///// </summary>
-        ///// <param name="qsoCollection"></param>
-        //private void SetDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
-        //{
-        //    CallParser.PrefixInfo prefixInfo = null;
+        /// <summary>
+        /// Instantiate the Call Parser
+        /// </summary>
+        private void InitializeHQPLogProcessor()
+        {
+            if (ActiveContest == ContestName.HQP)
+            {
+                _QRZ = new QRZ();
 
-        //    bool isValidHQPEntity = false;
-        //    string[] info = new string[2] { "0", "0" };
+                _Parser = new CallParser.CallsignParser();
+                if (File.Exists(@"C:\iUsers\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
+                {
+                    _Parser.PrefixFile = @"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"; //"prefix.lst";  // @"C:\Users\pbourget\Documents\Visual Studio 2012\Projects\Ham Radio\DXACollector\Support\CallParser\prefix.lst";
+                }
+                else
+                {
+                    if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "W6OP")))
+                    {
+                        Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "W6OP"));
+                    }
 
-        //    contestLog.IsHQPEntity = false;
-        //    contestLog.TotalPoints = 0;
+                    string target = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"W6OP\Prefix.lst");
+                    if (!File.Exists(target))
+                    {
+                        string source = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), @"Prefix.lst");
+                        File.Copy(source, target);
+                    }
 
-        //    foreach (QSO qso in qsoCollection)
-        //    {
-        //        info = new string[2] { "0", "0" };
-        //        qso.IsHQPEntity = false;
-        //        qso.OperatorEntity = qso.OperatorName;
-        //        qso.DXEntity = qso.ContactName;
+                    if (File.Exists(target))
+                    {
+                        _Parser.PrefixFile = target;
+                    }
+                    else
+                    {
+                        throw (new Exception("The prefix file cannot be found."));
+                    }
+                }
+            }
+        }
 
-        //        qso.HQPPoints = GetPoints(qso.Mode);
-
-        //        // determine if this is a Hawawiin station
-        //        isValidHQPEntity = Enum.IsDefined(typeof(HQPMults), qso.OperatorEntity);
-        //        contestLog.IsHQPEntity = isValidHQPEntity;
-
-        //        // -----------------------------------------------------------------------------------
-        //        // DX station contacting Hawaiin station
-        //        // if DXEntity is not in enum list of Hawaii entities (HIL, MAU, etc.)
-        //        // QSO: 14242 PH 2017-08-26 1830 N5KXI 59 OK KH7XS 59  DX
-        //        // this QSO is invalid - complete
-        //        if (!isValidHQPEntity && qso.DXEntity == "DX")
-        //        {
-        //            qso.EntityIsInValid = true;
-        //        }
-
-        //        // -----------------------------------------------------------------------------------
-        //        // Hawaiin station contacts a non Hawaiin station and puts "DX" as country instead of actual country
-        //        // QSO:  7039 CW 2017-08-26 0524 AH7U 599 LHN ZL3PAH 599 DX
-        //        if (isValidHQPEntity)
-        //        {
-        //            qso.HQPEntity = qso.OperatorEntity;
-        //            qso.IsHQPEntity = isValidHQPEntity;
-
-        //            //if (qso.DXCountry == "DX")
-        //            //{
-        //            if (!_PrefixSet.Contains(qso.ContactCall))
-        //            {
-        //                prefixInfo = GetPrefixInformation(qso.ContactCall);
-        //                _PrefixSet.Add(qso.ContactCall, prefixInfo);
-        //            }
-        //            else
-        //            {
-        //                prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.ContactCall];
-        //            }
-
-        //            if (prefixInfo != null)
-        //            {
-        //                if (prefixInfo.Territory != null)
-        //                {
-        //                    qso.DXEntity = prefixInfo.Territory.ToString();
-        //                    qso.IsEntityVerified = true;
-
-        //                    if (qso.DXEntity == "Canada" || qso.DXEntity == "United States of America")
-        //                    {
-        //                        qso.RealOperatorEntity = qso.DXEntity; // persist if USA or Canada
-        //                        qso.RealDXEntity = qso.DXEntity;
-
-        //                        if (qso.DXEntity == "DX")
-        //                        {
-        //                            if (!_CallSignSet.Contains(qso.ContactCall))
-        //                            {
-        //                                info = _QRZ.QRZLookup(qso.ContactCall, info);
-        //                                qso.DXEntity = info[0];
-
-        //                                _CallSignSet.Add(qso.ContactCall, qso.DXEntity);
-        //                            }
-        //                            else
-        //                            {
-        //                                qso.DXEntity = (String)_CallSignSet[qso.ContactCall];
-        //                            }
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //            //}
-        //        }
-
-        //        // -----------------------------------------------------------------------------------
-        //        // Non Hawaii log uses "DX" for their own location (Op Name) instead of their real country
-        //        // HI8A.log - QSO: 14000 CW 2017-08-27 1712 HI8A 599 DX KH6LC 599 HIL
-        //        if (!isValidHQPEntity && qso.Status != QSOStatus.InvalidQSO)
-        //        {
-        //            if (qso.OperatorEntity == "DX")
-        //            {
-        //                prefixInfo = GetPrefixInformation(qso.OperatorCall);
-
-        //                if (prefixInfo != null)
-        //                {
-        //                    if (prefixInfo.Territory != null)
-        //                    {
-        //                        // this is for non US and Canada
-        //                        qso.OperatorEntity = prefixInfo.Territory.ToString();
-        //                        qso.RealOperatorEntity = qso.OperatorEntity;
-        //                        qso.IsEntityVerified = true;
-
-        //                        if (qso.DXEntity == "Canada" || qso.DXEntity == "United States of America")
-        //                        {
-        //                            qso.RealOperatorEntity = qso.DXEntity; // persist if USA or Canada
-        //                            qso.RealDXEntity = qso.DXEntity;
-
-        //                            if (!_CallSignSet.Contains(qso.ContactCall))
-        //                            {
-        //                                info = _QRZ.QRZLookup(qso.ContactCall, info);
-        //                                qso.DXEntity = info[0];
-
-        //                                _CallSignSet.Add(qso.ContactCall, qso.DXEntity);
-        //                            }
-        //                            else
-        //                            {
-        //                                qso.DXEntity = (String)_CallSignSet[qso.ContactCall];
-        //                            }
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //            else
-        //            {
-        //                if (!_PrefixSet.Contains(qso.ContactCall))
-        //                {
-        //                    prefixInfo = GetPrefixInformation(qso.ContactCall);
-        //                    _PrefixSet.Add(qso.ContactCall, prefixInfo);
-        //                }
-        //                else
-        //                {
-        //                    prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.ContactCall];
-        //                }
-
-        //                // need this to do log matching - SearchForIncorrectName()
-        //                //prefixInfo = GetPrefixInformation(qso.ContactCall);
-        //                //prefixInfo2 = GetPrefixInformation(qso.OperatorCall);
-
-        //                if (prefixInfo != null && prefixInfo.Territory != null)
-        //                {
-        //                    qso.RealDXEntity = prefixInfo.Territory.ToString();
-        //                    qso.IsEntityVerified = true;
-        //                }
-
-        //                if (!_PrefixSet.Contains(qso.OperatorCall))
-        //                {
-        //                    prefixInfo = GetPrefixInformation(qso.OperatorCall);
-        //                    _PrefixSet.Add(qso.OperatorCall, prefixInfo);
-        //                }
-        //                else
-        //                {
-        //                    prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.OperatorCall];
-        //                }
-
-        //                if (prefixInfo != null && prefixInfo.Territory != null)
-        //                {
-        //                    qso.RealOperatorEntity = prefixInfo.Territory.ToString();
-        //                    qso.IsEntityVerified = true;
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="qsoCollection"></param>
+        /// <param name="contestLog"></param>
         private void SetDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
         {
             CallParser.PrefixInfo prefixInfo = null;
@@ -909,8 +751,7 @@ namespace W6OP.ContestLogAnalyzer
             // first get rid of commas ie. 5,234
             inputString = inputString.Replace(",", "");
 
-            var i = 0;
-            bool result = int.TryParse(inputString, out i);
+            bool result = int.TryParse(inputString, out int i);
 
             if (!result)
             {
@@ -1073,7 +914,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 // if there is a format exception it means the CWT template may have been used
                 // this swaps the name and serial number columns
-                if (ex is FormatException && reverse == false && _ActiveContest == ContestName.CW_OPEN)
+                if (ex is FormatException && reverse == false && ActiveContest == ContestName.CW_OPEN)
                 {
                     qsoList = CollectQSOs(lineList, session, true);
                 }
@@ -1121,7 +962,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private string NormalizeMode(string mode)
         {
-            if (_ActiveContest == ContestName.HQP)
+            if (ActiveContest == ContestName.HQP)
             {
                 CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), mode);
 
@@ -1258,7 +1099,7 @@ namespace W6OP.ContestLogAnalyzer
             int qsoSessionTime = Convert.ToInt16(qsoTime);
 
             // later may want to check time stamp for that contest
-            if (_ActiveContest != ContestName.CW_OPEN)
+            if (ActiveContest != ContestName.CW_OPEN)
             {
                 return true;
             }

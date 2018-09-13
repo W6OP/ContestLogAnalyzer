@@ -59,6 +59,8 @@ namespace W6OP.ContestLogAnalyzer
 
         private ContestName _ActiveContest;
 
+        private bool _Initialized = false;
+
         #region Load and Initialize
 
         /// <summary>
@@ -70,19 +72,19 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// 
+        /// Form load event handler.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void MainForm_Load(object sender, EventArgs e)
         {
+            // get the version number
             Assembly asm = Assembly.GetExecutingAssembly();
             AssemblyName an = asm.GetName();
             string version = an.Version.Major + "." + an.Version.Minor + "." + an.Version.Build + "." + an.Version.Revision;
+            this.Text = "W6OP Contest Log Analyzer (" + version + ")";
 
             UpdateLabel("");
-
-            this.Text = "W6OP Contest Log Analyzer (" + version + ")";
 
             if (_LogProcessor == null)
             {
@@ -92,8 +94,10 @@ namespace W6OP.ContestLogAnalyzer
 
             if (_LogAnalyser == null)
             {
-                _LogAnalyser = new LogAnalyzer();
-                _LogAnalyser._CallSignSet = _LogProcessor._CallSignSet;
+                _LogAnalyser = new LogAnalyzer
+                {
+                    CallSignSet = _LogProcessor._CallSignSet
+                };
                 _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
                 _LogAnalyser.OnErrorRaised += _LogAnalyser_OnErrorRaised;
             }
@@ -119,6 +123,8 @@ namespace W6OP.ContestLogAnalyzer
             ComboBoxSelectSession.ValueMember = "value";
 
             TabControlMain.SelectTab(TabPageLogStatus);
+
+            _Initialized = true;
         }
 
         private void _LogAnalyser_OnErrorRaised(string error)
@@ -161,25 +167,55 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ComboBoxSelectSession_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // get the current session number - this is specific to CWOPEN and will need to be moved later
+            // get the current session number - this is specific to CWOPEN
             Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out _Session);
+            ButtonLoadLogs.Enabled = true;
         }
 
         /// <summary>
-        /// 
+        /// Event handler
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void ComboBoxSelectContest_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (!_Initialized) return;
+
+            SetupContestProperties();
+           
+        }
+
+        /// <summary>
+        /// Enable various controls.
+        /// Create folder paths.
+        /// </summary>
+        private void SetupContestProperties()
+        {
+            string session = null;
+            string contestName = null;
+
+            ButtonLoadLogs.Enabled = false;
+            UpdateLabel("Loading Contest Logs");
+
             Enum.TryParse(ComboBoxSelectContest.SelectedValue.ToString(), out _ActiveContest);
+            contestName = _ActiveContest.ToString();
+
             _PrintManager = null;
+
+            TabControlMain.SelectTab(TabPageLogStatus);
+            _LogFileList = null;
+
+            _BaseFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_BASE_FOLDER_PATH);
+            _BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
 
             switch (_ActiveContest)
             {
                 case ContestName.CW_OPEN:
                     if (_CWOpen == null)
                     {
+                        session = EnumHelper.GetDescription(_Session);
+                        _BaseFolder = Path.Combine(_BaseFolder, session);
+
                         TabControlMain.SelectTab(TabPageScoring);
                         _CWOpen = new ScoreCWOpen();
                         _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
@@ -194,22 +230,34 @@ namespace W6OP.ContestLogAnalyzer
                         _HQP.OnProgressUpdate += _HQP_OnProgressUpdate;
                     }
                     ComboBoxSelectSession.Enabled = false;
+                    ButtonLoadLogs.Enabled = true;
                     break;
                 default:
                     break;
             }
 
-            try
-            {
-                _LogProcessor.InitializeLogProcessor(_ActiveContest);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Initialization Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            _WorkingFolder = Path.Combine(_BaseFolder, _BaseWorkingFolder);
+            _InspectFolder = Path.Combine(_BaseFolder, _BaseInspectFolder);
+            _ReportFolder = Path.Combine(_BaseFolder, _BaseReportFolder);
+            _ReviewFolder = Path.Combine(_BaseFolder, _BaseReviewFolder);
+            _ScoreFolder = Path.Combine(_BaseFolder, _BaseScoreFolder);
+
+            //try
+            //{
+            //    _LogProcessor.ActiveContest = _ActiveContest;
+            //    //if (_ActiveContest == ContestName.HQP)
+            //    //{
+            //    //    _LogProcessor.InitializeHQPLogProcessor(_ActiveContest);
+            //    //}
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show(ex.Message, "Initialization Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //}
 
             _PrintManager = new PrintManager(_ActiveContest);
             _LogProcessor._PrintManager = _PrintManager;
+            _LogProcessor.ActiveContest = _ActiveContest;
         }
 
         #endregion
@@ -223,13 +271,14 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonLoadLogs_Click(object sender, EventArgs e)
         {
-            string session = null;
-            string contestName = _ActiveContest.ToString();
+            //string session = null;
+            //string contestName = _ActiveContest.ToString();
 
-            TabControlMain.SelectTab(TabPageLogStatus);
-            _LogFileList = null;
+            //TabControlMain.SelectTab(TabPageLogStatus);
+            //_LogFileList = null;
+            //_BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
 
-            UpdateLabel("Loading Contest Logs");
+            //UpdateLabel("Loading Contest Logs");
 
             if (_ActiveContest == ContestName.Select)
             {
@@ -237,35 +286,41 @@ namespace W6OP.ContestLogAnalyzer
                 return;
             }
 
-            switch (_ActiveContest)
-            {
-                case ContestName.CW_OPEN:
-                    if (_Session == Session.Session_0)
-                    {
-                        MessageBox.Show("You must select the session to be scored", "Invalid Session", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                        return;
-                    }
-                    session = EnumHelper.GetDescription(_Session);
-                    _BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
-                    _BaseFolder = Path.Combine(_BaseFolder, session);
-                    _WorkingFolder = Path.Combine(_BaseFolder, _BaseWorkingFolder);
-                    _InspectFolder = Path.Combine(_BaseFolder, _BaseInspectFolder);
-                    _ReportFolder = Path.Combine(_BaseFolder, _BaseReportFolder);
-                    _ReviewFolder = Path.Combine(_BaseFolder, _BaseReviewFolder);
-                    _ScoreFolder = Path.Combine(_BaseFolder, _BaseScoreFolder);
-                    break;
-                case ContestName.HQP:
-                    _Session = Session.Session_0;
-                    _BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
-                    _WorkingFolder = Path.Combine(_BaseFolder, _BaseWorkingFolder);
-                    _InspectFolder = Path.Combine(_BaseFolder, _BaseInspectFolder);
-                    _ReportFolder = Path.Combine(_BaseFolder, _BaseReportFolder);
-                    _ReviewFolder = Path.Combine(_BaseFolder, _BaseReviewFolder);
-                    _ScoreFolder = Path.Combine(_BaseFolder, _BaseScoreFolder);
-                    break;
-                default:
-                    break;
-            }
+            //switch (_ActiveContest)
+            //{
+            //    case ContestName.CW_OPEN:
+            //        if (_Session == Session.Session_0)
+            //        {
+            //            MessageBox.Show("You must select the session to be scored", "Invalid Session", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+            //            return;
+            //        }
+            //        session = EnumHelper.GetDescription(_Session);
+            //        //_BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
+            //        _BaseFolder = Path.Combine(_BaseFolder, session);
+            //        //_WorkingFolder = Path.Combine(_BaseFolder, _BaseWorkingFolder);
+            //        //_InspectFolder = Path.Combine(_BaseFolder, _BaseInspectFolder);
+            //        //_ReportFolder = Path.Combine(_BaseFolder, _BaseReportFolder);
+            //        //_ReviewFolder = Path.Combine(_BaseFolder, _BaseReviewFolder);
+            //        //_ScoreFolder = Path.Combine(_BaseFolder, _BaseScoreFolder);
+            //        break;
+            //    case ContestName.HQP:
+            //        //_Session = Session.Session_0;
+            //        //_BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
+            //        //_WorkingFolder = Path.Combine(_BaseFolder, _BaseWorkingFolder);
+            //        //_InspectFolder = Path.Combine(_BaseFolder, _BaseInspectFolder);
+            //        //_ReportFolder = Path.Combine(_BaseFolder, _BaseReportFolder);
+            //        //_ReviewFolder = Path.Combine(_BaseFolder, _BaseReviewFolder);
+            //        //_ScoreFolder = Path.Combine(_BaseFolder, _BaseScoreFolder);
+            //        break;
+            //    default:
+            //        break;
+            //}
+
+            //_WorkingFolder = Path.Combine(_BaseFolder, _BaseWorkingFolder);
+            //_InspectFolder = Path.Combine(_BaseFolder, _BaseInspectFolder);
+            //_ReportFolder = Path.Combine(_BaseFolder, _BaseReportFolder);
+            //_ReviewFolder = Path.Combine(_BaseFolder, _BaseReviewFolder);
+            //_ScoreFolder = Path.Combine(_BaseFolder, _BaseScoreFolder);
 
             LoadLogFiles();
         }
@@ -277,7 +332,7 @@ namespace W6OP.ContestLogAnalyzer
         private void LoadLogFiles()
         {
             Int32 fileCount = 0;
-            string session = EnumHelper.GetDescription(_Session);
+            //string session = EnumHelper.GetDescription(_Session);
 
             try
             {
@@ -289,37 +344,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 _ContestLogs = new List<ContestLog>();
 
-                // create folders if necessary  + "_" + DateTime.Now.Year
-                // always clean the working folder
-                if (!Directory.Exists(_WorkingFolder))
-                {
-                    Directory.CreateDirectory(_WorkingFolder);
-                }
-                else
-                {
-                    Directory.Delete(_WorkingFolder, true);
-                    Directory.CreateDirectory(_WorkingFolder);
-                }
-
-                if (!Directory.Exists(_InspectFolder))
-                {
-                    Directory.CreateDirectory(_InspectFolder);
-                }
-
-                if (!Directory.Exists(_ReportFolder))
-                {
-                    Directory.CreateDirectory(_ReportFolder);
-                }
-
-                if (!Directory.Exists(_ReviewFolder))
-                {
-                    Directory.CreateDirectory(_ReviewFolder);
-                }
-
-                if (!Directory.Exists(_ScoreFolder))
-                {
-                    Directory.CreateDirectory(_ScoreFolder);
-                }
+                CreateFolders();
 
                 if (String.IsNullOrEmpty(_LogSourceFolder))
                 {
@@ -343,19 +368,19 @@ namespace W6OP.ContestLogAnalyzer
                 _LogProcessor._WorkingFolder = _WorkingFolder;
                 _LogProcessor._InspectionFolder = _InspectFolder;
 
-                if (_LogFileList == null)
-                {
-                    fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
-                }
+                //if (_LogFileList == null)
+                //{
+                //    fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
+                //}
 
-                if (_LogFileList.Cast<object>().Count() == 0)
-                {
-                    fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
-                }
-                else
-                {
+                //if (_LogFileList.Cast<object>().Count() == 0)
+                //{
+                //    fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
+                //}
+                //else
+                //{
                     fileCount = _LogFileList.Cast<object>().Count();
-                }
+                //}
 
                 ResetProgressBar(true);
                 ProgressBarLoad.Maximum = fileCount;
@@ -368,6 +393,44 @@ namespace W6OP.ContestLogAnalyzer
             catch (Exception ex)
             {
                 MessageBox.Show("Load or Pre-process Log Error", "Load and Pre-process Logs \r\n" + ex.Message, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+        }
+
+        /// <summary>
+        /// Create all the folders necessary to run prograsm.
+        /// </summary>
+        private void CreateFolders()
+        {
+            // create folders if necessary  + "_" + DateTime.Now.Year
+            // always clean the working folder
+            if (!Directory.Exists(_WorkingFolder))
+            {
+                Directory.CreateDirectory(_WorkingFolder);
+            }
+            else
+            {
+                Directory.Delete(_WorkingFolder, true);
+                Directory.CreateDirectory(_WorkingFolder);
+            }
+
+            if (!Directory.Exists(_InspectFolder))
+            {
+                Directory.CreateDirectory(_InspectFolder);
+            }
+
+            if (!Directory.Exists(_ReportFolder))
+            {
+                Directory.CreateDirectory(_ReportFolder);
+            }
+
+            if (!Directory.Exists(_ReviewFolder))
+            {
+                Directory.CreateDirectory(_ReviewFolder);
+            }
+
+            if (!Directory.Exists(_ScoreFolder))
+            {
+                Directory.CreateDirectory(_ScoreFolder);
             }
         }
 
@@ -519,7 +582,7 @@ namespace W6OP.ContestLogAnalyzer
             UpdateLabel("");
 
             _LogAnalyser.ActiveContest = _ActiveContest;
-            _LogAnalyser.PreProcessContestLogs(_ContestLogs);
+            _LogAnalyser.PreAnalyzeContestLogs(_ContestLogs);
 
             UpdateListViewAnalysis("", "", "", false);
             ResetProgressBar(true);
@@ -1216,8 +1279,10 @@ namespace W6OP.ContestLogAnalyzer
 
         private void UpdateListViewCompare(QSO qso, int group)
         {
-            ListViewItem item = new ListViewItem(qso.Band.ToString());
-            item.Group = ListViewCompare.Groups[group];
+            ListViewItem item = new ListViewItem(qso.Band.ToString())
+            {
+                Group = ListViewCompare.Groups[group]
+            };
 
             item.SubItems.Add(qso.Mode);
             item.SubItems.Add(qso.QsoDate.ToString());

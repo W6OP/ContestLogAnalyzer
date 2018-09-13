@@ -124,6 +124,7 @@
             // 
             // ButtonLoadLogs
             // 
+            this.ButtonLoadLogs.Enabled = false;
             this.ButtonLoadLogs.Location = new System.Drawing.Point(24, 124);
             this.ButtonLoadLogs.Name = "ButtonLoadLogs";
             this.ButtonLoadLogs.Size = new System.Drawing.Size(131, 23);
