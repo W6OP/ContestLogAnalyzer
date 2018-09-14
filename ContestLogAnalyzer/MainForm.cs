@@ -85,6 +85,7 @@ namespace W6OP.ContestLogAnalyzer
             this.Text = "W6OP Contest Log Analyzer (" + version + ")";
 
             UpdateLabel("");
+            SessionDateTimePicker.Value = DateTime.Now;
 
             if (_LogProcessor == null)
             {
@@ -206,7 +207,7 @@ namespace W6OP.ContestLogAnalyzer
             _LogFileList = null;
 
             _BaseFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_BASE_FOLDER_PATH);
-            _BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
+            _BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + SessionDateTimePicker.Value.ToString("yyyy"); 
 
             switch (_ActiveContest)
             {
@@ -390,7 +391,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         private void CreateFolders()
         {
-            // create folders if necessary  + "_" + DateTime.Now.Year
+            // create folders if necessary
             // always clean the working folder
             if (!Directory.Exists(_WorkingFolder))
             {
@@ -1171,7 +1172,6 @@ namespace W6OP.ContestLogAnalyzer
 
             // list of all calls with number of hits and all names with number of hits
             UpdateListViewLoad("List Call Name Occurences", "", false);
-           // _PrintManager.ListCallNameOccurences(_ReportFolder, session, _ContestLogs);
         }
 
         private void BackgroundWorkerPreAnalysis_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -1196,7 +1196,7 @@ namespace W6OP.ContestLogAnalyzer
         #region Compare Logs
 
         /// <summary>
-        /// 
+        /// Compare two logs.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>

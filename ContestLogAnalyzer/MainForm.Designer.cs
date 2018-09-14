@@ -82,6 +82,7 @@
             this.BackgroundWorkerPreAnalysis = new System.ComponentModel.BackgroundWorker();
             this.TextBoxLog1 = new System.Windows.Forms.TextBox();
             this.TextBoxLog2 = new System.Windows.Forms.TextBox();
+            this.SessionDateTimePicker = new System.Windows.Forms.DateTimePicker();
             this.TabControlMain.SuspendLayout();
             this.TabPageLogStatus.SuspendLayout();
             this.TabPageAnalysis.SuspendLayout();
@@ -474,7 +475,7 @@
             // 
             // ButtonLoadBadcalls
             // 
-            this.ButtonLoadBadcalls.Location = new System.Drawing.Point(424, 36);
+            this.ButtonLoadBadcalls.Location = new System.Drawing.Point(527, 35);
             this.ButtonLoadBadcalls.Name = "ButtonLoadBadcalls";
             this.ButtonLoadBadcalls.Size = new System.Drawing.Size(119, 23);
             this.ButtonLoadBadcalls.TabIndex = 18;
@@ -491,7 +492,7 @@
             // ButtonPreScoreReports
             // 
             this.ButtonPreScoreReports.Enabled = false;
-            this.ButtonPreScoreReports.Location = new System.Drawing.Point(258, 36);
+            this.ButtonPreScoreReports.Location = new System.Drawing.Point(361, 36);
             this.ButtonPreScoreReports.Name = "ButtonPreScoreReports";
             this.ButtonPreScoreReports.Size = new System.Drawing.Size(160, 23);
             this.ButtonPreScoreReports.TabIndex = 3;
@@ -501,7 +502,7 @@
             // 
             // ButtonCompareLogs
             // 
-            this.ButtonCompareLogs.Location = new System.Drawing.Point(594, 36);
+            this.ButtonCompareLogs.Location = new System.Drawing.Point(694, 37);
             this.ButtonCompareLogs.Name = "ButtonCompareLogs";
             this.ButtonCompareLogs.Size = new System.Drawing.Size(94, 23);
             this.ButtonCompareLogs.TabIndex = 11;
@@ -520,7 +521,7 @@
             // TextBoxLog1
             // 
             this.TextBoxLog1.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.TextBoxLog1.Location = new System.Drawing.Point(694, 36);
+            this.TextBoxLog1.Location = new System.Drawing.Point(794, 37);
             this.TextBoxLog1.MaxLength = 15;
             this.TextBoxLog1.Name = "TextBoxLog1";
             this.TextBoxLog1.Size = new System.Drawing.Size(90, 23);
@@ -529,11 +530,21 @@
             // TextBoxLog2
             // 
             this.TextBoxLog2.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.TextBoxLog2.Location = new System.Drawing.Point(790, 36);
+            this.TextBoxLog2.Location = new System.Drawing.Point(890, 37);
             this.TextBoxLog2.MaxLength = 15;
             this.TextBoxLog2.Name = "TextBoxLog2";
             this.TextBoxLog2.Size = new System.Drawing.Size(90, 23);
             this.TextBoxLog2.TabIndex = 10;
+            // 
+            // SessionDateTimePicker
+            // 
+            this.SessionDateTimePicker.CustomFormat = "yyyy";
+            this.SessionDateTimePicker.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+            this.SessionDateTimePicker.Location = new System.Drawing.Point(258, 35);
+            this.SessionDateTimePicker.Name = "SessionDateTimePicker";
+            this.SessionDateTimePicker.ShowUpDown = true;
+            this.SessionDateTimePicker.Size = new System.Drawing.Size(57, 23);
+            this.SessionDateTimePicker.TabIndex = 1400;
             // 
             // MainForm
             // 
@@ -541,6 +552,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
             this.ClientSize = new System.Drawing.Size(1008, 729);
+            this.Controls.Add(this.SessionDateTimePicker);
             this.Controls.Add(this.TextBoxLog2);
             this.Controls.Add(this.TextBoxLog1);
             this.Controls.Add(this.ButtonCompareLogs);
@@ -630,6 +642,7 @@
         private System.Windows.Forms.ColumnHeader columnHeader21;
         private System.Windows.Forms.ColumnHeader columnHeader22;
         private System.Windows.Forms.ColumnHeader columnHeader23;
+        private System.Windows.Forms.DateTimePicker SessionDateTimePicker;
     }
 }
 
