@@ -1165,17 +1165,13 @@ namespace W6OP.ContestLogAnalyzer
                 session = "";
             }
 
-            //_LogAnalyser.ActiveContest = _ActiveContest;
-
             // list of all call/name pairs
-           // List<Tuple<string, string>> distinctCallNamePairs = _LogAnalyser.CollectAllCallNamePairs(_ContestLogs);
             UpdateListViewLoad("List Unique Call Name Pairs", "", false);
-            _PrintManager.ListUniqueCallNamePairs(_ReportFolder, session, _ContestLogs);
+            _PrintManager.PrintPreAnalysisReport(_ReportFolder, session, _ContestLogs);
 
             // list of all calls with number of hits and all names with number of hits
-            //List<Tuple<string, Int32, string, Int32>> callNameCountList = _LogAnalyser.CollectCallNameHitData(distinctCallNamePairs, _ContestLogs);
             UpdateListViewLoad("List Call Name Occurences", "", false);
-            _PrintManager.ListCallNameOccurences(_ReportFolder, session, _ContestLogs);
+           // _PrintManager.ListCallNameOccurences(_ReportFolder, session, _ContestLogs);
         }
 
         private void BackgroundWorkerPreAnalysis_ProgressChanged(object sender, ProgressChangedEventArgs e)
