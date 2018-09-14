@@ -33,7 +33,6 @@ namespace W6OP.ContestLogAnalyzer
 
         private string _WorkingLine = null;
         private CallParser.CallsignParser _Parser;
-        public Hashtable _CallSignSet;
         private Hashtable _PrefixSet;
 
         /// <summary>
@@ -44,7 +43,7 @@ namespace W6OP.ContestLogAnalyzer
             _FailingLine = "";
             _WorkingLine = "";
 
-            _CallSignSet = new Hashtable();
+            //_CallSignSet = new Hashtable();
             _PrefixSet = new Hashtable();
         }
 
@@ -247,7 +246,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
 
                     // now add the DXCC information some contests need for multipliers
-                    // later break out to nwe method and add switch statement
+                    // later break out to new method and add switch statement
                     if (ActiveContest == ContestName.HQP)
                     {
                         SetDXCCInformation(contestLog.QSOCollection, contestLog);
@@ -284,10 +283,7 @@ namespace W6OP.ContestLogAnalyzer
                     else {
                         _FailReason = _FailReason + " - Unable to process log.";
                     }
-                    
-
                 }
-
                 MoveFileToInpectFolder(fileName, message);
             }
 
@@ -418,17 +414,6 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         qso.RealDXEntity = "Hawaii"; // AC7N
                     }
-
-                    //if (!isValidHQPEntity)
-                    //{
-                    //    if (qso.RealDXEntity != "Hawaii") // for AC7N - N7JI
-                    //    {
-                    //        // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
-                    //        //qso.Status = QSOStatus.InvalidQSO;
-                    //        //qso.RejectReasons.Clear();
-                    //        //qso.RejectReasons.Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
-                    //    }
-                    //}  
                 }
                 else
                 {
@@ -470,6 +455,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Non Hawaii log uses "DX" for their own location (Op Entity) instead of their real country
         /// HI8A.log - QSO: 14000 CW 2017-08-27 1712 HI8A 599 DX KH6LC 599 HIL
+        /// Set the correct entity for HQP participants.
         /// </summary>
         /// <param name="qso"></param>
         /// <param name="prefixInfo"></param>
@@ -489,7 +475,6 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             // this is for non US and Canada
                             qso.OperatorEntity = prefixInfo.Territory.ToString();
-                            //qso.RealOperatorEntity = qso.OperatorEntity;
                             qso.IsEntityVerified = true;
 
                             if (qso.DXEntity == "Canada" || qso.DXEntity == "United States of America")
@@ -497,20 +482,7 @@ namespace W6OP.ContestLogAnalyzer
                                 qso.RealOperatorEntity = qso.DXEntity; // persist if USA or Canada
                                 qso.RealDXEntity = qso.DXEntity;
 
-                                if (!_CallSignSet.Contains(qso.ContactCall))
-                                {
-                                    info = _QRZ.QRZLookup(qso.ContactCall, info, 1);
-
-                                    if (info[0] != null && info[0] != "0")
-                                    {
-                                        qso.DXEntity = info[0].ToUpper();
-                                        _CallSignSet.Add(qso.ContactCall, qso.DXEntity);
-                                    }
-                                }
-                                else
-                                {
-                                    qso.DXEntity = (String)_CallSignSet[qso.ContactCall];
-                                }
+                                qso.DXEntity = _QRZ.GetQRZInfo(qso.ContactCall);
                             }
                         }
                     }
@@ -518,6 +490,11 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// Set the correct entity for HQP participants.
+        /// </summary>
+        /// <param name="qso"></param>
+        /// <param name="prefixInfo"></param>
         private void SetHQPEntityInfo(QSO qso, PrefixInfo prefixInfo)
         {
             string[] info = new string[2] { "0", "0" };
@@ -529,20 +506,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (qso.DXEntity == "DX")
                 {
-                    if (!_CallSignSet.Contains(qso.ContactCall))
-                    {
-                        info = _QRZ.QRZLookup(qso.ContactCall, info, 1);
-                        if (info[0] != null && info[0] != "0")
-                        {
-                            qso.DXEntity = info[0].ToUpper();
-
-                            _CallSignSet.Add(qso.ContactCall, qso.DXEntity);
-                        }
-                    }
-                    else
-                    {
-                        qso.DXEntity = (String)_CallSignSet[qso.ContactCall];
-                    }
+                    qso.DXEntity = _QRZ.GetQRZInfo(qso.ContactCall);
                 }
             }
         }

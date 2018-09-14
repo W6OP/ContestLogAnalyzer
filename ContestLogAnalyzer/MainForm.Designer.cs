@@ -109,12 +109,12 @@
             // 
             this.TextBoxLogFolder.Location = new System.Drawing.Point(24, 86);
             this.TextBoxLogFolder.Name = "TextBoxLogFolder";
-            this.TextBoxLogFolder.Size = new System.Drawing.Size(394, 23);
+            this.TextBoxLogFolder.Size = new System.Drawing.Size(460, 23);
             this.TextBoxLogFolder.TabIndex = 4;
             // 
             // ButtonSelectFolder
             // 
-            this.ButtonSelectFolder.Location = new System.Drawing.Point(424, 86);
+            this.ButtonSelectFolder.Location = new System.Drawing.Point(490, 85);
             this.ButtonSelectFolder.Name = "ButtonSelectFolder";
             this.ButtonSelectFolder.Size = new System.Drawing.Size(31, 23);
             this.ButtonSelectFolder.TabIndex = 5;
@@ -199,7 +199,7 @@
             // ButtonScoreLogs
             // 
             this.ButtonScoreLogs.Enabled = false;
-            this.ButtonScoreLogs.Location = new System.Drawing.Point(299, 124);
+            this.ButtonScoreLogs.Location = new System.Drawing.Point(287, 124);
             this.ButtonScoreLogs.Name = "ButtonScoreLogs";
             this.ButtonScoreLogs.Size = new System.Drawing.Size(119, 23);
             this.ButtonScoreLogs.TabIndex = 8;
@@ -318,16 +318,17 @@
             // 
             // ProgressBarLoad
             // 
-            this.ProgressBarLoad.Location = new System.Drawing.Point(424, 124);
+            this.ProgressBarLoad.Location = new System.Drawing.Point(424, 135);
             this.ProgressBarLoad.Name = "ProgressBarLoad";
-            this.ProgressBarLoad.Size = new System.Drawing.Size(456, 23);
+            this.ProgressBarLoad.Size = new System.Drawing.Size(556, 5);
             this.ProgressBarLoad.Step = 1;
             this.ProgressBarLoad.TabIndex = 1399;
+            this.ProgressBarLoad.Visible = false;
             // 
             // LabelProgress
             // 
             this.LabelProgress.AutoSize = true;
-            this.LabelProgress.Location = new System.Drawing.Point(559, 106);
+            this.LabelProgress.Location = new System.Drawing.Point(673, 117);
             this.LabelProgress.Name = "LabelProgress";
             this.LabelProgress.Size = new System.Drawing.Size(38, 15);
             this.LabelProgress.TabIndex = 14;
@@ -492,7 +493,7 @@
             // ButtonPreScoreReports
             // 
             this.ButtonPreScoreReports.Enabled = false;
-            this.ButtonPreScoreReports.Location = new System.Drawing.Point(361, 36);
+            this.ButtonPreScoreReports.Location = new System.Drawing.Point(361, 35);
             this.ButtonPreScoreReports.Name = "ButtonPreScoreReports";
             this.ButtonPreScoreReports.Size = new System.Drawing.Size(160, 23);
             this.ButtonPreScoreReports.TabIndex = 3;
@@ -502,7 +503,7 @@
             // 
             // ButtonCompareLogs
             // 
-            this.ButtonCompareLogs.Location = new System.Drawing.Point(694, 37);
+            this.ButtonCompareLogs.Location = new System.Drawing.Point(694, 35);
             this.ButtonCompareLogs.Name = "ButtonCompareLogs";
             this.ButtonCompareLogs.Size = new System.Drawing.Size(94, 23);
             this.ButtonCompareLogs.TabIndex = 11;
@@ -521,7 +522,7 @@
             // TextBoxLog1
             // 
             this.TextBoxLog1.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.TextBoxLog1.Location = new System.Drawing.Point(794, 37);
+            this.TextBoxLog1.Location = new System.Drawing.Point(794, 35);
             this.TextBoxLog1.MaxLength = 15;
             this.TextBoxLog1.Name = "TextBoxLog1";
             this.TextBoxLog1.Size = new System.Drawing.Size(90, 23);
@@ -530,7 +531,7 @@
             // TextBoxLog2
             // 
             this.TextBoxLog2.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.TextBoxLog2.Location = new System.Drawing.Point(890, 37);
+            this.TextBoxLog2.Location = new System.Drawing.Point(890, 35);
             this.TextBoxLog2.MaxLength = 15;
             this.TextBoxLog2.Name = "TextBoxLog2";
             this.TextBoxLog2.Size = new System.Drawing.Size(90, 23);

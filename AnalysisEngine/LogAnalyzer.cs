@@ -20,10 +20,6 @@ namespace W6OP.ContestLogAnalyzer
 
         private QRZ _QRZ = null;
 
-        public Hashtable CallSignSet;
-
-        // OnErrorRaised?.Invoke(progress);
-
         public ILookup<string, string> BadCallList { set => _BadCallList = value; }
 
         /// <summary>
@@ -32,102 +28,6 @@ namespace W6OP.ContestLogAnalyzer
         public LogAnalyzer()
         {
             _QRZ = new QRZ();
-        }
-
-        ///// <summary>
-        ///// Get a list of all distinct call/name pairs by grouped by call sign. This is used
-        ///// for the bad call list.
-        ///// </summary>
-        ///// <param name="contestLogList"></param>
-        //public List<Tuple<string, string>> CollectAllCallNamePairs(List<ContestLog> contestLogList)
-        //{
-        //    // list of all distinct call/name pairs
-        //    List<Tuple<string, string>> distinctCallNamePairs = contestLogList.SelectMany(z => z.QSOCollection)
-        //      .Select(r => new Tuple<string, string>(r.ContactCall, r.ContactName))
-        //      .GroupBy(p => new Tuple<string, string>(p.Item1, p.Item2))
-        //      .Select(g => g.First())
-        //      .OrderBy(q => q.Item1)
-        //      .ToList();
-
-        //    return distinctCallNamePairs;
-        //}
-
-        ///// <summary>
-        ///// Take the list of distinct call signs and a list of all call/name pairs. For every
-        ///// call sign see how many times it was used. Also, get the call and name combination
-        ///// and see how many times each name was used.
-        ///// </summary>
-        ///// <param name="distinctCallNamePairs"></param>
-        ///// <param name="contestLogList"></param>
-        ///// <returns></returns>
-        //public List<Tuple<string, Int32, string, Int32>> CollectCallNameHitData(List<Tuple<string, string>> distinctCallNamePairs, List<ContestLog> contestLogList)
-        //{
-        //    string currentCall = "";
-        //    string previousCall = "";
-        //    Int32 count = 0;
-
-        //    List<Tuple<string, Int32, string, Int32>> callNameCountList = new List<Tuple<string, int, string, int>>();
-
-        //    List<Tuple<string, string>> allCallNamePairs = contestLogList.SelectMany(z => z.QSOCollection)
-        //        .Select(r => new Tuple<string, string>(r.ContactCall, r.ContactName))
-        //        .ToList();
-
-        //    for (int i = 0; i < distinctCallNamePairs.Count; i++)
-        //    {
-        //        IEnumerable<Tuple<string, string>> callCount = allCallNamePairs.Where(t => t.Item1 == distinctCallNamePairs[i].Item1);
-        //        IEnumerable<Tuple<string, string>> nameCount = allCallNamePairs.Where(t => t.Item1 == distinctCallNamePairs[i].Item1 && t.Item2 == distinctCallNamePairs[i].Item2);
-
-        //        if (previousCall != distinctCallNamePairs[i].Item1)
-        //        {
-        //            previousCall = distinctCallNamePairs[i].Item1;
-        //            currentCall = distinctCallNamePairs[i].Item1;
-        //            count = callCount.Count();
-        //        }
-        //        else
-        //        {
-        //            currentCall = "";
-        //            count = 0;
-        //        }
-
-        //        Tuple<string, Int32, string, Int32> tuple = new Tuple<string, Int32, string, Int32>(currentCall, count, distinctCallNamePairs[i].Item2, nameCount.Count());
-
-        //        callNameCountList.Add(tuple);
-        //    }
-
-        //    return callNameCountList;
-        //}
-
-        /// <summary>
-        /// Get every QSO that matches the call/name in the suspect call list.
-        /// NOT IMPLEMENTED YET - need to determine if I need this
-        /// </summary>
-        /// <param name="suspectCallList"></param>
-        /// <returns></returns>
-        public List<QSO> CollectSuspectQSOs(List<Tuple<string, string>> suspectCallList, List<ContestLog> contestLogList)
-        {
-            List<QSO> suspectQSOs = new List<QSO>();
-
-
-            //suspectQSOs = (QSO)contestLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.OperatorName == qso.ContactName && q.OperatorCall == qso.ContactCall &&
-            //                             q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 5);
-
-
-            List<Tuple<string, QSO>> allCallNamePairs = contestLogList.SelectMany(z => z.QSOCollection)
-                .Select(r => new Tuple<string, QSO>(r.ContactCall, r))
-                .ToList();
-
-
-            foreach (Tuple<string, string> tuple in suspectCallList)
-            {
-                // WHERE I LEFT OFF
-                // allCallNamePairs - query this
-
-                //QSO qso = (QSO)contestLogList.FirstOrDefault(q => q.QSOCollection != null).QSOCollection.FirstOrDefault((q => q.ContactCall == tuple.Item1 && q.ContactName == tuple.Item2));
-
-
-            }
-
-            return suspectQSOs;
         }
 
         /// <summary>
@@ -641,7 +541,6 @@ namespace W6OP.ContestLogAnalyzer
             string[] info = new string[2] { "0", "0" };
 
             // now look for a match without the operator name - only search those not already eliminated
-            //matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.Status == QSOStatus.ValidQSO).ToList();
             matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
 
             // loop through and see if first few names match
@@ -665,28 +564,12 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (matchName.Length > 2 || matchingQSOs.Count < 5 || qso.ContactCall.Length == 3)
                     {
-                        if (!CallSignSet.Contains(qso.ContactCall))
-                        {
-                            info = _QRZ.QRZLookup(qso.ContactCall, info, 1);
-                            if (info[0] != null && info[0] != "0")
-                            {
-                                matchName = info[0].ToUpper();
-                                CallSignSet.Add(qso.ContactCall, matchName);
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            matchName = (string)CallSignSet[qso.ContactCall];
-                        }
+                        string entity = _QRZ.GetQRZInfo(qso.ContactCall);
 
-                        if (qso.ContactName != matchName)
+                        if (qso.ContactName != entity) // matchName
                         {
                             wasFound = true;
-                            qso.IncorrectName = qso.ContactName + " --> " + matchName;
+                            qso.IncorrectName = qso.ContactName + " --> " + entity; // matchName;
                             qso.EntityIsInValid = true;
                         }
 

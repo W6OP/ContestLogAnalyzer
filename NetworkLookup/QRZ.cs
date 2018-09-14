@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace NetworkLookup
@@ -13,9 +11,42 @@ namespace NetworkLookup
         private string _QRZSessionKey;
         private bool _IsLoggedOn = false;
 
+        /// <summary>
+        ///  // Holds unique call signs and entity so we don't do dupe queries to QRZ.com
+        /// </summary>
+        private Hashtable _CallSignSet;
+        public Hashtable CallSignSet { get => _CallSignSet; set => _CallSignSet = value; }
         public QRZ()
         {
+            CallSignSet = new Hashtable();
+        }
 
+        /// <summary>
+        ///  // Look up entity in Hashtable or from QRZ.com
+        /// </summary>
+        /// <param name="call"></param>
+        /// <returns></returns>
+        public string GetQRZInfo(string call)
+        {
+            string[] info = new string[2] { "0", "0" };
+            string entity = null;
+
+            if (_CallSignSet.Contains(call))
+            {
+                entity = (String)_CallSignSet[call];
+            }
+            else
+            {
+                info = QRZLookup(call, info, 1);
+
+                if (info[0] != null && info[0] != "0")
+                {
+                    entity = info[0].ToUpper();
+                    _CallSignSet.Add(call, entity);
+                }
+            }
+
+            return entity;
         }
 
         /// <summary>
@@ -24,13 +55,11 @@ namespace NetworkLookup
         /// <param name="call"></param>
         /// <param name="prefixInfo"></param>
         /// <returns></returns>
-        public string[] QRZLookup(string call, string[] info, int retryCount)
+        private string[] QRZLookup(string call, string[] info, int retryCount)
         {
             WebResponse response;
             XDocument xdoc;
             XNamespace xname;
-
-            //bool isLoggedOn = false;
 
             string requestUri = null;  // string.Format("http://xmldata.qrz.com/xml/current/?s={0};callsign={1}", _QRZSessionKey, call);
             WebRequest request;

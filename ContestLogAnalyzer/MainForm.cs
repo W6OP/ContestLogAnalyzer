@@ -33,10 +33,10 @@ namespace W6OP.ContestLogAnalyzer
         // set the actual folders to use
         private string _BaseFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_BASE_FOLDER_PATH);
         private string _BaseWorkingFolder = LOG_ANALYSER_WORKING_FOLDER_PATH;
-        private string _BaseInspectFolder =  LOG_ANALYSER_INSPECT_FOLDER_PATH;
+        private string _BaseInspectFolder = LOG_ANALYSER_INSPECT_FOLDER_PATH;
         private string _BaseReportFolder = LOG_ANALYSER_REPORT_FOLDER_PATH;
-        private string _BaseReviewFolder =  LOG_ANALYSER_REVIEW_FOLDER_PATH;
-        private string _BaseScoreFolder =  LOG_ANALYSER_SCORE_FOLDER_PATH;
+        private string _BaseReviewFolder = LOG_ANALYSER_REVIEW_FOLDER_PATH;
+        private string _BaseScoreFolder = LOG_ANALYSER_SCORE_FOLDER_PATH;
 
         private string _WorkingFolder = null;
         private string _InspectFolder = null;
@@ -97,7 +97,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 _LogAnalyser = new LogAnalyzer
                 {
-                    CallSignSet = _LogProcessor._CallSignSet
+                    //CallSignSet = _LogProcessor._CallSignSet
                 };
                 _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
                 _LogAnalyser.OnErrorRaised += _LogAnalyser_OnErrorRaised;
@@ -144,7 +144,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonSelectFolder_Click(object sender, EventArgs e)
         {
-                SelectLogFileSourceFolder();
+            SelectLogFileSourceFolder();
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace W6OP.ContestLogAnalyzer
             if (!_Initialized) return;
 
             SetupContestProperties();
-           
+
         }
 
         /// <summary>
@@ -196,7 +196,6 @@ namespace W6OP.ContestLogAnalyzer
             string contestName = null;
 
             ButtonLoadLogs.Enabled = false;
-            UpdateLabel("Loading Contest Logs");
 
             Enum.TryParse(ComboBoxSelectContest.SelectedValue.ToString(), out _ActiveContest);
             contestName = _ActiveContest.ToString();
@@ -207,7 +206,7 @@ namespace W6OP.ContestLogAnalyzer
             _LogFileList = null;
 
             _BaseFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_BASE_FOLDER_PATH);
-            _BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + SessionDateTimePicker.Value.ToString("yyyy"); 
+            _BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + SessionDateTimePicker.Value.ToString("yyyy");
 
             switch (_ActiveContest)
             {
@@ -218,7 +217,8 @@ namespace W6OP.ContestLogAnalyzer
                         session = EnumHelper.GetDescription(_Session);
                         _BaseFolder = Path.Combine(_BaseFolder, session);
 
-                        TabControlMain.SelectTab(TabPageScoring);
+                        //TabControlMain.SelectTab(TabPageScoring);
+                        TabControlMain.SelectTab(TabPageLogStatus);
                         _CWOpen = new ScoreCWOpen();
                         _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
                     }
@@ -227,7 +227,8 @@ namespace W6OP.ContestLogAnalyzer
                 case ContestName.HQP:
                     if (_HQP == null)
                     {
-                        TabControlMain.SelectTab(TabPageScoring);
+                        TabControlMain.SelectTab(TabPageLogStatus);
+                        //TabControlMain.SelectTab(TabPageScoring);
                         _HQP = new ScoreHQP();
                         _HQP.OnProgressUpdate += _HQP_OnProgressUpdate;
                     }
@@ -266,51 +267,12 @@ namespace W6OP.ContestLogAnalyzer
 
             TabControlMain.SelectTab(TabPageLogStatus);
             _LogFileList = null;
-            //_BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
-
-            //UpdateLabel("Loading Contest Logs");
 
             if (_ActiveContest == ContestName.Select)
             {
                 MessageBox.Show("You must select a Contest to score.", "Select Contest", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 return;
             }
-
-            //switch (_ActiveContest)
-            //{
-            //    case ContestName.CW_OPEN:
-            //        if (_Session == Session.Session_0)
-            //        {
-            //            MessageBox.Show("You must select the session to be scored", "Invalid Session", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-            //            return;
-            //        }
-            //        session = EnumHelper.GetDescription(_Session);
-            //        //_BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
-            //        _BaseFolder = Path.Combine(_BaseFolder, session);
-            //        //_WorkingFolder = Path.Combine(_BaseFolder, _BaseWorkingFolder);
-            //        //_InspectFolder = Path.Combine(_BaseFolder, _BaseInspectFolder);
-            //        //_ReportFolder = Path.Combine(_BaseFolder, _BaseReportFolder);
-            //        //_ReviewFolder = Path.Combine(_BaseFolder, _BaseReviewFolder);
-            //        //_ScoreFolder = Path.Combine(_BaseFolder, _BaseScoreFolder);
-            //        break;
-            //    case ContestName.HQP:
-            //        //_Session = Session.Session_0;
-            //        //_BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
-            //        //_WorkingFolder = Path.Combine(_BaseFolder, _BaseWorkingFolder);
-            //        //_InspectFolder = Path.Combine(_BaseFolder, _BaseInspectFolder);
-            //        //_ReportFolder = Path.Combine(_BaseFolder, _BaseReportFolder);
-            //        //_ReviewFolder = Path.Combine(_BaseFolder, _BaseReviewFolder);
-            //        //_ScoreFolder = Path.Combine(_BaseFolder, _BaseScoreFolder);
-            //        break;
-            //    default:
-            //        break;
-            //}
-
-            //_WorkingFolder = Path.Combine(_BaseFolder, _BaseWorkingFolder);
-            //_InspectFolder = Path.Combine(_BaseFolder, _BaseInspectFolder);
-            //_ReportFolder = Path.Combine(_BaseFolder, _BaseReportFolder);
-            //_ReviewFolder = Path.Combine(_BaseFolder, _BaseReviewFolder);
-            //_ScoreFolder = Path.Combine(_BaseFolder, _BaseScoreFolder);
 
             LoadLogFiles();
         }
@@ -322,10 +284,11 @@ namespace W6OP.ContestLogAnalyzer
         private void LoadLogFiles()
         {
             Int32 fileCount = 0;
-            //string session = EnumHelper.GetDescription(_Session);
 
             try
             {
+                ProgressBarLoad.Visible = true;
+                UpdateLabel("Loading Contest Logs");
                 ProgressBarLoad.Maximum = 0;
                 UpdateListViewLoad("", "", true);
                 UpdateListViewAnalysis("", "", "", true);
@@ -358,19 +321,7 @@ namespace W6OP.ContestLogAnalyzer
                 _LogProcessor._WorkingFolder = _WorkingFolder;
                 _LogProcessor._InspectionFolder = _InspectFolder;
 
-                //if (_LogFileList == null)
-                //{
-                //    fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
-                //}
-
-                //if (_LogFileList.Cast<object>().Count() == 0)
-                //{
-                //    fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
-                //}
-                //else
-                //{
-                    fileCount = _LogFileList.Cast<object>().Count();
-                //}
+                fileCount = _LogFileList.Cast<object>().Count();
 
                 ResetProgressBar(true);
                 ProgressBarLoad.Maximum = fileCount;
@@ -515,7 +466,7 @@ namespace W6OP.ContestLogAnalyzer
                 Cursor = Cursors.Default;
             }
 
-            UpdateLabel("");
+            UpdateLabel("Load contest logs completed");
 
             ProgressBarLoad.Maximum = _ContestLogs.Count;
             ProgressBarLoad.Value = _ContestLogs.Count;
@@ -527,6 +478,8 @@ namespace W6OP.ContestLogAnalyzer
             {
                 ComboBoxSelectSession.Enabled = true;
             }
+
+            ResetProgressBar(true);
         }
 
         #endregion
@@ -626,8 +579,10 @@ namespace W6OP.ContestLogAnalyzer
                 UpdateListViewAnalysis("Log analysis completed!", "", "", false);
                 Cursor = Cursors.Default;
                 ButtonScoreLogs.Enabled = true;
-                UpdateLabel("");
+                UpdateLabel("Log analysis completed");
             }
+
+            ResetProgressBar(true);
         }
 
         /// <summary>
@@ -732,7 +687,9 @@ namespace W6OP.ContestLogAnalyzer
                 UpdateListViewScore("Final score report has been generated.", false);
             }
 
-            UpdateLabel("");
+            UpdateLabel("Log scoring completed");
+
+            ResetProgressBar(true);
 
             Cursor = Cursors.Default;
         }
@@ -885,9 +842,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 ProgressBarLoad.PerformStep();
             }
-
-
-            //LabelProgress.Text = count.ToString();
+            
         }
 
         /// <summary>
@@ -1240,7 +1195,7 @@ namespace W6OP.ContestLogAnalyzer
                 if (list1 != null && list1.Count > 0)
                 {
                     group = 0;
-                   
+
                     foreach (QSO qso in list1)
                     {
                         UpdateListViewCompare(qso, group);
@@ -1254,7 +1209,7 @@ namespace W6OP.ContestLogAnalyzer
                 if (list2 != null && list2.Count > 0)
                 {
                     group = 1;
-                   
+
                     foreach (QSO qso in list2)
                     {
                         UpdateListViewCompare(qso, group);
