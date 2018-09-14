@@ -211,6 +211,7 @@ namespace W6OP.ContestLogAnalyzer
             switch (_ActiveContest)
             {
                 case ContestName.CW_OPEN:
+                    ComboBoxSelectSession.SelectedIndex = 1;
                     if (_CWOpen == null)
                     {
                         session = EnumHelper.GetDescription(_Session);
@@ -242,22 +243,10 @@ namespace W6OP.ContestLogAnalyzer
             _ReviewFolder = Path.Combine(_BaseFolder, _BaseReviewFolder);
             _ScoreFolder = Path.Combine(_BaseFolder, _BaseScoreFolder);
 
-            //try
-            //{
-            //    _LogProcessor.ActiveContest = _ActiveContest;
-            //    //if (_ActiveContest == ContestName.HQP)
-            //    //{
-            //    //    _LogProcessor.InitializeHQPLogProcessor(_ActiveContest);
-            //    //}
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show(ex.Message, "Initialization Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //}
-
             _PrintManager = new PrintManager(_ActiveContest);
             _LogProcessor._PrintManager = _PrintManager;
             _LogProcessor.ActiveContest = _ActiveContest;
+            _LogAnalyser.ActiveContest = _ActiveContest;
         }
 
         #endregion
@@ -274,8 +263,8 @@ namespace W6OP.ContestLogAnalyzer
             //string session = null;
             //string contestName = _ActiveContest.ToString();
 
-            //TabControlMain.SelectTab(TabPageLogStatus);
-            //_LogFileList = null;
+            TabControlMain.SelectTab(TabPageLogStatus);
+            _LogFileList = null;
             //_BaseFolder = _BaseFolder.Replace("Contest", contestName) + "_" + DateTime.Now.Year.ToString();
 
             //UpdateLabel("Loading Contest Logs");
@@ -1160,8 +1149,9 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Create a reportWith all the calls and all the names and summarize
+        /// Create a report with all the calls and all the names and summarize
         /// how many times each call and each name is referenced in other logs.
+        /// Should this be called form the print manager ???
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -1175,17 +1165,17 @@ namespace W6OP.ContestLogAnalyzer
                 session = "";
             }
 
-            _LogAnalyser.ActiveContest = _ActiveContest;
+            //_LogAnalyser.ActiveContest = _ActiveContest;
 
             // list of all call/name pairs
-            List<Tuple<string, string>> distinctCallNamePairs = _LogAnalyser.CollectAllCallNamePairs(_ContestLogs);
+           // List<Tuple<string, string>> distinctCallNamePairs = _LogAnalyser.CollectAllCallNamePairs(_ContestLogs);
             UpdateListViewLoad("List Unique Call Name Pairs", "", false);
-            _PrintManager.ListUniqueCallNamePairs(distinctCallNamePairs, _ReportFolder, session);
+            _PrintManager.ListUniqueCallNamePairs(_ReportFolder, session, _ContestLogs);
 
             // list of all calls with number of hits and all names with number of hits
-            List<Tuple<string, Int32, string, Int32>> callNameCountList = _LogAnalyser.CollectCallNameHitData(distinctCallNamePairs, _ContestLogs);
+            //List<Tuple<string, Int32, string, Int32>> callNameCountList = _LogAnalyser.CollectCallNameHitData(distinctCallNamePairs, _ContestLogs);
             UpdateListViewLoad("List Call Name Occurences", "", false);
-            _PrintManager.ListCallNameOccurences(callNameCountList, _ReportFolder, session);
+            _PrintManager.ListCallNameOccurences(_ReportFolder, session, _ContestLogs);
         }
 
         private void BackgroundWorkerPreAnalysis_ProgressChanged(object sender, ProgressChangedEventArgs e)

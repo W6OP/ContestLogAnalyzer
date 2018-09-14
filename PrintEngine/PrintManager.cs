@@ -15,7 +15,7 @@ namespace W6OP.PrintEngine
 {
     public class PrintManager
     {
-        private List<ContestLog> _ContestLogs;
+        //private List<ContestLog> _ContestLogs;
         private ScoreList _ScoreList = new ScoreList();
 
         //private ExcelPackage _Excelpackage;
@@ -34,6 +34,9 @@ namespace W6OP.PrintEngine
         private string _Keywords { get; set; }
         private string _Message { get; set; }
         private ContestName _ActiveContest { get; set; }
+
+        private List<Tuple<string, string>> _DistinctCallNamePairs;
+        private List<Tuple<string, int, string, int>> _CallNameCountList;
 
         /// <summary>
         /// Constructor
@@ -77,14 +80,14 @@ namespace W6OP.PrintEngine
             fileName = year + _ContestDescription + session + ".csv";
             reportFileName = Path.Combine(ScoreFolder, fileName);
 
-            _ContestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
+            contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
 
             using (var sw = new StreamWriter(reportFileName))
             {
                 var writer = new CsvWriter(sw);
-                for (int i = 0; i < _ContestLogs.Count; i++)
+                for (int i = 0; i < contestLogs.Count; i++)
                 {
-                    contestlog = _ContestLogs[i];
+                    contestlog = contestLogs[i];
                     if (contestlog != null)
                     {
                         assisted = "N";
@@ -141,7 +144,7 @@ namespace W6OP.PrintEngine
 
 
             // sort ascending by score
-            _ContestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
+            contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
 
             session = contestLogs[0].Session.ToString();
             fileName = year + _ContestDescription + session + ".pdf"; // later convert to PDF
@@ -196,10 +199,10 @@ namespace W6OP.PrintEngine
 
                 Int32 line = 2; // 2 header lines initially
                 bool firstPage = true;
-                for (int i = 0; i < _ContestLogs.Count; i++)
+                for (int i = 0; i < contestLogs.Count; i++)
                 {
                     line++;
-                    contestlog = _ContestLogs[i];
+                    contestlog = contestLogs[i];
                     if (contestlog != null)
                     {
                         assisted = "N";
@@ -270,7 +273,7 @@ namespace W6OP.PrintEngine
 
 
             // sort ascending by score
-            _ContestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
+            contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
 
             fileName = year + _ContestDescription + ".pdf"; // later convert to PDF
             reportFileName = Path.Combine(ScoreFolder, fileName);
@@ -327,10 +330,10 @@ namespace W6OP.PrintEngine
 
                 Int32 line = 2; // 2 header lines initially
                 bool firstPage = true;
-                for (int i = 0; i < _ContestLogs.Count; i++)
+                for (int i = 0; i < contestLogs.Count; i++)
                 {
                     line++;
-                    contestlog = _ContestLogs[i];
+                    contestlog = contestLogs[i];
                     if (contestlog != null)
                     {
                         // only look at valid QSOs
@@ -870,7 +873,7 @@ namespace W6OP.PrintEngine
         /// <param name="distinctQSOs"></param>
         /// <param name="reportPath"></param>
         /// <param name="session"></param>
-        public void ListUniqueCallNamePairs(List<Tuple<string, string>> distinctQSOs, string reportPath, string session)
+        public void ListUniqueCallNamePairs(string reportPath, string session, List<ContestLog> contestLogs)
         {
             string fileName = reportPath + @"\Unique_Calls_" + session + ".xlsx";
 
@@ -879,6 +882,8 @@ namespace W6OP.PrintEngine
             {
                 newFile.Delete();  // ensures we create a new workbook
             }
+
+            _DistinctCallNamePairs = CollectAllCallNamePairs(contestLogs);
 
             using (SpreadsheetDocument document = SpreadsheetDocument.Create(fileName, SpreadsheetDocumentType.Workbook))
             {
@@ -892,7 +897,7 @@ namespace W6OP.PrintEngine
                 // Get the sheetData cell table.
                 SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
 
-                for (int i = 0; i < distinctQSOs.Count; i++)
+                for (int i = 0; i < _DistinctCallNamePairs.Count; i++)
                 {
                     // Add a row to the cell table.
                     Row row;
@@ -915,7 +920,7 @@ namespace W6OP.PrintEngine
                     row.InsertBefore(newCell, refCell);
 
                     // Set the cell value to be a numeric value of 100.
-                    newCell.CellValue = new CellValue(distinctQSOs[i].Item1);
+                    newCell.CellValue = new CellValue(_DistinctCallNamePairs[i].Item1);
                     newCell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                     // Add the cell to the cell table at A2.
@@ -923,7 +928,7 @@ namespace W6OP.PrintEngine
                     row.InsertBefore(newCell, refCell);
 
                     // Set the cell value to be a numeric value of 100.
-                    newCell.CellValue = new CellValue(distinctQSOs[i].Item2);
+                    newCell.CellValue = new CellValue(_DistinctCallNamePairs[i].Item2);
                     newCell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                 }
@@ -942,9 +947,11 @@ namespace W6OP.PrintEngine
         /// <param name="callNameCountList"></param>
         /// <param name="_BaseReportFolder"></param>
         /// <param name="v"></param>
-        public void ListCallNameOccurences(List<Tuple<string, int, string, int>> callNameCountList, string reportPath, string session)
+        public void ListCallNameOccurences( string reportPath, string session, List<ContestLog> contestLogs)
         {
             string fileName = reportPath + @"\Unique_Calls_" + session + ".xlsx";
+
+            _CallNameCountList = CollectCallNameHitData(_DistinctCallNamePairs, contestLogs);
 
             using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
             {
@@ -958,7 +965,7 @@ namespace W6OP.PrintEngine
 
                     SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
 
-                    for (int i = 0; i < callNameCountList.Count; i++)
+                    for (int i = 0; i < _CallNameCountList.Count; i++)
                     {
                         // Add a row to the cell table.
                         Row row;
@@ -981,7 +988,7 @@ namespace W6OP.PrintEngine
                         row.InsertBefore(newCell, refCell);
 
                         // Set the cell value to be a numeric value of 100.
-                        newCell.CellValue = new CellValue(callNameCountList[i].Item1);
+                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item1);
                         newCell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         // Add the cell to the cell table at A2.
@@ -989,9 +996,9 @@ namespace W6OP.PrintEngine
                         row.InsertBefore(newCell, refCell);
 
                         // Set the cell value to be a numeric value of 100.
-                        if (callNameCountList[i].Item2 != 0)
+                        if (_CallNameCountList[i].Item2 != 0)
                         {
-                            newCell.CellValue = new CellValue(callNameCountList[i].Item2.ToString());
+                            newCell.CellValue = new CellValue(_CallNameCountList[i].Item2.ToString());
                         }
                         newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
 
@@ -1000,7 +1007,7 @@ namespace W6OP.PrintEngine
                         row.InsertBefore(newCell, refCell);
 
                         // Set the cell value to be a numeric value of 100.
-                        newCell.CellValue = new CellValue(callNameCountList[i].Item3);
+                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item3);
                         newCell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         // Add the cell to the cell table at A4.
@@ -1008,7 +1015,7 @@ namespace W6OP.PrintEngine
                         row.InsertBefore(newCell, refCell);
 
                         // Set the cell value to be a numeric value of 100.
-                        newCell.CellValue = new CellValue(callNameCountList[i].Item4.ToString());
+                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item4.ToString());
                         newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
                     }
                 }
@@ -1136,6 +1143,69 @@ namespace W6OP.PrintEngine
 
 
         #endregion
+
+        /// <summary>
+        /// Get a list of all distinct call/name pairs by grouped by call sign. This is used
+        /// for the bad call list.
+        /// </summary>
+        /// <param name="contestLogList"></param>
+        private List<Tuple<string, string>> CollectAllCallNamePairs(List<ContestLog> contestLogList)
+        {
+            // list of all distinct call/name pairs
+            List<Tuple<string, string>> distinctCallNamePairs = contestLogList.SelectMany(z => z.QSOCollection)
+              .Select(r => new Tuple<string, string>(r.ContactCall, r.ContactName))
+              .GroupBy(p => new Tuple<string, string>(p.Item1, p.Item2))
+              .Select(g => g.First())
+              .OrderBy(q => q.Item1)
+              .ToList();
+
+            return distinctCallNamePairs;
+        }
+
+        /// <summary>
+        /// Take the list of distinct call signs and a list of all call/name pairs. For every
+        /// call sign see how many times it was used. Also, get the call and name combination
+        /// and see how many times each name was used.
+        /// </summary>
+        /// <param name="distinctCallNamePairs"></param>
+        /// <param name="contestLogList"></param>
+        /// <returns></returns>
+        private List<Tuple<string, Int32, string, Int32>> CollectCallNameHitData(List<Tuple<string, string>> distinctCallNamePairs, List<ContestLog> contestLogList)
+        {
+            string currentCall = "";
+            string previousCall = "";
+            Int32 count = 0;
+
+            _CallNameCountList = new List<Tuple<string, int, string, int>>();
+
+            List<Tuple<string, string>> allCallNamePairs = contestLogList.SelectMany(z => z.QSOCollection)
+                .Select(r => new Tuple<string, string>(r.ContactCall, r.ContactName))
+                .ToList();
+
+            for (int i = 0; i < distinctCallNamePairs.Count; i++)
+            {
+                IEnumerable<Tuple<string, string>> callCount = allCallNamePairs.Where(t => t.Item1 == distinctCallNamePairs[i].Item1);
+                IEnumerable<Tuple<string, string>> nameCount = allCallNamePairs.Where(t => t.Item1 == distinctCallNamePairs[i].Item1 && t.Item2 == distinctCallNamePairs[i].Item2);
+
+                if (previousCall != distinctCallNamePairs[i].Item1)
+                {
+                    previousCall = distinctCallNamePairs[i].Item1;
+                    currentCall = distinctCallNamePairs[i].Item1;
+                    count = callCount.Count();
+                }
+                else
+                {
+                    currentCall = "";
+                    count = 0;
+                }
+
+                Tuple<string, Int32, string, Int32> tuple = new Tuple<string, Int32, string, Int32>(currentCall, count, distinctCallNamePairs[i].Item2, nameCount.Count());
+
+                _CallNameCountList.Add(tuple);
+            }
+
+            return _CallNameCountList;
+        }
 
     } // end class
 }
