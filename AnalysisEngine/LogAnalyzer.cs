@@ -12,8 +12,6 @@ namespace W6OP.ContestLogAnalyzer
         public delegate void ProgressUpdate(string value, string qsoCount, string validQsoCount, Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
 
-        public event ErrorRaised OnErrorRaised;
-
         public ContestName ActiveContest;
 
         private ILookup<string, string> _BadCallList;

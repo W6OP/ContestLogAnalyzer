@@ -95,12 +95,8 @@ namespace W6OP.ContestLogAnalyzer
 
             if (_LogAnalyser == null)
             {
-                _LogAnalyser = new LogAnalyzer
-                {
-                    //CallSignSet = _LogProcessor._CallSignSet
-                };
+                _LogAnalyser = new LogAnalyzer();
                 _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
-                _LogAnalyser.OnErrorRaised += _LogAnalyser_OnErrorRaised;
             }
 
             ComboBoxSelectContest.DataSource = Enum.GetValues(typeof(ContestName))
@@ -112,25 +108,21 @@ namespace W6OP.ContestLogAnalyzer
             ComboBoxSelectContest.ValueMember = "Key";
 
             ComboBoxSelectSession.DataSource = Enum.GetValues(typeof(Session))
-            .Cast<Enum>()
-            .Select(value => new
-            {
-                (Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()), typeof(DescriptionAttribute)) as DescriptionAttribute).Description,
-                value
-            })
-            .OrderBy(item => item.value)
-            .ToList();
+                .Cast<Enum>()
+                .Select(value => new
+                {
+                    (Attribute.GetCustomAttribute(value.GetType().GetField(value.ToString()), typeof(DescriptionAttribute)) as DescriptionAttribute).Description,
+                    value
+                })
+                .OrderBy(item => item.value)
+                .ToList();
+
             ComboBoxSelectSession.DisplayMember = "Description";
             ComboBoxSelectSession.ValueMember = "value";
 
             TabControlMain.SelectTab(TabPageLogStatus);
 
             _Initialized = true;
-        }
-
-        private void _LogAnalyser_OnErrorRaised(string error)
-        {
-            UpdateListViewAnalysis(error, "", "", false);
         }
 
         #endregion
@@ -180,10 +172,9 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ComboBoxSelectContest_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!_Initialized) return;
+            if (!_Initialized) return; // supress on form load
 
             SetupContestProperties();
-
         }
 
         /// <summary>
@@ -195,7 +186,8 @@ namespace W6OP.ContestLogAnalyzer
             string session = null;
             string contestName = null;
 
-            ButtonLoadLogs.Enabled = false;
+            EnableControl(ButtonStartAnalysis, false);
+            EnableControl(ButtonScoreLogs, false);
 
             Enum.TryParse(ComboBoxSelectContest.SelectedValue.ToString(), out _ActiveContest);
             contestName = _ActiveContest.ToString();
@@ -214,25 +206,24 @@ namespace W6OP.ContestLogAnalyzer
                     ComboBoxSelectSession.SelectedIndex = 1;
                     if (_CWOpen == null)
                     {
-                        session = EnumHelper.GetDescription(_Session);
-                        _BaseFolder = Path.Combine(_BaseFolder, session);
-
-                        //TabControlMain.SelectTab(TabPageScoring);
-                        TabControlMain.SelectTab(TabPageLogStatus);
                         _CWOpen = new ScoreCWOpen();
                         _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
                     }
+                    session = EnumHelper.GetDescription(_Session);
+                    _BaseFolder = Path.Combine(_BaseFolder, session);
+                    TabControlMain.SelectTab(TabPageLogStatus);
                     ComboBoxSelectSession.Enabled = true;
                     break;
                 case ContestName.HQP:
                     if (_HQP == null)
                     {
-                        TabControlMain.SelectTab(TabPageLogStatus);
-                        //TabControlMain.SelectTab(TabPageScoring);
                         _HQP = new ScoreHQP();
                         _HQP.OnProgressUpdate += _HQP_OnProgressUpdate;
                     }
+                    ComboBoxSelectSession.SelectedIndex = 0;
                     ComboBoxSelectSession.Enabled = false;
+                    Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out _Session);
+                    TabControlMain.SelectTab(TabPageLogStatus);
                     ButtonLoadLogs.Enabled = true;
                     break;
                 default:
@@ -262,9 +253,6 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonLoadLogs_Click(object sender, EventArgs e)
         {
-            //string session = null;
-            //string contestName = _ActiveContest.ToString();
-
             TabControlMain.SelectTab(TabPageLogStatus);
             _LogFileList = null;
 
@@ -418,23 +406,15 @@ namespace W6OP.ContestLogAnalyzer
         {
             string fileName = null;
 
-            try
-            {
-                UpdateListViewAnalysis("", "", "", true);
+            UpdateListViewAnalysis("", "", "", true);
 
-                foreach (FileInfo fileInfo in _LogFileList)
-                {
-                    fileName = _LogProcessor.BuildContestLog(fileInfo, _ContestLogs, _Session);
-                    if (fileName != null)
-                    {
-                        UpdateListViewLoad(fileName, "Load failed." + " - " + _LogProcessor._FailReason, false);
-                    }
-                }
-            }
-            catch (Exception)
+            foreach (FileInfo fileInfo in _LogFileList)
             {
-                //ComboBoxSelectContest.Enabled = true;
-                //ComboBoxSelectSession.Enabled = true;
+                fileName = _LogProcessor.BuildContestLog(fileInfo, _ContestLogs, _Session);
+                if (fileName != null)
+                {
+                    UpdateListViewLoad(fileName, "Load failed." + " - " + _LogProcessor._FailReason, false);
+                }
             }
         }
 
@@ -462,22 +442,16 @@ namespace W6OP.ContestLogAnalyzer
             else
             {
                 UpdateListViewLoad(_ContestLogs.Count.ToString() + " logs loaded.", "", false);
-                ButtonPreScoreReports.Enabled = true;
+                EnableControl(ButtonPreScoreReports, true);
                 Cursor = Cursors.Default;
             }
 
             UpdateLabel("Load contest logs completed");
 
-            ProgressBarLoad.Maximum = _ContestLogs.Count;
-            ProgressBarLoad.Value = _ContestLogs.Count;
+            //ProgressBarLoad.Maximum = _ContestLogs.Count;
+            //ProgressBarLoad.Value = _ContestLogs.Count;
 
-            EnableControl(true);
-
-            ComboBoxSelectContest.Enabled = true;
-            if (_ActiveContest == ContestName.CW_OPEN)
-            {
-                ComboBoxSelectSession.Enabled = true;
-            }
+            EnableControl(ButtonStartAnalysis, true);
 
             ResetProgressBar(true);
         }
@@ -527,7 +501,7 @@ namespace W6OP.ContestLogAnalyzer
             _LogAnalyser.ActiveContest = _ActiveContest;
             _LogAnalyser.PreAnalyzeContestLogs(_ContestLogs);
 
-            UpdateListViewAnalysis("", "", "", false);
+            UpdateListViewAnalysis("Pass 1 completed", "----------", "----------", false);
             ResetProgressBar(true);
 
             _LogAnalyser.PreProcessContestLogsReverse(_ContestLogs);
@@ -578,29 +552,11 @@ namespace W6OP.ContestLogAnalyzer
                 UpdateListViewAnalysis("-----------------------", "", "", false);
                 UpdateListViewAnalysis("Log analysis completed!", "", "", false);
                 Cursor = Cursors.Default;
-                ButtonScoreLogs.Enabled = true;
+                EnableControl(ButtonScoreLogs, true);
                 UpdateLabel("Log analysis completed");
             }
 
             ResetProgressBar(true);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="message"></param>
-        private void UpdateLabel(string message)
-        {
-            if (InvokeRequired)
-            {
-                this.BeginInvoke(new Action<string>(this.UpdateLabel), message);
-                return;
-            }
-
-            LabelProgress.Enabled = true;
-            LabelProgress.Visible = true;
-            LabelProgress.Text = message;
-
         }
 
         #endregion
@@ -708,10 +664,27 @@ namespace W6OP.ContestLogAnalyzer
                          .Select(s => s.index).First();
          */
 
-        #region Update ListViews
+        #region Update Labels and ListViews
 
         /// <summary>
-        /// 
+        /// Prevent cross thread calls.
+        /// </summary>
+        /// <param name="message"></param>
+        private void UpdateLabel(string message)
+        {
+            if (InvokeRequired)
+            {
+                this.BeginInvoke(new Action<string>(this.UpdateLabel), message);
+                return;
+            }
+
+            LabelProgress.Enabled = true;
+            LabelProgress.Visible = true;
+            LabelProgress.Text = message;
+        }
+
+        /// <summary>
+        /// Prevent cross thread calls.
         /// </summary>
         /// <param name="message"></param>
         /// <param name="clear"></param>
@@ -737,7 +710,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// 
+        /// Prevent cross thread calls.
         /// </summary>
         /// <param name="message"></param>
         /// <param name="clear"></param>
@@ -763,7 +736,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// 
+        /// Prevent cross thread calls.
         /// </summary>
         /// <param name="logOwner"></param>
         /// <param name="clear"></param>
@@ -797,6 +770,11 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// Prevent cross thread calls.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="clear"></param>
         private void UpdateListViewScore(string message, bool clear)
         {
             if (InvokeRequired)
@@ -812,16 +790,12 @@ namespace W6OP.ContestLogAnalyzer
             else
             {
                 ListViewItem item = new ListViewItem(message);
-                //item.SubItems.Add(contestLog.Operator);
-                //item.SubItems.Add(contestLog.;
-                //item.SubItems.Add(claimed);
-                //item.SubItems.Add(actual);
                 ListViewScore.Items.Insert(0, item);
             }
         }
 
         /// <summary>
-        /// Increment the progress bar.
+        /// Increment the progress bar. Prevent cross thread calls.
         /// </summary>
         /// <param name="count"></param>
         private void UpdateProgress(int count)
@@ -842,23 +816,28 @@ namespace W6OP.ContestLogAnalyzer
             {
                 ProgressBarLoad.PerformStep();
             }
-            
+
         }
 
         /// <summary>
         /// General method for preventing cross thread calls.
         /// </summary>
-        private void EnableControl(bool clear)
+        private void EnableControl(Control control, bool clear)
         {
             if (InvokeRequired)
             {
-                this.BeginInvoke(new Action<bool>(this.EnableControl), clear);
+                this.BeginInvoke(new Action<Control, bool>(this.EnableControl), control, clear);
+                //this.BeginInvoke(new Action<bool>(this.EnableControl), clear);
                 return;
             }
 
-            ButtonStartAnalysis.Enabled = clear;
+            control.Enabled = clear;
         }
 
+        /// <summary>
+        /// Prevent cross thread calls.
+        /// </summary>
+        /// <param name="clear"></param>
         private void ResetProgressBar(bool clear)
         {
             if (InvokeRequired)
@@ -1218,6 +1197,11 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="qso"></param>
+        /// <param name="group"></param>
         private void UpdateListViewCompare(QSO qso, int group)
         {
             ListViewItem item = new ListViewItem(qso.Band.ToString())
@@ -1241,25 +1225,3 @@ namespace W6OP.ContestLogAnalyzer
 
     } // end class
 }
-
-/*
-  tempLog = _ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && a.ReceivedSerialNumber == sent && a.Band == band && a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO)).ToList();
-                    if (tempLog != null && tempLog.Count > 0)
-                    {
-                        contestLog.MatchLogs.AddRange(tempLog);
-                    }
-
-                    // some of these will be marked valid as we go along and need to be removed from this collection
-                    tempLog = _ContestLogs.Where(q => q.QSOCollection.Any(a => a.ContactCall == operatorCall && (a.ReceivedSerialNumber != sent || a.Band == band || a.ContactName == sentName && a.Status == QSOStatus.InvalidQSO))).ToList();
-                    if (tempLog != null && tempLog.Count > 0)
-                    {
-                        contestLog.ReviewLogs.AddRange(tempLog);
-                    }
-
-                    tempLog = _ContestLogs.Where(q => q.QSOCollection.All(a => a.ContactCall != operatorCall)).ToList();
-                    if (tempLog != null && tempLog.Count > 0)
-                    {
-                        contestLog.OtherLogs.AddRange(tempLog);
-                    }
-
- */
