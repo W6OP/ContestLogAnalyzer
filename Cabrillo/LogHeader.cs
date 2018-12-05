@@ -29,7 +29,6 @@ namespace W6OP.ContestLogAnalyzer
             set { _LogFileName = value; }
         }
 
-
         private string _Version;
         public string Version
         {
@@ -37,33 +36,20 @@ namespace W6OP.ContestLogAnalyzer
             set { _Version = value; }
         }
 
-        private string _OperatorCallSign;
-        public string OperatorCallSign
-        {
-            get
-            { return _OperatorCallSign;}
-            set
-            {
-                //strip "/" as in R7RF/6 or /QRP, etc.
-                if (value.IndexOf("/") == -1)
-                {
-                    _OperatorCallSign = value;
-                }
-                else
-                {
-                    int temp1 = value.Substring(0, value.IndexOf("/")).Length;
-                    int temp2 = value.Substring(value.IndexOf("/")).Length;
-                   
-                    if (temp1 > temp2)
-                    {
-                        _OperatorCallSign = value.Substring(0, value.IndexOf("/"));
-                    } else
-                    {
-                        _OperatorCallSign = value.Substring(value.IndexOf("/") + 1);
-                    } 
-                }
-            }
-        }
+        /// <summary>
+        /// The operaor or log owner call sign stripped of a prefix or suffix.
+        /// </summary>
+        public string OperatorCallSign { get; set; }
+
+        /// <summary>
+        /// The operator call sign prefix if it exists (HQP).
+        /// </summary>
+        public string OperatorPrefix { get; set; }
+
+        /// <summary>
+        /// The operator call sign suffix if it exists (HQP).
+        /// </summary>
+        public string OperatorSuffix { get; set; }
 
         private CategoryAssisted _Assisted;
         public CategoryAssisted Assisted

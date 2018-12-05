@@ -133,6 +133,18 @@
       <Name>ScoreEngine</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="EmbedCounties_Ohio.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="EmbedCounties_Kansas.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="EmbedCountryPrefixes.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="EmbedStatePrefixes.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy "$(TargetDir)$(TargetName).exe" ..\..\..\Deploy

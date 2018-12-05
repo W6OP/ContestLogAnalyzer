@@ -133,7 +133,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Find all the entities. For each qso see if it is valid.
+        /// HQP only. Find all the entities. For each qso see if it is valid.
         /// If it is a valid call set it as a multiplier.
         /// </summary>
         /// <param name="qsoList"></param>

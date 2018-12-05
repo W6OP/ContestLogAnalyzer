@@ -1,0 +1,49 @@
+﻿0,Colorado
+0,Iowa
+0,Kansas
+0,Minnesota
+0,Missouri
+0,Nebraska
+0,North Dakota
+0,South Dakota
+1,Connecticut
+1,Maine
+1,Massachusetts
+1,New Hampshire
+1,Rhode Island
+1,Vermont
+2,New Jersey
+2,New York
+3,D.C. 
+3,Delaware
+3,Maryland
+3,Pennsylvania
+4,Alabama
+4,Florida
+4,Georgia
+4,Kentucky
+4,North Carolina
+4,South Carolina
+4,Tennessee
+4,Virginia
+5,Arkansas
+5,Louisiana
+5,Mississippi
+5,New Mexico
+5,Oklahoma
+5,Texas
+6,California
+7,Arizona
+7,Idaho
+7,Montana
+7,Nevada
+7,Oregon
+7,Utah
+7,Washington
+7,Wyoming
+8,Michigan
+8,Ohio
+8,West Virginia
+9,Illinois
+9,Indiana
+9,Wisconsin

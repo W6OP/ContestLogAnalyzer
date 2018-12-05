@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -122,7 +123,84 @@ namespace W6OP.ContestLogAnalyzer
 
             TabControlMain.SelectTab(TabPageLogStatus);
 
+            LoadResourceFiles();
+
             _Initialized = true;
+        }
+
+        /// <summary>
+        /// Adding support for Kansas and Ohio QSO parties. This will also be
+        /// useful for the HQP
+        /// 
+        /// Load embedded resorces with valid county abbreviations for Kansas
+        /// and Ohio. Create a collection of the abbreviations and names.
+        /// 
+        /// If a call comes in, look at the suffix and if it matches one of
+        /// these we know for sure where it is from.
+        /// 
+        /// Some call prefixes are one and some two letters and a number and some are
+        /// two letters ie. M = England
+        /// 
+        /// some - KC6/E,East Caroline have / in them
+        /// 
+        /// VRA-VRZ  Now China
+        /// VR(alpha) is China VR(int) is other
+        /// 
+        /// KG4,USA OR Guantanamo Bay
+        /// Single letter suffixes KG4x and three letter suffixes KG4xxx can be
+        /// issued anywhere in the USA fourth call district, and used anywhere 
+        /// in the United States.
+        /// Two letter suffixes KG4xx are issued for Guantanamo Bay.
+        /// 
+        /// May need to use smething else for state prefixes - hashset can't have dupes
+        /// </summary>
+        private void LoadResourceFiles()
+        {
+            HashSet<string> Ohio = null;
+            HashSet<string> Kansas = null;
+
+            string result = null;
+            string[] temp = null;
+
+            var assembly = Assembly.GetExecutingAssembly();
+
+            string resourceName = assembly.GetManifestResourceNames()
+                .Single(str => str.EndsWith("EmbedCounties_Ohio.txt"));
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                result = reader.ReadToEnd();
+
+                temp = result.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                Ohio = new HashSet<string>(temp);
+            }
+
+            resourceName = assembly.GetManifestResourceNames()
+               .Single(str => str.EndsWith("EmbedCounties_Kansas.txt"));
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                result = reader.ReadToEnd();
+                // now split it into a collecction
+                temp = result.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                Kansas = new HashSet<string>(temp);
+            }
+
+            resourceName = assembly.GetManifestResourceNames()
+              .Single(str => str.EndsWith("EmbedCountryPrefixes.txt"));
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                result = reader.ReadToEnd();
+                result = result.Replace("\r\n", "|");
+
+                _LogProcessor.CountryPrefixes = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
+
+                // var xxx = _LogProcessor.CountryPrefixes["W"];
+            }
         }
 
         #endregion

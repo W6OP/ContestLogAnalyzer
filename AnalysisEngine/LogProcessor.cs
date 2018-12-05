@@ -24,6 +24,8 @@ namespace W6OP.ContestLogAnalyzer
         public PrintManager _PrintManager = null;
         public QRZ _QRZ = null;
 
+        public Lookup<string, string> CountryPrefixes { get; set; }
+
         public string _FailReason { get; set; }
         public string _FailingLine { get; set; }
         public string _LogSourceFolder { get; set; }
@@ -33,6 +35,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private string _WorkingLine = null;
         private CallParser.CallsignParser _Parser;
+
         private Hashtable _PrefixSet;
 
         /// <summary>
@@ -349,7 +352,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 info = new string[2] { "0", "0" };
                 qso.IsHQPEntity = false;
-                qso.OperatorEntity = qso.OperatorName;
+                qso.OperatorEntity = qso.OperatorName; // from original cwopen settings
                 qso.DXEntity = qso.ContactName;
 
                 qso.HQPPoints = GetPoints(qso.Mode);
@@ -396,10 +399,50 @@ namespace W6OP.ContestLogAnalyzer
                     qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
                 }
 
+                //var country = CountryPrefixes[""];
+                //string aaa = null;
                 // set contact information
                 if (!_PrefixSet.Contains(qso.ContactCall))
                 {
-                    prefixInfo = GetPrefixInformation(qso.ContactCall);
+                    //if (qso.ContactPrefix != string.Empty)
+                    //{
+                    //    country = CountryPrefixes[qso.ContactPrefix];
+                       
+                    //    Console.WriteLine("new - " + country.ToList()[0]);
+                    //}
+                    //else
+                    //{
+                    //    country = CountryPrefixes[qso.ContactCall];
+                    //    int count = qso.ContactCall.Length;
+                    //    while (country.ToList().Count == 0)
+                    //    {
+                    //        string prefix = qso.ContactCall.Substring(0, count-1);
+                    //        country = CountryPrefixes[prefix];
+                    //        count--;
+                    //    }
+
+                    //    aaa = country.ToList()[0];
+
+                    //    Console.WriteLine("new - " + country.ToList()[0]);
+                    //}
+
+
+
+                  
+
+                    if (qso.ContactPrefix != string.Empty)
+                    {
+                        prefixInfo = GetPrefixInformation(qso.ContactPrefix + "/" + qso.ContactCall);
+                    }
+                    else if (qso.ContactSuffix != string.Empty)
+                    {
+                        prefixInfo = GetPrefixInformation( qso.ContactCall + "/" + qso.ContactPrefix);
+                    }
+                    else
+                    {
+                        prefixInfo = GetPrefixInformation(qso.ContactCall);
+                    }
+                       
                     _PrefixSet.Add(qso.ContactCall, prefixInfo);
                 }
                 else
@@ -410,6 +453,7 @@ namespace W6OP.ContestLogAnalyzer
                 if (prefixInfo != null && prefixInfo.Territory != null)
                 {
                     qso.RealDXEntity = prefixInfo.Territory.ToString();
+                    //Console.WriteLine("old - " + qso.RealDXEntity);
                     if (Enum.IsDefined(typeof(HQPMults), qso.DXEntity))
                     {
                         qso.RealDXEntity = "Hawaii"; // AC7N
@@ -450,6 +494,11 @@ namespace W6OP.ContestLogAnalyzer
                     }
                 }
             }
+        }
+
+        private object GetPrefix(string contactCall)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -661,6 +710,8 @@ namespace W6OP.ContestLogAnalyzer
         private LogHeader BuildHeaderV2(List<string> lineList, string logFileName)
         {
             IEnumerable<LogHeader> logHeader = null;
+            string prefix = string.Empty;
+            string suffix = string.Empty;
 
             try
             {
@@ -673,7 +724,9 @@ namespace W6OP.ContestLogAnalyzer
                         LogFileName = logFileName,
                         Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
                         Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: UNKNOWN").First().Substring(9).Trim(),
-                        OperatorCallSign = RemovePreOrSuffix(CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN")).ToUpper(),
+                        OperatorCallSign = ParseCallSign(CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN"), out prefix, out suffix).ToUpper(),
+                        OperatorPrefix = prefix,
+                        OperatorSuffix = suffix,
                         OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY:")).DefaultIfEmpty("CATEGORY: SINGLE-OP").First().Substring(9).Trim().ToUpper()),
                         // this is for when the CATEGORY-ASSISTED: is missing or has no value
                         Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: ASSISTED").First(), 18, "ASSISTED")),   //.Substring(18).Trim().ToUpper()),
@@ -692,8 +745,6 @@ namespace W6OP.ContestLogAnalyzer
                         Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
                         SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX:").First(), 8, ""),
                     };
-
-                //return logHeader.FirstOrDefault();
             }
             catch (Exception ex)
             {
@@ -740,6 +791,8 @@ namespace W6OP.ContestLogAnalyzer
         private LogHeader BuildHeaderV3(List<string> lineList, string logFileName)
         {
             IEnumerable<LogHeader> logHeader = null;
+            string prefix = string.Empty;
+            string suffix = string.Empty;
 
             try
             {
@@ -751,7 +804,9 @@ namespace W6OP.ContestLogAnalyzer
                     LogFileName = logFileName,
                     Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
                     Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: UNKNOWN").First().Substring(9).Trim(),
-                    OperatorCallSign = RemovePreOrSuffix(CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN")).ToUpper(),
+                    OperatorCallSign = ParseCallSign(CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN"), out prefix, out suffix).ToUpper(),
+                    OperatorPrefix = prefix,
+                    OperatorSuffix = suffix,
                     OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY-OPERATOR:")).DefaultIfEmpty("CATEGORY-OPERATOR: SINGLE-OP").First().Substring(18).Trim().ToUpper()),
                     // this is for when the CATEGORY-ASSISTED: is missing or has no value
                     Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: ASSISTED").First(), 18, "ASSISTED")),
@@ -811,6 +866,8 @@ namespace W6OP.ContestLogAnalyzer
             List<QSO> qsoList = null;
             List<string> tempList = new List<string>();
             string tempLine = null;
+            string prefix = string.Empty;
+            string suffix = string.Empty;
 
             _WorkingLine = "";
 
@@ -838,13 +895,17 @@ namespace W6OP.ContestLogAnalyzer
                              Mode = NormalizeMode(split[2]),
                              QsoDate = split[3],
                              QsoTime = CheckTime(split[4], line),
-                             OperatorCall = RemovePreOrSuffix(split[5]).ToUpper(),
+                             OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
+                             OperatortPrefix = prefix,
+                             OperatorSuffix = suffix,
                              SentSerialNumber = ConvertSerialNumber(split[6]),
                              OperatorName = split[7],
-                             ContactCall = RemovePreOrSuffix(split[8]).ToUpper(),
+                             ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
+                             ContactPrefix = prefix,
+                             ContactSuffix = suffix,
                              ReceivedSerialNumber = ConvertSerialNumber(split[9]),
                              ContactName =  split[10],
-                             CallIsInValid = CheckCallSignFormat(RemovePreOrSuffix(split[5]).ToUpper()),
+                             CallIsInValid = true,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
@@ -862,13 +923,17 @@ namespace W6OP.ContestLogAnalyzer
                              Mode = NormalizeMode(split[2]),
                              QsoDate = split[3],
                              QsoTime = CheckTime(split[4], line),
-                             OperatorCall = RemovePreOrSuffix(split[5]).ToUpper(),
+                             OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
+                             OperatortPrefix = prefix,
+                             OperatorSuffix = suffix,
                              OperatorName = split[6],
                              SentSerialNumber = ConvertSerialNumber(split[7]),
-                             ContactCall = RemovePreOrSuffix(split[8]).ToUpper(),
+                             ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
+                             ContactPrefix = prefix,
+                             ContactSuffix = suffix,
                              ContactName = split[9],
                              ReceivedSerialNumber = ConvertSerialNumber(split[10]),
-                             CallIsInValid = CheckCallSignFormat(RemovePreOrSuffix(split[5]).ToUpper()),
+                             CallIsInValid = true,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
@@ -964,35 +1029,69 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="callSign"></param>
         /// <returns></returns>
-        private string RemovePreOrSuffix(string callSign)
+        private string ParseCallSign(string callSign, out string prefix, out string suffix)
         {
+            prefix = string.Empty;
+            suffix = string.Empty;
+
             if (callSign.IndexOf("/") != -1)
             {
                 string call1 = callSign.Substring(0, callSign.IndexOf("/"));
                 string call2 = callSign.Substring(callSign.IndexOf("/"));
+                string result = null;
                 int temp1 = call1.Length;
                 int temp2 = call2.Length - 1;
                 bool containsInt;
 
+                if (call2 == "/QRP" || call2 == "/P" || call2 == "/M" || call2 == "/MM" || call2 == "/MOBILE"  || call2 == "/AE" || call2 == "/AG")
+                {
+                    prefix = "";
+                    suffix = "";
+                    return call1;
+                }
+      
                 if (temp1 > temp2)
                 {
-                    callSign = call1;
+                    result = new String(call1.Where(x => Char.IsDigit(x)).ToArray());
+
+                    if (!string.IsNullOrEmpty(result))
+                    {
+                        callSign = call1;
+                        suffix = call2.Replace("/", "");
+                    } else
+                    {
+                        callSign = call2;
+                        prefix = call1.Replace("/", "");
+                    }
                 }
                 else if (temp1 == temp2)
                 {
                     containsInt = call1.Any(char.IsDigit);
+                    //result = new String(call1.Where(x => Char.IsDigit(x)).ToArray());
                     if (containsInt)
                     {
                         callSign = call1;
+                        suffix = call2.Replace("/", "");
                     }
                     else
                     {
                         callSign = call2.Substring(call2.IndexOf("/") + 1);
+                        prefix = call1.Replace("/", "");
                     }
                 }
                 else
                 {
-                    callSign = call2.Substring(call2.IndexOf("/") + 1);
+                    result = new String(call2.Where(x => Char.IsDigit(x)).ToArray());
+                    if (!string.IsNullOrEmpty(result))
+                    {
+                        callSign = call2.Substring(call2.IndexOf("/") + 1);
+                        prefix = call1.Replace("/", "");
+                    }
+                    else
+                    {
+                        callSign = call1;
+                        suffix = call2.Replace("/", "");
+                    }
                 }
             }
 

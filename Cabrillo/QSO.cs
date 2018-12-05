@@ -325,11 +325,33 @@ namespace W6OP.ContestLogAnalyzer
         /// CHANGE TO DATE AND TIME LATER
         /// </summary>
         public string QsoDate { get; set; }
-        
+
         public string QsoTime { get; set; }
-        
+
         public Int32 SentSerialNumber { get; set; }
-        
+
+        #region HQP (Hawaiin QSO Party)
+        public string OperatortPrefix { get; set; }
+        public string OperatorSuffix { get; set; }
+        public string ContactPrefix { get; set; }
+        public string ContactSuffix { get; set; }
+
+        /// <summary>
+        /// Top level country - Used in HQP
+        /// Applied to US and Canadian stations so I can check the state or province
+        /// </summary>
+        public string RealOperatorEntity { get; set; }
+
+        /// <summary>
+        /// Operator country as defined by HQP
+        /// Length is 2 characters for US and Canada
+        /// or 3 characters if it is a HQP entity
+        /// This is equivalent to the Operator Name for the CWOpen
+        /// </summary>
+        public string OperatorEntity { get; set; }
+
+        #endregion
+
         private string _OperatorCall;
         public string OperatorCall
         {
@@ -349,20 +371,6 @@ namespace W6OP.ContestLogAnalyzer
         /// Not used for HQP
         /// </summary>
         public Int32 ReceivedSerialNumber { get; set; }
-        
-        /// <summary>
-        /// Top level country - Used in HQP
-        /// Applied to US and Canadian stations so I can check the state or province
-        /// </summary>
-        public string RealOperatorEntity { get; set; }
-
-        /// <summary>
-        /// Operator country as defined by HQP
-        /// Length is 2 characters for US and Canada
-        /// or 3 characters if it is a HQP entity
-        /// This is equivalent to the Operator Name for the CWOpen
-        /// </summary>
-        public string OperatorEntity { get; set; }
 
         /// <summary>
         /// The real or top level country of the  contact or DX station
@@ -399,15 +407,7 @@ namespace W6OP.ContestLogAnalyzer
             { return _ContactCall.ToUpper(); }
             set
             {
-                //strip "/" as in R7RF/6 or /QRP, etc.
-                if (value.IndexOf("/") == -1)
-                {
-                    _ContactCall = value;
-                }
-                else
-                {
-                    _ContactCall = value.Substring(0, value.IndexOf("/"));
-                }
+                _ContactCall = value;
             }
         }
 
@@ -421,22 +421,6 @@ namespace W6OP.ContestLogAnalyzer
         {
             get { return _ContactName.ToUpper(); }
             set { _ContactName = value; }
-                //if (value != "missing_column")
-                //{
-                //    _ContactName = value;
-                //}
-                //else
-                //{
-                //    _ContactName = "MissingColumn";
-                //    if (!_RejectReasons.ContainsKey(RejectReason.MissingColumn))
-                //    {
-                //        _RejectReasons.Add(RejectReason.MissingColumn, EnumHelper.GetDescription(RejectReason.MissingColumn));
-                //        _Status = QSOStatus.InvalidQSO;
-                //    }
-                //}
-                
-
-           // }
         }
 
         /// <summary>
