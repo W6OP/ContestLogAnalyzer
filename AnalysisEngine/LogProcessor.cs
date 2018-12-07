@@ -1058,6 +1058,20 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         callSign = call1;
                         suffix = call2.Replace("/", "");
+
+                        // is the suffix a single digit or something like W4
+                        if (suffix.Length > 1)
+                        {
+                            result = new String(suffix.Where(x => Char.IsDigit(x)).ToArray());
+                            if (!string.IsNullOrEmpty(result))
+                            {
+                                prefix = suffix;
+                                suffix = string.Empty;
+                            }
+                        }
+                        
+
+
                     } else
                     {
                         callSign = call2;
