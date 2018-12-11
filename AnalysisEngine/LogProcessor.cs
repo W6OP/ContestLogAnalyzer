@@ -25,6 +25,8 @@ namespace W6OP.ContestLogAnalyzer
         public QRZ _QRZ = null;
 
         public Lookup<string, string> CountryPrefixes { get; set; }
+        public Lookup<string, string> Kansas { get; set; }
+        public Lookup<string, string> Ohio { get; set; }
 
         public string _FailReason { get; set; }
         public string _FailingLine { get; set; }
@@ -46,7 +48,6 @@ namespace W6OP.ContestLogAnalyzer
             _FailingLine = "";
             _WorkingLine = "";
 
-            //_CallSignSet = new Hashtable();
             _PrefixSet = new Hashtable();
         }
 
@@ -208,7 +209,7 @@ namespace W6OP.ContestLogAnalyzer
                     List<QSO> missingQSOS = contestLog.QSOCollection.Where(q => q.ContactName == "MISSING_COLUMN").ToList();
                     if (missingQSOS.Count > 0)
                     {
-                        _FailReason = "One or more columns are missing."; 
+                        _FailReason = "One or more columns are missing.";
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
                     }
@@ -249,7 +250,6 @@ namespace W6OP.ContestLogAnalyzer
                     }
 
                     // now add the DXCC information some contests need for multipliers
-                    // later break out to new method and add switch statement
                     if (ActiveContest == ContestName.HQP)
                     {
                         SetDXCCInformation(contestLog.QSOCollection, contestLog);
@@ -279,11 +279,12 @@ namespace W6OP.ContestLogAnalyzer
                 else
                 {
                     message = ex.Message;
-                   if (contestLog.QSOCollection == null)
+                    if (contestLog.QSOCollection == null)
                     {
                         _FailReason = _FailReason + " - QSO collection is null.";
                     }
-                    else {
+                    else
+                    {
                         _FailReason = _FailReason + " - Unable to process log.";
                     }
                 }
@@ -334,7 +335,8 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// 
+        /// HQP Only
+        /// now add the DXCC information some contests need for multipliers
         /// </summary>
         /// <param name="qsoCollection"></param>
         /// <param name="contestLog"></param>
@@ -345,6 +347,9 @@ namespace W6OP.ContestLogAnalyzer
             bool isValidHQPEntity = false;
             string[] info = new string[2] { "0", "0" };
 
+            string prefix = string.Empty;
+            string suffix = string.Empty;
+
             contestLog.IsHQPEntity = false;
             contestLog.TotalPoints = 0;
 
@@ -353,7 +358,7 @@ namespace W6OP.ContestLogAnalyzer
                 info = new string[2] { "0", "0" };
                 qso.IsHQPEntity = false;
                 qso.OperatorEntity = qso.OperatorName; // from original cwopen settings
-                qso.DXEntity = qso.ContactName;
+                //qso.DXEntity = qso.ContactName;
 
                 qso.HQPPoints = GetPoints(qso.Mode);
 
@@ -369,11 +374,16 @@ namespace W6OP.ContestLogAnalyzer
                 if (!isValidHQPEntity && qso.DXEntity == "DX")
                 {
                     qso.EntityIsInValid = true;
+                    continue;
                 }
 
-                // set operator information
+                //***** get operator information ****************//
                 if (!_PrefixSet.Contains(qso.OperatorCall))
                 {
+                    if (qso.OperatortPrefix != string.Empty || qso.OperatorSuffix != string.Empty)
+                    {
+                        var a = 1;
+                    }
                     prefixInfo = GetPrefixInformation(qso.OperatorCall);
                     _PrefixSet.Add(qso.OperatorCall, prefixInfo);
                 }
@@ -382,67 +392,36 @@ namespace W6OP.ContestLogAnalyzer
                     prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.OperatorCall];
                 }
 
-                if (prefixInfo != null && prefixInfo.Territory != null)
-                {
-                    qso.RealOperatorEntity = prefixInfo.Territory.ToString();
-
-                    if (isValidHQPEntity)
-                    {
-                        // for AC7N
-                        qso.RealOperatorEntity = "Hawaii";
-                    }
-                }
-                else
+                // NOTE: check for AC7N and see if I have to do anything special for him
+                if (prefixInfo == null || prefixInfo.Territory == null)
                 {
                     qso.Status = QSOStatus.InvalidQSO;
                     qso.RejectReasons.Clear();
                     qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
                 }
+                //***** end operator information ****************//
 
-                //var country = CountryPrefixes[""];
-                //string aaa = null;
-                // set contact information
+                //***** set contact information ****************//
                 if (!_PrefixSet.Contains(qso.ContactCall))
                 {
-                    //if (qso.ContactPrefix != string.Empty)
-                    //{
-                    //    country = CountryPrefixes[qso.ContactPrefix];
-                       
-                    //    Console.WriteLine("new - " + country.ToList()[0]);
-                    //}
-                    //else
-                    //{
-                    //    country = CountryPrefixes[qso.ContactCall];
-                    //    int count = qso.ContactCall.Length;
-                    //    while (country.ToList().Count == 0)
-                    //    {
-                    //        string prefix = qso.ContactCall.Substring(0, count-1);
-                    //        country = CountryPrefixes[prefix];
-                    //        count--;
-                    //    }
-
-                    //    aaa = country.ToList()[0];
-
-                    //    Console.WriteLine("new - " + country.ToList()[0]);
-                    //}
-
-
-
-                  
-
                     if (qso.ContactPrefix != string.Empty)
                     {
                         prefixInfo = GetPrefixInformation(qso.ContactPrefix + "/" + qso.ContactCall);
                     }
                     else if (qso.ContactSuffix != string.Empty)
                     {
-                        prefixInfo = GetPrefixInformation( qso.ContactCall + "/" + qso.ContactPrefix);
+                        prefixInfo = GetPrefixInformation(qso.ContactCall + "/" + qso.ContactSuffix);
+                        string a = prefixInfo.Territory;
+                        string b = prefixInfo.Province;
+                        string c = prefixInfo.ProvinceCode;
+
+                        var ddd = 1;
                     }
                     else
                     {
                         prefixInfo = GetPrefixInformation(qso.ContactCall);
                     }
-                       
+
                     _PrefixSet.Add(qso.ContactCall, prefixInfo);
                 }
                 else
@@ -483,7 +462,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (qso.RealDXEntity == "Hawaii")
                     {
-                        SetNonHQPEntityInfo(qso, prefixInfo);
+                        SetNonHQPEntityInfo(qso, prefixInfo, contestLog);
                     }
                     else
                     {
@@ -496,11 +475,6 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        private object GetPrefix(string contactCall)
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// Non Hawaii log uses "DX" for their own location (Op Entity) instead of their real country
         /// HI8A.log - QSO: 14000 CW 2017-08-27 1712 HI8A 599 DX KH6LC 599 HIL
@@ -508,7 +482,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="qso"></param>
         /// <param name="prefixInfo"></param>
-        private void SetNonHQPEntityInfo(QSO qso, PrefixInfo prefixInfo)
+        private void SetNonHQPEntityInfo(QSO qso, PrefixInfo prefixInfo, ContestLog contestLog)
         {
             string[] info = new string[2] { "0", "0" };
 
@@ -528,7 +502,9 @@ namespace W6OP.ContestLogAnalyzer
 
                             if (qso.DXEntity == "Canada" || qso.DXEntity == "United States of America")
                             {
-                                qso.RealOperatorEntity = qso.DXEntity; // persist if USA or Canada
+                                // this property was never used for anything
+                                //qso.RealOperatorEntity = qso.DXEntity; // persist if USA or Canada
+                                //contestLog.RealOperatorEntity = qso.DXEntity;
                                 qso.RealDXEntity = qso.DXEntity;
 
                                 qso.DXEntity = _QRZ.GetQRZInfo(qso.ContactCall);
@@ -537,6 +513,35 @@ namespace W6OP.ContestLogAnalyzer
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Check the county files to find the state before checking
+        /// QRZ.com
+        /// </summary>
+        /// <param name="suffix"></param>
+        /// <returns></returns>
+       private bool CheckCountyFiles(string suffix)
+        {
+            bool found = false;
+
+            // Lets see if we can get the information from one of the county files
+            if (suffix != string.Empty)
+            {
+                string result = new String(suffix.Where(x => Char.IsDigit(x)).ToArray());
+
+                if (string.IsNullOrEmpty(result)) // suffix is all alpha
+                {
+                    // check the Ohio file
+                    if (Ohio.Contains(suffix))
+                    {
+                        //prefixInfo.Province = "OH";
+
+                    }
+                }
+            }
+
+            return found;
         }
 
         /// <summary>
@@ -599,6 +604,12 @@ namespace W6OP.ContestLogAnalyzer
             return points;
         }
 
+        /// <summary>
+        /// Get the QTH information about a call sign.
+        /// Can get it from the CallParser component or checking the county file for USA
+        /// </summary>
+        /// <param name="call"></param>
+        /// <returns></returns>
         private PrefixInfo GetPrefixInformation(string call)
         {
             CallParser.PrefixInfo prefixInfo = null;
@@ -904,8 +915,8 @@ namespace W6OP.ContestLogAnalyzer
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
                              ReceivedSerialNumber = ConvertSerialNumber(split[9]),
-                             ContactName =  split[10],
-                             CallIsInValid = true,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
+                             ContactName = split[10],
+                             CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
@@ -933,7 +944,7 @@ namespace W6OP.ContestLogAnalyzer
                              ContactSuffix = suffix,
                              ContactName = split[9],
                              ReceivedSerialNumber = ConvertSerialNumber(split[10]),
-                             CallIsInValid = true,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
+                             CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
@@ -977,7 +988,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     split[i] = "missing_column";
                 }
-                
+
             }
 
             return split;
@@ -1006,10 +1017,16 @@ namespace W6OP.ContestLogAnalyzer
                     case CategoryMode.RY:
                         mode = "RY";
                         break;
+                    case CategoryMode.FT8:
+                        mode = "RY";
+                        break;
                     case CategoryMode.PH:
                         mode = "PH";
                         break;
                     case CategoryMode.SSB:
+                        mode = "PH";
+                        break;
+                    case CategoryMode.USB:
                         mode = "PH";
                         break;
                     default:
@@ -1026,6 +1043,9 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Remove the prefix or suffix from call signs so they can be compared.
         /// Sometimes it is KH6/N6JI and sometimes N6JI/KH6.
+        /// 
+        /// Save the suffix and or prefix so I can use it later to determine
+        /// the real dx entity.
         /// </summary>
         /// <param name="callSign"></param>
         /// <returns></returns>
@@ -1043,13 +1063,14 @@ namespace W6OP.ContestLogAnalyzer
                 int temp2 = call2.Length - 1;
                 bool containsInt;
 
-                if (call2 == "/QRP" || call2 == "/P" || call2 == "/M" || call2 == "/MM" || call2 == "/MOBILE"  || call2 == "/AE" || call2 == "/AG")
+                // this really isn't necessary but makes it easier later
+                if (call2 == "/QRP" || call2 == "/P" || call2 == "/M" || call2 == "/MM" || call2 == "/MOBILE" || call2 == "/AE" || call2 == "/AG")
                 {
                     prefix = "";
                     suffix = "";
                     return call1;
                 }
-      
+
                 if (temp1 > temp2)
                 {
                     result = new String(call1.Where(x => Char.IsDigit(x)).ToArray());
@@ -1059,7 +1080,8 @@ namespace W6OP.ContestLogAnalyzer
                         callSign = call1;
                         suffix = call2.Replace("/", "");
 
-                        // is the suffix a single digit or something like W4
+                        // is the suffix a single digit or something like W4 - KHDD/W6 or VK1BL/W6
+                        // if so then make it the prefix
                         if (suffix.Length > 1)
                         {
                             result = new String(suffix.Where(x => Char.IsDigit(x)).ToArray());
@@ -1069,10 +1091,8 @@ namespace W6OP.ContestLogAnalyzer
                                 suffix = string.Empty;
                             }
                         }
-                        
-
-
-                    } else
+                    }
+                    else
                     {
                         callSign = call2;
                         prefix = call1.Replace("/", "");

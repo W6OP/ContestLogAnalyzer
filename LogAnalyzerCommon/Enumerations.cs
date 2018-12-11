@@ -132,11 +132,13 @@ namespace W6OP.ContestLogAnalyzer
     public enum CategoryMode
     {
         SSB,
+        USB,
         CW,
         DIGI,
         PH,
         RTTY,
         RY,
+        FT8,
         MIXED
     }
 

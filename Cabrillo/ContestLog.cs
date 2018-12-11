@@ -22,23 +22,11 @@ namespace W6OP.ContestLogAnalyzer
         /// or anywhere along the line.
         /// </summary>
         public List<string> AnalyzerComments { get; set; } = new List<string>();
-        //private List<string> _AnalyzerComments;
-        //public List<string> AnalyzerComments
-        //{
-        //    get { return _AnalyzerComments; }
-        //    set { _AnalyzerComments = value; }
-        //}
 
         /// <summary>
         /// Call sign of the log owner.
         /// </summary>
         public string LogOwner { get; set; }
-        //private string _LogOwner;
-        //public string LogOwner
-        //{
-        //    get { return _LogOwner; }
-        //    set { _LogOwner = value; }
-        //}
 
         /// <summary>
         /// Call sign of the operator.
@@ -84,7 +72,15 @@ namespace W6OP.ContestLogAnalyzer
         public int Session { get; set; }
 
         public bool SO2R { get; set; }
-        
+
+        /// <summary>
+        /// Top level country - Used in HQP
+        /// Applied to US and Canadian stations so I can check the state or province
+        /// 
+        /// I don't think this is ever looked at or used.
+        /// </summary>
+        //public string RealOperatorEntity { get; set; }
+
         /// <summary>
         /// List of all the QSOs in this log.
         /// </summary>

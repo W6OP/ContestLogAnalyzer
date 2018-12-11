@@ -340,7 +340,7 @@ namespace W6OP.ContestLogAnalyzer
         /// Top level country - Used in HQP
         /// Applied to US and Canadian stations so I can check the state or province
         /// </summary>
-        public string RealOperatorEntity { get; set; }
+        //public string RealOperatorEntity { get; set; }
 
         /// <summary>
         /// Operator country as defined by HQP
@@ -420,7 +420,10 @@ namespace W6OP.ContestLogAnalyzer
         public string ContactName
         {
             get { return _ContactName.ToUpper(); }
-            set { _ContactName = value; }
+            set {
+                _ContactName = value;
+                DXEntity = value; // for HQP
+            }
         }
 
         /// <summary>

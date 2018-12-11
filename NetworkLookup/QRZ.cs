@@ -16,6 +16,10 @@ namespace NetworkLookup
         /// </summary>
         private Hashtable _CallSignSet;
         public Hashtable CallSignSet { get => _CallSignSet; set => _CallSignSet = value; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public QRZ()
         {
             CallSignSet = new Hashtable();

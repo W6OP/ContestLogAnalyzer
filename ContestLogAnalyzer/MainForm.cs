@@ -171,9 +171,11 @@ namespace W6OP.ContestLogAnalyzer
             using (StreamReader reader = new StreamReader(stream))
             {
                 result = reader.ReadToEnd();
+                result = result.Replace("\r\n", "|");
 
-                temp = result.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                Ohio = new HashSet<string>(temp);
+                _LogProcessor.Ohio = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
+                //temp = result.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                //Ohio = new HashSet<string>(temp);
             }
 
             resourceName = assembly.GetManifestResourceNames()
@@ -184,8 +186,11 @@ namespace W6OP.ContestLogAnalyzer
             {
                 result = reader.ReadToEnd();
                 // now split it into a collecction
-                temp = result.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                Kansas = new HashSet<string>(temp);
+                result = result.Replace("\r\n", "|");
+
+                _LogProcessor.Kansas = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
+                //temp = result.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                //Kansas = new HashSet<string>(temp);
             }
 
             resourceName = assembly.GetManifestResourceNames()
