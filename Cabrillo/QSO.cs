@@ -90,7 +90,29 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public bool QSOHasDupes { get; set; }
 
-        public string IncorrectName { get; set; }
+        /// <summary>
+        /// CWOpen
+        /// </summary>
+        //public string IncorrectName { get; set; }
+        private string _IncorrectName = null;
+        public string IncorrectName
+        {
+            get => _IncorrectName;
+            set  {
+                _IncorrectName = value;
+                _IncorrectDXEntity = value;
+            }
+        }
+
+        /// <summary>
+        /// HQP only
+        /// </summary>
+        private string _IncorrectDXEntity = null;
+        public string IncorrectDXEntity
+        {
+            get => _IncorrectDXEntity;
+            set => _IncorrectDXEntity = value;
+        }
 
         /// <summary>
         /// The operators call sign is invalid for this QSO

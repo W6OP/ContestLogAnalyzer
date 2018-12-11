@@ -38,7 +38,7 @@ namespace W6OP.ContestLogAnalyzer
         private string _WorkingLine = null;
         private CallParser.CallsignParser _Parser;
 
-        private Hashtable _PrefixSet;
+        private Hashtable _PrefixTable;
 
         /// <summary>
         /// Default constructor.
@@ -48,7 +48,7 @@ namespace W6OP.ContestLogAnalyzer
             _FailingLine = "";
             _WorkingLine = "";
 
-            _PrefixSet = new Hashtable();
+            _PrefixTable = new Hashtable();
         }
 
         /// <summary>
@@ -349,12 +349,14 @@ namespace W6OP.ContestLogAnalyzer
 
             string prefix = string.Empty;
             string suffix = string.Empty;
+            string territory = null;
 
             contestLog.IsHQPEntity = false;
             contestLog.TotalPoints = 0;
 
             foreach (QSO qso in qsoCollection)
             {
+                territory = null;
                 info = new string[2] { "0", "0" };
                 qso.IsHQPEntity = false;
                 qso.OperatorEntity = qso.OperatorName; // from original cwopen settings
@@ -378,31 +380,33 @@ namespace W6OP.ContestLogAnalyzer
                 }
 
                 //***** get operator information ****************//
-                if (!_PrefixSet.Contains(qso.OperatorCall))
+                if (!_PrefixTable.Contains(qso.OperatorCall))
                 {
-                    if (qso.OperatortPrefix != string.Empty || qso.OperatorSuffix != string.Empty)
-                    {
-                        var a = 1;
-                    }
                     prefixInfo = GetPrefixInformation(qso.OperatorCall);
-                    _PrefixSet.Add(qso.OperatorCall, prefixInfo);
+                    _PrefixTable.Add(qso.OperatorCall, prefixInfo.Territory);
+                    territory = prefixInfo.Territory;
                 }
                 else
                 {
-                    prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.OperatorCall];
+                    territory = (string)_PrefixTable[qso.OperatorCall];
                 }
 
                 // NOTE: check for AC7N and see if I have to do anything special for him
-                if (prefixInfo == null || prefixInfo.Territory == null)
+                if (territory == null)
                 {
                     qso.Status = QSOStatus.InvalidQSO;
                     qso.RejectReasons.Clear();
                     qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    continue;
                 }
                 //***** end operator information ****************//
 
+                // do I need qrz call in SearchForIncorrectEntity()
+                // this should take care of it
+
+
                 //***** set contact information ****************//
-                if (!_PrefixSet.Contains(qso.ContactCall))
+                if (!_PrefixTable.Contains(qso.ContactCall))
                 {
                     if (qso.ContactPrefix != string.Empty)
                     {
@@ -411,28 +415,28 @@ namespace W6OP.ContestLogAnalyzer
                     else if (qso.ContactSuffix != string.Empty)
                     {
                         prefixInfo = GetPrefixInformation(qso.ContactCall + "/" + qso.ContactSuffix);
-                        string a = prefixInfo.Territory;
-                        string b = prefixInfo.Province;
-                        string c = prefixInfo.ProvinceCode;
-
-                        var ddd = 1;
                     }
                     else
                     {
                         prefixInfo = GetPrefixInformation(qso.ContactCall);
                     }
 
-                    _PrefixSet.Add(qso.ContactCall, prefixInfo);
+                    // This is probably where I should verify the state if USA
+
+                    _PrefixTable.Add(qso.ContactCall, prefixInfo.Territory);
+                    territory = prefixInfo.Territory;
                 }
                 else
                 {
-                    prefixInfo = (CallParser.PrefixInfo)_PrefixSet[qso.ContactCall];
+                    territory = (string)_PrefixTable[qso.ContactCall];
                 }
+                //***** end contact information ****************//
 
-                if (prefixInfo != null && prefixInfo.Territory != null)
+                // did I get something back ?
+                if (territory != null)
                 {
-                    qso.RealDXEntity = prefixInfo.Territory.ToString();
-                    //Console.WriteLine("old - " + qso.RealDXEntity);
+                    qso.RealDXEntity = territory;
+
                     if (Enum.IsDefined(typeof(HQPMults), qso.DXEntity))
                     {
                         qso.RealDXEntity = "Hawaii"; // AC7N
@@ -443,7 +447,9 @@ namespace W6OP.ContestLogAnalyzer
                     qso.Status = QSOStatus.InvalidQSO;
                     qso.RejectReasons.Clear();
                     qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    continue;
                 }
+                // ********************************************
 
                 // set additional DXEntity information
                 // Hawaiian station contacts a non Hawaiian station and puts "DX" as country instead of actual country
@@ -453,23 +459,23 @@ namespace W6OP.ContestLogAnalyzer
                     qso.HQPEntity = qso.OperatorEntity;
                     qso.IsHQPEntity = true;
 
-                    if (prefixInfo != null && prefixInfo.Territory != null)
+                    if (territory != null)
                     {
-                        SetHQPEntityInfo(qso, prefixInfo);
+                        SetHQPEntityInfo(qso, territory);
                     }
                 }
                 else
                 {
                     if (qso.RealDXEntity == "Hawaii")
                     {
-                        SetNonHQPEntityInfo(qso, prefixInfo, contestLog);
+                        SetNonHQPEntityInfo(qso);
                     }
                     else
                     {
                         // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
-                        //qso.Status = QSOStatus.InvalidQSO;
-                        //qso.RejectReasons.Clear();
-                        //qso.RejectReasons.Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                        qso.Status = QSOStatus.InvalidQSO;
+                        qso.RejectReasons.Clear();
+                        qso.RejectReasons.Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
                     }
                 }
             }
@@ -482,8 +488,9 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="qso"></param>
         /// <param name="prefixInfo"></param>
-        private void SetNonHQPEntityInfo(QSO qso, PrefixInfo prefixInfo, ContestLog contestLog)
+        private void SetNonHQPEntityInfo(QSO qso)
         {
+            PrefixInfo prefixInfo;
             string[] info = new string[2] { "0", "0" };
 
             if (qso.Status != QSOStatus.InvalidQSO)
@@ -502,9 +509,15 @@ namespace W6OP.ContestLogAnalyzer
 
                             if (qso.DXEntity == "Canada" || qso.DXEntity == "United States of America")
                             {
-                                // this property was never used for anything
-                                //qso.RealOperatorEntity = qso.DXEntity; // persist if USA or Canada
-                                //contestLog.RealOperatorEntity = qso.DXEntity;
+
+
+
+
+                                // MIGHT BE A GOOD PLACE TO CHECK COUNTY FILES ------------------------------------------------------*****************>>>>>>>>>>>
+
+
+
+
                                 qso.RealDXEntity = qso.DXEntity;
 
                                 qso.DXEntity = _QRZ.GetQRZInfo(qso.ContactCall);
@@ -549,17 +562,18 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="qso"></param>
         /// <param name="prefixInfo"></param>
-        private void SetHQPEntityInfo(QSO qso, PrefixInfo prefixInfo)
+        private void SetHQPEntityInfo(QSO qso, string territory)
         {
             string[] info = new string[2] { "0", "0" };
 
-            qso.RealDXEntity = prefixInfo.Territory.ToString();
+            qso.RealDXEntity = territory;
             qso.IsEntityVerified = true;
 
             if (qso.RealDXEntity == "Canada" || qso.RealDXEntity == "United States of America")
             {
                 if (qso.DXEntity == "DX")
                 {
+                    // this is very rarely hit
                     qso.DXEntity = _QRZ.GetQRZInfo(qso.ContactCall);
                 }
             }

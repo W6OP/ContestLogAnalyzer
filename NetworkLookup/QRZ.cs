@@ -27,6 +27,8 @@ namespace NetworkLookup
 
         /// <summary>
         ///  // Look up entity in Hashtable or from QRZ.com
+        ///  
+        /// WHY ARE THERE MULTIPLE REFERENCES TO THIS METHOD???
         /// </summary>
         /// <param name="call"></param>
         /// <returns></returns>

@@ -65,17 +65,6 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="contestLog"></param>
         private void TotalHQPoints(ContestLog contestLog)
         {
-            //Int32 totalPhoneQSOS = 0;
-            //Int32 totalCWQSOs = 0;
-            //Int32 totalDigiQSOS = 0;
-            //Int32 totalPoints = 0;
-
-            //totalPhoneQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "PH").ToList().Count();
-            //totalCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "CW").ToList().Count();
-            //totalDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "RY").ToList().Count();
-
-            //totalPoints = (totalPhoneQSOS * 2) + (totalCWQSOs * 3) + (totalDigiQSOS * 3);
-
             List<QSO> query = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
 
             foreach (var qso in query)

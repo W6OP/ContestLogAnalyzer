@@ -342,33 +342,15 @@ namespace W6OP.ContestLogAnalyzer
                                 {
                                     qso.RejectReasons.Clear();
                                     qso.Status = QSOStatus.ValidQSO;
-
-                                    //if (qso.ContactName != qso.RealDXEntity)
-                                    //{
-
-                                    //    qso.Status = QSOStatus.InvalidQSO;
-                                    //    qso.EntityIsInValid = true;
-                                    //    qso.IncorrectName = qso.ContactName + " --> " + qso.RealDXEntity;
-                                    //    // not needed - qso.EntityIsInValid = true; does same thing
-                                    //    //qso.RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
-
-                                    //}
-                                    //else
-                                    //{
-                                    //    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
-                                    //}
                                 }
                                 else
                                 {
                                     // THIS NEEDS FIXING - should always be the same
-                                    if (qso.ContactName != qso.DXEntity)
+                                    if (qso.DXEntity != qso.DXEntity)
                                     {
                                         qso.Status = QSOStatus.InvalidQSO;
                                         qso.EntityIsInValid = true;
-                                        qso.IncorrectName = qso.ContactName + " --> " + qso.DXEntity;
-                                        // not needed - qso.EntityIsInValid = true; does same thing
-                                        //qso.RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
-
+                                        qso.IncorrectDXEntity = qso.DXEntity + " --> " + qso.DXEntity; 
                                     }
                                     else
                                     {
@@ -426,12 +408,6 @@ namespace W6OP.ContestLogAnalyzer
                 case ContestName.HQP:
                     matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorCall == qso.ContactCall &&
                                 q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 2).ToList();
-
-                    //if (matchingQSOs == null || matchingQSOs.Count == 0)
-                    //{
-                    //    matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.ContactCall == qso.OperatorCall &&
-                    //           q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 2).ToList();
-                    //}
                     break;
             }
 
@@ -548,6 +524,12 @@ namespace W6OP.ContestLogAnalyzer
             return wasFound;
         }
 
+        /// <summary>
+        /// HQP only
+        /// </summary>
+        /// <param name="qso"></param>
+        /// <param name="contestLogList"></param>
+        /// <returns></returns>
         private bool SearchForIncorrectEntity(QSO qso, List<ContestLog> contestLogList)
         {
             bool wasFound = false;
@@ -562,10 +544,10 @@ namespace W6OP.ContestLogAnalyzer
             // loop through and see if first few names match
             for (int i = 0; i < matchingQSOs.Count; i++)
             {
-                if (qso.ContactName != matchingQSOs[i].ContactName)
+                if (qso.DXEntity != matchingQSOs[i].DXEntity)
                 {
                     matchCount++;
-                    matchName = matchingQSOs[i].ContactName;
+                    matchName = matchingQSOs[i].DXEntity;
                 }
             }
 
@@ -580,12 +562,14 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (matchName.Length > 2 || matchingQSOs.Count < 5 || qso.ContactCall.Length == 3)
                     {
+
+                        // WASN'T THIS ALREADY DONE IN THE LOG PROCESSOR
                         string entity = _QRZ.GetQRZInfo(qso.ContactCall);
 
-                        if (qso.ContactName != entity) // matchName
+                        if (qso.DXEntity != entity) // matchName
                         {
                             wasFound = true;
-                            qso.IncorrectName = qso.ContactName + " --> " + entity; // matchName;
+                            qso.IncorrectDXEntity = qso.DXEntity + " --> " + entity; // matchName;
                             qso.EntityIsInValid = true;
                         }
 
@@ -594,14 +578,14 @@ namespace W6OP.ContestLogAnalyzer
                     else
                     {
                         wasFound = true;
-                        qso.IncorrectName = qso.ContactName + " --> " + matchName;
+                        qso.IncorrectDXEntity = qso.DXEntity + " --> " + matchName;
                         qso.EntityIsInValid = true;
                     }
                 } 
                 else
                 {
                     wasFound = true;
-                    qso.IncorrectName = qso.ContactName + " --> " + matchName;
+                    qso.IncorrectDXEntity = qso.DXEntity + " --> " + matchName;
                     qso.EntityIsInValid = true;
                 }
             }
@@ -832,7 +816,7 @@ namespace W6OP.ContestLogAnalyzer
                     break;
                 case ContestName.HQP:
                     matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.Mode == qso.Mode && q.ContactCall == qso.OperatorCall &&
-                       q.ContactName == qso.OperatorName && q.OperatorName != qso.ContactName && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
+                       q.ContactName == qso.OperatorName && q.DXEntity != qso.DXEntity && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
                     break;
             }
 
@@ -840,6 +824,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 qso.MatchingQSO = matchQSO;
                 qso.IncorrectName = qso.ContactName;
+                qso.IncorrectDXEntity = qso.DXEntity;
 
                 switch (ActiveContest)
                 {
