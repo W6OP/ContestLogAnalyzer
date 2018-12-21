@@ -156,14 +156,8 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         private void LoadResourceFiles()
         {
-            HashSet<string> Ohio = null;
-            HashSet<string> Kansas = null;
-
             string result = null;
-            string[] temp = null;
-
             var assembly = Assembly.GetExecutingAssembly();
-
             string resourceName = assembly.GetManifestResourceNames()
                 .Single(str => str.EndsWith("EmbedCounties_Ohio.txt"));
 
@@ -174,8 +168,6 @@ namespace W6OP.ContestLogAnalyzer
                 result = result.Replace("\r\n", "|");
 
                 _LogProcessor.Ohio = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
-                //temp = result.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                //Ohio = new HashSet<string>(temp);
             }
 
             resourceName = assembly.GetManifestResourceNames()
@@ -189,8 +181,6 @@ namespace W6OP.ContestLogAnalyzer
                 result = result.Replace("\r\n", "|");
 
                 _LogProcessor.Kansas = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
-                //temp = result.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                //Kansas = new HashSet<string>(temp);
             }
 
             resourceName = assembly.GetManifestResourceNames()
@@ -203,8 +193,6 @@ namespace W6OP.ContestLogAnalyzer
                 result = result.Replace("\r\n", "|");
 
                 _LogProcessor.CountryPrefixes = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
-
-                // var xxx = _LogProcessor.CountryPrefixes["W"];
             }
         }
 

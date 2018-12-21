@@ -38,7 +38,10 @@ namespace W6OP.ContestLogAnalyzer
         private string _WorkingLine = null;
         private CallParser.CallsignParser _Parser;
 
+        // later replace this
         private Hashtable _PrefixTable;
+        // with
+        // private ILookup<string, string> _PrefixTable;
 
         /// <summary>
         /// Default constructor.
@@ -350,6 +353,8 @@ namespace W6OP.ContestLogAnalyzer
             string prefix = string.Empty;
             string suffix = string.Empty;
             string territory = null;
+            string operatorCall = null;
+            string contactCall = null;
 
             contestLog.IsHQPEntity = false;
             contestLog.TotalPoints = 0;
@@ -360,7 +365,8 @@ namespace W6OP.ContestLogAnalyzer
                 info = new string[2] { "0", "0" };
                 qso.IsHQPEntity = false;
                 qso.OperatorEntity = qso.OperatorName; // from original cwopen settings
-                //qso.DXEntity = qso.ContactName;
+                operatorCall = qso.OperatorCall;
+                contactCall = qso.ContactCall;
 
                 qso.HQPPoints = GetPoints(qso.Mode);
 
@@ -379,16 +385,19 @@ namespace W6OP.ContestLogAnalyzer
                     continue;
                 }
 
-                //***** get operator information ****************//
-                if (!_PrefixTable.Contains(qso.OperatorCall))
+                //***** get operator information from call parser component ****************//
+                // first check if we already have it from a previous operation
+                if (!_PrefixTable.Contains(operatorCall))
                 {
-                    prefixInfo = GetPrefixInformation(qso.OperatorCall);
-                    _PrefixTable.Add(qso.OperatorCall, prefixInfo.Territory);
+                    // if no
+                    prefixInfo = GetPrefixInformation(operatorCall);
                     territory = prefixInfo.Territory;
+                    _PrefixTable.Add(operatorCall, territory);
                 }
                 else
                 {
-                    territory = (string)_PrefixTable[qso.OperatorCall];
+                    // if yes
+                    territory = (string)_PrefixTable[operatorCall];
                 }
 
                 // NOTE: check for AC7N and see if I have to do anything special for him
@@ -401,34 +410,34 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 //***** end operator information ****************//
 
-                // do I need qrz call in SearchForIncorrectEntity()
+                // do I need qrz call in SearchForIncorrectEntity() in LogAnalyser - do need the message from there though
                 // this should take care of it
 
 
                 //***** set contact information ****************//
-                if (!_PrefixTable.Contains(qso.ContactCall))
+                if (!_PrefixTable.Contains(contactCall))
                 {
                     if (qso.ContactPrefix != string.Empty)
                     {
-                        prefixInfo = GetPrefixInformation(qso.ContactPrefix + "/" + qso.ContactCall);
+                        prefixInfo = GetPrefixInformation(qso.ContactPrefix + "/" + contactCall);
                     }
                     else if (qso.ContactSuffix != string.Empty)
                     {
-                        prefixInfo = GetPrefixInformation(qso.ContactCall + "/" + qso.ContactSuffix);
+                        prefixInfo = GetPrefixInformation(contactCall + "/" + qso.ContactSuffix);
                     }
                     else
                     {
-                        prefixInfo = GetPrefixInformation(qso.ContactCall);
+                        prefixInfo = GetPrefixInformation(contactCall);
                     }
 
                     // This is probably where I should verify the state if USA
-
-                    _PrefixTable.Add(qso.ContactCall, prefixInfo.Territory);
                     territory = prefixInfo.Territory;
+                    _PrefixTable.Add(contactCall, territory);
+
                 }
                 else
                 {
-                    territory = (string)_PrefixTable[qso.ContactCall];
+                    territory = (string)_PrefixTable[contactCall];
                 }
                 //***** end contact information ****************//
 
@@ -509,17 +518,7 @@ namespace W6OP.ContestLogAnalyzer
 
                             if (qso.DXEntity == "Canada" || qso.DXEntity == "United States of America")
                             {
-
-
-
-
-                                // MIGHT BE A GOOD PLACE TO CHECK COUNTY FILES ------------------------------------------------------*****************>>>>>>>>>>>
-
-
-
-
                                 qso.RealDXEntity = qso.DXEntity;
-
                                 qso.DXEntity = _QRZ.GetQRZInfo(qso.ContactCall);
                             }
                         }
@@ -529,36 +528,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Check the county files to find the state before checking
-        /// QRZ.com
-        /// </summary>
-        /// <param name="suffix"></param>
-        /// <returns></returns>
-       private bool CheckCountyFiles(string suffix)
-        {
-            bool found = false;
-
-            // Lets see if we can get the information from one of the county files
-            if (suffix != string.Empty)
-            {
-                string result = new String(suffix.Where(x => Char.IsDigit(x)).ToArray());
-
-                if (string.IsNullOrEmpty(result)) // suffix is all alpha
-                {
-                    // check the Ohio file
-                    if (Ohio.Contains(suffix))
-                    {
-                        //prefixInfo.Province = "OH";
-
-                    }
-                }
-            }
-
-            return found;
-        }
-
-        /// <summary>
-        /// Set the correct entity for HQP participants.
+        /// Set the correct entity for HQP participants (contacts).
         /// </summary>
         /// <param name="qso"></param>
         /// <param name="prefixInfo"></param>
@@ -576,7 +546,35 @@ namespace W6OP.ContestLogAnalyzer
                     // this is very rarely hit
                     qso.DXEntity = _QRZ.GetQRZInfo(qso.ContactCall);
                 }
+                else
+                {
+                    // check if its in one of the county files
+                    qso.DXEntity = CheckCountyFiles(qso.DXEntity);
+                }
             }
+        }
+
+        /// <summary>
+        /// Check the county files to find the state before checking
+        /// QRZ.com Sometimes they put the county instead of the state.
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        private string CheckCountyFiles(string entity)
+        {
+            // check the Ohio file
+            if (Ohio.Contains(entity))
+            {
+                entity = "OH";
+            }
+
+            // check the Kansas file
+            if (Kansas.Contains(entity))
+            {
+                entity = "OH";
+            }
+
+            return entity;
         }
 
         // determine points by mode for the HQP
