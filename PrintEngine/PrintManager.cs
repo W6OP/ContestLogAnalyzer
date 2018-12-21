@@ -35,7 +35,7 @@ namespace W6OP.PrintEngine
         private string _Message { get; set; }
         private ContestName _ActiveContest { get; set; }
 
-        private List<Tuple<string, string>> _DistinctCallNamePairs;
+        //private List<Tuple<string, string>> _DistinctCallNamePairs;
         private List<Tuple<string, int, string, int>> _CallNameCountList;
 
         /// <summary>
@@ -880,22 +880,45 @@ namespace W6OP.PrintEngine
         }
 
         /// <summary>
-        /// 
+        /// Create the unique callsign/(name or entity) pair worksheet.
         /// </summary>
         /// <param name="distinctQSOs"></param>
         /// <param name="reportPath"></param>
         /// <param name="session"></param>
         private void ListUniqueCallNamePairs(string reportPath, string session, List<ContestLog> contestLogs)
         {
-            string fileName = reportPath + @"\Unique_Calls_" + session + ".xlsx";
+            string worksheetName = null;
+            string header1 ="Call Sign";
+            string header2 = null;
+            string workbookName = null;
+            string fileName = null;
+
+            List<Tuple<string, string>> distinctCallNamePairs;
+
+            switch (_ActiveContest)
+            {
+                case ContestName.HQP:
+                    worksheetName = @"\Unique_Calls_Entities_";
+                    header2 = "Entity";
+                    workbookName = "Unique Call Entity Pairs";
+                    fileName = reportPath + worksheetName + ".xlsx";
+                    break;
+                case ContestName.CW_OPEN:
+                    worksheetName = @"\Unique_Call_Names_";
+                    header2 = "Operator Name";
+                    workbookName = "Unique Call Name Pairs";
+                    fileName = reportPath + worksheetName + session + ".xlsx";
+                    break;
+            }
 
             FileInfo newFile = new FileInfo(fileName);
+
             if (newFile.Exists)
             {
                 newFile.Delete();  // ensures we create a new workbook
             }
 
-            _DistinctCallNamePairs = CollectAllCallNamePairs(contestLogs);
+             distinctCallNamePairs = CollectAllCallNamePairs(contestLogs);
 
             using (SpreadsheetDocument document = SpreadsheetDocument.Create(fileName, SpreadsheetDocumentType.Workbook))
             {
@@ -904,12 +927,12 @@ namespace W6OP.PrintEngine
 
                 WorksheetPart worksheetPart = AddWorkSheetPart(workbookPart);
 
-                AddWorkSheet(workbookPart, worksheetPart, "Unique Calls");
+                AddWorkSheet(workbookPart, worksheetPart, workbookName);
 
                 // Get the sheetData cell table.
                 SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
 
-                for (int i = 0; i < _DistinctCallNamePairs.Count; i++)
+                for (int i = 0; i < distinctCallNamePairs.Count; i++)
                 {
                     // Add a row to the cell table.
                     Row row;
@@ -931,32 +954,74 @@ namespace W6OP.PrintEngine
                     Cell newCell = new Cell() { CellReference = "A" + row.RowIndex.ToString() };
                     row.InsertBefore(newCell, refCell);
 
-                    // Set the cell value to be a numeric value of 100.
-                    newCell.CellValue = new CellValue(_DistinctCallNamePairs[i].Item1);
-                    newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+                    if (i == 0)
+                    {
+                        // Set the cell value to be a numeric value of 100.
+                        newCell.CellValue = new CellValue(header1);
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        //newCell.SetAttribute()
 
-                    // Add the cell to the cell table at A2.
-                    newCell = new Cell() { CellReference = "B" + row.RowIndex.ToString() };
-                    row.InsertBefore(newCell, refCell);
+                        // Add the cell to the cell table at A2.
+                        newCell = new Cell() { CellReference = "B" + row.RowIndex.ToString() };
+                        row.InsertBefore(newCell, refCell);
 
-                    // Set the cell value to be a numeric value of 100.
-                    newCell.CellValue = new CellValue(_DistinctCallNamePairs[i].Item2);
-                    newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        // Set the cell value to be a numeric value of 100.
+                        newCell.CellValue = new CellValue(header2);
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+                    }
+                    else
+                    {
+                        // Set the cell value to be a numeric value of 100.
+                        newCell.CellValue = new CellValue(distinctCallNamePairs[i].Item1);
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        // Add the cell to the cell table at A2.
+                        newCell = new Cell() { CellReference = "B" + row.RowIndex.ToString() };
+                        row.InsertBefore(newCell, refCell);
+
+                        // Set the cell value to be a numeric value of 100.
+                        newCell.CellValue = new CellValue(distinctCallNamePairs[i].Item2);
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+                    }
                 }
 
-                ListCallNameOccurences(reportPath, session, contestLogs, document);
+                ListCallNameOccurences(contestLogs, document, distinctCallNamePairs);
             }
         }
 
         /// <summary>
-        /// 
+        /// Add to the workbook and worksheet.
+        /// This lists every call sign, the total number of times that cal was referenced
+        /// and a count of each different entity that call sign has listed.
         /// </summary>
         /// <param name="callNameCountList"></param>
         /// <param name="_BaseReportFolder"></param>
         /// <param name="v"></param>
-        private void ListCallNameOccurences(string reportPath, string session, List<ContestLog> contestLogs, SpreadsheetDocument document)
+        private void ListCallNameOccurences(List<ContestLog> contestLogs, SpreadsheetDocument document, List<Tuple<string, string>> distinctCallNamePairs)
         {
-            _CallNameCountList = CollectCallNameHitData(_DistinctCallNamePairs, contestLogs);
+            string worksheetName = null;
+            string header1 = "Call Sign";
+            string header2 = null;
+            string header3 = null;
+            string header4 = null;
+
+            switch (_ActiveContest)
+            {
+                case ContestName.HQP:
+                    worksheetName = @"Call-Entity Counts";
+                    header2 = "Total";
+                    header3 = "Entity";
+                    header4 = "Count";
+                    break;
+                case ContestName.CW_OPEN:
+                    worksheetName = @"Call-Name Counts";
+                    header2 = "Total";
+                    header3 = "Operator Name";
+                    header4 = "Count";
+                    break;
+            }
+
+            _CallNameCountList = CollectCallNameHitData(distinctCallNamePairs, contestLogs);
 
             using (document)
             {
@@ -964,7 +1029,7 @@ namespace W6OP.PrintEngine
 
                 // Add another worksheet with data
                 WorksheetPart worksheetPart = AddWorkSheetPart(workbookPart);
-                AddWorkSheet(workbookPart, worksheetPart, "Call-Name Counts");
+                AddWorkSheet(workbookPart, worksheetPart, worksheetName);
 
                 SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
 
@@ -990,36 +1055,64 @@ namespace W6OP.PrintEngine
                     Cell newCell = new Cell() { CellReference = "A" + row.RowIndex.ToString() };
                     row.InsertBefore(newCell, refCell);
 
-                    // Set the cell value to be a numeric value of 100.
-                    newCell.CellValue = new CellValue(_CallNameCountList[i].Item1);
-                    newCell.DataType = new EnumValue<CellValues>(CellValues.String);
-
-                    // Add the cell to the cell table at A2.
-                    newCell = new Cell() { CellReference = "B" + row.RowIndex.ToString() };
-                    row.InsertBefore(newCell, refCell);
-
-                    // Set the cell value to be a numeric value of 100.
-                    if (_CallNameCountList[i].Item2 != 0)
+                    if (i == 0)
                     {
-                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item2.ToString());
+                        // Set the cell value
+                        newCell.CellValue = new CellValue(header1);
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        // Add the cell to the cell table at A2.
+                        newCell = new Cell() { CellReference = "B" + row.RowIndex.ToString() };
+                        row.InsertBefore(newCell, refCell);
+
+                        newCell.CellValue = new CellValue(header2);
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        // Add the cell to the cell table at A3.
+                        newCell = new Cell() { CellReference = "C" + row.RowIndex.ToString() };
+                        row.InsertBefore(newCell, refCell);
+
+                        newCell.CellValue = new CellValue(header3);
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        // Add the cell to the cell table at A4.
+                        newCell = new Cell() { CellReference = "D" + row.RowIndex.ToString() };
+                        row.InsertBefore(newCell, refCell);
+
+                        newCell.CellValue = new CellValue(header4);
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.String);
                     }
-                    newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
+                    else
+                    {
+                        // Set the cell value
+                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item1);
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.String);
 
-                    // Add the cell to the cell table at A3.
-                    newCell = new Cell() { CellReference = "C" + row.RowIndex.ToString() };
-                    row.InsertBefore(newCell, refCell);
+                        // Add the cell to the cell table at A2.
+                        newCell = new Cell() { CellReference = "B" + row.RowIndex.ToString() };
+                        row.InsertBefore(newCell, refCell);
 
-                    // Set the cell value to be a numeric value of 100.
-                    newCell.CellValue = new CellValue(_CallNameCountList[i].Item3);
-                    newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        // Set the cell value to be a numeric value.
+                        if (_CallNameCountList[i].Item2 != 0)
+                        {
+                            newCell.CellValue = new CellValue(_CallNameCountList[i].Item2.ToString());
+                        }
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
 
-                    // Add the cell to the cell table at A4.
-                    newCell = new Cell() { CellReference = "D" + row.RowIndex.ToString() };
-                    row.InsertBefore(newCell, refCell);
+                        // Add the cell to the cell table at A3.
+                        newCell = new Cell() { CellReference = "C" + row.RowIndex.ToString() };
+                        row.InsertBefore(newCell, refCell);
 
-                    // Set the cell value to be a numeric value of 100.
-                    newCell.CellValue = new CellValue(_CallNameCountList[i].Item4.ToString());
-                    newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
+                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item3);
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        // Add the cell to the cell table at A4.
+                        newCell = new Cell() { CellReference = "D" + row.RowIndex.ToString() };
+                        row.InsertBefore(newCell, refCell);
+
+                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item4.ToString());
+                        newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
+                    }
                 }
             }
         }

@@ -422,13 +422,13 @@ namespace W6OP.ContestLogAnalyzer
             }
             else// did not find it
             {
-                if (ActiveContest == ContestName.CW_OPEN)
+                if (ActiveContest == ContestName.HQP)
                 {
-                    found = SearchForIncorrectName(qso, contestLogList);
+                    found = SearchForIncorrectEntity(qso, contestLogList);
                 }
                 else
                 {
-                    found = SearchForIncorrectEntity(qso, contestLogList);
+                    found = SearchForIncorrectName(qso, contestLogList);
                 }
             }
 
