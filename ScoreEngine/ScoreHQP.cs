@@ -137,22 +137,22 @@ namespace W6OP.ContestLogAnalyzer
             contestLog.NonHQPMultipliers = 0;
             contestLog.TotalPoints = 0;
 
-            var query = qsoList.GroupBy(x => new { x.DXEntity, x.RealDXEntity, x.Status })
+            var query = qsoList.GroupBy(x => new { x.ContactEntity, x.ContactTerritory, x.Status })
              .Where(g => g.Count() >= 1)
              .Select(y => y.Key).Where(item => (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO))
              .ToList();
 
             foreach (var qso in query)
             {
-                if (qso.DXEntity != "DX")
+                if (qso.ContactEntity != "DX")
                 {
-                    multiList = qsoList.Where(item => item.DXEntity == qso.DXEntity && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
-                    entity = qso.DXEntity;
+                    multiList = qsoList.Where(item => item.ContactEntity == qso.ContactEntity && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
+                    entity = qso.ContactEntity;
                 }
                 else
                 {
-                    multiList = qsoList.Where(item => item.RealDXEntity == qso.RealDXEntity && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
-                    entity = qso.RealDXEntity;
+                    multiList = qsoList.Where(item => item.ContactTerritory == qso.ContactTerritory && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
+                    entity = qso.ContactTerritory;
                 }
 
                 if (multiList.Any())
@@ -198,7 +198,7 @@ namespace W6OP.ContestLogAnalyzer
             string consolidated = null;
 
             // target is HPQ
-            var query = qsoList.GroupBy(x => new { x.DXEntity, x.Status, x.Band })
+            var query = qsoList.GroupBy(x => new { x.ContactEntity, x.Status, x.Band })
              .Where(g => g.Count() >= 1)
              .Select(y => y.Key).Where(item => (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO))
              .ToList();
@@ -208,10 +208,10 @@ namespace W6OP.ContestLogAnalyzer
                 List<QSO> multiList = qsoList.Where(item => item.Band == qso.Band && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
                 if (multiList.Any())
                 {
-                    if (Enum.IsDefined(typeof(HQPMults), qso.DXEntity))
+                    if (Enum.IsDefined(typeof(HQPMults), qso.ContactEntity))
                     {
                         // key for hashset
-                        consolidated = qso.DXEntity + " - " + qso.Band + "m";
+                        consolidated = qso.ContactEntity + " - " + qso.Band + "m";
                         if (!contestLog.Entities.Contains(consolidated))
                         {
                             // if not in hashset, add it

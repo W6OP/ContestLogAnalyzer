@@ -126,18 +126,18 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         if (version.Substring(0, 1) == "2")
                         {
-                            contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
+                            contestLog.LogHeader = BuildCWOpenHeaderV2(lineList, fullName);
                         }
 
                         if (version.Substring(0, 1) == "3")
                         {
-                            contestLog.LogHeader = BuildHeaderV3(lineList, fullName);
+                            contestLog.LogHeader = BuildCWOpenHeaderV3(lineList, fullName);
                         }
                     }
                     else
                     {
                         // Assume version 2 - this is just for the CWOPEN
-                        contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
+                        contestLog.LogHeader = BuildCWOpenHeaderV2(lineList, fullName);
                     }
 
                     // List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
@@ -364,7 +364,7 @@ namespace W6OP.ContestLogAnalyzer
                 territory = null;
                 info = new string[2] { "0", "0" };
                 qso.IsHQPEntity = false;
-                qso.OperatorEntity = qso.OperatorName; // from original cwopen settings
+
                 operatorCall = qso.OperatorCall;
                 contactCall = qso.ContactCall;
 
@@ -379,10 +379,22 @@ namespace W6OP.ContestLogAnalyzer
                 // if DXEntity is not in enum list of Hawaii entities (HIL, MAU, etc.)
                 // QSO: 14242 PH 2017-08-26 1830 N5KXI 59 OK KH7XS 59  DX
                 // this QSO is invalid - complete
-                if (!isValidHQPEntity && qso.DXEntity == "DX")
+                if (!isValidHQPEntity && qso.ContactEntity == "DX")
                 {
                     qso.EntityIsInValid = true;
                     continue;
+                }
+
+                // This is probably where I should verify the state if USA
+                // if ContactEntity is more than 2 chars I need to fix so later I get correct 
+                // entity in LogAnalyser SearchForIncorrect entity?
+                // should really enhance PrefixTable later to hold tuples so I can do this earlier
+                // I do this here because if it is a non hawaii to non hawaii contact it is invalid and this 
+                // never gets fixed.
+                if (qso.ContactEntity.Length > 2) // counties are 3 or more
+                {
+                    // check if its in one of the county files
+                    qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
                 }
 
                 //***** get operator information from call parser component ****************//
@@ -410,9 +422,6 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 //***** end operator information ****************//
 
-                // do I need qrz call in SearchForIncorrectEntity() in LogAnalyser - do need the message from there though
-                // this should take care of it
-
 
                 //***** set contact information ****************//
                 if (!_PrefixTable.Contains(contactCall))
@@ -430,8 +439,7 @@ namespace W6OP.ContestLogAnalyzer
                         prefixInfo = GetPrefixInformation(contactCall);
                     }
 
-                    // This is probably where I should verify the state if USA
-                    territory = prefixInfo.Territory;
+                     territory = prefixInfo.Territory;
                     _PrefixTable.Add(contactCall, territory);
 
                 }
@@ -444,11 +452,11 @@ namespace W6OP.ContestLogAnalyzer
                 // did I get something back ?
                 if (territory != null)
                 {
-                    qso.RealDXEntity = territory;
+                    qso.ContactTerritory = territory;
 
-                    if (Enum.IsDefined(typeof(HQPMults), qso.DXEntity))
+                    if (Enum.IsDefined(typeof(HQPMults), qso.ContactEntity))
                     {
-                        qso.RealDXEntity = "Hawaii"; // AC7N
+                        qso.ContactTerritory = "Hawaii"; // AC7N
                     }
                 }
                 else
@@ -475,7 +483,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    if (qso.RealDXEntity == "Hawaii")
+                    if (qso.ContactTerritory == "Hawaii")
                     {
                         SetNonHQPEntityInfo(qso);
                     }
@@ -516,10 +524,10 @@ namespace W6OP.ContestLogAnalyzer
                             qso.OperatorEntity = prefixInfo.Territory.ToString();
                             qso.IsEntityVerified = true;
 
-                            if (qso.DXEntity == "Canada" || qso.DXEntity == "United States of America")
+                            if (qso.ContactEntity == "Canada" || qso.ContactEntity == "United States of America")
                             {
-                                qso.RealDXEntity = qso.DXEntity;
-                                qso.DXEntity = _QRZ.GetQRZInfo(qso.ContactCall);
+                                qso.ContactTerritory = qso.ContactEntity;
+                                qso.ContactEntity = _QRZ.GetQRZInfo(qso.ContactCall, "LogProcessor");
                             }
                         }
                     }
@@ -529,6 +537,8 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// Set the correct entity for HQP participants (contacts).
+        ///
+        /// The correct territory was found from the CallParser component
         /// </summary>
         /// <param name="qso"></param>
         /// <param name="prefixInfo"></param>
@@ -536,20 +546,25 @@ namespace W6OP.ContestLogAnalyzer
         {
             string[] info = new string[2] { "0", "0" };
 
-            qso.RealDXEntity = territory;
+            qso.ContactTerritory = territory;
             qso.IsEntityVerified = true;
 
-            if (qso.RealDXEntity == "Canada" || qso.RealDXEntity == "United States of America")
+            if (qso.ContactTerritory == "Canada" || qso.ContactTerritory == "United States of America")
             {
-                if (qso.DXEntity == "DX")
+                if (qso.ContactEntity == "DX")
                 {
-                    // this is very rarely hit
-                    qso.DXEntity = _QRZ.GetQRZInfo(qso.ContactCall);
+                    // this is very rarely hit -  This is only for when the US or Canada entry is input as DX by the operator
+                    qso.ContactEntity = _QRZ.GetQRZInfo(qso.ContactCall, "LogProcessor");
                 }
-                else
+                else if (qso.ContactEntity.Length > 2) // counties are 3 or more
                 {
                     // check if its in one of the county files
-                    qso.DXEntity = CheckCountyFiles(qso.DXEntity);
+                    qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
+                    //if (qso.DXEntity.Length > 2) // if its still > 2 it is wrong maybe used Hawaii entity instead of US state
+                    //{
+                    //    // do i really want to do anything here ???
+                    //    // should find this in analysis processor
+                    //}
                 }
             }
         }
@@ -571,7 +586,7 @@ namespace W6OP.ContestLogAnalyzer
             // check the Kansas file
             if (Kansas.Contains(entity))
             {
-                entity = "OH";
+                entity = "KS";
             }
 
             return entity;
@@ -730,7 +745,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="lineList"></param>
         /// <param name="match"></param>
-        private LogHeader BuildHeaderV2(List<string> lineList, string logFileName)
+        private LogHeader BuildCWOpenHeaderV2(List<string> lineList, string logFileName)
         {
             IEnumerable<LogHeader> logHeader = null;
             string prefix = string.Empty;
@@ -738,7 +753,6 @@ namespace W6OP.ContestLogAnalyzer
 
             try
             {
-
                 logHeader =
                     from line in lineList
                     select new LogHeader()
@@ -811,7 +825,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="lineList"></param>
         /// <param name="match"></param>
-        private LogHeader BuildHeaderV3(List<string> lineList, string logFileName)
+        private LogHeader BuildCWOpenHeaderV3(List<string> lineList, string logFileName)
         {
             IEnumerable<LogHeader> logHeader = null;
             string prefix = string.Empty;
@@ -922,12 +936,14 @@ namespace W6OP.ContestLogAnalyzer
                              OperatortPrefix = prefix,
                              OperatorSuffix = suffix,
                              SentSerialNumber = ConvertSerialNumber(split[6]),
-                             OperatorName = split[7],
+                             OperatorName = CheckActiveContest(split[7], "OperatorName"),
+                             OperatorEntity = CheckActiveContest(split[7], "OperatorEntity"),
                              ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
                              ReceivedSerialNumber = ConvertSerialNumber(split[9]),
-                             ContactName = split[10],
+                             ContactName = CheckActiveContest(split[10], "ContactName"),
+                             ContactEntity = CheckActiveContest(split[10], "ContactEntity"),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
@@ -938,7 +954,7 @@ namespace W6OP.ContestLogAnalyzer
                     IEnumerable<QSO> qso =
                          from line in lineList
                          let split = CheckQSOLength(line.Split(' '))
-
+                        
                          select new QSO()
                          {
                              Status = CheckCompleteQSO(split, line),
@@ -949,12 +965,14 @@ namespace W6OP.ContestLogAnalyzer
                              OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
                              OperatortPrefix = prefix,
                              OperatorSuffix = suffix,
-                             OperatorName = split[6],
+                             OperatorName = CheckActiveContest(split[6], "OperatorName"),
+                             OperatorEntity = CheckActiveContest(split[6], "OperatorEntity"),
                              SentSerialNumber = ConvertSerialNumber(split[7]),
                              ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
-                             ContactName = split[9],
+                             ContactName = CheckActiveContest(split[9], "ContactName"),
+                             ContactEntity = CheckActiveContest(split[9], "ContactEntity"),
                              ReceivedSerialNumber = ConvertSerialNumber(split[10]),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForvalidSession(session, split[4])
@@ -980,6 +998,34 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return qsoList;
+        }
+
+        /// <summary>
+        /// Populate the correct field for the Active Contest
+        /// Eleiminates cofusion later
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="literal"></param>
+        /// <returns></returns>
+        private string CheckActiveContest(string message, string literal)
+        {
+            switch (ActiveContest)
+            {
+                case ContestName.CW_OPEN:
+                    if(literal == "ContactName" || literal == "OperatorName")
+                    {
+                        return message;
+                    }
+                    break;
+                case ContestName.HQP:
+                    if (literal == "ContactEntity" || literal == "OperatorEntity")
+                    {
+                       return message;
+                    }
+                    break;
+            }
+
+            return "";
         }
 
         /// <summary>

@@ -476,8 +476,17 @@ namespace W6OP.PrintEngine
 
                             if (qso.QSOHasDupes == false && qso.QSOIsDupe == false)
                             {
-                                message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
+                               switch (_ActiveContest)
+                                {
+                                    case ContestName.CW_OPEN:
+                                        message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
                                                                        qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
+                                        break;
+                                    case ContestName.HQP:
+                                        message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
+                                                                       qso.OperatorEntity + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactEntity;
+                                        break;
+                                }
                             }
 
                             // should only be one reason so lets change the collection type
@@ -498,22 +507,22 @@ namespace W6OP.PrintEngine
                                 {
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
+                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
                                     }
                                     else
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectName;
+                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectDXEntity;
                                     }
                                 }
                                 else if (key == RejectReason.InvalidEntity)
                                 {
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
+                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
                                     }
                                     else
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectName;
+                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectDXEntity;
                                     }
                                 }
                                 else if (key == RejectReason.SerialNumber)
@@ -550,17 +559,6 @@ namespace W6OP.PrintEngine
 
                                     if (qso.HasBeenPrinted == false)
                                     {
-                                        //value = qso.RejectReasons[key];
-                                        //originalQSO = qso.DupeListLocation;
-
-
-                                        //message = "QSO: " + "\t" + originalQSO.Frequency + "\t" + originalQSO.Mode + "\t" + originalQSO.QsoDate + "\t" + originalQSO.QsoTime + "\t" + originalQSO.OperatorCall + "\t" + originalQSO.SentSerialNumber.ToString() + "\t" +
-                                        //           originalQSO.OperatorName + "\t" + originalQSO.ContactCall + "\t" + originalQSO.ReceivedSerialNumber.ToString() + "\t" + originalQSO.ContactName;
-
-                                        //sw.WriteLine(value.ToString());
-                                        //sw.WriteLine(message);
-
-                                        //message = String.Format("Here are the other QSOs that were made with {0} that match the mode and band", qso.DupeListLocation.ContactCall);
                                         message = "Duplicates ignored for scoring purposes:";
                                         sw.WriteLine(message);
 
@@ -583,46 +581,21 @@ namespace W6OP.PrintEngine
 
                                 if (qso.MatchingQSO != null)
                                 {
-                                    message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
-                                           qso.MatchingQSO.OperatorName + "\t" + qso.MatchingQSO.ContactCall + "\t" + qso.MatchingQSO.ReceivedSerialNumber.ToString() + "\t" + qso.MatchingQSO.ContactName;
+                                    switch (_ActiveContest)
+                                    {
+                                        case ContestName.CW_OPEN:
+                                            message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
+                                          qso.MatchingQSO.OperatorName + "\t" + qso.MatchingQSO.ContactCall + "\t" + qso.MatchingQSO.ReceivedSerialNumber.ToString() + "\t" + qso.MatchingQSO.ContactName;
+                                            break;
+                                        case ContestName.HQP:
+                                            message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
+                                          qso.MatchingQSO.OperatorEntity + "\t" + qso.MatchingQSO.ContactCall + "\t" + qso.MatchingQSO.ReceivedSerialNumber.ToString() + "\t" + qso.MatchingQSO.ContactEntity;
+                                            break;
+                                    }
 
                                     sw.WriteLine(message);
                                 }
                             }
-
-                            // print info on the original that was duped - the one that was counted
-                            //if (qso.MatchingQSO != null || qso.DupeListLocation != null)
-                            //{
-                            //    //QSO dupeQSO = qso.MatchingQSO;
-                            //    if (qso.DupeListLocation == null)
-                            //    {
-                            //        // if (dupeQSO.HasBeenPrinted == false)
-                            //        // {
-                            //        qso.MatchingQSO.HasBeenPrinted = true;
-                            //        message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
-                            //               qso.MatchingQSO.OperatorName + "\t" + qso.MatchingQSO.ContactCall + "\t" + qso.MatchingQSO.ReceivedSerialNumber.ToString() + "\t" + qso.MatchingQSO.ContactName;
-
-                            //        sw.WriteLine(message);
-                            //        // }
-                            //    }
-                            //    else
-                            //    {
-                            //        //sw.WriteLine(String.Format("Here are all the other QSOs that were made with {0} that match the mode and band", qso.DupeListLocation.ContactCall));
-
-                            //        foreach (QSO item in qso.DupeListLocation.DuplicateQsoList)
-                            //        {
-                            //            //if (item.HasBeenPrinted == false)
-                            //            //{
-                            //            item.HasBeenPrinted = true;
-
-                            //            message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
-                            //                   item.OperatorName + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactName;
-
-                            //            sw.WriteLine(message);
-                            //            //}
-                            //        }
-                            //    }
-                            //}
 
                             sw.WriteLine("");
                         }
@@ -655,11 +628,19 @@ namespace W6OP.PrintEngine
 
                 item.HasBeenPrinted = true;
 
-                message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                switch (_ActiveContest)
+                {
+                    case ContestName.CW_OPEN:
+                        message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
                        item.OperatorName + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactName;
+                        break;
+                    case ContestName.HQP:
+                        message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                        item.OperatorEntity + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactEntity;
+                        break;
+                }
 
                 sw.WriteLine(message);
-                //}
             }
         }
 
@@ -717,10 +698,18 @@ namespace W6OP.PrintEngine
 
                             foreach (QSO qso in reviewQsoList)
                             {
-                                // print QSO line and reject reason
-                                message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
-                                            qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
-
+                                switch (_ActiveContest)
+                                {
+                                    case ContestName.CW_OPEN:
+                                        message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
+                                           qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
+                                        break;
+                                    case ContestName.HQP:
+                                        message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
+                                           qso.OperatorEntity + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactEntity;
+                                        break;
+                                }
+                              
                                 // should only be one reason so lets change the collection type
                                 foreach (var key in qso.RejectReasons.Keys)
                                 {
@@ -775,12 +764,7 @@ namespace W6OP.PrintEngine
             totalValidCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "CW").ToList().Count();
             totalValidDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "RY").ToList().Count();
 
-            //Int32 why = totalDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode != "PH" && q.Mode != "CW" && q.Mode != "RY").ToList().Count();
-            //if (why > 0)
-            //{
-            //    var e = 1;
-            //}
-            multiplierCount = contestLog.Multipliers;   //.QSOCollection.Where(q => q.IsMultiplier == true && q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
+            multiplierCount = contestLog.Multipliers; 
             score = contestLog.ActualScore;
 
             sw.WriteLine(message);
@@ -799,8 +783,6 @@ namespace W6OP.PrintEngine
                 case ContestName.HQP:
                     if (contestLog.IsHQPEntity)
                     {
-                        //message = String.Format("Final:   Valid QSOs: {0}   HQP Mults: {1}   NonHQP Mults: {2}   Total Mults: {3}   Points: {4}   Score: {5}",
-                        //totalValidQSOs.ToString(), contestLog.HQPMultipliers.ToString(), contestLog.NonHQPMultipliers.ToString(), multiplierCount.ToString(), contestLog.TotalPoints.ToString(), score.ToString());
                         message = String.Format(" Total QSOs: {0}   Valid QSOs: {1}  Invalid QSOs: {2}", totalQSOs.ToString(), totalValidQSOs.ToString(), totalInvalidQSOs.ToString());
                         sw.WriteLine(message);
 
@@ -815,8 +797,6 @@ namespace W6OP.PrintEngine
                     }
                     else
                     {
-                        //message = String.Format(" Final:   Valid QSOs: {0}   HQP Mults: {1} Total Mults: {2}   Points: {3}   Score: {4}",
-                        //totalValidQSOs.ToString(), contestLog.HQPMultipliers.ToString(), multiplierCount.ToString(), contestLog.TotalPoints.ToString(), score.ToString());
                         message = String.Format(" Final:   Valid QSOs: {0}  Invalid QSOs: {1}",
                        totalValidQSOs.ToString(), totalInvalidQSOs.ToString());
                         sw.WriteLine(message);

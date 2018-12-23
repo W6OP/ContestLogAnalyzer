@@ -59,7 +59,8 @@ namespace W6OP.ContestLogAnalyzer
             // Display the label
             OnProgressUpdate?.Invoke("1", "", "", 0);
 
-            try {
+            try
+            {
                 foreach (ContestLog contestLog in contestLogList)
                 {
                     call = contestLog.LogOwner;
@@ -94,7 +95,7 @@ namespace W6OP.ContestLogAnalyzer
                         OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
                     }
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -236,10 +237,10 @@ namespace W6OP.ContestLogAnalyzer
                 mode = qso.Mode;
                 contactName = qso.ContactName;
                 contactCall = qso.ContactCall;
-                dxEntity = qso.DXEntity;
+                dxEntity = qso.ContactEntity;
                 receivedSerialNumber = qso.ReceivedSerialNumber;
 
-                if (qso.Status == QSOStatus.InvalidQSO && qso.RejectReasons.Count > 0) 
+                if (qso.Status == QSOStatus.InvalidQSO && qso.RejectReasons.Count > 0)
                 {
                     if (qso.RejectReasons.ContainsKey(RejectReason.InvalidCall))
                     {
@@ -249,7 +250,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (ActiveContest == ContestName.HQP)
                 {
-                    if (!qso.IsHQPEntity && qso.RealDXEntity != "Hawaii")
+                    if (!qso.IsHQPEntity && qso.ContactTerritory != "Hawaii")
                     {
                         // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
                         qso.Status = QSOStatus.InvalidQSO;
@@ -282,10 +283,10 @@ namespace W6OP.ContestLogAnalyzer
                             break;
                         case ContestName.HQP:
                             // now see if a QSO matches this QSO
-                            matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.DXEntity == dxEntity && q.OperatorCall == contactCall &&
+                            matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.ContactEntity == dxEntity && q.OperatorCall == contactCall &&
                                                   q.ContactCall == operatorCall && q.Mode == mode && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).Minutes) <= 5);
 
-                            matchQSO_X = matchLog.QSOCollectionX.FirstOrDefault(q => q.Band == band && q.DXEntity == dxEntity && q.OperatorCall == contactCall &&
+                            matchQSO_X = matchLog.QSOCollectionX.FirstOrDefault(q => q.Band == band && q.ContactEntity == dxEntity && q.OperatorCall == contactCall &&
                                                   q.ContactCall == operatorCall && q.Mode == mode && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).Minutes) <= 5);
                             break;
                     }
@@ -338,7 +339,7 @@ namespace W6OP.ContestLogAnalyzer
 
                             if (ActiveContest == ContestName.HQP)
                             {
-                                if (qso.RealDXEntity != "United States of America" && qso.RealDXEntity != "Canada" && qso.RealDXEntity != "Hawaii" && qso.RealDXEntity != "Alaska")
+                                if (qso.ContactTerritory != "United States of America" && qso.ContactTerritory != "Canada" && qso.ContactTerritory != "Hawaii" && qso.ContactTerritory != "Alaska")
                                 {
                                     qso.RejectReasons.Clear();
                                     qso.Status = QSOStatus.ValidQSO;
@@ -346,11 +347,11 @@ namespace W6OP.ContestLogAnalyzer
                                 else
                                 {
                                     // THIS NEEDS FIXING - should always be the same
-                                    if (qso.DXEntity != qso.DXEntity)
+                                    if (qso.ContactEntity != qso.ContactEntity)
                                     {
                                         qso.Status = QSOStatus.InvalidQSO;
                                         qso.EntityIsInValid = true;
-                                        qso.IncorrectDXEntity = qso.DXEntity + " --> " + qso.DXEntity; 
+                                        qso.IncorrectDXEntity = qso.ContactEntity + " --> " + qso.ContactEntity;
                                     }
                                     else
                                     {
@@ -392,10 +393,6 @@ namespace W6OP.ContestLogAnalyzer
         private bool SearchForBustedCall(QSO qso, List<ContestLog> contestLogList)
         {
             bool found = false;
-            //float count = 0;
-            //float score = 0;
-            //float percent = 0;
-            //string call = "";
             List<QSO> matchingQSOs = null;
 
             // look for a log without a call sign parameter
@@ -424,7 +421,11 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (ActiveContest == ContestName.HQP)
                 {
-                    found = SearchForIncorrectEntity(qso, contestLogList);
+                    // DX entities should be "DX" in log so nothing to check
+                    //if (qso.ContactTerritory == "Canada" || qso.ContactTerritory == "United States of America")
+                    //{
+                    found = SearchForIncorrectEntityEx(qso, contestLogList);
+                    //}
                 }
                 else
                 {
@@ -503,7 +504,7 @@ namespace W6OP.ContestLogAnalyzer
                     return wasFound;
                 }
 
-               if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 > 50)
+                if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 > 50)
                 {
                     //Console.WriteLine((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100);
                     wasFound = true;
@@ -530,46 +531,151 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qso"></param>
         /// <param name="contestLogList"></param>
         /// <returns></returns>
+        private bool SearchForIncorrectEntityEx(QSO qso, List<ContestLog> contestLogList)
+        {
+            bool isNotCorrect = false;
+            Int32 matchCount = 0;
+            List<QSO> matchingQSOs = null;
+            List<QSO> matchingQSOsX = null;
+            //List<string> entityA = null;
+            //string matchEntity = null;
+            string entity = null;
+            string[] info = new string[2] { "0", "0" };
+
+            // get a list of all QSOs with the same contact callsign and same entity
+            matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactEntity == qso.ContactEntity).ToList();
+            // get a list of all QSOs with the same contact callsign but may have different entity
+            matchingQSOsX = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
+            // if the above counts are different then someone is wrong
+            matchCount = matchingQSOsX.Count - matchingQSOs.Count;
+
+
+            // if no mismatches then assume it is correct
+            if (matchCount == 0)
+            {
+                return false;
+            }
+
+            //var listWithMostEntries = (new List<List<QSO>> { matchingQSOs, matchingQSOsX })
+            //       .OrderByDescending(x => x.Count())
+            //       .Take(1);
+
+            //var listWithLeastEntries = (new List<List<QSO>> { matchingQSOs, matchingQSOsX })
+            //       .OrderBy(x => x.Count())
+            //       .Take(1);
+
+            // get whichever is the larger value - it wins the vote
+            //matchCount = matchingQSOs.Count > matchingQSOsX.Count ? matchingQSOs.Count : matchingQSOsX.Count;
+
+            // need to have more than two QSOs to VOTE on most prevalent contactEntity
+            //if (matchingQSOs.Count > 2)
+            //{
+            // https://stackoverflow.com/questions/17323804/compare-two-lists-via-one-property-using-linq
+            // if matchingQSOs and matchingQSOsX are not equal this will give a list with the majority of values (inner join)
+            IEnumerable<QSO> majorityContactEntities = from first in matchingQSOs
+                                                       join second in matchingQSOsX
+                                                       on first.ContactEntity equals second.ContactEntity
+                                                       into matches
+                                                       where matches.Any()
+                                                       select first;
+
+            // need to account for one Hawaii entry in the future
+            int count = majorityContactEntities.Count();
+            if (count > 2)
+            {
+                QSO firstMatch = majorityContactEntities.FirstOrDefault();
+                entity = firstMatch.ContactEntity;
+            }
+            else
+            {
+                var listWithMostEntries = (new List<List<QSO>> { matchingQSOs, matchingQSOsX })
+                   .OrderByDescending(x => x.Count())
+                   .Take(1);
+
+                // first use listWithMostEntries.first
+                if (listWithMostEntries.FirstOrDefault().Count() > 2)
+                {
+                    QSO firstMatch = listWithMostEntries.FirstOrDefault()[0];
+                    entity = firstMatch.ContactEntity;
+                }
+                else
+                {
+                    entity = _QRZ.GetQRZInfo(qso.ContactCall, "LogAnalyser");
+                }
+                
+            }
+
+            if (qso.ContactEntity != entity)
+            {
+                qso.IncorrectDXEntity = qso.ContactEntity + " --> " + entity;
+                qso.EntityIsInValid = true;
+                return true;
+            }
+
+            //}
+
+            return isNotCorrect;
+        }
+
+
+
+        /// <summary>
+        /// HQP only
+        /// </summary>
+        /// <param name="qso"></param>
+        /// <param name="contestLogList"></param>
+        /// <returns></returns>
         private bool SearchForIncorrectEntity(QSO qso, List<ContestLog> contestLogList)
         {
             bool wasFound = false;
             Int32 matchCount = 0;
             List<QSO> matchingQSOs = null;
-            string matchName = null;
+            string matchEntity = null;
+            string entity = null;
             string[] info = new string[2] { "0", "0" };
 
             // now look for a match without the operator name - only search those not already eliminated
-            matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
+            matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.Status == QSOStatus.ValidQSO).ToList();
 
             // loop through and see if first few names match
             for (int i = 0; i < matchingQSOs.Count; i++)
             {
-                if (qso.DXEntity != matchingQSOs[i].DXEntity)
+                if (qso.ContactEntity != matchingQSOs[i].ContactEntity)
                 {
                     matchCount++;
-                    matchName = matchingQSOs[i].DXEntity;
+                    matchEntity = matchingQSOs[i].ContactEntity;
+                    entity = _QRZ.GetQRZInfo(qso.ContactCall, "LogAnalyser");
+                    // AH6KO put CA in log for qso.DXEntity for W9KKN which would appear correct except he lives in CA
+                    // Earlier I had put VA for W9KNN from the CallParser component - matchingQSOs[i].DXEntity
+                    // now that I get a mismatch I want to correct it if possible - just US and Canada
+                    if (entity == qso.ContactEntity && (qso.ContactTerritory == "Canada" || qso.ContactTerritory == "United States of America"))
+                    {
+                        matchEntity = null;
+                        matchingQSOs[i].ContactEntity = entity;
+                    }
                 }
             }
 
-            if (matchName == null)
+            if (matchEntity == null)
             {
                 return wasFound;
             }
 
             if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 > 50)
             {
-                if (qso.RealDXEntity != null && (qso.RealDXEntity == "Canada" || qso.RealDXEntity == "United States of America"))
+                if (qso.ContactTerritory != null && (qso.ContactTerritory == "Canada" || qso.ContactTerritory == "United States of America"))
                 {
-                    if (matchName.Length > 2 || matchingQSOs.Count < 5 || qso.ContactCall.Length == 3)
+                    if (matchEntity.Length > 2 || matchingQSOs.Count < 5 || qso.ContactCall.Length == 3)
                     {
 
                         // WASN'T THIS ALREADY DONE IN THE LOG PROCESSOR
-                        string entity = _QRZ.GetQRZInfo(qso.ContactCall);
+                        // yes but that was a gross check - this is when a entity does not match
+                        entity = _QRZ.GetQRZInfo(qso.ContactCall, "LogAnalyser");
 
-                        if (qso.DXEntity != entity) // matchName
+                        if (qso.ContactEntity != entity) // matchName
                         {
                             wasFound = true;
-                            qso.IncorrectDXEntity = qso.DXEntity + " --> " + entity; // matchName;
+                            qso.IncorrectDXEntity = qso.ContactEntity + " --> " + entity; // matchName;
                             qso.EntityIsInValid = true;
                         }
 
@@ -578,14 +684,14 @@ namespace W6OP.ContestLogAnalyzer
                     else
                     {
                         wasFound = true;
-                        qso.IncorrectDXEntity = qso.DXEntity + " --> " + matchName;
+                        qso.IncorrectDXEntity = qso.ContactEntity + " --> " + matchEntity;
                         qso.EntityIsInValid = true;
                     }
-                } 
+                }
                 else
                 {
                     wasFound = true;
-                    qso.IncorrectDXEntity = qso.DXEntity + " --> " + matchName;
+                    qso.IncorrectDXEntity = qso.ContactEntity + " --> " + matchEntity;
                     qso.EntityIsInValid = true;
                 }
             }
@@ -596,6 +702,8 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// Determine the reason to reject the QSO
+        /// 
+        /// This needs to be refactored
         /// </summary>
         /// <param name="matchLog"></param>
         /// <param name="qso"></param>
@@ -603,9 +711,6 @@ namespace W6OP.ContestLogAnalyzer
         private RejectReason FindRejectReason(ContestLog matchLog, QSO qso)
         {
             RejectReason reason = RejectReason.None;
-
-            //// check times
-            //reason = CheckForTimeMismatch(matchLog, qso);
 
             if (reason == RejectReason.None)
             {
@@ -816,7 +921,7 @@ namespace W6OP.ContestLogAnalyzer
                     break;
                 case ContestName.HQP:
                     matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.Mode == qso.Mode && q.ContactCall == qso.OperatorCall &&
-                       q.ContactName == qso.OperatorName && q.DXEntity != qso.DXEntity && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
+                       q.ContactName == qso.OperatorName && q.ContactEntity != qso.ContactEntity && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
                     break;
             }
 
@@ -824,7 +929,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 qso.MatchingQSO = matchQSO;
                 qso.IncorrectName = qso.ContactName;
-                qso.IncorrectDXEntity = qso.DXEntity;
+                qso.IncorrectDXEntity = qso.ContactEntity;
 
                 switch (ActiveContest)
                 {

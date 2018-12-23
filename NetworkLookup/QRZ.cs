@@ -32,10 +32,12 @@ namespace NetworkLookup
         /// </summary>
         /// <param name="call"></param>
         /// <returns></returns>
-        public string GetQRZInfo(string call)
+        public string GetQRZInfo(string call, string source)
         {
             string[] info = new string[2] { "0", "0" };
             string entity = null;
+
+            Console.WriteLine(source);
 
             if (_CallSignSet.Contains(call))
             {

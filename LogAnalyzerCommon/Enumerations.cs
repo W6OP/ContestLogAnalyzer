@@ -338,7 +338,7 @@ namespace W6OP.ContestLogAnalyzer
         [Description("KON")]
         KON,
         [Description("LAN")]
-        LAN,
+        LNI,
         [Description("LHN")]
         LHN,
         [Description("MAU")]
@@ -382,6 +382,8 @@ namespace W6OP.ContestLogAnalyzer
         KALAWAO,
         [Description("KAU")]
         KAUI,
+        [Description("LAN")]
+        LAN,
         [Description("LAN")]
         LANI,
         [Description("MAU")]

@@ -370,7 +370,12 @@ namespace W6OP.ContestLogAnalyzer
         /// or 3 characters if it is a HQP entity
         /// This is equivalent to the Operator Name for the CWOpen
         /// </summary>
-        public string OperatorEntity { get; set; }
+        private string _OperatorEntity;
+        public string OperatorEntity
+        {
+            get { return _OperatorEntity; }
+            set { _OperatorEntity = value.ToUpper(); }
+        }
 
         #endregion
 
@@ -385,8 +390,8 @@ namespace W6OP.ContestLogAnalyzer
         private string _OperatorName;
         public string OperatorName
         {
-            get { return _OperatorName.ToUpper(); }
-            set { _OperatorName = value; }
+            get { return _OperatorName; }
+            set { _OperatorName = value.ToUpper(); }
         }
 
         /// <summary>
@@ -398,15 +403,24 @@ namespace W6OP.ContestLogAnalyzer
         /// The real or top level country of the  contact or DX station
         /// This is the long name
         /// </summary>
-        public string RealDXEntity { get; set; }
+        public string ContactTerritory { get; set; }
 
         /// <summary>
         /// Contact country - HQP - This can be state or Canadian province 2 letter code
         /// or 3 letter HQP entity code
         /// This is equivalent to the Contact Name for the CWOpen
         /// </summary>
-        public string DXEntity { get; set; }
-
+        //public string DXEntity { get; set; }
+        private string _ContactEntity;
+        public string ContactEntity
+        {
+            get
+            { return _ContactEntity; }
+            set
+            {
+                _ContactEntity = value.ToUpper();
+            }
+        }
         /// <summary>
         /// For HQP contest
         /// </summary>
@@ -444,7 +458,6 @@ namespace W6OP.ContestLogAnalyzer
             get { return _ContactName.ToUpper(); }
             set {
                 _ContactName = value;
-                DXEntity = value; // for HQP
             }
         }
 
