@@ -575,7 +575,7 @@ namespace W6OP.ContestLogAnalyzer
             UpdateListViewAnalysis("Pass 1 completed", "----------", "----------", false);
             ResetProgressBar(true);
 
-            _LogAnalyser.PreProcessContestLogsReverse(_ContestLogs);
+            _LogAnalyser.PreAnalyzeContestLogsReverse(_ContestLogs);
         }
 
         /// <summary>

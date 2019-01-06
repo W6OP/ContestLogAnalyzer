@@ -98,10 +98,7 @@ namespace W6OP.ContestLogAnalyzer
         public string IncorrectName
         {
             get => _IncorrectName;
-            set  {
-                _IncorrectName = value;
-                _IncorrectDXEntity = value;
-            }
+            set => _IncorrectName = value;
         }
 
         /// <summary>
@@ -403,8 +400,15 @@ namespace W6OP.ContestLogAnalyzer
         /// The real or top level country of the  contact or DX station
         /// This is the long name
         /// </summary>
-        public string ContactTerritory { get; set; }
-
+        private string _ContactTerritory;
+        public string ContactTerritory
+        {
+            get { return _ContactTerritory.ToUpper(); }
+            set
+            {
+                _ContactTerritory = value;
+            }
+        }
         /// <summary>
         /// Contact country - HQP - This can be state or Canadian province 2 letter code
         /// or 3 letter HQP entity code
@@ -467,5 +471,7 @@ namespace W6OP.ContestLogAnalyzer
         /// twice, ascending and descending to get all of these - 2 passes
         /// </summary>
         public bool HasMatchingQso { get; set; }
+
+       
     } // end class
 }

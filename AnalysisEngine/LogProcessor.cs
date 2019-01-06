@@ -21,6 +21,11 @@ namespace W6OP.ContestLogAnalyzer
         public event ProgressUpdate OnProgressUpdate;
         //public event ErrorRaised OnErrorRaised;
 
+        private const string HQPHawaiiLiteral = "HAWAII";
+        private const string HQPUSALiteral = "UNITED STATES OF AMERICA";
+        private const string HQPAlaskaLiteral = "ALASKA";
+        private const string HQPCanadaLiteral = "CANADA";
+
         public PrintManager _PrintManager = null;
         public QRZ _QRZ = null;
 
@@ -340,6 +345,9 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// HQP Only
         /// now add the DXCC information some contests need for multipliers
+        /// 
+        /// THIS NEEDS TO BE REFACTORED, TOO MUCH REPETITION IN LOOP
+        /// 
         /// </summary>
         /// <param name="qsoCollection"></param>
         /// <param name="contestLog"></param>
@@ -367,10 +375,10 @@ namespace W6OP.ContestLogAnalyzer
 
                 operatorCall = qso.OperatorCall;
                 contactCall = qso.ContactCall;
-
+ 
                 qso.HQPPoints = GetPoints(qso.Mode);
 
-                // determine if this is a Hawawiin station
+                // determine if this operator is an Hawawiin station
                 isValidHQPEntity = Enum.IsDefined(typeof(HQPMults), qso.OperatorEntity);
                 contestLog.IsHQPEntity = isValidHQPEntity;
 
@@ -382,20 +390,13 @@ namespace W6OP.ContestLogAnalyzer
                 if (!isValidHQPEntity && qso.ContactEntity == "DX")
                 {
                     qso.EntityIsInValid = true;
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.RejectReasons.Clear();
+                    qso.RejectReasons.Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
                     continue;
                 }
 
-                // This is probably where I should verify the state if USA
-                // if ContactEntity is more than 2 chars I need to fix so later I get correct 
-                // entity in LogAnalyser SearchForIncorrect entity?
-                // should really enhance PrefixTable later to hold tuples so I can do this earlier
-                // I do this here because if it is a non hawaii to non hawaii contact it is invalid and this 
-                // never gets fixed.
-                if (qso.ContactEntity.Length > 2) // counties are 3 or more
-                {
-                    // check if its in one of the county files
-                    qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
-                }
+                
 
                 //***** get operator information from call parser component ****************//
                 // first check if we already have it from a previous operation
@@ -403,7 +404,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     // if no
                     prefixInfo = GetPrefixInformation(operatorCall);
-                    territory = prefixInfo.Territory;
+                    territory = prefixInfo.Territory.ToUpper();
                     _PrefixTable.Add(operatorCall, territory);
                 }
                 else
@@ -424,6 +425,19 @@ namespace W6OP.ContestLogAnalyzer
 
 
                 //***** set contact information ****************//
+
+                //// This is probably where I should verify the state if USA
+                //// if ContactEntity is more than 2 chars I need to fix so later I get correct 
+                //// entity in LogAnalyser SearchForIncorrect entity?
+                //// should really enhance PrefixTable later to hold tuples so I can do this earlier
+                //// I do this here because if it is a non hawaii to non hawaii contact it is invalid and this 
+                //// never gets fixed.
+                //if (qso.ContactEntity.Length > 2) // counties are 3 or more
+                //{
+                //    // check if its in one of the county files
+                //    qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
+                //}
+
                 if (!_PrefixTable.Contains(contactCall))
                 {
                     if (qso.ContactPrefix != string.Empty)
@@ -439,7 +453,7 @@ namespace W6OP.ContestLogAnalyzer
                         prefixInfo = GetPrefixInformation(contactCall);
                     }
 
-                     territory = prefixInfo.Territory;
+                     territory = prefixInfo.Territory.ToUpper();
                     _PrefixTable.Add(contactCall, territory);
 
                 }
@@ -447,17 +461,50 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     territory = (string)_PrefixTable[contactCall];
                 }
+
                 //***** end contact information ****************//
 
                 // did I get something back ?
                 if (territory != null)
                 {
                     qso.ContactTerritory = territory;
+                    if (qso.ContactEntity == "DX" && qso.ContactTerritory != HQPUSALiteral) // Mexico, New Zealand, etc. - don't ovewrite State
+                    {
+                        qso.ContactEntity = territory;
+                    }
 
                     if (Enum.IsDefined(typeof(HQPMults), qso.ContactEntity))
                     {
-                        qso.ContactTerritory = "Hawaii"; // AC7N
+                        qso.ContactTerritory = HQPHawaiiLiteral; // AC7N
                     }
+
+                    // This is probably where I should verify the state if USA
+                    // if ContactEntity is more than 2 chars I need to fix so later I get correct 
+                    // entity in LogAnalyser SearchForIncorrect entity?
+                    // should really enhance PrefixTable later to hold tuples so I can do this earlier
+                    // I do this here because if it is a non hawaii to non hawaii contact it is invalid and this 
+                    // never gets fixed.
+                    if (qso.ContactTerritory == HQPUSALiteral && !Enum.IsDefined(typeof(HQPMults), qso.ContactEntity) && qso.ContactEntity.Length > 2) // counties are 3 or more
+                    {
+                        // check if its in one of the county files
+                        qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
+                        if (qso.ContactEntity.Length > 2)
+                        {
+                            qso.Status = QSOStatus.InvalidQSO;
+                            qso.RejectReasons.Clear();
+                            qso.RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                            continue;
+                        }
+                    }
+
+                    // sometimes they put in the contact entity as WA003S - thats wrong
+                    //if (qso.ContactTerritory == HQPUSALiteral && qso.ContactEntity.Length > 2)
+                    //{
+                    //    qso.Status = QSOStatus.InvalidQSO;
+                    //    qso.RejectReasons.Clear();
+                    //    qso.RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                    //    continue;
+                    //}
                 }
                 else
                 {
@@ -478,12 +525,15 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (territory != null)
                     {
-                        SetHQPEntityInfo(qso, territory);
+                        if (qso.ContactTerritory == HQPCanadaLiteral || qso.ContactTerritory == HQPUSALiteral)
+                        {
+                            SetHQPEntityInfo(qso, territory);
+                        }
                     }
                 }
                 else
                 {
-                    if (qso.ContactTerritory == "Hawaii")
+                    if (qso.ContactTerritory == HQPHawaiiLiteral)
                     {
                         SetNonHQPEntityInfo(qso);
                     }
@@ -521,10 +571,10 @@ namespace W6OP.ContestLogAnalyzer
                         if (prefixInfo.Territory != null)
                         {
                             // this is for non US and Canada
-                            qso.OperatorEntity = prefixInfo.Territory.ToString();
+                            qso.OperatorEntity = prefixInfo.Territory.ToUpper();
                             qso.IsEntityVerified = true;
 
-                            if (qso.ContactEntity == "Canada" || qso.ContactEntity == "United States of America")
+                            if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
                             {
                                 qso.ContactTerritory = qso.ContactEntity;
                                 qso.ContactEntity = _QRZ.GetQRZInfo(qso.ContactCall, "LogProcessor");
@@ -546,11 +596,11 @@ namespace W6OP.ContestLogAnalyzer
         {
             string[] info = new string[2] { "0", "0" };
 
-            qso.ContactTerritory = territory;
+            //qso.ContactTerritory = territory;
             qso.IsEntityVerified = true;
 
-            if (qso.ContactTerritory == "Canada" || qso.ContactTerritory == "United States of America")
-            {
+            //if (qso.ContactTerritory == HQPCanadaLiteral || qso.ContactTerritory == HQPUSALiteral)
+            //{
                 if (qso.ContactEntity == "DX")
                 {
                     // this is very rarely hit -  This is only for when the US or Canada entry is input as DX by the operator
@@ -566,7 +616,7 @@ namespace W6OP.ContestLogAnalyzer
                     //    // should find this in analysis processor
                     //}
                 }
-            }
+            //}
         }
 
         /// <summary>

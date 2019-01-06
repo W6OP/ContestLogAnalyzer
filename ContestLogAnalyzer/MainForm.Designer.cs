@@ -336,6 +336,8 @@
             // 
             // TabControlMain
             // 
+            this.TabControlMain.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.TabControlMain.Controls.Add(this.TabPageLogStatus);
             this.TabControlMain.Controls.Add(this.TabPageAnalysis);
             this.TabControlMain.Controls.Add(this.TabPageScoring);
@@ -573,6 +575,8 @@
             this.Controls.Add(this.TextBoxLogFolder);
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.MaximumSize = new System.Drawing.Size(1024, 1500);
+            this.MinimumSize = new System.Drawing.Size(1024, 768);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "W6OP Contest Log Analyzer";
