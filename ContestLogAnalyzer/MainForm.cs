@@ -519,9 +519,6 @@ namespace W6OP.ContestLogAnalyzer
 
             UpdateLabel("Load contest logs completed");
 
-            //ProgressBarLoad.Maximum = _ContestLogs.Count;
-            //ProgressBarLoad.Value = _ContestLogs.Count;
-
             EnableControl(ButtonStartAnalysis, true);
 
             ResetProgressBar(true);

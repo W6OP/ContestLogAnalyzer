@@ -488,8 +488,9 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         // check if its in one of the county files
                         qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
-                        if (qso.ContactEntity.Length > 2)
+                        if (qso.ContactEntity.Length > 2) // sometimes they put in the contact entity as WA003S - thats wrong
                         {
+                            qso.EntityIsInValid = true;
                             qso.Status = QSOStatus.InvalidQSO;
                             qso.RejectReasons.Clear();
                             qso.RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
@@ -572,7 +573,7 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             // this is for non US and Canada
                             qso.OperatorEntity = prefixInfo.Territory.ToUpper();
-                            qso.IsEntityVerified = true;
+                            //qso.IsEntityVerified = true;
 
                             if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
                             {
@@ -597,7 +598,7 @@ namespace W6OP.ContestLogAnalyzer
             string[] info = new string[2] { "0", "0" };
 
             //qso.ContactTerritory = territory;
-            qso.IsEntityVerified = true;
+            //qso.IsEntityVerified = true;
 
             //if (qso.ContactTerritory == HQPCanadaLiteral || qso.ContactTerritory == HQPUSALiteral)
             //{

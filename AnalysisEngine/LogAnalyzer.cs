@@ -586,11 +586,13 @@ namespace W6OP.ContestLogAnalyzer
             {
                 List<QSO> listWithMostEntries = (new List<List<QSO>> { matchingQSOs, matchingQSOsX })
                    .OrderByDescending(x => x.Count())
-                   .Take(1).FirstOrDefault().ToList();
+                   .Take(1).FirstOrDefault().Where(q => q.EntityIsInValid == false).ToList();
 
                 List<QSO> listWithLeastEntries = (new List<List<QSO>> { matchingQSOs, matchingQSOsX })
                    .OrderBy(x => x.Count())
-                   .Take(1).FirstOrDefault().ToList();
+                   .Take(1).FirstOrDefault().Where(q => q.EntityIsInValid == false).ToList();
+
+                //listWithMostEntries = (List < QSO > )listWithMostEntries.Where(q => q.EntityIsInValid == false);
 
                 // first use listWithMostEntries.first
                 if (listWithMostEntries.Count() > 2) //listWithMostEntries.FirstOrDefault().Count()

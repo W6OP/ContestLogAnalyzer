@@ -169,15 +169,12 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool IsEntityVerified = false;
-
+        private bool _EntityIsInValid = false;
         public bool EntityIsInValid
         {
             set
             {
+                _EntityIsInValid = value;
                 if (value == true)
                 {
                     if (!_RejectReasons.ContainsKey(RejectReason.InvalidEntity))
@@ -197,6 +194,10 @@ namespace W6OP.ContestLogAnalyzer
                         }
                     }
                 }
+            }
+            get
+            {
+                return _EntityIsInValid;
             }
         }
 
