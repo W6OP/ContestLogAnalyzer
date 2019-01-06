@@ -86,7 +86,7 @@ namespace W6OP.ContestLogAnalyzer
                                 break;
                             case ContestName.HQP:
                                 // find the operator entity used on the majority of qsos
-                                // this may be useful other plces too
+                                // this may be useful other places too
                                 // maybe call all QSOs for an individual for their entity
                                 var mostUsedOperatorEntity = qsoList
                                     .GroupBy(q => q.OperatorEntity)
@@ -230,7 +230,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             ContestLog matchLog = null;
             RejectReason reason = RejectReason.None;
-            List<ContestLog> tempLog = new List<ContestLog>();
+            List<ContestLog> tempLog = null; // new List<ContestLog>();
             QSO matchQSO = null;
             QSO matchQSO_X = null;
 
@@ -250,8 +250,9 @@ namespace W6OP.ContestLogAnalyzer
                 mode = qso.Mode;
                 contactName = qso.ContactName;
                 contactCall = qso.ContactCall;
-                dxEntity = qso.ContactEntity;
+                dxEntity = qso.OperatorEntity;
                 receivedSerialNumber = qso.ReceivedSerialNumber;
+                tempLog = null;
 
                 if (qso.Status == QSOStatus.InvalidQSO && qso.RejectReasons.Count > 0)
                 {
@@ -301,6 +302,7 @@ namespace W6OP.ContestLogAnalyzer
 
                             matchQSO_X = matchLog.QSOCollectionX.FirstOrDefault(q => q.Band == band && q.ContactEntity == dxEntity && q.OperatorCall == contactCall &&
                                                   q.ContactCall == operatorCall && q.Mode == mode && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).Minutes) <= 5);
+
                             break;
                     }
 
@@ -372,7 +374,6 @@ namespace W6OP.ContestLogAnalyzer
                                     }
                                 }
                             }
-
                         }
                         else
                         {
