@@ -28,9 +28,9 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public LogAnalyzer()
+        public LogAnalyzer(QRZ qrz)
         {
-            _QRZ = new QRZ();
+            _QRZ = qrz;
         }
 
         /// <summary>
@@ -584,6 +584,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             else // count = 1 so use the items in the larger list
             {
+                // these must be Lists, not IEnumerable so .Except works - only look at QSOs with valid entities
                 List<QSO> listWithMostEntries = (new List<List<QSO>> { matchingQSOs, matchingQSOsX })
                    .OrderByDescending(x => x.Count())
                    .Take(1).FirstOrDefault().Where(q => q.EntityIsInValid == false).ToList();
@@ -592,19 +593,18 @@ namespace W6OP.ContestLogAnalyzer
                    .OrderBy(x => x.Count())
                    .Take(1).FirstOrDefault().Where(q => q.EntityIsInValid == false).ToList();
 
-                //listWithMostEntries = (List < QSO > )listWithMostEntries.Where(q => q.EntityIsInValid == false);
-
-                // first use listWithMostEntries.first
-                if (listWithMostEntries.Count() > 2) //listWithMostEntries.FirstOrDefault().Count()
+                // we have enough to vote
+                if (listWithMostEntries.Count() > 2) 
                 {
                     // we want to take the list with the most entries and remove the entries in the least entries list
                     var difference = listWithMostEntries.Except(listWithLeastEntries);
 
-                    QSO firstMatch = difference.FirstOrDefault(); //difference.FirstOrDefault()[0]
+                    QSO firstMatch = difference.FirstOrDefault(); 
                     entity = firstMatch.ContactEntity;
                 }
                 else
                 {
+                    // last resort, use QRZ.com
                     entity = _QRZ.GetQRZInfo(qso.ContactCall, "LogAnalyser");
                 }
             }

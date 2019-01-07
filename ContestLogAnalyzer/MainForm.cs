@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkLookup;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -47,7 +48,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private List<ContestLog> _ContestLogs;
         private IEnumerable<System.IO.FileInfo> _LogFileList;
-        //private ILookup<string, string> _BadCallList;
+        private QRZ _QRZ = null;
 
         private LogProcessor _LogProcessor;
         private LogAnalyzer _LogAnalyser;
@@ -70,6 +71,8 @@ namespace W6OP.ContestLogAnalyzer
         public MainForm()
         {
             InitializeComponent();
+
+            _QRZ = new QRZ();
         }
 
         /// <summary>
@@ -90,13 +93,13 @@ namespace W6OP.ContestLogAnalyzer
 
             if (_LogProcessor == null)
             {
-                _LogProcessor = new LogProcessor();
+                _LogProcessor = new LogProcessor(_QRZ);
                 _LogProcessor.OnProgressUpdate += _LogProcessor_OnProgressUpdate;
             }
 
             if (_LogAnalyser == null)
             {
-                _LogAnalyser = new LogAnalyzer();
+                _LogAnalyser = new LogAnalyzer(_QRZ);
                 _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
             }
 

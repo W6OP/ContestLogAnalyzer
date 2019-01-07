@@ -11,6 +11,8 @@ namespace NetworkLookup
         private string _QRZSessionKey;
         private bool _IsLoggedOn = false;
 
+        private int debugCount = 0;
+
         /// <summary>
         ///  // Holds unique call signs and entity so we don't do dupe queries to QRZ.com
         /// </summary>
@@ -74,6 +76,13 @@ namespace NetworkLookup
 
             try
             {
+                // ...
+#if DEBUG
+                debugCount += 1;
+                Console.WriteLine("debug count = " + debugCount.ToString());
+#endif
+                // ...
+
                 retryCount += 1;
 
                 if (_QRZSessionKey == null)

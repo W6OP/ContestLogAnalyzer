@@ -27,7 +27,7 @@ namespace W6OP.ContestLogAnalyzer
         private const string HQPCanadaLiteral = "CANADA";
 
         public PrintManager _PrintManager = null;
-        public QRZ _QRZ = null;
+        private QRZ _QRZ = null;
 
         public Lookup<string, string> CountryPrefixes { get; set; }
         public Lookup<string, string> Kansas { get; set; }
@@ -51,8 +51,9 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public LogProcessor()
+        public LogProcessor(QRZ qrz)
         {
+            _QRZ = qrz;
             _FailingLine = "";
             _WorkingLine = "";
 
@@ -309,7 +310,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (ActiveContest == ContestName.HQP)
             {
-                _QRZ = new QRZ();
+               // _QRZ = new QRZ();
 
                 _Parser = new CallParser.CallsignParser();
                 if (File.Exists(@"C:\iUsers\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
