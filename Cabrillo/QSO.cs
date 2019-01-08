@@ -22,6 +22,12 @@ namespace W6OP.ContestLogAnalyzer
         #region Common
 
         /// <summary>
+        /// Indicates a QSO this operator does not get credit for
+        /// but others do.
+        /// </summary>
+        public bool IsXQSO { get; set; }
+
+        /// <summary>
         /// The log reference for a particuler QSO.
         /// </summary>
         public ContestLog ParentLog { get; set; }

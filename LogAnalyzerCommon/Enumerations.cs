@@ -19,8 +19,6 @@ namespace W6OP.ContestLogAnalyzer
         BustedCallSign,
         [Description("The received serial number is incorrect")]
         SerialNumber,
-        [Description("The received or sent serial number is not a number (999999 substituted) check your log")]
-        SerialNumberFormat,
         [Description("The operator name does not match")]
         OperatorName,
         [Description("The entity name does not match")]
@@ -39,6 +37,8 @@ namespace W6OP.ContestLogAnalyzer
         InvalidEntity,
         [Description("This QSO will not be counted")]
         NotCounted,
+        [Description("This X-QSO will not be counted")]
+        Marked_XQSO,
         [Description("Missing Column")]
         MissingColumn,
         [Description("None")]

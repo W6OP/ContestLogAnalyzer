@@ -185,10 +185,17 @@ namespace W6OP.ContestLogAnalyzer
                     // add a reference to the parent log to each QSO
                     contestLog.QSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
 
+                    // collect all the X-QSOs so we can mark them as IsXQSO - this log won't count them later but 
+                    // others can get credit for them
                     contestLog.QSOCollectionX = CollectQSOs(lineListX, session, false);
                     contestLog.QSOCollectionX.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
+                    contestLog.QSOCollectionX.Select(c => { c.IsXQSO = true; return c; }).ToList();
 
-                    if (contestLog.QSOCollection == null || contestLog.QSOCollection.Count == 0)
+                    // merge the two lists together so other logs can search for everything
+                    contestLog.QSOCollection = contestLog.QSOCollection.Union(contestLog.QSOCollectionX).ToList();
+
+                    //  it will never be null because line 186 will have an exception first
+                    if (contestLog.QSOCollection.Count == 0)
                     {
                         // may want to expand on this for a future report
                         _FailReason = "One or more QSOs may be in an invalid format."; // create enum
@@ -216,6 +223,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     // find out if columns are missing - do something else, need to use reject reason
                     List<QSO> missingQSOS = contestLog.QSOCollection.Where(q => q.ContactName == "MISSING_COLUMN").ToList();
+
                     if (missingQSOS.Count > 0)
                     {
                         _FailReason = "One or more columns are missing.";
@@ -301,7 +309,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (message.IndexOf("Value cannot be null") != -1)
                 {
-                    message = "Invalid log file";
+                    message = "Unable to process log.";
                 }
                 MoveFileToInpectFolder(fileName, message);
             }

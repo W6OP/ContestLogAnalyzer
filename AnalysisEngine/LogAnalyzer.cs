@@ -274,6 +274,15 @@ namespace W6OP.ContestLogAnalyzer
                     }
                 }
 
+                // if this QSO is and X-QSO it does not get counted for this operator
+                if (qso.IsXQSO)
+                {
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.RejectReasons.Clear();
+                    qso.RejectReasons.Add(RejectReason.Marked_XQSO, EnumHelper.GetDescription(RejectReason.Marked_XQSO));
+                    continue;
+                }
+
                 // get the other log that matches this QSO contact call
                 matchLog = contestLogList.FirstOrDefault(q => q.LogOwner == qso.ContactCall);
 
@@ -291,10 +300,9 @@ namespace W6OP.ContestLogAnalyzer
                             matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.OperatorName == contactName && q.OperatorCall == contactCall &&
                                                   q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - receivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).Minutes) <= 5);
 
-                            // I don't remember why I have this here - maybe for incosistent operator name - q.ContactCall == qso.OperatorCall - q.ContactCall == operatorCall
-                            // LogOwner name does not match name used in QSOs
-                            matchQSO_X = matchLog.QSOCollectionX.FirstOrDefault(q => q.Band == band && q.OperatorName == contactName && q.OperatorCall == contactCall &&
-                                                    q.ContactCall == operatorCall && Math.Abs(q.SentSerialNumber - receivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).Minutes) <= 5);
+                           
+                            //matchQSO_X = matchLog.QSOCollectionX.FirstOrDefault(q => q.Band == band && q.OperatorName == contactName && q.OperatorCall == contactCall &&
+                            //                        q.ContactCall == operatorCall && Math.Abs(q.SentSerialNumber - receivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).Minutes) <= 5);
                             break;
                         case ContestName.HQP:
                             // now see if a QSO matches this QSO
