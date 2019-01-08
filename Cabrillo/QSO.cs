@@ -109,20 +109,9 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// This property allows the rejected qso report to know there are duplicates of this call
-        /// It will only be true if it is the qso counted as the valid qso not the dupe)
+        /// It will only be true if it is the qso counted as the valid qso not the dupe
         /// </summary>
         public bool QSOHasDupes { get; set; }
-
-        /// <summary>
-        /// CWOpen only.
-        /// Lists the incorrect name if available.
-        /// </summary>
-        private string _IncorrectName = null;
-        public string IncorrectName
-        {
-            get => _IncorrectName;
-            set => _IncorrectName = value;
-        }
 
         /// <summary>
         /// The operators call sign is invalid for this QSO
@@ -144,36 +133,6 @@ namespace W6OP.ContestLogAnalyzer
                     if (_RejectReasons.ContainsKey(RejectReason.InvalidCall))
                     {
                         _RejectReasons.Remove(RejectReason.InvalidCall);
-                        if (_RejectReasons.Count == 0)
-                        {
-                            _Status = QSOStatus.ValidQSO;
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// CWOpen only?
-        /// The operators name does not match for this QSO.
-        /// </summary>
-        public bool OpNameIsInValid
-        {
-            set
-            {
-                if (value == true)
-                {
-                    if (!_RejectReasons.ContainsKey(RejectReason.OperatorName))
-                    {
-                        _RejectReasons.Add(RejectReason.OperatorName, EnumHelper.GetDescription(RejectReason.OperatorName));
-                        _Status = QSOStatus.InvalidQSO;
-                    }
-                }
-                else
-                {
-                    if (_RejectReasons.ContainsKey(RejectReason.OperatorName))
-                    {
-                        _RejectReasons.Remove(RejectReason.OperatorName);
                         if (_RejectReasons.Count == 0)
                         {
                             _Status = QSOStatus.ValidQSO;
@@ -213,6 +172,9 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// Call sign of the operator.
+        /// </summary>
         private string _OperatorCall;
         public string OperatorCall
         {
@@ -220,7 +182,9 @@ namespace W6OP.ContestLogAnalyzer
             set { _OperatorCall = value; }
         }
 
-        //later add Entity for HQP
+        /// <summary>
+        /// Name of the operator.
+        /// </summary>
         private string _OperatorName;
         public string OperatorName
         {
@@ -229,21 +193,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// The real or top level country of the  contact or DX station
-        /// This is the long name
-        /// </summary>
-        private string _ContactTerritory;
-        public string ContactTerritory
-        {
-            get { return _ContactTerritory.ToUpper(); }
-            set
-            {
-                _ContactTerritory = value;
-            }
-        }
-
-        /// <summary>
-        /// 
+        /// Call sign of the contact.
         /// </summary>
         private string _ContactCall;
         public string ContactCall
@@ -281,6 +231,47 @@ namespace W6OP.ContestLogAnalyzer
         #endregion
 
         #region CWOpen
+
+        /// <summary>
+        /// CWOpen only?
+        /// The operators name does not match for this QSO.
+        /// </summary>
+        public bool OpNameIsInValid
+        {
+            set
+            {
+                if (value == true)
+                {
+                    if (!_RejectReasons.ContainsKey(RejectReason.OperatorName))
+                    {
+                        _RejectReasons.Add(RejectReason.OperatorName, EnumHelper.GetDescription(RejectReason.OperatorName));
+                        _Status = QSOStatus.InvalidQSO;
+                    }
+                }
+                else
+                {
+                    if (_RejectReasons.ContainsKey(RejectReason.OperatorName))
+                    {
+                        _RejectReasons.Remove(RejectReason.OperatorName);
+                        if (_RejectReasons.Count == 0)
+                        {
+                            _Status = QSOStatus.ValidQSO;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// CWOpen only.
+        /// Lists the incorrect name if available.
+        /// </summary>
+        private string _IncorrectName = null;
+        public string IncorrectName
+        {
+            get => _IncorrectName;
+            set => _IncorrectName = value;
+        }
 
         /// <summary>
         /// Frequency of the exchange - may only need band.
@@ -448,6 +439,19 @@ namespace W6OP.ContestLogAnalyzer
             set { _OperatorEntity = value.ToUpper(); }
         }
 
+        /// <summary>
+        /// The real or top level country of the  contact or DX station
+        /// This is the long name
+        /// </summary>
+        private string _ContactTerritory;
+        public string ContactTerritory
+        {
+            get { return _ContactTerritory.ToUpper(); }
+            set
+            {
+                _ContactTerritory = value;
+            }
+        }
 
         /// <summary>
         /// HQP only.
