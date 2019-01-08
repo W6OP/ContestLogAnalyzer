@@ -93,12 +93,12 @@ namespace W6OP.ContestLogAnalyzer
             set { _Station = value; }
         }
 
-        private CategoryTime _TimePeriod;
-        public CategoryTime TimePeriod
-        {
-            get { return _TimePeriod; }
-            set { _TimePeriod = value; }
-        }
+        //private CategoryTime _TimePeriod;
+        //public CategoryTime TimePeriod
+        //{
+        //    get { return _TimePeriod; }
+        //    set { _TimePeriod = value; }
+        //}
 
         private CategoryTransmitter _Transmitter;
         public CategoryTransmitter Transmitter
@@ -108,12 +108,12 @@ namespace W6OP.ContestLogAnalyzer
         }
 
 
-        private CategoryOverlay _Overlay;
-        public CategoryOverlay Overlay
-        {
-            get { return _Overlay; }
-            set { _Overlay = value; }
-        }
+        //private CategoryOverlay _Overlay;
+        //public CategoryOverlay Overlay
+        //{
+        //    get { return _Overlay; }
+        //    set { _Overlay = value; }
+        //}
 
         private Int32 _ClaimedScore;
         public Int32 ClaimedScore
@@ -143,12 +143,12 @@ namespace W6OP.ContestLogAnalyzer
             set { _CreatedBy = value; }
         }
 
-        private string _EmailAddress;
-        public string EmailAddress
-        {
-            get { return _EmailAddress; }
-            set { _EmailAddress = value; }
-        }
+        //private string _EmailAddress;
+        //public string EmailAddress
+        //{
+        //    get { return _EmailAddress; }
+        //    set { _EmailAddress = value; }
+        //}
 
         private string _Location;
         public string Location
@@ -171,12 +171,12 @@ namespace W6OP.ContestLogAnalyzer
             set { _NameSent = value; }
         }
 
-        private Address _PostalAddress;
-        public Address PostalAddress
-        {
-            get { return _PostalAddress; }
-            set { _PostalAddress = value; }
-        }
+        //private Address _PostalAddress;
+        //public Address PostalAddress
+        //{
+        //    get { return _PostalAddress; }
+        //    set { _PostalAddress = value; }
+        //}
 
         private List<string> _Operators;
         public List<string> Operators
@@ -185,12 +185,12 @@ namespace W6OP.ContestLogAnalyzer
             set { _Operators = value; }
         }
 
-        private DateTime _OffTime;
-        public DateTime OffTime
-        {
-            get { return _OffTime; }
-            set { _OffTime = value; }
-        }
+        //private DateTime _OffTime;
+        //public DateTime OffTime
+        //{
+        //    get { return _OffTime; }
+        //    set { _OffTime = value; }
+        //}
 
         private string _SoapBox;
         public string SoapBox

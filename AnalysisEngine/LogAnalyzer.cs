@@ -299,10 +299,6 @@ namespace W6OP.ContestLogAnalyzer
                             // now see if a QSO matches this QSO
                             matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.OperatorName == contactName && q.OperatorCall == contactCall &&
                                                   q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - receivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).Minutes) <= 5);
-
-                           
-                            //matchQSO_X = matchLog.QSOCollectionX.FirstOrDefault(q => q.Band == band && q.OperatorName == contactName && q.OperatorCall == contactCall &&
-                            //                        q.ContactCall == operatorCall && Math.Abs(q.SentSerialNumber - receivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).Minutes) <= 5);
                             break;
                         case ContestName.HQP:
                             // now see if a QSO matches this QSO
@@ -441,11 +437,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (ActiveContest == ContestName.HQP)
                 {
-                    // DX entities should be "DX" in log so nothing to check
-                    //if (qso.ContactTerritory == HQPCanadaLiteral || qso.ContactTerritory == "United States of America")
-                    //{
                     found = SearchForIncorrectEntityEx(qso, contestLogList);
-                    //}
                 }
                 else
                 {
@@ -501,8 +493,7 @@ namespace W6OP.ContestLogAnalyzer
             List<QSO> matchingQSOs = null;
             string matchName = null;
 
-            // now look for a match without the operator name - only search those not already eliminated
-            //matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.Status == QSOStatus.ValidQSO).ToList();
+            // now look for a match without the operator name
             matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
 
             if (matchingQSOs.Count >= 1)
@@ -515,6 +506,7 @@ namespace W6OP.ContestLogAnalyzer
                         matchCount++;
 
                         // THIS NEEDS TO BE BETTER - WHAT AM I REALLY TRYING TO DO
+                        // should I do a vote ?
                         matchName = matchingQSOs[i].ContactName;
                     }
                 }
@@ -545,8 +537,8 @@ namespace W6OP.ContestLogAnalyzer
         {
             bool isNotCorrect = false;
             Int32 matchCount = 0;
-            List<QSO> matchingQSOs = null;
-            List<QSO> matchingQSOsX = null;
+            List<QSO> matchingQSOSpecific = null;
+            List<QSO> matchingQSOsGeneral = null;
             //List<string> entityA = null;
             //string matchEntity = null;
             string entity = null;
@@ -554,13 +546,11 @@ namespace W6OP.ContestLogAnalyzer
             int count = 0;
 
             // get a list of all QSOs with the same contact callsign and same entity
-            // problem is this one is FL
-            matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactEntity == qso.ContactEntity).ToList();
+            matchingQSOSpecific = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactEntity == qso.ContactEntity).ToList();
             // get a list of all QSOs with the same contact callsign but may have different entity
-            matchingQSOsX = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
+            matchingQSOsGeneral = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
             // if the above counts are different then someone is wrong
-            matchCount = matchingQSOsX.Count - matchingQSOs.Count;
-
+            matchCount = matchingQSOsGeneral.Count - matchingQSOSpecific.Count;
 
             // if no mismatches then assume it is correct
             if (matchCount == 0)
@@ -571,10 +561,10 @@ namespace W6OP.ContestLogAnalyzer
             // need to have more than two QSOs to VOTE on most prevalent contactEntity
 
             // https://stackoverflow.com/questions/17323804/compare-two-lists-via-one-property-using-linq
-            // if matchingQSOs and matchingQSOsX are not equal this will give a list with the majority of values (inner join)
+            // if matchingQSOSpecific and matchingQSOsGeneral are not equal this will give a list with the majority of values (inner join)
             // actually it gives a list of the majority of values that match - so could return only one item
-            IEnumerable<QSO> majorityContactEntities = from firstQSO in matchingQSOs
-                                                       join secondQSO in matchingQSOsX
+            IEnumerable<QSO> majorityContactEntities = from firstQSO in matchingQSOSpecific
+                                                       join secondQSO in matchingQSOsGeneral
                                                        on firstQSO.ContactEntity equals secondQSO.ContactEntity
                                                        into matches
                                                        where matches.Any()
@@ -591,11 +581,11 @@ namespace W6OP.ContestLogAnalyzer
             else // count = 1 so use the items in the larger list
             {
                 // these must be Lists, not IEnumerable so .Except works - only look at QSOs with valid entities
-                List<QSO> listWithMostEntries = (new List<List<QSO>> { matchingQSOs, matchingQSOsX })
+                List<QSO> listWithMostEntries = (new List<List<QSO>> { matchingQSOSpecific, matchingQSOsGeneral })
                    .OrderByDescending(x => x.Count())
                    .Take(1).FirstOrDefault().Where(q => q.EntityIsInValid == false).ToList();
 
-                List<QSO> listWithLeastEntries = (new List<List<QSO>> { matchingQSOs, matchingQSOsX })
+                List<QSO> listWithLeastEntries = (new List<List<QSO>> { matchingQSOSpecific, matchingQSOsGeneral })
                    .OrderBy(x => x.Count())
                    .Take(1).FirstOrDefault().Where(q => q.EntityIsInValid == false).ToList();
 

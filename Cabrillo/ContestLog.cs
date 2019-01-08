@@ -89,7 +89,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// List of all the XQSOs in this log.
         /// </summary>
-        public List<QSO> QSOCollectionX { get; set; } = new List<QSO>();
+       // public List<QSO> QSOCollectionX { get; set; } = new List<QSO>();
 
         /// <summary>
         /// A list of all of the logs that have a reference to the call represented by this log.

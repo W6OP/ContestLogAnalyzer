@@ -79,7 +79,7 @@ namespace NetworkLookup
                 // ...
 #if DEBUG
                 debugCount += 1;
-                Console.WriteLine("debug count = " + debugCount.ToString());
+                Console.WriteLine("debug count = " + debugCount.ToString() + " - " + call);
 #endif
                 // ...
 

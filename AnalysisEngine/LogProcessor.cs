@@ -109,6 +109,7 @@ namespace W6OP.ContestLogAnalyzer
             ContestLog contestLog = new ContestLog();
             List<string> lineList;
             List<string> lineListX;
+            List<QSO> xQSOCollection; // X-QSOs
             string fullName = fileInfo.FullName;
             string fileName = fileInfo.Name;
             string logFileName = null;
@@ -187,12 +188,12 @@ namespace W6OP.ContestLogAnalyzer
 
                     // collect all the X-QSOs so we can mark them as IsXQSO - this log won't count them later but 
                     // others can get credit for them
-                    contestLog.QSOCollectionX = CollectQSOs(lineListX, session, false);
-                    contestLog.QSOCollectionX.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
-                    contestLog.QSOCollectionX.Select(c => { c.IsXQSO = true; return c; }).ToList();
+                    xQSOCollection = CollectQSOs(lineListX, session, false);
+                    xQSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
+                    xQSOCollection.Select(c => { c.IsXQSO = true; return c; }).ToList();
 
                     // merge the two lists together so other logs can search for everything
-                    contestLog.QSOCollection = contestLog.QSOCollection.Union(contestLog.QSOCollectionX).ToList();
+                    contestLog.QSOCollection = contestLog.QSOCollection.Union(xQSOCollection).ToList();
 
                     //  it will never be null because line 186 will have an exception first
                     if (contestLog.QSOCollection.Count == 0)
