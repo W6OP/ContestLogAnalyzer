@@ -728,7 +728,6 @@ namespace W6OP.ContestLogAnalyzer
                 qso.MatchingQSO = matchQSO;
                 reason = RejectReason.SerialNumber;
             }
-
             return reason;
         }
 

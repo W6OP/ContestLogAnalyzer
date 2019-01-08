@@ -288,14 +288,20 @@ namespace W6OP.ContestLogAnalyzer
                 else
                 {
                     message = ex.Message;
+
                     if (contestLog.QSOCollection == null)
                     {
-                        _FailReason = _FailReason + " - QSO collection is null.";
+                        _FailReason = _FailReason + " - QSO collection is null." + Environment.NewLine + _FailingLine;
                     }
                     else
                     {
-                        _FailReason = _FailReason + " - Unable to process log.";
+                        _FailReason = _FailReason + " - Unable to process log." + Environment.NewLine + _FailingLine;
                     }
+                }
+
+                if (message.IndexOf("Value cannot be null") != -1)
+                {
+                    message = "Invalid log file";
                 }
                 MoveFileToInpectFolder(fileName, message);
             }
@@ -310,7 +316,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (ActiveContest == ContestName.HQP)
             {
-               // _QRZ = new QRZ();
+                // _QRZ = new QRZ();
 
                 _Parser = new CallParser.CallsignParser();
                 if (File.Exists(@"C:\iUsers\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
@@ -376,7 +382,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 operatorCall = qso.OperatorCall;
                 contactCall = qso.ContactCall;
- 
+
                 qso.HQPPoints = GetPoints(qso.Mode);
 
                 // determine if this operator is an Hawawiin station
@@ -397,7 +403,7 @@ namespace W6OP.ContestLogAnalyzer
                     continue;
                 }
 
-                
+
 
                 //***** get operator information from call parser component ****************//
                 // first check if we already have it from a previous operation
@@ -454,7 +460,7 @@ namespace W6OP.ContestLogAnalyzer
                         prefixInfo = GetPrefixInformation(contactCall);
                     }
 
-                     territory = prefixInfo.Territory.ToUpper();
+                    territory = prefixInfo.Territory.ToUpper();
                     _PrefixTable.Add(contactCall, territory);
 
                 }
@@ -603,21 +609,21 @@ namespace W6OP.ContestLogAnalyzer
 
             //if (qso.ContactTerritory == HQPCanadaLiteral || qso.ContactTerritory == HQPUSALiteral)
             //{
-                if (qso.ContactEntity == "DX")
-                {
-                    // this is very rarely hit -  This is only for when the US or Canada entry is input as DX by the operator
-                    qso.ContactEntity = _QRZ.GetQRZInfo(qso.ContactCall, "LogProcessor");
-                }
-                else if (qso.ContactEntity.Length > 2) // counties are 3 or more
-                {
-                    // check if its in one of the county files
-                    qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
-                    //if (qso.DXEntity.Length > 2) // if its still > 2 it is wrong maybe used Hawaii entity instead of US state
-                    //{
-                    //    // do i really want to do anything here ???
-                    //    // should find this in analysis processor
-                    //}
-                }
+            if (qso.ContactEntity == "DX")
+            {
+                // this is very rarely hit -  This is only for when the US or Canada entry is input as DX by the operator
+                qso.ContactEntity = _QRZ.GetQRZInfo(qso.ContactCall, "LogProcessor");
+            }
+            else if (qso.ContactEntity.Length > 2) // counties are 3 or more
+            {
+                // check if its in one of the county files
+                qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
+                //if (qso.DXEntity.Length > 2) // if its still > 2 it is wrong maybe used Hawaii entity instead of US state
+                //{
+                //    // do i really want to do anything here ???
+                //    // should find this in analysis processor
+                //}
+            }
             //}
         }
 
@@ -987,13 +993,13 @@ namespace W6OP.ContestLogAnalyzer
                              OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
                              OperatortPrefix = prefix,
                              OperatorSuffix = suffix,
-                             SentSerialNumber = ConvertSerialNumber(split[6]),
+                             SentSerialNumber = ConvertSerialNumber(split[6], line),
                              OperatorName = CheckActiveContest(split[7], "OperatorName"),
                              OperatorEntity = CheckActiveContest(split[7], "OperatorEntity"),
                              ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
-                             ReceivedSerialNumber = ConvertSerialNumber(split[9]),
+                             ReceivedSerialNumber = ConvertSerialNumber(split[9], line),
                              ContactName = CheckActiveContest(split[10], "ContactName"),
                              ContactEntity = CheckActiveContest(split[10], "ContactEntity"),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
@@ -1006,7 +1012,7 @@ namespace W6OP.ContestLogAnalyzer
                     IEnumerable<QSO> qso =
                          from line in lineList
                          let split = CheckQSOLength(line.Split(' '))
-                        
+
                          select new QSO()
                          {
                              Status = CheckCompleteQSO(split, line),
@@ -1019,13 +1025,13 @@ namespace W6OP.ContestLogAnalyzer
                              OperatorSuffix = suffix,
                              OperatorName = CheckActiveContest(split[6], "OperatorName"),
                              OperatorEntity = CheckActiveContest(split[6], "OperatorEntity"),
-                             SentSerialNumber = ConvertSerialNumber(split[7]),
+                             SentSerialNumber = ConvertSerialNumber(split[7], line),
                              ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
                              ContactName = CheckActiveContest(split[9], "ContactName"),
                              ContactEntity = CheckActiveContest(split[9], "ContactEntity"),
-                             ReceivedSerialNumber = ConvertSerialNumber(split[10]),
+                             ReceivedSerialNumber = ConvertSerialNumber(split[10], line),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
@@ -1034,11 +1040,22 @@ namespace W6OP.ContestLogAnalyzer
             }
             catch (Exception ex)
             {
+                //if (ex is FormatException && ex.Message == "The Serial Number is not correctly formatted.")
+                //{
+                //    _FailingLine += Environment.NewLine + _WorkingLine;
+                //}
                 // if there is a format exception it means the CWT template may have been used
                 // this swaps the name and serial number columns
                 if (ex is FormatException && reverse == false && ActiveContest == ContestName.CW_OPEN)
                 {
-                    qsoList = CollectQSOs(lineList, session, true);
+                    if (ex.Message == "Serial Number Format Incorrect.")
+                    {
+                        _FailingLine += Environment.NewLine;
+                    }
+                    else
+                    {
+                        qsoList = CollectQSOs(lineList, session, true);
+                    }
                 }
                 else
                 {
@@ -1064,7 +1081,7 @@ namespace W6OP.ContestLogAnalyzer
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    if(literal == "ContactName" || literal == "OperatorName")
+                    if (literal == "ContactName" || literal == "OperatorName")
                     {
                         return message;
                     }
@@ -1072,7 +1089,7 @@ namespace W6OP.ContestLogAnalyzer
                 case ContestName.HQP:
                     if (literal == "ContactEntity" || literal == "OperatorEntity")
                     {
-                       return message;
+                        return message;
                     }
                     break;
             }
@@ -1348,13 +1365,22 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="serialNumber"></param>
         /// <returns></returns>
-        private Int32 ConvertSerialNumber(string serialNumber)
+        private Int32 ConvertSerialNumber(string serialNumber, string line)
         {
             Int32 number = 0; // catches invalid serial number
 
-            // catch when SN is swapped with Name
-            serialNumber = Regex.Match(serialNumber, @"\d+").Value;
-            number = Convert.ToInt32(serialNumber);
+            // catch when SN is swapped with Name - set serial number so it will never match
+            if (Regex.Match(serialNumber, @"\d+").Success)
+            {
+                serialNumber = Regex.Match(serialNumber, @"\d+").Value;
+                number = Convert.ToInt32(serialNumber);
+            }
+            else
+            {
+                _FailingLine += Environment.NewLine + "The Serial Number is not correctly formatted.";
+                _FailingLine += Environment.NewLine + line;
+                throw new FormatException("Serial Number Format Incorrect.");
+            }
 
             return number;
         }

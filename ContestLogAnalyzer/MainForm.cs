@@ -234,9 +234,13 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ComboBoxSelectSession_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (!_Initialized) return; // supress on form load
+
             // get the current session number - this is specific to CWOPEN
             Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out _Session);
             ButtonLoadLogs.Enabled = true;
+
+            SetupContestProperties();
         }
 
         /// <summary>
@@ -248,7 +252,15 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (!_Initialized) return; // supress on form load
 
-            SetupContestProperties();
+            Enum.TryParse(ComboBoxSelectContest.SelectedValue.ToString(), out _ActiveContest);
+
+            if (_ActiveContest == ContestName.HQP)
+            {
+                SetupContestProperties();
+            } else
+            {
+                ComboBoxSelectSession.SelectedIndex = 1;
+            }
         }
 
         /// <summary>
@@ -263,7 +275,8 @@ namespace W6OP.ContestLogAnalyzer
             EnableControl(ButtonStartAnalysis, false);
             EnableControl(ButtonScoreLogs, false);
 
-            Enum.TryParse(ComboBoxSelectContest.SelectedValue.ToString(), out _ActiveContest);
+            ResetViewsAndControls();
+
             contestName = _ActiveContest.ToString();
 
             _PrintManager = null;
@@ -277,7 +290,11 @@ namespace W6OP.ContestLogAnalyzer
             switch (_ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    ComboBoxSelectSession.SelectedIndex = 1;
+                    //if (initial)
+                    //{
+                    //    //ComboBoxSelectSession.SelectedIndex = 1;
+                    //}
+                    
                     if (_CWOpen == null)
                     {
                         _CWOpen = new ScoreCWOpen();
@@ -752,6 +769,22 @@ namespace W6OP.ContestLogAnalyzer
             LabelProgress.Enabled = true;
             LabelProgress.Visible = true;
             LabelProgress.Text = message;
+        }
+
+        /// <summary>
+        /// Clear everything when a new contest or session is selected.
+        /// </summary>
+        private void ResetViewsAndControls()
+        {
+            TextBoxLogFolder.Clear();
+            label2.Text = "";
+            _LogSourceFolder = string.Empty;
+
+            ProgressBarLoad.Visible = false;
+
+            ListViewLoad.Items.Clear();
+            ListViewAnalysis.Items.Clear();
+            ListViewScore.Items.Clear();
         }
 
         /// <summary>
