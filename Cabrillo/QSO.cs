@@ -431,7 +431,17 @@ namespace W6OP.ContestLogAnalyzer
             get => _IncorrectDXEntity;
             set => _IncorrectDXEntity = value;
         }
-       
+
+        /// <summary>
+        /// The contact entity in the log before any lookups
+        /// </summary>
+        public string OriginalContactEntityEntry { get; set; }
+
+        /// <summary>
+        /// The operator entity in the log before any lookups
+        /// </summary>
+        public string OriginalOperatorEntityEntry { get; set; }
+
         /// <summary>
         /// Operator country as defined by HQP
         /// Length is 2 characters for US and Canada

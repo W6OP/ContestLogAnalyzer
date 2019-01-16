@@ -257,7 +257,8 @@ namespace W6OP.ContestLogAnalyzer
             if (_ActiveContest == ContestName.HQP)
             {
                 SetupContestProperties();
-            } else
+            }
+            else
             {
                 ComboBoxSelectSession.SelectedIndex = 1;
             }
@@ -294,7 +295,7 @@ namespace W6OP.ContestLogAnalyzer
                     //{
                     //    //ComboBoxSelectSession.SelectedIndex = 1;
                     //}
-                    
+
                     if (_CWOpen == null)
                     {
                         _CWOpen = new ScoreCWOpen();
@@ -1255,11 +1256,17 @@ namespace W6OP.ContestLogAnalyzer
             CompareLogs(TextBoxLog1.Text.Trim(), TextBoxLog2.Text.Trim());
         }
 
+        /// <summary>
+        /// Find the two logs to compare.
+        /// </summary>
+        /// <param name="call1"></param>
+        /// <param name="call2"></param>
         private void CompareLogs(string call1, string call2)
         {
             ContestLog log1 = null;
             ContestLog log2 = null;
             int group = 0;
+            string message = String.Format("The log for {0} could not be found.", call1);
 
             ListViewCompare.Items.Clear();
             ListViewCompare.Groups.Clear();
@@ -1285,6 +1292,10 @@ namespace W6OP.ContestLogAnalyzer
                     }
                 }
             }
+            else
+            {
+                MessageBox.Show(message, "Unable to find log", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
 
             if (log2 != null)
             {
@@ -1298,6 +1309,11 @@ namespace W6OP.ContestLogAnalyzer
                         UpdateListViewCompare(qso, group);
                     }
                 }
+            }
+            else
+            {
+                message = String.Format("The log for {0} could not be found.", call2);
+                MessageBox.Show(message, "Unable to find log", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -1313,14 +1329,29 @@ namespace W6OP.ContestLogAnalyzer
                 Group = ListViewCompare.Groups[group]
             };
 
-            item.SubItems.Add(qso.Mode);
-            item.SubItems.Add(qso.QsoDate.ToString());
-            item.SubItems.Add(qso.QsoTime.ToString());
-            item.SubItems.Add(qso.SentSerialNumber.ToString());
-            item.SubItems.Add(qso.OperatorEntity);
-            item.SubItems.Add(qso.ContactCall);
-            item.SubItems.Add(qso.ReceivedSerialNumber.ToString());
-            item.SubItems.Add(qso.ContactName);
+            switch (_ActiveContest)
+            {
+                case ContestName.CW_OPEN:
+                    item.SubItems.Add(qso.Mode);
+                    item.SubItems.Add(qso.QsoDate.ToString());
+                    item.SubItems.Add(qso.QsoTime.ToString());
+                    item.SubItems.Add(qso.SentSerialNumber.ToString());
+                    item.SubItems.Add(qso.OperatorEntity);
+                    item.SubItems.Add(qso.ContactCall);
+                    item.SubItems.Add(qso.ReceivedSerialNumber.ToString());
+                    item.SubItems.Add(qso.ContactName);
+                    break;
+                case ContestName.HQP:
+                    item.SubItems.Add(qso.Mode);
+                    item.SubItems.Add(qso.QsoDate.ToString());
+                    item.SubItems.Add(qso.QsoTime.ToString());
+                    item.SubItems.Add("");
+                    item.SubItems.Add(qso.OriginalOperatorEntityEntry);
+                    item.SubItems.Add(qso.ContactCall);
+                    item.SubItems.Add("");
+                    item.SubItems.Add(qso.OriginalContactEntityEntry);
+                    break;
+            }
 
             ListViewCompare.Items.Insert(0, item);
         }

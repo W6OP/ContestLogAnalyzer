@@ -1005,12 +1005,14 @@ namespace W6OP.ContestLogAnalyzer
                              SentSerialNumber = ConvertSerialNumber(split[6], line),
                              OperatorName = CheckActiveContest(split[7], "OperatorName"),
                              OperatorEntity = CheckActiveContest(split[7], "OperatorEntity"),
+                             OriginalOperatorEntityEntry = CheckActiveContest(split[7], "OperatorEntity"),
                              ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
                              ReceivedSerialNumber = ConvertSerialNumber(split[9], line),
                              ContactName = CheckActiveContest(split[10], "ContactName"),
                              ContactEntity = CheckActiveContest(split[10], "ContactEntity"),
+                             OriginalContactEntityEntry = CheckActiveContest(split[10], "ContactEntity"),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
@@ -1034,12 +1036,14 @@ namespace W6OP.ContestLogAnalyzer
                              OperatorSuffix = suffix,
                              OperatorName = CheckActiveContest(split[6], "OperatorName"),
                              OperatorEntity = CheckActiveContest(split[6], "OperatorEntity"),
+                             OriginalOperatorEntityEntry = CheckActiveContest(split[6], "OperatorEntity"),
                              SentSerialNumber = ConvertSerialNumber(split[7], line),
                              ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
                              ContactName = CheckActiveContest(split[9], "ContactName"),
                              ContactEntity = CheckActiveContest(split[9], "ContactEntity"),
+                             OriginalContactEntityEntry = CheckActiveContest(split[9], "ContactEntity"),
                              ReceivedSerialNumber = ConvertSerialNumber(split[10], line),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForvalidSession(session, split[4])
