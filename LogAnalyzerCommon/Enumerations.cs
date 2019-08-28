@@ -116,14 +116,7 @@ namespace W6OP.ContestLogAnalyzer
         [Description("Light")]
         Light
     }
-    /*
-     ((DescriptionAttribute)Attribute.GetCustomAttribute(
-        typeof(myEnum).GetFields(BindingFlags.Public | BindingFlags.Static)
-        .Single(x => (myEnum)x.GetValue(null) == enumValue),    
-        typeof(DescriptionAttribute))).Description
-     */
-
-
+   
     public enum FaultType
     {
         Band,
@@ -137,6 +130,7 @@ namespace W6OP.ContestLogAnalyzer
         USB,
         CW,
         DIGI,
+        DG,
         PH,
         RTTY,
         RY,
@@ -236,92 +230,10 @@ namespace W6OP.ContestLogAnalyzer
     {
         [Description("Select")]
         Select,
-        [ContestDescription("CWOPS-OPEN", "CW-OPEN", "CWOPEN", "CW OPEN")]
+        [CWOPENContestDescription("CWOPS-OPEN", "CW-OPEN", "CWOPEN", "CW OPEN")]
         CW_OPEN,
-        [Description("HI-QSO-PARTY")]
-        HQP,
-        //[Description("AP-SPRINT")]
-        //AP_SPRINT,
-        //[Description("ARRL-10")]
-        //ARRL_10,
-        //[Description("ARRL-160")]
-        //ARRL_160,
-        //[Description("ARRL-DX-CW")]
-        //ARRL_DX_CW,
-        //[Description("ARRL-DX-SSB")]
-        //ARRL_DX_SSB,
-        //[Description("ARRL-SS-CW")]
-        //ARRL_SS_CW,
-        //[Description("ARRL-SS-SSB")]
-        //ARRL_SS_SSB,
-        //[Description("ARRL-UHF-AUG")]
-        //ARRL_UHF_AUG,
-        //[Description("ARRL-VHF-JAN")]
-        //ARRL_VHF_JAN,
-        //[Description("ARRL-VHF-JUN")]
-        //ARRL_VHF_JUN,
-        //[Description("ARRL-VHF-SEP")]
-        //ARRL_VHF_SEP,
-        //[Description("ARRL-RTTY")]
-        //ARRL_RTTY,
-        //[Description("BARTG-RTTY")]
-        //BARTG_RTTY,
-        //[Description("CQ-160-CW")]
-        //CQ_160_CW,
-        //[Description("CQ-160-SSB")]
-        //CQ_160_SSB,
-        //[Description("CQ-WPX-CW")]
-        //CQ_WPX_CW,
-        //[Description("CQ-WPX-RTTY")]
-        //CQ_WPX_RTTY,
-        //[Description("CQ-WPX-SSB")]
-        //CQ_WPX_SSB,
-        //[Description("CQ-VHF")]
-        //CQ_VHF,
-        //[Description("CQ-WW-CW")]
-        //CQ_WW_CW,
-        //[Description("CQ-WW-RTTY")]
-        //CQ_WW_RTTY,
-        //[Description("CQ-WW-SSB")]
-        //CQ_WW_SSB,
-        //[Description("DARC-WAEDC-CW")]
-        //DARC_WAEDC_CW,
-        //[Description("DARC-WAEDC-RTTY")]
-        //DARC_WAEDC_RTTY,
-        //[Description("DARC-WAEDC-SSB")]
-        //DARC_WAEDC_SSB,
-        //[Description("FCG-FQP")]
-        //FCG_FQP,
-        //[Description("IARU-HF")]
-        //IARU_HF,
-        //[Description("JIDX-CW")]
-        //JIDX_CW,
-        //[Description("JIDX-SSB")]
-        //JIDX_SSB,
-        //[Description("NA-SPRINT-CW")]
-        //NA_SPRINT_CW,
-        //[Description("NA-SPRINT-SSB")]
-        //NA_SPRINT_SSB,
-        //[Description("NCCC-CQP")]
-        //NCCC_CQP,
-        //[Description("NEQP")]
-        //NEQP,
-        //[Description("OCEANIA-DX-CW")]
-        //OCEANIA_DX_CW,
-        //[Description("OCEANIA-DX-SSB")]
-        //OCEANIA_DX_SSB,
-        //[Description("RDXC")]
-        //RDXC,
-        //[Description("RSGB-IOTA")]
-        //RSGB_IOTA,
-        //[Description("SAC-CW")]
-        //SAC_CW,
-        //[Description("SAC-SSB")]
-        //SAC_SSB,
-        //[Description("STEW-PERRY")]
-        //STEW_PERRY,
-        //[Description("TARA-RTTY")]
-        //TARA_RTTY,
+        [HQPContestDescription("HI-QSO-PARTY")]
+        HQP
     }
 
     public enum HQPMults
@@ -404,7 +316,7 @@ namespace W6OP.ContestLogAnalyzer
     /// Extension class to allow multiple desctription on enumerations.
     /// </summary>
     [AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
-    public class ContestDescription : Attribute
+    public class CWOPENContestDescription : Attribute
     {
         //Some people prefer to have a privataly declared variable to return and set, but this works fine for demonstration purposes
         public string ContestNameOne { get; set; }
@@ -413,27 +325,27 @@ namespace W6OP.ContestLogAnalyzer
         public string ContestNameFour { get; set; }
 
         //The values certainly do not all have to be strings
-        public ContestDescription(string nameOne, string nameTwo, string nameThree, string nameFour)
+        public CWOPENContestDescription(string nameOne, string nameTwo, string nameThree, string nameFour)
         {
             ContestNameOne = nameOne;
             ContestNameTwo = nameTwo;
             ContestNameThree = nameThree;
             ContestNameFour = nameFour;
         }
-
     } // end class
 
-    //public static string Description(this Enum value)
-    //{
-    //    // variables  
-    //    var enumType = value.GetType();
-    //    var field = enumType.GetField(value.ToString());
-    //    var attributes = field.GetCustomAttributes(typeof(DescriptionAttribute), false);
+    [AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
+    public class HQPContestDescription : Attribute
+    {
+        //Some people prefer to have a privataly declared variable to return and set, but this works fine for demonstration purposes
+        public string ContestNameOne { get; set; }
 
-    //    // return  
-    //    return attributes.Length == 0 ? value.ToString() : ((DescriptionAttribute)attributes[0]).Description;
-    //}
-
+        //The values certainly do not all have to be strings
+        public HQPContestDescription(string nameOne)
+        {
+            ContestNameOne = nameOne;
+        }
+    } // end class
 
     public class EnumHelper
     {

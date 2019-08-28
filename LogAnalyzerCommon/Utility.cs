@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -24,9 +25,6 @@ namespace W6OP.ContestLogAnalyzer
                 throw new InvalidOperationException();
             }
 
-            //if (String.IsNullOrEmpty(description)) {
-            //    throw new NullReferenceException("A required field is missing from the header. Possibly the Contest Name.");
-            //}
             // remove tabs
             description = description.Replace("\t", " ");
 
@@ -37,9 +35,10 @@ namespace W6OP.ContestLogAnalyzer
             foreach (var field in type.GetFields())
             {
                 var attribute = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
-                var contest = Attribute.GetCustomAttribute(field, typeof(ContestDescription)) as ContestDescription;
+                var cwopenContest = Attribute.GetCustomAttribute(field, typeof(CWOPENContestDescription)) as CWOPENContestDescription;
+                var hqpContest = Attribute.GetCustomAttribute(field, typeof(HQPContestDescription)) as HQPContestDescription;
 
-                if (contest == null)
+                if (cwopenContest == null && hqpContest == null)
                 {
                     if (attribute != null)
                     {
@@ -60,8 +59,50 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    return (T)field.GetValue(null);
+                   if (cwopenContest != null)
+                    {
+                        //return (T)field.GetValue(null);
+                        Attribute[] result = field.GetCustomAttributes().ToArray();
+                        CWOPENContestDescription co = (CWOPENContestDescription)result[0];
+                        if (co.ContestNameOne == description)
+                        {
+                            return (T)field.GetValue(null);
+                        }
 
+                        if (co.ContestNameTwo == description)
+                        {
+                            return (T)field.GetValue(null);
+                        }
+
+                        if (co.ContestNameThree == description)
+                        {
+                            return (T)field.GetValue(null);
+                        }
+
+                        if (co.ContestNameFour == description)
+                        {
+                            return (T)field.GetValue(null);
+                        }
+                    }
+
+                   if (hqpContest != null)
+                    {
+                        Attribute[] result = field.GetCustomAttributes().ToArray();
+                        HQPContestDescription co = (HQPContestDescription)result[0];
+                        if (co.ContestNameOne == description)
+                        {
+                            return (T)field.GetValue(null);
+                        }
+                        //return (T)field.GetValue(null);
+                    }
+
+                    //if (field.GetValue(null).ToString() == description)
+                    //{
+                    //    return (T)field.GetValue(null);
+                    //} else
+                    //{
+                    //    //return (T)field.GetValue(null);
+                    //}
                 }
             }
             //throw new ArgumentException("Not found.", description);

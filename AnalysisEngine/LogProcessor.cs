@@ -133,18 +133,18 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         if (version.Substring(0, 1) == "2")
                         {
-                            contestLog.LogHeader = BuildCWOpenHeaderV2(lineList, fullName);
+                            contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
                         }
 
                         if (version.Substring(0, 1) == "3")
                         {
-                            contestLog.LogHeader = BuildCWOpenHeaderV3(lineList, fullName);
+                            contestLog.LogHeader = BuildHeaderV3(lineList, fullName);
                         }
                     }
                     else
                     {
                         // Assume version 2 - this is just for the CWOPEN
-                        contestLog.LogHeader = BuildCWOpenHeaderV2(lineList, fullName);
+                        contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
                     }
 
                     // List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
@@ -153,7 +153,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (contestLog.LogHeader != null && AnalyzeHeader(contestLog, out reason) == true)
                     {
                         contestLog.LogHeader.HeaderIsValid = true;
-                        _FailReason = "This log has a valid header. Check the Inspect folder for details.";
+                        _FailReason = "Check the Inspect folder for details.";
                     }
                     else
                     {
@@ -288,7 +288,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (ex.Message.IndexOf("Input string was not in a correct format.") != -1)
                 {
-                    message = ex.Message + "\r\nThere is probably an alpha character in the header where it should be numeric.";
+                    message += "\r\nThere is probably an alpha character in the header where it should be numeric.";
                 }
                 else if (ex.Message.IndexOf("Object reference not set to an instance of an object.") != -1)
                 {
@@ -296,8 +296,6 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    message = ex.Message;
-
                     if (contestLog.QSOCollection == null)
                     {
                         _FailReason = _FailReason + " - QSO collection is null." + Environment.NewLine + _FailingLine;
@@ -382,6 +380,7 @@ namespace W6OP.ContestLogAnalyzer
 
             contestLog.IsHQPEntity = false;
             contestLog.TotalPoints = 0;
+
 
             foreach (QSO qso in qsoCollection)
             {
@@ -468,10 +467,15 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         prefixInfo = GetPrefixInformation(contactCall);
                     }
-
-                    territory = prefixInfo.Territory.ToUpper();
-                    _PrefixTable.Add(contactCall, territory);
-
+                    try
+                    {
+                        territory = prefixInfo.Territory.ToUpper();
+                        _PrefixTable.Add(contactCall, territory);
+                    }
+                    catch (Exception ex)
+                    {
+                        var message = ex.Message;
+                    }
                 }
                 else
                 {
@@ -563,6 +567,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
                 }
             }
+
         }
 
         /// <summary>
@@ -589,6 +594,7 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             // this is for non US and Canada
                             qso.OperatorEntity = prefixInfo.Territory.ToUpper();
+                            // Console.WriteLine(prefixInfo.Latitude);
                             //qso.IsEntityVerified = true;
 
                             if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
@@ -812,7 +818,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="lineList"></param>
         /// <param name="match"></param>
-        private LogHeader BuildCWOpenHeaderV2(List<string> lineList, string logFileName)
+        private LogHeader BuildHeaderV2(List<string> lineList, string logFileName)
         {
             IEnumerable<LogHeader> logHeader = null;
             string prefix = string.Empty;
@@ -892,7 +898,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="lineList"></param>
         /// <param name="match"></param>
-        private LogHeader BuildCWOpenHeaderV3(List<string> lineList, string logFileName)
+        private LogHeader BuildHeaderV3(List<string> lineList, string logFileName)
         {
             IEnumerable<LogHeader> logHeader = null;
             string prefix = string.Empty;
@@ -1053,12 +1059,6 @@ namespace W6OP.ContestLogAnalyzer
             }
             catch (Exception ex)
             {
-                //if (ex is FormatException && ex.Message == "The Serial Number is not correctly formatted.")
-                //{
-                //    _FailingLine += Environment.NewLine + _WorkingLine;
-                //}
-                // if there is a format exception it means the CWT template may have been used
-                // this swaps the name and serial number columns
                 if (ex is FormatException && reverse == false && ActiveContest == ContestName.CW_OPEN)
                 {
                     if (ex.Message == "Serial Number Format Incorrect.")
@@ -1074,7 +1074,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (_FailingLine.IndexOf(_WorkingLine) == -1)
                     {
-                        _FailingLine += Environment.NewLine + _WorkingLine;
+                        _FailingLine += Environment.NewLine + _WorkingLine + " --- " + ex.Message;
                     }
                 }
             }
@@ -1160,6 +1160,12 @@ namespace W6OP.ContestLogAnalyzer
                     case CategoryMode.FT8:
                         mode = "RY";
                         break;
+                    case CategoryMode.DG:
+                        mode = "RY";
+                        break;
+                    case CategoryMode.DIGI:
+                        mode = "RY";
+                        break;
                     case CategoryMode.PH:
                         mode = "PH";
                         break;
@@ -1204,11 +1210,23 @@ namespace W6OP.ContestLogAnalyzer
                 bool containsInt;
 
                 // this really isn't necessary but makes it easier later
-                if (call2 == "/QRP" || call2 == "/P" || call2 == "/M" || call2 == "/MM" || call2 == "/MOBILE" || call2 == "/AE" || call2 == "/AG")
+               // if (call2 == "/QRP" || call2 == "/P" || call2 == "/M" || call2 == "/MM" || call2 == "/MOBILE" || call2 == "/AE" || call2 == "/AG" || call2 == "/A")
+                if (call2.All(c => char.IsLetter(c) || c == '/') == true) 
                 {
                     prefix = "";
                     suffix = "";
                     return call1;
+                }
+
+                // temp until Alan oks it - for W6OP/65
+                if (call2.All(c => char.IsDigit(c) || c == '/') == true)
+                {
+                    if (call2.Length > 1)
+                    {
+                        prefix = "";
+                        suffix = "";
+                        return call1;
+                    }
                 }
 
                 if (temp1 > temp2)
@@ -1234,8 +1252,9 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        callSign = call2;
-                        prefix = call1.Replace("/", "");
+                        // KCCXX - bad call so need to flag or return null or error
+                        //callSign = call2;
+                       // prefix = call1.Replace("/", "");
                     }
                 }
                 else if (temp1 == temp2)
