@@ -391,6 +391,22 @@ namespace W6OP.ContestLogAnalyzer
                 operatorCall = qso.OperatorCall;
                 contactCall = qso.ContactCall;
 
+                // this needs to be refined and should be elsewhere
+                //try
+                //{
+                if (contactCall.All(b => char.IsLetter(b)) == true)
+                {
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.RejectReasons.Clear();
+                    qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    continue;
+                }
+                //}
+                //catch (Exception)
+                //{
+                //    throw new Exception("Invalid call detected. -- " + operatorCall);
+                //}
+
                 qso.HQPPoints = GetPoints(qso.Mode);
 
                 // determine if this operator is an Hawawiin station
@@ -417,7 +433,6 @@ namespace W6OP.ContestLogAnalyzer
                 // first check if we already have it from a previous operation
                 if (!_PrefixTable.Contains(operatorCall))
                 {
-                    // if no
                     prefixInfo = GetPrefixInformation(operatorCall);
                     territory = prefixInfo.Territory.ToUpper();
                     _PrefixTable.Add(operatorCall, territory);
@@ -1210,8 +1225,8 @@ namespace W6OP.ContestLogAnalyzer
                 bool containsInt;
 
                 // this really isn't necessary but makes it easier later
-               // if (call2 == "/QRP" || call2 == "/P" || call2 == "/M" || call2 == "/MM" || call2 == "/MOBILE" || call2 == "/AE" || call2 == "/AG" || call2 == "/A")
-                if (call2.All(c => char.IsLetter(c) || c == '/') == true) 
+                if (call2 == "/QRP" || call2 == "/P" || call2 == "/M" || call2 == "/MM" || call2 == "/MOBILE" || call2 == "/AE" || call2 == "/AG" || call2 == "/A")
+                //if (call2.All(c => char.IsLetter(c) || c == '/') == true) // this may not be good for kansas and other QSO party prefixes
                 {
                     prefix = "";
                     suffix = "";
@@ -1253,8 +1268,8 @@ namespace W6OP.ContestLogAnalyzer
                     else
                     {
                         // KCCXX - bad call so need to flag or return null or error
-                        //callSign = call2;
-                       // prefix = call1.Replace("/", "");
+                        callSign = call1;
+                        // prefix = call1.Replace("/", "");
                     }
                 }
                 else if (temp1 == temp2)
