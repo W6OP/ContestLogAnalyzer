@@ -243,8 +243,16 @@ namespace W6OP.ContestLogAnalyzer
             int receivedSerialNumber = 0;
 
 
+            int testCount = 0;
+
             foreach (QSO qso in qsoList)
             {
+                testCount += 1;
+                if (testCount == 183)
+                {
+                    Console.WriteLine("Count = " + testCount.ToString());
+                }
+
                 qsoDateTime = qso.QSODateTime;
                 band = qso.Band;
                 mode = qso.Mode;
@@ -741,22 +749,28 @@ namespace W6OP.ContestLogAnalyzer
             RejectReason reason = RejectReason.None;
             bool isMatchQSO = false;
 
-            switch (ActiveContest)
-            {
-                case ContestName.CW_OPEN:
-                    matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
-                         q.ContactCall == qso.OperatorCall);
-                    break;
-                case ContestName.HQP:
-                    matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && q.Mode == qso.Mode &&
-                        q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
-                    break;
-            }
+                switch (ActiveContest)
+                {
+                    case ContestName.CW_OPEN:
+                        matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
+                             q.ContactCall == qso.OperatorCall);
+                        break;
+                    case ContestName.HQP:
+                        matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && q.Mode == qso.Mode &&
+                            q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
+                        break;
+                }
 
             if (matchQSO != null)
             {
+                try { 
                 // determine who is at fault
                 isMatchQSO = DetermineBandFault(matchLog, qso, matchQSO);
+                }
+                catch (Exception ex)
+                {
+                    string a = ex.Message;
+                }
 
                 qso.MatchingQSO = matchQSO;
                 qso.HasMatchingQso = true;

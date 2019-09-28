@@ -98,7 +98,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         #region Load and Pre Process Logs
-
+        //int bcount = 0;
         /// <summary>
         /// See if there is a header and a footer. Load and process the header.
         /// Collect all of the QSOs for each log.
@@ -181,6 +181,9 @@ namespace W6OP.ContestLogAnalyzer
                     }
 
                     _FailingLine = "";
+
+                    //bcount += 1;
+                    //Console.WriteLine(bcount.ToString());
 
                     contestLog.QSOCollection = CollectQSOs(lineList, session, false);
                     // add a reference to the parent log to each QSO
@@ -391,9 +394,6 @@ namespace W6OP.ContestLogAnalyzer
                 operatorCall = qso.OperatorCall;
                 contactCall = qso.ContactCall;
 
-                // this needs to be refined and should be elsewhere
-                //try
-                //{
                 if (contactCall.All(b => char.IsLetter(b)) == true)
                 {
                     qso.Status = QSOStatus.InvalidQSO;
@@ -401,11 +401,14 @@ namespace W6OP.ContestLogAnalyzer
                     qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
                     continue;
                 }
-                //}
-                //catch (Exception)
-                //{
-                //    throw new Exception("Invalid call detected. -- " + operatorCall);
-                //}
+
+                if (contactCall.All(b => char.IsNumber(b)) == true)
+                {
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.RejectReasons.Clear();
+                    qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    continue;
+                }
 
                 qso.HQPPoints = GetPoints(qso.Mode);
 
@@ -426,7 +429,6 @@ namespace W6OP.ContestLogAnalyzer
                     qso.RejectReasons.Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
                     continue;
                 }
-
 
 
                 //***** get operator information from call parser component ****************//
@@ -729,6 +731,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             CallParser.PrefixInfo prefixInfo = null;
 
+            try { 
             _Parser.Callsign = call;
 
             if (_Parser.HitCount > 0)
@@ -742,6 +745,11 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     prefixInfo = _Parser.Hits[0];
                 }
+            }
+            }
+            catch (Exception ex)
+            {
+                var message = ex.Message;
             }
 
             return prefixInfo;
@@ -1034,7 +1042,7 @@ namespace W6OP.ContestLogAnalyzer
                              ContactName = CheckActiveContest(split[10], "ContactName"),
                              ContactEntity = CheckActiveContest(split[10], "ContactEntity"),
                              OriginalContactEntityEntry = CheckActiveContest(split[10], "ContactEntity"),
-                             CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
+                             CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this?? ValidateCallSign(split[8].ToUpper())
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
@@ -1225,7 +1233,7 @@ namespace W6OP.ContestLogAnalyzer
                 bool containsInt;
 
                 // this really isn't necessary but makes it easier later
-                if (call2 == "/QRP" || call2 == "/P" || call2 == "/M" || call2 == "/MM" || call2 == "/MOBILE" || call2 == "/AE" || call2 == "/AG" || call2 == "/A")
+                if (call2 == "/QRP" || call2 == "/P" || call2 == "/M" || call2 == "/MM" || call2 == "/MOBILE" || call2 == "/AE" || call2 == "/AG" || call2 == "/A" || call2 == "/R")
                 //if (call2.All(c => char.IsLetter(c) || c == '/') == true) // this may not be good for kansas and other QSO party prefixes
                 {
                     prefix = "";
@@ -1430,6 +1438,42 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return number;
+        }
+
+        /// <summary>
+        /// Check for empty call.
+        /// Check for no alpha characters.
+        /// A call must be made up of only alpha, numeric and can have one or more "/".
+        /// Must start with letter or number.
+        /// </summary>
+        /// <param name="callSign"></param>
+        /// <returns></returns>
+        private bool ValidateCallSign(string callSign)
+        {
+            // check for empty or null string
+            if (string.IsNullOrEmpty(callSign)) { return false; }
+
+            // check if first character is "/"
+            if (callSign.IndexOf("/", 0, 1) == 0) { return false; }
+
+            // check if second character is "/"
+            if (callSign.IndexOf("/", 1, 1) == 1) { return false; }
+
+            // check for a "-" ie: VE7CC-7, OH6BG-1, WZ7I-3 
+            if (callSign.IndexOf("-") != -1) { return false; }
+
+            // can't be all numbers
+            if (IsNumeric(callSign)) { return false; }
+
+            // look for at least one number character
+            if (!callSign.Where(x => Char.IsDigit(x)).Any()) { return false; }
+
+            return true;
+        }
+
+        public bool IsNumeric(string value)
+        {
+            return value.All(char.IsNumber);
         }
 
         /// <summary>

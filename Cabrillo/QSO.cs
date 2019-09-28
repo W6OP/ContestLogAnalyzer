@@ -457,12 +457,12 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// The real or top level country of the  contact or DX station
-        /// This is the long name
+        /// This is the long name. Cannot be null!
         /// </summary>
-        private string _ContactTerritory;
+        private string _ContactTerritory = "Unknown";
         public string ContactTerritory
         {
-            get { return _ContactTerritory.ToUpper(); }
+            get => _ContactTerritory.ToUpper();
             set
             {
                 _ContactTerritory = value;

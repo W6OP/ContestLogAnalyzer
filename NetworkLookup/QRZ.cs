@@ -79,7 +79,11 @@ namespace NetworkLookup
                 // ...
 #if DEBUG
                 debugCount += 1;
-                Console.WriteLine("debug count = " + debugCount.ToString() + " - " + call);
+                Console.WriteLine("QRZ lookup count = " + debugCount.ToString() + " - " + call);
+                if (debugCount == 11)
+                {
+                    int a = debugCount;
+                }
 #endif
                 // ...
 
