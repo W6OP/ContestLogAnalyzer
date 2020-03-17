@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using CallParser;
 using W6OP.PrintEngine;
 using NetworkLookup;
@@ -326,10 +323,8 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (ActiveContest == ContestName.HQP)
             {
-                // _QRZ = new QRZ();
-
                 _Parser = new CallParser.CallsignParser();
-                if (File.Exists(@"C:\iUsers\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
+                if (File.Exists(@"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
                 {
                     _Parser.PrefixFile = @"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"; //"prefix.lst";  // @"C:\Users\pbourget\Documents\Visual Studio 2012\Projects\Ham Radio\DXACollector\Support\CallParser\prefix.lst";
                 }
@@ -370,7 +365,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="contestLog"></param>
         private void SetDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
         {
-            CallParser.PrefixInfo prefixInfo = null;
+            PrefixInfo prefixInfo = null;
 
             bool isValidHQPEntity = false;
             string[] info = new string[2] { "0", "0" };
@@ -383,7 +378,6 @@ namespace W6OP.ContestLogAnalyzer
 
             contestLog.IsHQPEntity = false;
             contestLog.TotalPoints = 0;
-
 
             foreach (QSO qso in qsoCollection)
             {
