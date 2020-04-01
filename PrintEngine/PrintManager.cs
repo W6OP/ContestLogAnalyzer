@@ -84,7 +84,7 @@ namespace W6OP.PrintEngine
 
             using (var sw = new StreamWriter(reportFileName))
             {
-                var writer = new CsvWriter(sw);
+                var writer = new CsvWriter(sw, System.Globalization.CultureInfo.CurrentCulture);
                 for (int i = 0; i < contestLogs.Count; i++)
                 {
                     contestlog = contestLogs[i];
