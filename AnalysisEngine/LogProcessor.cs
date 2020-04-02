@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using CallParser;
+using W6OP.CallParser;
 using W6OP.PrintEngine;
 using NetworkLookup;
 using System.Collections;
@@ -38,7 +38,9 @@ namespace W6OP.ContestLogAnalyzer
         public ContestName ActiveContest { get; set; }
 
         private string _WorkingLine = null;
-        private CallParser.CallsignParser _Parser;
+        //private CallParser.CallsignParser _Parser;
+        private PrefixFileParser _PrefixFileParser;
+        private CallLookUp _CallLookUp;
 
         // later replace this
         private Hashtable _PrefixTable;
@@ -323,34 +325,38 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (ActiveContest == ContestName.HQP)
             {
-                _Parser = new CallParser.CallsignParser();
-                if (File.Exists(@"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
-                {
-                    _Parser.PrefixFile = @"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"; //"prefix.lst";  // @"C:\Users\pbourget\Documents\Visual Studio 2012\Projects\Ham Radio\DXACollector\Support\CallParser\prefix.lst";
-                }
-                else
-                {
-                    if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "W6OP")))
-                    {
-                        Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "W6OP"));
-                    }
+                _PrefixFileParser = new PrefixFileParser();
+                _PrefixFileParser.ParsePrefixFile("");
+                _CallLookUp = new CallLookUp(_PrefixFileParser);
 
-                    string target = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"W6OP\Prefix.lst");
-                    if (!File.Exists(target))
-                    {
-                        string source = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), @"Prefix.lst");
-                        File.Copy(source, target);
-                    }
+                //_Parser = new CallParser.CallsignParser();
+                //if (File.Exists(@"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
+                //{
+                //    _Parser.PrefixFile = @"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"; //"prefix.lst";  // @"C:\Users\pbourget\Documents\Visual Studio 2012\Projects\Ham Radio\DXACollector\Support\CallParser\prefix.lst";
+                //}
+                //else
+                //{
+                //    if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "W6OP")))
+                //    {
+                //        Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "W6OP"));
+                //    }
 
-                    if (File.Exists(target))
-                    {
-                        _Parser.PrefixFile = target;
-                    }
-                    else
-                    {
-                        throw (new Exception("The prefix file cannot be found."));
-                    }
-                }
+                //    string target = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"W6OP\Prefix.lst");
+                //    if (!File.Exists(target))
+                //    {
+                //        string source = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), @"Prefix.lst");
+                //        File.Copy(source, target);
+                //    }
+
+                //    if (File.Exists(target))
+                //    {
+                //        _Parser.PrefixFile = target;
+                //    }
+                //    else
+                //    {
+                //        throw (new Exception("The prefix file cannot be found."));
+                //    }
+                // }
             }
         }
 
@@ -365,7 +371,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="contestLog"></param>
         private void SetDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
         {
-            PrefixInfo prefixInfo = null;
+           // PrefixInfo prefixInfo = null;
 
             bool isValidHQPEntity = false;
             string[] info = new string[2] { "0", "0" };
@@ -424,14 +430,22 @@ namespace W6OP.ContestLogAnalyzer
                     continue;
                 }
 
+                IEnumerable<CallSignInfo> hitCollection;
+                List<CallSignInfo> hitList;
 
                 //***** get operator information from call parser component ****************//
                 // first check if we already have it from a previous operation
                 if (!_PrefixTable.Contains(operatorCall))
                 {
-                    prefixInfo = GetPrefixInformation(operatorCall);
-                    territory = prefixInfo.Territory.ToUpper();
-                    _PrefixTable.Add(operatorCall, territory);
+                    hitCollection = _CallLookUp.LookUpCall(operatorCall);
+                    hitList = hitCollection.ToList();
+                    if (hitList.Count != 0)
+                    {
+                        territory = hitList[0].Country;
+                        //prefixInfo = GetPrefixInformation(operatorCall);
+                        //territory = prefixInfo.Territory.ToUpper();
+                        _PrefixTable.Add(operatorCall, territory);
+                    }
                 }
                 else
                 {
@@ -468,19 +482,38 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (qso.ContactPrefix != string.Empty)
                     {
-                        prefixInfo = GetPrefixInformation(qso.ContactPrefix + "/" + contactCall);
+                        hitCollection = _CallLookUp.LookUpCall(qso.ContactPrefix + "/" + contactCall);
+                        hitList = hitCollection.ToList();
+                        if (hitList.Count != 0)
+                        {
+                            territory = hitList[0].Country;
+                        }
+                        //prefixInfo = GetPrefixInformation(qso.ContactPrefix + "/" + contactCall);
                     }
                     else if (qso.ContactSuffix != string.Empty)
                     {
-                        prefixInfo = GetPrefixInformation(contactCall + "/" + qso.ContactSuffix);
+                        hitCollection = _CallLookUp.LookUpCall(contactCall + "/" + qso.ContactSuffix);
+                        hitList = hitCollection.ToList();
+                        if (hitList.Count != 0)
+                        {
+                            territory = hitList[0].Country;
+                        }
+                        //prefixInfo = GetPrefixInformation(contactCall + "/" + qso.ContactSuffix);
                     }
                     else
                     {
-                        prefixInfo = GetPrefixInformation(contactCall);
+                        hitCollection = _CallLookUp.LookUpCall(contactCall);
+                        hitList = hitCollection.ToList();
+                        if (hitList.Count != 0)
+                        {
+                            territory = hitList[0].Country;
+                        }
+                        //prefixInfo = GetPrefixInformation(contactCall);
                     }
                     try
                     {
-                        territory = prefixInfo.Territory.ToUpper();
+                        //territory = prefixInfo.Territory.ToUpper();
+                        territory = territory.ToUpper();
                         _PrefixTable.Add(contactCall, territory);
                     }
                     catch (Exception ex)
@@ -590,31 +623,43 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="prefixInfo"></param>
         private void SetNonHQPEntityInfo(QSO qso)
         {
-            PrefixInfo prefixInfo;
+            //PrefixInfo prefixInfo;
             string[] info = new string[2] { "0", "0" };
 
             if (qso.Status != QSOStatus.InvalidQSO)
             {
                 if (qso.OperatorEntity == "DX")
                 {
-                    prefixInfo = GetPrefixInformation(qso.OperatorCall);
-
-                    if (prefixInfo != null)
+                    // prefixInfo = GetPrefixInformation(qso.OperatorCall);
+                   IEnumerable<CallSignInfo> hitCollection = _CallLookUp.LookUpCall(qso.OperatorCall);
+                   List<CallSignInfo> hitList = hitCollection.ToList();
+                    if (hitList.Count != 0)
                     {
-                        if (prefixInfo.Territory != null)
-                        {
-                            // this is for non US and Canada
-                            qso.OperatorEntity = prefixInfo.Territory.ToUpper();
-                            // Console.WriteLine(prefixInfo.Latitude);
-                            //qso.IsEntityVerified = true;
+                        qso.OperatorEntity = hitList[0].Country;
 
-                            if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
-                            {
-                                qso.ContactTerritory = qso.ContactEntity;
-                                qso.ContactEntity = _QRZ.GetQRZInfo(qso.ContactCall, "LogProcessor");
-                            }
+                        if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
+                        {
+                            qso.ContactTerritory = qso.ContactEntity;
+                            qso.ContactEntity = _QRZ.GetQRZInfo(qso.ContactCall, "LogProcessor");
                         }
                     }
+
+                    //if (prefixInfo != null)
+                    //{
+                    //    if (prefixInfo.Territory != null)
+                    //    {
+                    //        // this is for non US and Canada
+                    //        qso.OperatorEntity = prefixInfo.Territory.ToUpper();
+                    //        // Console.WriteLine(prefixInfo.Latitude);
+                    //        //qso.IsEntityVerified = true;
+
+                    //        if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
+                    //        {
+                    //            qso.ContactTerritory = qso.ContactEntity;
+                    //            qso.ContactEntity = _QRZ.GetQRZInfo(qso.ContactCall, "LogProcessor");
+                    //        }
+                    //    }
+                    //}
                 }
             }
         }
@@ -721,33 +766,33 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="call"></param>
         /// <returns></returns>
-        private PrefixInfo GetPrefixInformation(string call)
-        {
-            CallParser.PrefixInfo prefixInfo = null;
+        //private PrefixInfo GetPrefixInformation(string call)
+        //{
+        //    CallParser.PrefixInfo prefixInfo = null;
 
-            try { 
-            _Parser.Callsign = call;
+        //    try { 
+        //    _Parser.Callsign = call;
 
-            if (_Parser.HitCount > 0)
-            {
-                prefixInfo = _Parser.Hits[0];
-            }
+        //    if (_Parser.HitCount > 0)
+        //    {
+        //        prefixInfo = _Parser.Hits[0];
+        //    }
 
-            if (_Parser.HitCount > 1)
-            {
-                for (int i = 0; i < _Parser.HitCount; i++)
-                {
-                    prefixInfo = _Parser.Hits[0];
-                }
-            }
-            }
-            catch (Exception ex)
-            {
-                var message = ex.Message;
-            }
+        //    if (_Parser.HitCount > 1)
+        //    {
+        //        for (int i = 0; i < _Parser.HitCount; i++)
+        //        {
+        //            prefixInfo = _Parser.Hits[0];
+        //        }
+        //    }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        var message = ex.Message;
+        //    }
 
-            return prefixInfo;
-        }
+        //    return prefixInfo;
+        //}
 
         /// <summary>
         /// Move a file to the inspection folder.
