@@ -363,8 +363,6 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         private void LoadLogFiles()
         {
-            Int32 fileCount = 0;
-
             try
             {
                 ProgressBarLoad.Visible = true;
@@ -401,8 +399,7 @@ namespace W6OP.ContestLogAnalyzer
                 _LogProcessor._WorkingFolder = _WorkingFolder;
                 _LogProcessor._InspectionFolder = _InspectFolder;
 
-                fileCount = _LogFileList.Cast<object>().Count();
-
+                int fileCount = _LogFileList.Cast<object>().Count();
                 ResetProgressBar(true);
                 ProgressBarLoad.Maximum = fileCount;
 
@@ -460,13 +457,11 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         private void CopyLogFilesToWorkingFolder()
         {
-            string fileName = null;
-            int fileCount = 0;
+            string fileName;
 
             try
             {
-                fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
-
+                int fileCount = _LogProcessor.BuildFileList(_Session, out _LogFileList);
                 if (fileCount > 0)
                 {
                     foreach (FileInfo fileInfo in _LogFileList)
@@ -496,7 +491,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void BackgroundWorkerLoadLogs_DoWork(object sender, DoWorkEventArgs e)
         {
-            string fileName = null;
+            string fileName;
 
             UpdateListViewAnalysis("", "", "", true);
 

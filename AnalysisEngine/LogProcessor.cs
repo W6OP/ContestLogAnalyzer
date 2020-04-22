@@ -7,6 +7,7 @@ using W6OP.CallParser;
 using W6OP.PrintEngine;
 using NetworkLookup;
 using System.Collections;
+using System.Threading.Tasks;
 
 namespace W6OP.ContestLogAnalyzer
 {
@@ -325,9 +326,9 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (ActiveContest == ContestName.HQP)
             {
-                _PrefixFileParser = new PrefixFileParser();
-                _PrefixFileParser.ParsePrefixFile("");
-                _CallLookUp = new CallLookUp(_PrefixFileParser);
+                Task.Run(() => LoadPrefixList());
+
+               
 
                 //_Parser = new CallParser.CallsignParser();
                 //if (File.Exists(@"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
@@ -358,6 +359,13 @@ namespace W6OP.ContestLogAnalyzer
                 //    }
                 // }
             }
+        }
+
+        private void LoadPrefixList()
+        {
+            _PrefixFileParser = new PrefixFileParser();
+            _PrefixFileParser.ParsePrefixFile("");
+            _CallLookUp = new CallLookUp(_PrefixFileParser);
         }
 
         /// <summary>
