@@ -113,16 +113,18 @@ namespace W6OP.PrintEngine
                         //so2r = "Y";
                     }
 
-                    scoreList = new ScoreList();
-                    scoreList.LogOwner = contestlog.LogOwner;
-                    scoreList.Operator = contestlog.Operator;
-                    scoreList.Station = contestlog.Station;
-                    scoreList.OperatorName = contestlog.OperatorName;
-                    scoreList.QSOCount = validQsoList.Count.ToString();
-                    scoreList.Multipliers = contestlog.Multipliers.ToString();
-                    scoreList.ActualScore = contestlog.ActualScore.ToString();
-                    scoreList.Power = contestlog.LogHeader.Power.ToString();
-                    scoreList.Assisted = assisted;
+                    scoreList = new ScoreList
+                    {
+                        LogOwner = contestlog.LogOwner,
+                        Operator = contestlog.Operator,
+                        Station = contestlog.Station,
+                        OperatorName = contestlog.OperatorName,
+                        QSOCount = validQsoList.Count.ToString(),
+                        Multipliers = contestlog.Multipliers.ToString(),
+                        ActualScore = contestlog.ActualScore.ToString(),
+                        Power = contestlog.LogHeader.Power.ToString(),
+                        Assisted = assisted
+                    };
 
                     scores.Add(scoreList);
                 }
@@ -500,66 +502,66 @@ namespace W6OP.PrintEngine
                             }
 
                             // should only be one reason so lets change the collection type
-                            foreach (var key in qso.RejectReasons.Keys)
+                            foreach (var key in qso.GetRejectReasons().Keys)
                             {
                                 if (key == RejectReason.OperatorName)
                                 {
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
+                                        value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
                                     }
                                     else
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectName;
+                                        value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectName;
                                     }
                                 }
                                 else if (key == RejectReason.EntityName)
                                 {
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
+                                        value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
                                     }
                                     else
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectDXEntity;
+                                        value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity;
                                     }
                                 }
                                 else if (key == RejectReason.InvalidEntity)
                                 {
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
+                                        value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
                                     }
                                     else
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.IncorrectDXEntity;
+                                        value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity;
                                     }
                                 }
                                 else if (key == RejectReason.SerialNumber)
                                 {
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
+                                        value = qso.GetRejectReasons()[key] + " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
                                     }
                                     else
                                     {
-                                        value = qso.RejectReasons[key];
+                                        value = qso.GetRejectReasons()[key];
                                     }
                                 }
                                 else if (key == RejectReason.NotCounted)
                                 {
-                                    value = qso.RejectReasons[key] + " - " + "Non Hawaiian Station";
+                                    value = qso.GetRejectReasons()[key] + " - " + "Non Hawaiian Station";
                                     break;
                                 }
                                 else if (key == RejectReason.BustedCallSign || key == RejectReason.NoQSO)
                                 {
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.ContactCall + " --> " + qso.MatchingQSO.OperatorCall;
+                                        value = qso.GetRejectReasons()[key] + " - " + qso.ContactCall + " --> " + qso.MatchingQSO.OperatorCall;
                                     }
                                     else
                                     {
-                                        value = qso.RejectReasons[key] + " - " + qso.ContactCall + " --> " + qso.BustedCallGuess;
+                                        value = qso.GetRejectReasons()[key] + " - " + qso.ContactCall + " --> " + qso.BustedCallGuess;
                                         //value = qso.RejectReasons[key];
                                     }
                                 }
@@ -580,7 +582,7 @@ namespace W6OP.PrintEngine
                                 }
                                 else
                                 {
-                                    value = qso.RejectReasons[key];
+                                    value = qso.GetRejectReasons()[key];
                                 }
                             }
 
@@ -730,9 +732,9 @@ namespace W6OP.PrintEngine
                                 }
 
                                 // should only be one reason so lets change the collection type
-                                foreach (var key in qso.RejectReasons.Keys)
+                                foreach (var key in qso.GetRejectReasons().Keys)
                                 {
-                                    value = qso.RejectReasons[key];
+                                    value = qso.GetRejectReasons()[key];
                                 }
 
                                 sw.WriteLine(message + "\t" + value.ToString());
@@ -883,7 +885,7 @@ namespace W6OP.PrintEngine
         /// <param name="session"></param>
         private void ListUniqueCallNamePairs(string reportPath, string session, List<ContestLog> contestLogs)
         {
-            string worksheetName = null;
+            string worksheetName;
             string header1 = "Call Sign";
             string header2 = null;
             string workbookName = null;
@@ -1114,38 +1116,38 @@ namespace W6OP.PrintEngine
         }
 
 
-        private void ThisWillPopulateAnotherWorksheet(WorkbookPart workbookPart, WorksheetPart worksheetPart)
-        {
-            // Add another worksheet with data
-            worksheetPart = AddWorkSheetPart(workbookPart);
-            AddWorkSheet(workbookPart, worksheetPart, "More Stuff");
+        //private void ThisWillPopulateAnotherWorksheet(WorkbookPart workbookPart, WorksheetPart worksheetPart)
+        //{
+        //    // Add another worksheet with data
+        //    worksheetPart = AddWorkSheetPart(workbookPart);
+        //    AddWorkSheet(workbookPart, worksheetPart, "More Stuff");
 
-            SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
-            //// Add a row to the cell table.
-            Row row2;
-            row2 = new Row() { RowIndex = (UInt32)1 };
-            sheetData.Append(row2);
+        //    SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+        //    //// Add a row to the cell table.
+        //    Row row2;
+        //    row2 = new Row() { RowIndex = (UInt32)1 };
+        //    sheetData.Append(row2);
 
 
 
-            Cell refCell2 = null;
-            foreach (Cell cell2 in row2.Elements<Cell>())
-            {
-                if (string.Compare(cell2.CellReference.Value, "A1", true) > 0)
-                {
-                    refCell2 = cell2;
-                    break;
-                }
-            }
+        //    Cell refCell2 = null;
+        //    foreach (Cell cell2 in row2.Elements<Cell>())
+        //    {
+        //        if (string.Compare(cell2.CellReference.Value, "A1", true) > 0)
+        //        {
+        //            refCell2 = cell2;
+        //            break;
+        //        }
+        //    }
 
-            // Add the cell to the cell table at A1.
-            Cell newCell2 = new Cell() { CellReference = "A" + row2.RowIndex.ToString() };
-            row2.InsertBefore(newCell2, refCell2);
+        //    // Add the cell to the cell table at A1.
+        //    Cell newCell2 = new Cell() { CellReference = "A" + row2.RowIndex.ToString() };
+        //    row2.InsertBefore(newCell2, refCell2);
 
-            // Set the cell value to be a numeric value of 100.
-            newCell2.CellValue = new CellValue("Testing");
-            newCell2.DataType = new EnumValue<CellValues>(CellValues.String);
-        }
+        //    // Set the cell value to be a numeric value of 100.
+        //    newCell2.CellValue = new CellValue("Testing");
+        //    newCell2.DataType = new EnumValue<CellValues>(CellValues.String);
+        //}
 
         #endregion
 

@@ -37,10 +37,8 @@ namespace W6OP.ContestLogAnalyzer
         /// Only one reason is ever used so this can be changed to a single item.
         /// </summary>
         private Dictionary<RejectReason, string> rejectReasons = new Dictionary<RejectReason, string>();
-        public Dictionary<RejectReason, String> RejectReasons
-        {
-            get { return rejectReasons; }
-        }
+        public Dictionary<RejectReason, string> GetRejectReasons()
+        { return rejectReasons; }
 
         /// <summary>
         /// The status of the QSO.

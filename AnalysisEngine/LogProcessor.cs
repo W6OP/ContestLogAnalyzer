@@ -21,7 +21,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private const string HQPHawaiiLiteral = "HAWAII";
         private const string HQPUSALiteral = "UNITED STATES OF AMERICA";
-        private const string HQPAlaskaLiteral = "ALASKA";
+        //private const string HQPAlaskaLiteral = "ALASKA";
         private const string HQPCanadaLiteral = "CANADA";
 
         public PrintManager _PrintManager = null;
@@ -31,20 +31,20 @@ namespace W6OP.ContestLogAnalyzer
         public Lookup<string, string> Kansas { get; set; }
         public Lookup<string, string> Ohio { get; set; }
 
-        public string _FailReason { get; set; }
-        public string _FailingLine { get; set; }
-        public string _LogSourceFolder { get; set; }
-        public string _InspectionFolder { get; set; }
-        public string _WorkingFolder { get; set; }
+        public string FailReason { get; set; }
+        public string FailingLine { get; set; }
+        public string LogSourceFolder { get; set; }
+        public string InspectionFolder { get; set; }
+        public string WorkingFolder { get; set; }
         public ContestName ActiveContest { get; set; }
 
-        private string _WorkingLine = null;
+        private string WorkingLine = null;
         //private CallParser.CallsignParser _Parser;
-        private PrefixFileParser _PrefixFileParser;
-        private CallLookUp _CallLookUp;
+        private PrefixFileParser PrefixFileParser;
+        private CallLookUp CallLookUp;
 
         // later replace this
-        private Hashtable _PrefixTable;
+        private Hashtable PrefixTable;
         // with
         // private ILookup<string, string> _PrefixTable;
 
@@ -54,10 +54,10 @@ namespace W6OP.ContestLogAnalyzer
         public LogProcessor(QRZ qrz)
         {
             _QRZ = qrz;
-            _FailingLine = "";
-            _WorkingLine = "";
+            FailingLine = "";
+            WorkingLine = "";
 
-            _PrefixTable = new Hashtable();
+            PrefixTable = new Hashtable();
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             string fileNameFormat = null;
             // Take a snapshot of the file system. http://msdn.microsoft.com/en-us/library/bb546159.aspx
-            DirectoryInfo dir = new DirectoryInfo(_LogSourceFolder);
+            DirectoryInfo dir = new DirectoryInfo(LogSourceFolder);
 
             switch (ActiveContest)
             {
@@ -118,7 +118,7 @@ namespace W6OP.ContestLogAnalyzer
             Int32 progress = 0;
             Int32 count = 0;
 
-            _FailReason = reason;
+            FailReason = reason;
 
             try
             {
@@ -153,11 +153,11 @@ namespace W6OP.ContestLogAnalyzer
                     if (contestLog.LogHeader != null && AnalyzeHeader(contestLog, out reason) == true)
                     {
                         contestLog.LogHeader.HeaderIsValid = true;
-                        _FailReason = "Check the Inspect folder for details.";
+                        FailReason = "Check the Inspect folder for details.";
                     }
                     else
                     {
-                        _FailReason = reason;
+                        FailReason = reason;
                         contestLog.IsValidLog = false;
 
                         throw new Exception(fileName); // don't want this added to collection
@@ -180,7 +180,7 @@ namespace W6OP.ContestLogAnalyzer
                             break;
                     }
 
-                    _FailingLine = "";
+                    FailingLine = "";
 
                     //bcount += 1;
                     //Console.WriteLine(bcount.ToString());
@@ -202,10 +202,10 @@ namespace W6OP.ContestLogAnalyzer
                     if (contestLog.QSOCollection.Count == 0)
                     {
                         // may want to expand on this for a future report
-                        _FailReason = "One or more QSOs may be in an invalid format."; // create enum
-                        if (_FailingLine.Length > 0)
+                        FailReason = "One or more QSOs may be in an invalid format."; // create enum
+                        if (FailingLine.Length > 0)
                         {
-                            _FailReason += Environment.NewLine + _FailingLine;
+                            FailReason += Environment.NewLine + FailingLine;
                         }
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
@@ -219,7 +219,7 @@ namespace W6OP.ContestLogAnalyzer
                         if (count > 0 && contestLog.QSOCollection.Count == 0)
                         {
                             // may want to expand on this for a future report
-                            _FailReason = "QSO collection is empty - Invalid session"; // create enum
+                            FailReason = "QSO collection is empty - Invalid session"; // create enum
                             contestLog.IsValidLog = false;
                             throw new Exception(fileInfo.Name); // don't want this added to collection
                         }
@@ -230,7 +230,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (missingQSOS.Count > 0)
                     {
-                        _FailReason = "One or more columns are missing.";
+                        FailReason = "One or more columns are missing.";
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
                     }
@@ -265,7 +265,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (contestLog.OperatorName.ToUpper() == "NAME")
                     {
                         // may want to expand on this for a future report
-                        _FailReason = "Name sent is 'NAME' - Invalid name."; // create enum
+                        FailReason = "Name sent is 'NAME' - Invalid name."; // create enum
                         contestLog.IsValidLog = false;
                         throw new Exception(fileInfo.Name); // don't want this added to collection
                     }
@@ -301,11 +301,11 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (contestLog.QSOCollection == null)
                     {
-                        _FailReason = _FailReason + " - QSO collection is null." + Environment.NewLine + _FailingLine;
+                        FailReason = FailReason + " - QSO collection is null." + Environment.NewLine + FailingLine;
                     }
                     else
                     {
-                        _FailReason = _FailReason + " - Unable to process log." + Environment.NewLine + _FailingLine;
+                        FailReason = FailReason + " - Unable to process log." + Environment.NewLine + FailingLine;
                     }
                 }
 
@@ -363,9 +363,9 @@ namespace W6OP.ContestLogAnalyzer
 
         private void LoadPrefixList()
         {
-            _PrefixFileParser = new PrefixFileParser();
-            _PrefixFileParser.ParsePrefixFile("");
-            _CallLookUp = new CallLookUp(_PrefixFileParser);
+            PrefixFileParser = new PrefixFileParser();
+            PrefixFileParser.ParsePrefixFile("");
+            CallLookUp = new CallLookUp(PrefixFileParser);
         }
 
         /// <summary>
@@ -405,16 +405,16 @@ namespace W6OP.ContestLogAnalyzer
                 if (contactCall.All(b => char.IsLetter(b)) == true)
                 {
                     qso.Status = QSOStatus.InvalidQSO;
-                    qso.RejectReasons.Clear();
-                    qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    qso.GetRejectReasons().Clear();
+                    qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
                     continue;
                 }
 
                 if (contactCall.All(b => char.IsNumber(b)) == true)
                 {
                     qso.Status = QSOStatus.InvalidQSO;
-                    qso.RejectReasons.Clear();
-                    qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    qso.GetRejectReasons().Clear();
+                    qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
                     continue;
                 }
 
@@ -433,8 +433,8 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     qso.EntityIsInValid = true;
                     qso.Status = QSOStatus.InvalidQSO;
-                    qso.RejectReasons.Clear();
-                    qso.RejectReasons.Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                    qso.GetRejectReasons().Clear();
+                    qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
                     continue;
                 }
 
@@ -443,30 +443,30 @@ namespace W6OP.ContestLogAnalyzer
 
                 //***** get operator information from call parser component ****************//
                 // first check if we already have it from a previous operation
-                if (!_PrefixTable.Contains(operatorCall))
+                if (!PrefixTable.Contains(operatorCall))
                 {
-                    hitCollection = _CallLookUp.LookUpCall(operatorCall);
+                    hitCollection = CallLookUp.LookUpCall(operatorCall);
                     hitList = hitCollection.ToList();
                     if (hitList.Count != 0)
                     {
                         territory = hitList[0].Country;
                         //prefixInfo = GetPrefixInformation(operatorCall);
                         //territory = prefixInfo.Territory.ToUpper();
-                        _PrefixTable.Add(operatorCall, territory);
+                        PrefixTable.Add(operatorCall, territory);
                     }
                 }
                 else
                 {
                     // if yes
-                    territory = (string)_PrefixTable[operatorCall];
+                    territory = (string)PrefixTable[operatorCall];
                 }
 
                 // NOTE: check for AC7N and see if I have to do anything special for him
                 if (territory == null)
                 {
                     qso.Status = QSOStatus.InvalidQSO;
-                    qso.RejectReasons.Clear();
-                    qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    qso.GetRejectReasons().Clear();
+                    qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
                     continue;
                 }
                 //***** end operator information ****************//
@@ -486,11 +486,11 @@ namespace W6OP.ContestLogAnalyzer
                 //    qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
                 //}
 
-                if (!_PrefixTable.Contains(contactCall))
+                if (!PrefixTable.Contains(contactCall))
                 {
                     if (qso.ContactPrefix != string.Empty)
                     {
-                        hitCollection = _CallLookUp.LookUpCall(qso.ContactPrefix + "/" + contactCall);
+                        hitCollection = CallLookUp.LookUpCall(qso.ContactPrefix + "/" + contactCall);
                         hitList = hitCollection.ToList();
                         if (hitList.Count != 0)
                         {
@@ -500,7 +500,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else if (qso.ContactSuffix != string.Empty)
                     {
-                        hitCollection = _CallLookUp.LookUpCall(contactCall + "/" + qso.ContactSuffix);
+                        hitCollection = CallLookUp.LookUpCall(contactCall + "/" + qso.ContactSuffix);
                         hitList = hitCollection.ToList();
                         if (hitList.Count != 0)
                         {
@@ -510,7 +510,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        hitCollection = _CallLookUp.LookUpCall(contactCall);
+                        hitCollection = CallLookUp.LookUpCall(contactCall);
                         hitList = hitCollection.ToList();
                         if (hitList.Count != 0)
                         {
@@ -522,7 +522,7 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         //territory = prefixInfo.Territory.ToUpper();
                         territory = territory.ToUpper();
-                        _PrefixTable.Add(contactCall, territory);
+                        PrefixTable.Add(contactCall, territory);
                     }
                     catch (Exception ex)
                     {
@@ -531,7 +531,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    territory = (string)_PrefixTable[contactCall];
+                    territory = (string)PrefixTable[contactCall];
                 }
 
                 //***** end contact information ****************//
@@ -564,8 +564,8 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             qso.EntityIsInValid = true;
                             qso.Status = QSOStatus.InvalidQSO;
-                            qso.RejectReasons.Clear();
-                            qso.RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                            qso.GetRejectReasons().Clear();
+                            qso.GetRejectReasons().Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
                             continue;
                         }
                     }
@@ -582,8 +582,8 @@ namespace W6OP.ContestLogAnalyzer
                 else
                 {
                     qso.Status = QSOStatus.InvalidQSO;
-                    qso.RejectReasons.Clear();
-                    qso.RejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    qso.GetRejectReasons().Clear();
+                    qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
                     continue;
                 }
                 // ********************************************
@@ -600,7 +600,7 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         if (qso.ContactTerritory == HQPCanadaLiteral || qso.ContactTerritory == HQPUSALiteral)
                         {
-                            SetHQPEntityInfo(qso, territory);
+                            SetHQPEntityInfo(qso); //, territory
                         }
                     }
                 }
@@ -614,8 +614,8 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
                         qso.Status = QSOStatus.InvalidQSO;
-                        qso.RejectReasons.Clear();
-                        qso.RejectReasons.Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                        qso.GetRejectReasons().Clear();
+                        qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
                     }
                 }
             }
@@ -632,14 +632,14 @@ namespace W6OP.ContestLogAnalyzer
         private void SetNonHQPEntityInfo(QSO qso)
         {
             //PrefixInfo prefixInfo;
-            string[] info = new string[2] { "0", "0" };
+            //string[] info = new string[2] { "0", "0" };
 
             if (qso.Status != QSOStatus.InvalidQSO)
             {
                 if (qso.OperatorEntity == "DX")
                 {
                     // prefixInfo = GetPrefixInformation(qso.OperatorCall);
-                   IEnumerable<CallSignInfo> hitCollection = _CallLookUp.LookUpCall(qso.OperatorCall);
+                   IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.OperatorCall);
                    List<CallSignInfo> hitList = hitCollection.ToList();
                     if (hitList.Count != 0)
                     {
@@ -679,9 +679,9 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="qso"></param>
         /// <param name="prefixInfo"></param>
-        private void SetHQPEntityInfo(QSO qso, string territory)
+        private void SetHQPEntityInfo(QSO qso) // , string territory
         {
-            string[] info = new string[2] { "0", "0" };
+            //string[] info = new string[2] { "0", "0" };
 
             //qso.ContactTerritory = territory;
             //qso.IsEntityVerified = true;
@@ -732,7 +732,7 @@ namespace W6OP.ContestLogAnalyzer
         // determine points by mode for the HQP
         private int GetPoints(string mode)
         {
-            Int32 points = 0;
+            Int32 points;
 
             try
             {
@@ -808,12 +808,12 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="fileInfo"></param>
         private void MoveFileToInpectFolder(string fileName, string exception)
         {
-            string logFileName = null;
-            string inspectFileName = null;
+            string logFileName;
+            string inspectFileName;
 
             // move the file to inspection folder
-            inspectFileName = Path.Combine(_InspectionFolder, fileName + ".txt");
-            logFileName = Path.Combine(_InspectionFolder, fileName);
+            inspectFileName = Path.Combine(InspectionFolder, fileName + ".txt");
+            logFileName = Path.Combine(InspectionFolder, fileName);
 
             if (File.Exists(logFileName))
             {
@@ -825,12 +825,12 @@ namespace W6OP.ContestLogAnalyzer
                 File.Delete(inspectFileName);
             }
 
-            if (File.Exists(Path.Combine(_WorkingFolder, fileName)))
+            if (File.Exists(Path.Combine(WorkingFolder, fileName)))
             {
-                File.Move(Path.Combine(_WorkingFolder, fileName), logFileName);
+                File.Move(Path.Combine(WorkingFolder, fileName), logFileName);
             }
 
-            _PrintManager.PrintInspectionReport(fileName + ".txt", _FailReason + Environment.NewLine + " - " + exception);
+            _PrintManager.PrintInspectionReport(fileName + ".txt", FailReason + Environment.NewLine + " - " + exception);
         }
 
         /// <summary>
@@ -1049,7 +1049,7 @@ namespace W6OP.ContestLogAnalyzer
             string prefix = string.Empty;
             string suffix = string.Empty;
 
-            _WorkingLine = "";
+            WorkingLine = "";
 
             try
             {
@@ -1133,7 +1133,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (ex.Message == "Serial Number Format Incorrect.")
                     {
-                        _FailingLine += Environment.NewLine;
+                        FailingLine += Environment.NewLine;
                     }
                     else
                     {
@@ -1142,9 +1142,9 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    if (_FailingLine.IndexOf(_WorkingLine) == -1)
+                    if (FailingLine.IndexOf(WorkingLine) == -1)
                     {
-                        _FailingLine += Environment.NewLine + _WorkingLine + " --- " + ex.Message;
+                        FailingLine += Environment.NewLine + WorkingLine + " --- " + ex.Message;
                     }
                 }
             }
@@ -1187,7 +1187,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private string[] CheckQSOLength(string[] split)
         {
-            int missing = 0;
+            int missing;
 
             if (split.Length < 11)
             {
@@ -1371,13 +1371,13 @@ namespace W6OP.ContestLogAnalyzer
         {
             QSOStatus status = QSOStatus.ValidQSO;
 
-            _WorkingLine = line;
+            WorkingLine = line;
 
             if (split[10] == "missing_column")
             {
                 status = QSOStatus.InvalidQSO;
-                _FailingLine += Environment.NewLine + "One or more columns are missing.";
-                _FailingLine += Environment.NewLine + line;
+                FailingLine += Environment.NewLine + "One or more columns are missing.";
+                FailingLine += Environment.NewLine + line;
             }
 
             return status;
@@ -1385,12 +1385,12 @@ namespace W6OP.ContestLogAnalyzer
 
         private string CheckFrequency(string frequency, string line)
         {
-            _WorkingLine = line;
+            WorkingLine = line;
 
             if (CheckForNumeric(frequency) == 999999)
             {
-                _FailingLine += Environment.NewLine + "Frequency is not correctly formatted.";
-                _FailingLine += Environment.NewLine + line;
+                FailingLine += Environment.NewLine + "Frequency is not correctly formatted.";
+                FailingLine += Environment.NewLine + line;
             }
 
             return frequency;
@@ -1398,12 +1398,12 @@ namespace W6OP.ContestLogAnalyzer
 
         private string CheckTime(string time, string line)
         {
-            _WorkingLine = line;
+            WorkingLine = line;
 
             if (CheckForNumeric(time) == 999999)
             {
-                _FailingLine += Environment.NewLine + "The time is not correctly formatted. Possibly alpha instead of numeric";
-                _FailingLine += Environment.NewLine + line;
+                FailingLine += Environment.NewLine + "The time is not correctly formatted. Possibly alpha instead of numeric";
+                FailingLine += Environment.NewLine + line;
             }
 
             return time;
@@ -1469,7 +1469,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private Int32 ConvertSerialNumber(string serialNumber, string line)
         {
-            Int32 number = 0; // catches invalid serial number
+            Int32 number; // catches invalid serial number
 
             // catch when SN is swapped with Name - set serial number so it will never match
             if (Regex.Match(serialNumber, @"\d+").Success)
@@ -1479,8 +1479,8 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                _FailingLine += Environment.NewLine + "The Serial Number is not correctly formatted.";
-                _FailingLine += Environment.NewLine + line;
+                FailingLine += Environment.NewLine + "The Serial Number is not correctly formatted.";
+                FailingLine += Environment.NewLine + line;
                 throw new FormatException("Serial Number Format Incorrect.");
             }
 
@@ -1495,28 +1495,28 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="callSign"></param>
         /// <returns></returns>
-        private bool ValidateCallSign(string callSign)
-        {
-            // check for empty or null string
-            if (string.IsNullOrEmpty(callSign)) { return false; }
+        //private bool ValidateCallSign(string callSign)
+        //{
+        //    // check for empty or null string
+        //    if (string.IsNullOrEmpty(callSign)) { return false; }
 
-            // check if first character is "/"
-            if (callSign.IndexOf("/", 0, 1) == 0) { return false; }
+        //    // check if first character is "/"
+        //    if (callSign.IndexOf("/", 0, 1) == 0) { return false; }
 
-            // check if second character is "/"
-            if (callSign.IndexOf("/", 1, 1) == 1) { return false; }
+        //    // check if second character is "/"
+        //    if (callSign.IndexOf("/", 1, 1) == 1) { return false; }
 
-            // check for a "-" ie: VE7CC-7, OH6BG-1, WZ7I-3 
-            if (callSign.IndexOf("-") != -1) { return false; }
+        //    // check for a "-" ie: VE7CC-7, OH6BG-1, WZ7I-3 
+        //    if (callSign.IndexOf("-") != -1) { return false; }
 
-            // can't be all numbers
-            if (IsNumeric(callSign)) { return false; }
+        //    // can't be all numbers
+        //    if (IsNumeric(callSign)) { return false; }
 
-            // look for at least one number character
-            if (!callSign.Where(x => Char.IsDigit(x)).Any()) { return false; }
+        //    // look for at least one number character
+        //    if (!callSign.Where(x => Char.IsDigit(x)).Any()) { return false; }
 
-            return true;
-        }
+        //    return true;
+        //}
 
         public bool IsNumeric(string value)
         {
@@ -1528,24 +1528,24 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="call"></param>
         /// <returns></returns>
-        private bool CheckCallSignFormat(string call)
-        {
-            string regex = @"^([A-Z]{1,2}|[0-9][A-Z])([0-9])([A-Z]{1,3})$";
-            bool invalid = true;
+        //private bool CheckCallSignFormat(string call)
+        //{
+        //    string regex = @"^([A-Z]{1,2}|[0-9][A-Z])([0-9])([A-Z]{1,3})$";
+        //    bool invalid = true;
 
-            // should this pass "DR50RRDXA" it does not currently
-            if (Regex.IsMatch(call.ToUpper(), regex, RegexOptions.IgnoreCase))
-            {
-                invalid = false;
-            }
+        //    // should this pass "DR50RRDXA" it does not currently
+        //    if (Regex.IsMatch(call.ToUpper(), regex, RegexOptions.IgnoreCase))
+        //    {
+        //        invalid = false;
+        //    }
 
-            if (call == "S57DX")
-            {
-                invalid = false;
-            }
+        //    if (call == "S57DX")
+        //    {
+        //        invalid = false;
+        //    }
 
-            return invalid;
-        }
+        //    return invalid;
+        //}
 
         #endregion
     } // end class

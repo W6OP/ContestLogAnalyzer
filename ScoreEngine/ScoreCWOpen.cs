@@ -79,7 +79,7 @@ namespace W6OP.ContestLogAnalyzer
                         if (qso != null)
                         {
                             qso.CallIsInValid = false;
-                            qso.RejectReasons.Clear();
+                            qso.GetRejectReasons().Clear();
                             qso.Status = QSOStatus.ValidQSO;
                         }
                     }

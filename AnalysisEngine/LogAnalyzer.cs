@@ -262,9 +262,9 @@ namespace W6OP.ContestLogAnalyzer
                 receivedSerialNumber = qso.ReceivedSerialNumber;
                 tempLog = null;
 
-                if (qso.Status == QSOStatus.InvalidQSO && qso.RejectReasons.Count > 0)
+                if (qso.Status == QSOStatus.InvalidQSO && qso.GetRejectReasons().Count > 0)
                 {
-                    if (qso.RejectReasons.ContainsKey(RejectReason.InvalidCall))
+                    if (qso.GetRejectReasons().ContainsKey(RejectReason.InvalidCall))
                     {
                         continue;
                     }
@@ -276,8 +276,8 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
                         qso.Status = QSOStatus.InvalidQSO;
-                        qso.RejectReasons.Clear();
-                        qso.RejectReasons.Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                        qso.GetRejectReasons().Clear();
+                        qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
                         continue;
                     }
                 }
@@ -286,8 +286,8 @@ namespace W6OP.ContestLogAnalyzer
                 if (qso.IsXQSO)
                 {
                     qso.Status = QSOStatus.InvalidQSO;
-                    qso.RejectReasons.Clear();
-                    qso.RejectReasons.Add(RejectReason.Marked_XQSO, EnumHelper.GetDescription(RejectReason.Marked_XQSO));
+                    qso.GetRejectReasons().Clear();
+                    qso.GetRejectReasons().Add(RejectReason.Marked_XQSO, EnumHelper.GetDescription(RejectReason.Marked_XQSO));
                     continue;
                 }
 
@@ -336,8 +336,8 @@ namespace W6OP.ContestLogAnalyzer
                         if (reason != RejectReason.InvalidTime && reason != RejectReason.None)
                         {
                             qso.Status = QSOStatus.InvalidQSO;
-                            qso.RejectReasons.Clear();
-                            qso.RejectReasons.Add(reason, EnumHelper.GetDescription(reason));
+                            qso.GetRejectReasons().Clear();
+                            qso.GetRejectReasons().Add(reason, EnumHelper.GetDescription(reason));
                         }
                     }
                 }
@@ -354,19 +354,19 @@ namespace W6OP.ContestLogAnalyzer
                         if (!qso.HasMatchingQso)
                         {
                             qso.Status = QSOStatus.ReviewQSO;
-                            qso.RejectReasons.Clear();
+                            qso.GetRejectReasons().Clear();
                             if (ActiveContest == ContestName.CW_OPEN)
                             {
                                 // give them the point anyway
                                 qso.IsMultiplier = true;
-                                qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                                qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
                             }
 
                             if (ActiveContest == ContestName.HQP)
                             {
                                 if (qso.ContactTerritory != HQPUSALiteral && qso.ContactTerritory != HQPCanadaLiteral && qso.ContactTerritory != HQPHawaiiLiteral && qso.ContactTerritory != HQPAlaskaLiteral)
                                 {
-                                    qso.RejectReasons.Clear();
+                                    qso.GetRejectReasons().Clear();
                                     qso.Status = QSOStatus.ValidQSO;
                                 }
                                 else
@@ -380,7 +380,7 @@ namespace W6OP.ContestLogAnalyzer
                                     }
                                     else
                                     {
-                                        qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                                        qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
                                     }
                                 }
                             }
@@ -388,8 +388,8 @@ namespace W6OP.ContestLogAnalyzer
                         else
                         {
                             qso.Status = QSOStatus.InvalidQSO;
-                            qso.RejectReasons.Clear();
-                            qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+                            qso.GetRejectReasons().Clear();
+                            qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
                         }
                     }
                     else
@@ -477,8 +477,8 @@ namespace W6OP.ContestLogAnalyzer
                     qso.Status = QSOStatus.InvalidQSO;
                     qso.CallIsBusted = true;
                     qso.BustedCallGuess = uniqueResults[0];
-                    qso.RejectReasons.Clear();
-                    qso.RejectReasons.Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+                    qso.GetRejectReasons().Clear();
+                    qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
 
                     return true;
                 }
@@ -777,8 +777,8 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (isMatchQSO)
                 {
-                    matchQSO.RejectReasons.Clear(); // should not be a collection ?? or lets actually look for multiple reasons
-                    matchQSO.RejectReasons.Add(RejectReason.Band, EnumHelper.GetDescription(RejectReason.Band));
+                    matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
+                    matchQSO.GetRejectReasons().Add(RejectReason.Band, EnumHelper.GetDescription(RejectReason.Band));
                 }
                 else
                 {
@@ -818,8 +818,8 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (isMatchQSO)
                 {
-                    matchQSO.RejectReasons.Clear(); // should not be a collection ?? or lets actually look for multiple reasons
-                    matchQSO.RejectReasons.Add(RejectReason.Mode, EnumHelper.GetDescription(RejectReason.Mode));
+                    matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
+                    matchQSO.GetRejectReasons().Add(RejectReason.Mode, EnumHelper.GetDescription(RejectReason.Mode));
                 }
                 else
                 {
@@ -908,8 +908,8 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     matchQSO.HasMatchingQso = true;
                     matchQSO.MatchingQSO = qso;
-                    matchQSO.RejectReasons.Clear(); // should not be a collection ?? or lets actually look for multiple reasons
-                    matchQSO.RejectReasons.Add(RejectReason.NoQSOMatch, EnumHelper.GetDescription(RejectReason.NoQSOMatch));
+                    matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
+                    matchQSO.GetRejectReasons().Add(RejectReason.NoQSOMatch, EnumHelper.GetDescription(RejectReason.NoQSOMatch));
                 }
             }
 

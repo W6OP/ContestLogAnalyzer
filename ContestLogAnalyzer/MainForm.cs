@@ -34,11 +34,11 @@ namespace W6OP.ContestLogAnalyzer
 
         // set the actual folders to use
         private string _BaseFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_BASE_FOLDER_PATH);
-        private string _BaseWorkingFolder = LOG_ANALYSER_WORKING_FOLDER_PATH;
-        private string _BaseInspectFolder = LOG_ANALYSER_INSPECT_FOLDER_PATH;
-        private string _BaseReportFolder = LOG_ANALYSER_REPORT_FOLDER_PATH;
-        private string _BaseReviewFolder = LOG_ANALYSER_REVIEW_FOLDER_PATH;
-        private string _BaseScoreFolder = LOG_ANALYSER_SCORE_FOLDER_PATH;
+        private const string _BaseWorkingFolder = LOG_ANALYSER_WORKING_FOLDER_PATH;
+        private const string _BaseInspectFolder = LOG_ANALYSER_INSPECT_FOLDER_PATH;
+        private const string _BaseReportFolder = LOG_ANALYSER_REPORT_FOLDER_PATH;
+        private const string _BaseReviewFolder = LOG_ANALYSER_REVIEW_FOLDER_PATH;
+        private const string _BaseScoreFolder = LOG_ANALYSER_SCORE_FOLDER_PATH;
 
         private string _WorkingFolder = null;
         private string _InspectFolder = null;
@@ -47,8 +47,8 @@ namespace W6OP.ContestLogAnalyzer
         private string _ScoreFolder = null;
 
         private List<ContestLog> _ContestLogs;
-        private IEnumerable<System.IO.FileInfo> _LogFileList;
-        private QRZ _QRZ = null;
+        private IEnumerable<FileInfo> _LogFileList;
+        private QRZ _QRZ;
 
         private LogProcessor _LogProcessor;
         private LogAnalyzer _LogAnalyser;
@@ -94,13 +94,13 @@ namespace W6OP.ContestLogAnalyzer
             if (_LogProcessor == null)
             {
                 _LogProcessor = new LogProcessor(_QRZ);
-                _LogProcessor.OnProgressUpdate += _LogProcessor_OnProgressUpdate;
+                _LogProcessor.OnProgressUpdate += LogProcessor_OnProgressUpdate;
             }
 
             if (_LogAnalyser == null)
             {
                 _LogAnalyser = new LogAnalyzer(_QRZ);
-                _LogAnalyser.OnProgressUpdate += _LogAnalyser_OnProgressUpdate;
+                _LogAnalyser.OnProgressUpdate += LogAnalyser_OnProgressUpdate;
             }
 
             ComboBoxSelectContest.DataSource = Enum.GetValues(typeof(ContestName))
@@ -299,7 +299,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (_CWOpen == null)
                     {
                         _CWOpen = new ScoreCWOpen();
-                        _CWOpen.OnProgressUpdate += _CWOpen_OnProgressUpdate;
+                        _CWOpen.OnProgressUpdate += CWOpen_OnProgressUpdate;
                     }
                     session = EnumHelper.GetDescription(_Session);
                     _BaseFolder = Path.Combine(_BaseFolder, session);
@@ -310,7 +310,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (_HQP == null)
                     {
                         _HQP = new ScoreHQP();
-                        _HQP.OnProgressUpdate += _HQP_OnProgressUpdate;
+                        _HQP.OnProgressUpdate += HQP_OnProgressUpdate;
                     }
                     ComboBoxSelectSession.SelectedIndex = 0;
                     ComboBoxSelectSession.Enabled = false;
@@ -385,7 +385,7 @@ namespace W6OP.ContestLogAnalyzer
                 // initialize other modules
                 if (_LogSourceFolder != _WorkingFolder)
                 {
-                    _LogProcessor._LogSourceFolder = _LogSourceFolder;
+                    _LogProcessor.LogSourceFolder = _LogSourceFolder;
                     // copy eveything to working folder so we don't modify originals
                     CopyLogFilesToWorkingFolder();
                 }
@@ -396,8 +396,8 @@ namespace W6OP.ContestLogAnalyzer
                 _PrintManager.ReviewFolder = _ReviewFolder;
                 _PrintManager.ScoreFolder = _ScoreFolder;
 
-                _LogProcessor._WorkingFolder = _WorkingFolder;
-                _LogProcessor._InspectionFolder = _InspectFolder;
+                _LogProcessor.WorkingFolder = _WorkingFolder;
+                _LogProcessor.InspectionFolder = _InspectFolder;
 
                 int fileCount = _LogFileList.Cast<object>().Count();
                 ResetProgressBar(true);
@@ -500,7 +500,7 @@ namespace W6OP.ContestLogAnalyzer
                 fileName = _LogProcessor.BuildContestLog(fileInfo, _ContestLogs, _Session);
                 if (fileName != null)
                 {
-                    UpdateListViewLoad(fileName, "Load failed." + " - " + _LogProcessor._FailReason, false);
+                    UpdateListViewLoad(fileName, "Load failed." + " - " + _LogProcessor.FailReason, false);
                 }
             }
         }
@@ -510,7 +510,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="value"></param>
         /// <param name="progress"></param>
-        private void _LogProcessor_OnProgressUpdate(Int32 progress)
+        private void LogProcessor_OnProgressUpdate(Int32 progress)
         {
             UpdateProgress(progress);
         }
@@ -595,7 +595,7 @@ namespace W6OP.ContestLogAnalyzer
         /// Update the list view with the call sign last processed.
         /// </summary>
         /// <param name="value"></param>
-        private void _LogAnalyser_OnProgressUpdate(string value, string qsoCount, string validQsoCount, Int32 progress)
+        private void LogAnalyser_OnProgressUpdate(string value, string qsoCount, string validQsoCount, Int32 progress)
         {
 
             if (value.Length > 1)
@@ -683,13 +683,13 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        private void _CWOpen_OnProgressUpdate(ContestLog contestLog, Int32 progress)
+        private void CWOpen_OnProgressUpdate(ContestLog contestLog, Int32 progress)
         {
             UpdateProgress(progress);
             UpdateListViewScore(contestLog, false);
         }
 
-        private void _HQP_OnProgressUpdate(ContestLog contestLog, int progress)
+        private void HQP_OnProgressUpdate(ContestLog contestLog, int progress)
         {
             UpdateProgress(progress);
             UpdateListViewScore(contestLog, false);
@@ -909,8 +909,8 @@ namespace W6OP.ContestLogAnalyzer
             // hack to get smooth progress bar
             if (ProgressBarLoad.Maximum >= ProgressBarLoad.Value + 2)
             {
-                ProgressBarLoad.Value = ProgressBarLoad.Value + 2;
-                ProgressBarLoad.Value = ProgressBarLoad.Value - 1;
+                ProgressBarLoad.Value += 2;
+                ProgressBarLoad.Value -= 1;
             }
             else
             {
