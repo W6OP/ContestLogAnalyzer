@@ -5,9 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using W6OP.CallParser;
 using W6OP.PrintEngine;
-using NetworkLookup;
 using System.Collections;
-using System.Threading.Tasks;
 
 namespace W6OP.ContestLogAnalyzer
 {
@@ -17,7 +15,6 @@ namespace W6OP.ContestLogAnalyzer
     {
         public delegate void ProgressUpdate(Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
-        //public event ErrorRaised OnErrorRaised;
 
         private const string HQPHawaiiLiteral = "HAWAII";
         private const string HQPUSALiteral = "UNITED STATES OF AMERICA";
@@ -25,7 +22,6 @@ namespace W6OP.ContestLogAnalyzer
         private const string HQPCanadaLiteral = "CANADA";
 
         public PrintManager _PrintManager = null;
-        private QRZ _QRZ = null;
 
         public Lookup<string, string> CountryPrefixes { get; set; }
         public Lookup<string, string> Kansas { get; set; }
@@ -39,9 +35,8 @@ namespace W6OP.ContestLogAnalyzer
         public ContestName ActiveContest { get; set; }
 
         private string WorkingLine = null;
-        //private CallParser.CallsignParser _Parser;
-        private PrefixFileParser PrefixFileParser;
-        private CallLookUp CallLookUp;
+    
+        public CallLookUp CallLookUp;
 
         // later replace this
         private Hashtable PrefixTable;
@@ -51,9 +46,8 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public LogProcessor(QRZ qrz)
+        public LogProcessor()
         {
-            _QRZ = qrz;
             FailingLine = "";
             WorkingLine = "";
 
@@ -76,7 +70,7 @@ namespace W6OP.ContestLogAnalyzer
                     fileNameFormat = "*_" + ((uint)session).ToString() + ".log";
                     break;
                 case ContestName.HQP:
-                    InitializeHQPLogProcessor();
+                    //InitializeHQPLogProcessor();
                     fileNameFormat = "*.log";
                     break;
                 default:
@@ -320,55 +314,6 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Instantiate the Call Parser
-        /// </summary>
-        private void InitializeHQPLogProcessor()
-        {
-            if (ActiveContest == ContestName.HQP)
-            {
-                Task.Run(() => LoadPrefixList());
-
-               
-
-                //_Parser = new CallParser.CallsignParser();
-                //if (File.Exists(@"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"))
-                //{
-                //    _Parser.PrefixFile = @"C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Support\CallParser\Prefix.lst"; //"prefix.lst";  // @"C:\Users\pbourget\Documents\Visual Studio 2012\Projects\Ham Radio\DXACollector\Support\CallParser\prefix.lst";
-                //}
-                //else
-                //{
-                //    if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "W6OP")))
-                //    {
-                //        Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "W6OP"));
-                //    }
-
-                //    string target = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"W6OP\Prefix.lst");
-                //    if (!File.Exists(target))
-                //    {
-                //        string source = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), @"Prefix.lst");
-                //        File.Copy(source, target);
-                //    }
-
-                //    if (File.Exists(target))
-                //    {
-                //        _Parser.PrefixFile = target;
-                //    }
-                //    else
-                //    {
-                //        throw (new Exception("The prefix file cannot be found."));
-                //    }
-                // }
-            }
-        }
-
-        private void LoadPrefixList()
-        {
-            PrefixFileParser = new PrefixFileParser();
-            PrefixFileParser.ParsePrefixFile("");
-            CallLookUp = new CallLookUp(PrefixFileParser);
-        }
-
-        /// <summary>
         /// HQP Only
         /// now add the DXCC information some contests need for multipliers
         /// 
@@ -379,8 +324,6 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="contestLog"></param>
         private void SetDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
         {
-           // PrefixInfo prefixInfo = null;
-
             bool isValidHQPEntity = false;
             string[] info = new string[2] { "0", "0" };
 
@@ -392,6 +335,9 @@ namespace W6OP.ContestLogAnalyzer
 
             contestLog.IsHQPEntity = false;
             contestLog.TotalPoints = 0;
+
+
+            // FIGURE OUT WHAT IS HAPPENING HERE AND MAKE SOME COMMENTS.
 
             foreach (QSO qso in qsoCollection)
             {
@@ -443,22 +389,20 @@ namespace W6OP.ContestLogAnalyzer
 
                 //***** get operator information from call parser component ****************//
                 // first check if we already have it from a previous operation
-                if (!PrefixTable.Contains(operatorCall))
+                if (PrefixTable.Contains(operatorCall))
+                {
+                    // if yes
+                    territory = (string)PrefixTable[operatorCall];
+                }
+                else
                 {
                     hitCollection = CallLookUp.LookUpCall(operatorCall);
                     hitList = hitCollection.ToList();
                     if (hitList.Count != 0)
                     {
                         territory = hitList[0].Country;
-                        //prefixInfo = GetPrefixInformation(operatorCall);
-                        //territory = prefixInfo.Territory.ToUpper();
                         PrefixTable.Add(operatorCall, territory);
                     }
-                }
-                else
-                {
-                    // if yes
-                    territory = (string)PrefixTable[operatorCall];
                 }
 
                 // NOTE: check for AC7N and see if I have to do anything special for him
@@ -496,7 +440,6 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             territory = hitList[0].Country;
                         }
-                        //prefixInfo = GetPrefixInformation(qso.ContactPrefix + "/" + contactCall);
                     }
                     else if (qso.ContactSuffix != string.Empty)
                     {
@@ -506,7 +449,6 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             territory = hitList[0].Country;
                         }
-                        //prefixInfo = GetPrefixInformation(contactCall + "/" + qso.ContactSuffix);
                     }
                     else
                     {
@@ -516,11 +458,9 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             territory = hitList[0].Country;
                         }
-                        //prefixInfo = GetPrefixInformation(contactCall);
                     }
                     try
                     {
-                        //territory = prefixInfo.Territory.ToUpper();
                         territory = territory.ToUpper();
                         PrefixTable.Add(contactCall, territory);
                     }
@@ -569,15 +509,6 @@ namespace W6OP.ContestLogAnalyzer
                             continue;
                         }
                     }
-
-                    // sometimes they put in the contact entity as WA003S - thats wrong
-                    //if (qso.ContactTerritory == HQPUSALiteral && qso.ContactEntity.Length > 2)
-                    //{
-                    //    qso.Status = QSOStatus.InvalidQSO;
-                    //    qso.RejectReasons.Clear();
-                    //    qso.RejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
-                    //    continue;
-                    //}
                 }
                 else
                 {
@@ -631,9 +562,6 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="prefixInfo"></param>
         private void SetNonHQPEntityInfo(QSO qso)
         {
-            //PrefixInfo prefixInfo;
-            //string[] info = new string[2] { "0", "0" };
-
             if (qso.Status != QSOStatus.InvalidQSO)
             {
                 if (qso.OperatorEntity == "DX")
@@ -647,27 +575,9 @@ namespace W6OP.ContestLogAnalyzer
 
                         if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
                         {
-                            qso.ContactTerritory = qso.ContactEntity;
-                            qso.ContactEntity = _QRZ.GetQRZInfo(qso.ContactCall, "LogProcessor");
+                            qso.ContactTerritory = hitList[0].Province;   
                         }
                     }
-
-                    //if (prefixInfo != null)
-                    //{
-                    //    if (prefixInfo.Territory != null)
-                    //    {
-                    //        // this is for non US and Canada
-                    //        qso.OperatorEntity = prefixInfo.Territory.ToUpper();
-                    //        // Console.WriteLine(prefixInfo.Latitude);
-                    //        //qso.IsEntityVerified = true;
-
-                    //        if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
-                    //        {
-                    //            qso.ContactTerritory = qso.ContactEntity;
-                    //            qso.ContactEntity = _QRZ.GetQRZInfo(qso.ContactCall, "LogProcessor");
-                    //        }
-                    //    }
-                    //}
                 }
             }
         }
@@ -681,29 +591,21 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="prefixInfo"></param>
         private void SetHQPEntityInfo(QSO qso) // , string territory
         {
-            //string[] info = new string[2] { "0", "0" };
-
-            //qso.ContactTerritory = territory;
-            //qso.IsEntityVerified = true;
-
-            //if (qso.ContactTerritory == HQPCanadaLiteral || qso.ContactTerritory == HQPUSALiteral)
-            //{
             if (qso.ContactEntity == "DX")
             {
                 // this is very rarely hit -  This is only for when the US or Canada entry is input as DX by the operator
-                qso.ContactEntity = _QRZ.GetQRZInfo(qso.ContactCall, "LogProcessor");
-            }
-            else if (qso.ContactEntity.Length > 2) // counties are 3 or more
+                IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
+                List<CallSignInfo> hitList = hitCollection.ToList();
+                if (hitList.Count != 0)
+                {
+                    qso.ContactEntity = hitList[0].Province;
+                }
+            }   // counties are 3 or more - a ; in it means a list od states
+            else if (qso.ContactEntity.Length > 2 && qso.ContactEntity.IndexOf(";") != -1) 
             {
                 // check if its in one of the county files
                 qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
-                //if (qso.DXEntity.Length > 2) // if its still > 2 it is wrong maybe used Hawaii entity instead of US state
-                //{
-                //    // do i really want to do anything here ???
-                //    // should find this in analysis processor
-                //}
             }
-            //}
         }
 
         /// <summary>
@@ -732,7 +634,7 @@ namespace W6OP.ContestLogAnalyzer
         // determine points by mode for the HQP
         private int GetPoints(string mode)
         {
-            Int32 points;
+            int points;
 
             try
             {
@@ -767,40 +669,6 @@ namespace W6OP.ContestLogAnalyzer
 
             return points;
         }
-
-        /// <summary>
-        /// Get the QTH information about a call sign.
-        /// Can get it from the CallParser component or checking the county file for USA
-        /// </summary>
-        /// <param name="call"></param>
-        /// <returns></returns>
-        //private PrefixInfo GetPrefixInformation(string call)
-        //{
-        //    CallParser.PrefixInfo prefixInfo = null;
-
-        //    try { 
-        //    _Parser.Callsign = call;
-
-        //    if (_Parser.HitCount > 0)
-        //    {
-        //        prefixInfo = _Parser.Hits[0];
-        //    }
-
-        //    if (_Parser.HitCount > 1)
-        //    {
-        //        for (int i = 0; i < _Parser.HitCount; i++)
-        //        {
-        //            prefixInfo = _Parser.Hits[0];
-        //        }
-        //    }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        var message = ex.Message;
-        //    }
-
-        //    return prefixInfo;
-        //}
 
         /// <summary>
         /// Move a file to the inspection folder.

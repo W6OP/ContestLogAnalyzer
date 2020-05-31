@@ -34,30 +34,30 @@ namespace NetworkLookup
         /// </summary>
         /// <param name="call"></param>
         /// <returns></returns>
-        public string GetQRZInfo(string call, string source)
-        {
-            string[] info = new string[2] { "0", "0" };
-            string entity = null;
+        //public string GetQRZInfo(string call, string source)
+        //{
+        //    string[] info = new string[2] { "0", "0" };
+        //    string entity = null;
 
-            Console.WriteLine(source);
+        //    Console.WriteLine(source);
 
-            if (_CallSignSet.Contains(call))
-            {
-                entity = (String)_CallSignSet[call];
-            }
-            else
-            {
-                info = QRZLookup(call, info, 1);
+        //    if (_CallSignSet.Contains(call))
+        //    {
+        //        entity = (String)_CallSignSet[call];
+        //    }
+        //    else
+        //    {
+        //        info = QRZLookup(call, info, 1);
 
-                if (info[0] != null && info[0] != "0")
-                {
-                    entity = info[0].ToUpper();
-                    _CallSignSet.Add(call, entity);
-                }
-            }
+        //        if (info[0] != null && info[0] != "0")
+        //        {
+        //            entity = info[0].ToUpper();
+        //            _CallSignSet.Add(call, entity);
+        //        }
+        //    }
 
-            return entity;
-        }
+        //    return entity;
+        //}
 
         /// <summary>
         /// 

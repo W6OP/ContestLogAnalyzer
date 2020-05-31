@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NetworkLookup;
+using W6OP.CallParser;
 
 namespace W6OP.ContestLogAnalyzer
 {
@@ -21,16 +20,16 @@ namespace W6OP.ContestLogAnalyzer
 
         private ILookup<string, string> _BadCallList;
 
-        private QRZ _QRZ = null;
-
         public ILookup<string, string> BadCallList { set => _BadCallList = value; }
+
+        public CallLookUp CallLookUp;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public LogAnalyzer(QRZ qrz)
+        public LogAnalyzer()
         {
-            _QRZ = qrz;
+     
         }
 
         /// <summary>
@@ -58,8 +57,8 @@ namespace W6OP.ContestLogAnalyzer
             List<QSO> qsoList = new List<QSO>();
             string call = null;
             string name = null;
-            Int32 progress = 0;
-            Int32 validQsos;
+            int progress = 0;
+            int validQsos;
 
             // Display the label
             OnProgressUpdate?.Invoke("1", "", "", 0);
@@ -125,7 +124,7 @@ namespace W6OP.ContestLogAnalyzer
             List<QSO> qsoList = new List<QSO>();
             string call = null;
             string name = null;
-            Int32 progress = 0;
+            int progress = 0;
             Int32 validQsos;
 
             OnProgressUpdate?.Invoke("2", "", "", 0);
@@ -135,7 +134,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 call = contestLog.LogOwner;
                 name = contestLog.LogHeader.NameSent.ToUpper();
-
+               // Console.WriteLine(call);
                 progress++;
 
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
@@ -243,15 +242,15 @@ namespace W6OP.ContestLogAnalyzer
             int receivedSerialNumber = 0;
 
 
-            int testCount = 0;
+            //int testCount = 0;
 
             foreach (QSO qso in qsoList)
             {
-                testCount += 1;
-                if (testCount == 183)
-                {
-                    Console.WriteLine("Count = " + testCount.ToString());
-                }
+                //testCount += 1;
+                //if (testCount == 183)
+                //{
+                //   // Console.WriteLine("Count = " + testCount.ToString());
+                //}
 
                 qsoDateTime = qso.QSODateTime;
                 band = qso.Band;
@@ -269,6 +268,11 @@ namespace W6OP.ContestLogAnalyzer
                         continue;
                     }
                 }
+
+                //if (qso.OperatorCall == "KH6RC" || contactCall == "KH6RC")
+                //{
+                //    Console.WriteLine(qso.OperatorCall + ":" + contactCall);
+                //}
 
                 if (ActiveContest == ContestName.HQP)
                 {
@@ -543,12 +547,10 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private bool SearchForIncorrectEntityEx(QSO qso, List<ContestLog> contestLogList)
         {
-            bool isNotCorrect = false;
-            Int32 matchCount = 0;
+            bool isCorrect = false;
+            int matchCount = 0;
             List<QSO> matchingQSOSpecific = null;
             List<QSO> matchingQSOsGeneral = null;
-            //List<string> entityA = null;
-            //string matchEntity = null;
             string entity = null;
             string[] info = new string[2] { "0", "0" };
             int count = 0;
@@ -608,19 +610,32 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    // last resort, use QRZ.com
-                    entity = _QRZ.GetQRZInfo(qso.ContactCall, "LogAnalyser");
+                    IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
+                    List<CallSignInfo> hitList = hitCollection.ToList();
+                    if (hitList.Count != 0)
+                    {
+                        entity = hitList[0].Country;
+
+                        if (entity == "United States of America" || entity == "Canada")
+                        {
+                            entity = hitList[0].Province;
+                        }
+
+                        if (entity == "Hawaii")
+                        {
+                            return isCorrect;
+                        }
+                    }
                 }
             }
 
-            if (qso.ContactEntity != entity) // LOOK FOR AK AND DX ALSO why is entity = "WA003S" sometimes
+            if (entity.ToUpper().Contains(qso.ContactEntity.ToUpper())) // LOOK FOR AK AND DX ALSO why is entity = "WA003S" sometimes
             {
-                qso.IncorrectDXEntity = qso.ContactEntity + " --> " + entity;
-                qso.EntityIsInValid = true;
-                return true;
+                return isCorrect;
             }
-
-            return isNotCorrect;
+            qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {entity}";
+            qso.EntityIsInValid = true;
+            return true;
         }
 
         /// <summary>
@@ -931,7 +946,7 @@ namespace W6OP.ContestLogAnalyzer
             QSO nextQSO;
             int qsoPoints = 1;
             int matchQsoPoints = 1;
-            string frequency = "";
+            string frequency;
             bool isMatchQSO = true;
 
             // bonus point for having rig control frequency
@@ -1205,75 +1220,75 @@ namespace W6OP.ContestLogAnalyzer
         //    //string xx = Soundex(qso.ContactName);
         //}
 
-        private string Soundex(string data)
-        {
-            StringBuilder result = new StringBuilder();
-            string previousCode = "";
-            string currentCode = "";
-            string currentLetter = "";
+        //private string Soundex(string data)
+        //{
+        //    StringBuilder result = new StringBuilder();
+        //    string previousCode = "";
+        //    string currentCode = "";
+        //    string currentLetter = "";
 
-            if (data != null && data.Length > 0)
-            {
-                previousCode = "";
-                currentCode = "";
-                currentLetter = "";
+        //    if (data != null && data.Length > 0)
+        //    {
+        //        previousCode = "";
+        //        currentCode = "";
+        //        currentLetter = "";
 
-                result.Append(data.Substring(0, 1));
+        //        result.Append(data.Substring(0, 1));
 
-                for (int i = 1; i < data.Length; i++)
-                {
-                    currentLetter = data.Substring(1, 1).ToLower();
-                    currentCode = "";
+        //        for (int i = 1; i < data.Length; i++)
+        //        {
+        //            currentLetter = data.Substring(1, 1).ToLower();
+        //            currentCode = "";
 
-                    if ("bfpv".IndexOf(currentLetter) > -1)
-                    {
-                        currentCode = "1";
-                    }
-                    else if ("cgjkqsxz".IndexOf(currentLetter) > -1)
-                    {
-                        currentCode = "2";
-                    }
-                    else if ("dt".IndexOf(currentLetter) > -1)
-                    {
-                        currentCode = "3";
-                    }
-                    else if (currentLetter == "1")
-                    {
-                        currentCode = "4";
-                    }
-                    else if ("mn".IndexOf(currentLetter) > -1)
-                    {
-                        currentCode = "5";
-                    }
-                    else if (currentLetter == "r")
-                    {
-                        currentCode = "6";
-                    }
+        //            if ("bfpv".IndexOf(currentLetter) > -1)
+        //            {
+        //                currentCode = "1";
+        //            }
+        //            else if ("cgjkqsxz".IndexOf(currentLetter) > -1)
+        //            {
+        //                currentCode = "2";
+        //            }
+        //            else if ("dt".IndexOf(currentLetter) > -1)
+        //            {
+        //                currentCode = "3";
+        //            }
+        //            else if (currentLetter == "1")
+        //            {
+        //                currentCode = "4";
+        //            }
+        //            else if ("mn".IndexOf(currentLetter) > -1)
+        //            {
+        //                currentCode = "5";
+        //            }
+        //            else if (currentLetter == "r")
+        //            {
+        //                currentCode = "6";
+        //            }
 
-                    if (currentCode != previousCode)
-                    {
-                        result.Append(currentCode);
-                    }
+        //            if (currentCode != previousCode)
+        //            {
+        //                result.Append(currentCode);
+        //            }
 
-                    if (result.Length == 4)
-                    {
-                        break;
-                    }
+        //            if (result.Length == 4)
+        //            {
+        //                break;
+        //            }
 
-                    if (currentCode != previousCode)
-                    {
-                        previousCode = currentCode;
-                    }
-                }
-            }
+        //            if (currentCode != previousCode)
+        //            {
+        //                previousCode = currentCode;
+        //            }
+        //        }
+        //    }
 
-            if (result.Length < 4)
-            {
-                result.Append(new String('0', 4 - result.Length));
-            }
+        //    if (result.Length < 4)
+        //    {
+        //        result.Append(new String('0', 4 - result.Length));
+        //    }
 
-            return result.ToString().ToUpper();
-        }
+        //    return result.ToString().ToUpper();
+        //}
 
         #endregion
 

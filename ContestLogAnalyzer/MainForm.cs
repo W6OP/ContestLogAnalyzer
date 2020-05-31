@@ -7,7 +7,9 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using W6OP.CallParser;
 using W6OP.PrintEngine;
 
 namespace W6OP.ContestLogAnalyzer
@@ -48,7 +50,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private List<ContestLog> _ContestLogs;
         private IEnumerable<FileInfo> _LogFileList;
-        private QRZ _QRZ;
+        //private QRZ _QRZ;
 
         private LogProcessor _LogProcessor;
         private LogAnalyzer _LogAnalyser;
@@ -63,6 +65,9 @@ namespace W6OP.ContestLogAnalyzer
 
         private bool _Initialized = false;
 
+        private PrefixFileParser PrefixFileParser;
+        private CallLookUp CallLookUp;
+
         #region Load and Initialize
 
         /// <summary>
@@ -72,7 +77,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             InitializeComponent();
 
-            _QRZ = new QRZ();
+            //_QRZ = new QRZ();
         }
 
         /// <summary>
@@ -93,13 +98,13 @@ namespace W6OP.ContestLogAnalyzer
 
             if (_LogProcessor == null)
             {
-                _LogProcessor = new LogProcessor(_QRZ);
+                _LogProcessor = new LogProcessor();
                 _LogProcessor.OnProgressUpdate += LogProcessor_OnProgressUpdate;
             }
 
             if (_LogAnalyser == null)
             {
-                _LogAnalyser = new LogAnalyzer(_QRZ);
+                _LogAnalyser = new LogAnalyzer();
                 _LogAnalyser.OnProgressUpdate += LogAnalyser_OnProgressUpdate;
             }
 
@@ -129,6 +134,16 @@ namespace W6OP.ContestLogAnalyzer
             LoadResourceFiles();
 
             _Initialized = true;
+        }
+
+        private void LoadPrefixList()
+        {
+            PrefixFileParser = new PrefixFileParser();
+            PrefixFileParser.ParsePrefixFile("");
+            CallLookUp = new CallLookUp(PrefixFileParser);
+
+            _LogAnalyser.CallLookUp = CallLookUp;
+            _LogProcessor.CallLookUp = CallLookUp;
         }
 
         /// <summary>
@@ -317,6 +332,7 @@ namespace W6OP.ContestLogAnalyzer
                     Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out _Session);
                     TabControlMain.SelectTab(TabPageLogStatus);
                     ButtonLoadLogs.Enabled = true;
+                    Task.Run(() => LoadPrefixList());
                     break;
                 default:
                     break;
