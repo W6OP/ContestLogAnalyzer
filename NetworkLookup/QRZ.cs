@@ -148,7 +148,7 @@ namespace NetworkLookup
         private bool QRZLogon()
         {
             string userId = "w6op";
-            string password = "Car0less";
+            string password = "LetsFindSomeDXToday$56";
             bool isLoggedOn = false;
 
             var requestUri = string.Format("http://xmldata.qrz.com/xml/current/?username={0};password={1};{2}={3}", userId, password, "LogAnalyser", "2.0");

@@ -7,6 +7,7 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using W6OP.ContestLogAnalyzer;
@@ -16,7 +17,7 @@ namespace W6OP.PrintEngine
     public class PrintManager
     {
         //private List<ContestLog> _ContestLogs;
-        private ScoreList _ScoreList = new ScoreList();
+        //private ScoreList _ScoreList = new ScoreList();
 
         //private ExcelPackage _Excelpackage;
         //private ExcelWorkbook _Workbook;
@@ -28,12 +29,12 @@ namespace W6OP.PrintEngine
         public string LogFolder { get; set; }
         public string ScoreFolder { get; set; }
         public string ReviewFolder { get; set; }
-        private string _ContestDescription { get; set; }
-        private string _Title { get; set; }
-        private string _Subject { get; set; }
-        private string _Keywords { get; set; }
-        private string _Message { get; set; }
-        private ContestName _ActiveContest { get; set; }
+        private string ContestDescription { get; set; }
+        private string Title { get; set; }
+        private string Subject { get; set; }
+        private string Keywords { get; set; }
+        private string Message { get; set; }
+        private ContestName ActiveContest { get; set; }
 
         //private List<Tuple<string, string>> _DistinctCallNamePairs;
         private List<Tuple<string, int, string, int>> _CallNameCountList;
@@ -43,23 +44,23 @@ namespace W6OP.PrintEngine
         /// </summary>
         public PrintManager(ContestName contestName)
         {
-            _ActiveContest = contestName;
+            ActiveContest = contestName;
 
-            switch (_ActiveContest)
+            switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    _ContestDescription = " CWO Box Scores Session ";
-                    _Title = "CWOpen Score Sheet";
-                    _Subject = "Final Score Sheet ";
-                    _Keywords = "CW, CWOpen";
-                    _Message = " CW Open Session ";
+                    ContestDescription = " CWO Box Scores Session ";
+                    Title = "CWOpen Score Sheet";
+                    Subject = "Final Score Sheet ";
+                    Keywords = "CW, CWOpen";
+                    Message = " CW Open Session ";
                     break;
                 case ContestName.HQP:
-                    _ContestDescription = " Hawaii QSO Party ";
-                    _Title = "HQP Score Sheet";
-                    _Subject = "Final Score Sheet ";
-                    _Keywords = "HQP";
-                    _Message = " Hawaii QSO Party ";
+                    ContestDescription = " Hawaii QSO Party ";
+                    Title = "HQP Score Sheet";
+                    Subject = "Final Score Sheet ";
+                    Keywords = "HQP";
+                    Message = " Hawaii QSO Party ";
                     break;
             }
         }
@@ -68,6 +69,8 @@ namespace W6OP.PrintEngine
 
         public void PrintCsvFile(List<ContestLog> contestLogs)
         {
+            ScoreList scoreList = new ScoreList();
+            List<ScoreList> scores = new List<ScoreList>();
             ContestLog contestlog;
             List<QSO> validQsoList;
             string assisted = null;
@@ -76,52 +79,59 @@ namespace W6OP.PrintEngine
             string session = null;
             string year = DateTime.Now.ToString("yyyy");
 
-            session = contestLogs[0].Session.ToString();
-            fileName = year + _ContestDescription + session + ".csv";
+            if (contestLogs[0].Session == 0)
+            {
+                session = "";
+            }
+            else
+            {
+                session = contestLogs[0].Session.ToString();
+            }
+
+            fileName = year + ContestDescription + session + ".csv";
             reportFileName = Path.Combine(ScoreFolder, fileName);
 
             contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
 
-            using (var sw = new StreamWriter(reportFileName))
+            for (int i = 0; i < contestLogs.Count; i++)
             {
-                var writer = new CsvWriter(sw, System.Globalization.CultureInfo.CurrentCulture);
-                for (int i = 0; i < contestLogs.Count; i++)
+                contestlog = contestLogs[i];
+                if (contestlog != null)
                 {
-                    contestlog = contestLogs[i];
-                    if (contestlog != null)
+                    assisted = "N";
+
+                    // only look at valid QSOs
+                    validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
+
+                    if (contestlog.LogHeader.Assisted == CategoryAssisted.Assisted)
                     {
-                        assisted = "N";
-                        //so2r = "N";
-
-                        // only look at valid QSOs
-                        validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
-
-                        if (contestlog.LogHeader.Assisted == CategoryAssisted.Assisted)
-                        {
-                            assisted = "Y";
-                        }
-
-                        if (contestlog.SO2R == true)
-                        {
-                            //so2r = "Y";
-                        }
-
-                        //writer.WriteHeader<ScoreList>();
-
-                        _ScoreList.LogOwner = contestlog.LogOwner;
-                        _ScoreList.Operator = contestlog.Operator;
-                        _ScoreList.Station = contestlog.Station;
-                        _ScoreList.OperatorName = contestlog.OperatorName;
-                        _ScoreList.QSOCount = validQsoList.Count.ToString();
-                        _ScoreList.Multipliers = contestlog.Multipliers.ToString();
-                        _ScoreList.ActualScore = contestlog.ActualScore.ToString();
-                        _ScoreList.Power = contestlog.LogHeader.Power.ToString();
-                        _ScoreList.Assisted = assisted;
-
-                        //Write entire current record
-                        writer.WriteRecord(_ScoreList);
+                        assisted = "Y";
                     }
+
+                    if (contestlog.SO2R == true)
+                    {
+                        //so2r = "Y";
+                    }
+
+                    scoreList = new ScoreList();
+                    scoreList.LogOwner = contestlog.LogOwner;
+                    scoreList.Operator = contestlog.Operator;
+                    scoreList.Station = contestlog.Station;
+                    scoreList.OperatorName = contestlog.OperatorName;
+                    scoreList.QSOCount = validQsoList.Count.ToString();
+                    scoreList.Multipliers = contestlog.Multipliers.ToString();
+                    scoreList.ActualScore = contestlog.ActualScore.ToString();
+                    scoreList.Power = contestlog.LogHeader.Power.ToString();
+                    scoreList.Assisted = assisted;
+
+                    scores.Add(scoreList);
                 }
+            }
+
+            using (var writer = new StreamWriter(reportFileName))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                csv.WriteRecords(scores);
             }
         }
 
@@ -147,7 +157,7 @@ namespace W6OP.PrintEngine
             contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
 
             session = contestLogs[0].Session.ToString();
-            fileName = year + _ContestDescription + session + ".pdf"; // later convert to PDF
+            fileName = year + ContestDescription + session + ".pdf"; // later convert to PDF
             reportFileName = Path.Combine(ScoreFolder, fileName);
 
             try
@@ -165,9 +175,9 @@ namespace W6OP.PrintEngine
                 doc.Open();
 
                 // set document meta data
-                doc.AddTitle(_Title);
-                doc.AddSubject(_Subject + session);
-                doc.AddKeywords(_Keywords);
+                doc.AddTitle(Title);
+                doc.AddSubject(Subject + session);
+                doc.AddKeywords(Keywords);
                 doc.AddCreator("Contest Log Analyser");
                 doc.AddAuthor("W6OP");
 
@@ -179,7 +189,7 @@ namespace W6OP.PrintEngine
                 iTextSharp.text.Font fontTable = FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL, BaseColor.BLACK);
 
 
-                message = year + _Message + session;
+                message = year + Message + session;
                 para = new Paragraph(message, times)
                 {
                     // Setting paragraph's text alignment using iTextSharp.text.Element class
@@ -275,7 +285,7 @@ namespace W6OP.PrintEngine
             // sort ascending by score
             contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
 
-            fileName = year + _ContestDescription + ".pdf"; // later convert to PDF
+            fileName = year + ContestDescription + ".pdf"; // later convert to PDF
             reportFileName = Path.Combine(ScoreFolder, fileName);
 
             try
@@ -293,9 +303,9 @@ namespace W6OP.PrintEngine
                 doc.Open();
 
                 // set document meta data
-                doc.AddTitle(_Title);
-                doc.AddSubject(_Subject);
-                doc.AddKeywords(_Keywords);
+                doc.AddTitle(Title);
+                doc.AddSubject(Subject);
+                doc.AddKeywords(Keywords);
                 doc.AddCreator("Contest Log Analyser");
                 doc.AddAuthor("W6OP");
                 //doc.AddHeader("Nothing", "No Header");
@@ -309,7 +319,7 @@ namespace W6OP.PrintEngine
                 iTextSharp.text.Font fontTable = FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL, BaseColor.BLACK);
 
 
-                message = year + _Message;
+                message = year + Message;
                 para = new Paragraph(message, times)
                 {
                     //para.Font = new iTextSharp.text.Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 50);
@@ -439,7 +449,7 @@ namespace W6OP.PrintEngine
                 using (StreamWriter sw = File.CreateText(reportFileName))
                 {
                     // maybe add contest year later
-                    switch (_ActiveContest)
+                    switch (ActiveContest)
                     {
                         case ContestName.CW_OPEN:
                             sw.WriteLine("CWOpen log checking results for " + callsign + " in session " + session.ToString());
@@ -476,7 +486,7 @@ namespace W6OP.PrintEngine
 
                             if (qso.QSOHasDupes == false && qso.QSOIsDupe == false)
                             {
-                               switch (_ActiveContest)
+                                switch (ActiveContest)
                                 {
                                     case ContestName.CW_OPEN:
                                         message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
@@ -581,7 +591,7 @@ namespace W6OP.PrintEngine
 
                                 if (qso.MatchingQSO != null)
                                 {
-                                    switch (_ActiveContest)
+                                    switch (ActiveContest)
                                     {
                                         case ContestName.CW_OPEN:
                                             message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
@@ -628,7 +638,7 @@ namespace W6OP.PrintEngine
 
                 item.HasBeenPrinted = true;
 
-                switch (_ActiveContest)
+                switch (ActiveContest)
                 {
                     case ContestName.CW_OPEN:
                         message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
@@ -687,7 +697,16 @@ namespace W6OP.PrintEngine
                         {
 
                             // maybe add contest year later
-                            sw.WriteLine("Log checking results for " + callsign + " in session " + session.ToString() + ".");
+                            switch (ActiveContest)
+                            {
+                                case ContestName.CW_OPEN:
+                                    sw.WriteLine("Log checking results for " + callsign + " in session " + session.ToString());
+                                    break;
+                                case ContestName.HQP:
+                                    sw.WriteLine("Log checking results for " + callsign);
+                                    break;
+                            }
+                            
                             sw.WriteLine("");
 
                             if (!String.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
@@ -698,7 +717,7 @@ namespace W6OP.PrintEngine
 
                             foreach (QSO qso in reviewQsoList)
                             {
-                                switch (_ActiveContest)
+                                switch (ActiveContest)
                                 {
                                     case ContestName.CW_OPEN:
                                         message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
@@ -709,7 +728,7 @@ namespace W6OP.PrintEngine
                                            qso.OperatorEntity + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactEntity;
                                         break;
                                 }
-                              
+
                                 // should only be one reason so lets change the collection type
                                 foreach (var key in qso.RejectReasons.Keys)
                                 {
@@ -764,7 +783,7 @@ namespace W6OP.PrintEngine
             totalValidCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "CW").ToList().Count();
             totalValidDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "RY").ToList().Count();
 
-            multiplierCount = contestLog.Multipliers; 
+            multiplierCount = contestLog.Multipliers;
             score = contestLog.ActualScore;
 
             sw.WriteLine(message);
@@ -774,7 +793,7 @@ namespace W6OP.PrintEngine
                 sw.WriteLine("CHECKLOG::: --------------------------");
                 sw.WriteLine(message);
             }
-            switch (_ActiveContest)
+            switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
                     message = String.Format(" Final:   Valid QSOs: {0}   Mults: {1}   Score: {2}", totalValidQSOs.ToString(), multiplierCount.ToString(), score.ToString());
@@ -834,11 +853,8 @@ namespace W6OP.PrintEngine
 
         public void PrintInspectionReport(string fileName, string failReason)
         {
-            string inspectFileName = Path.Combine(InspectionFolder, fileName);
-
-            inspectFileName = Path.Combine(InspectionFolder, fileName);
             //create a text file with the reason for the rejection
-            using (StreamWriter sw = File.CreateText(inspectFileName))
+            using (StreamWriter sw = File.CreateText(Path.Combine(InspectionFolder, fileName)))
             {
                 sw.WriteLine(failReason);
             }
@@ -868,14 +884,14 @@ namespace W6OP.PrintEngine
         private void ListUniqueCallNamePairs(string reportPath, string session, List<ContestLog> contestLogs)
         {
             string worksheetName = null;
-            string header1 ="Call Sign";
+            string header1 = "Call Sign";
             string header2 = null;
             string workbookName = null;
             string fileName = null;
 
             List<Tuple<string, string>> distinctCallNamePairs;
 
-            switch (_ActiveContest)
+            switch (ActiveContest)
             {
                 case ContestName.HQP:
                     worksheetName = @"\Unique_Calls_Entities_";
@@ -898,7 +914,7 @@ namespace W6OP.PrintEngine
                 newFile.Delete();  // ensures we create a new workbook
             }
 
-             distinctCallNamePairs = CollectAllCallNamePairs(contestLogs);
+            distinctCallNamePairs = CollectAllCallNamePairs(contestLogs);
 
             using (SpreadsheetDocument document = SpreadsheetDocument.Create(fileName, SpreadsheetDocumentType.Workbook))
             {
@@ -985,7 +1001,7 @@ namespace W6OP.PrintEngine
             string header3 = null;
             string header4 = null;
 
-            switch (_ActiveContest)
+            switch (ActiveContest)
             {
                 case ContestName.HQP:
                     worksheetName = @"Call-Entity Counts";

@@ -1154,7 +1154,7 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// Populate the correct field for the Active Contest
-        /// Eleiminates cofusion later
+        /// Eliminates cofusion later
         /// </summary>
         /// <param name="message"></param>
         /// <param name="literal"></param>
