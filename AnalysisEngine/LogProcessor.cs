@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using W6OP.CallParser;
 using W6OP.PrintEngine;
 using System.Collections;
+using System.Threading;
 
 namespace W6OP.ContestLogAnalyzer
 {
@@ -13,6 +14,9 @@ namespace W6OP.ContestLogAnalyzer
 
     public class LogProcessor
     {
+        readonly string[] States = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", };
+        readonly string[] Provinces = { "NL", "NS", "PE", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU" };
+
         public delegate void ProgressUpdate(Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
 
@@ -35,11 +39,11 @@ namespace W6OP.ContestLogAnalyzer
         public ContestName ActiveContest { get; set; }
 
         private string WorkingLine = null;
-    
+
         public CallLookUp CallLookUp;
 
         // later replace this
-        private Hashtable PrefixTable;
+        //private Hashtable PrefixTable;
         // with
         // private ILookup<string, string> _PrefixTable;
 
@@ -51,7 +55,7 @@ namespace W6OP.ContestLogAnalyzer
             FailingLine = "";
             WorkingLine = "";
 
-            PrefixTable = new Hashtable();
+
         }
 
         /// <summary>
@@ -109,8 +113,7 @@ namespace W6OP.ContestLogAnalyzer
             string logFileName = null;
             string version = null;
             string reason = "Unable to build valid header. Check the Inspect folder for details.";
-            Int32 progress = 0;
-            Int32 count = 0;
+            int count = 0;
 
             FailReason = reason;
 
@@ -267,14 +270,11 @@ namespace W6OP.ContestLogAnalyzer
                     // now add the DXCC information some contests need for multipliers
                     if (ActiveContest == ContestName.HQP)
                     {
-                        SetDXCCInformation(contestLog.QSOCollection, contestLog);
+                        SetHQPDXCCInformation(contestLog.QSOCollection, contestLog);
                     }
-                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                     contestLogs.Add(contestLog);
-                    progress = contestLogs.Count;
-
-                    OnProgressUpdate?.Invoke(progress);
+                    OnProgressUpdate?.Invoke(contestLogs.Count);
                 }
             }
             catch (Exception ex)
@@ -315,67 +315,45 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// HQP Only
-        /// now add the DXCC information some contests need for multipliers
-        /// 
-        /// THIS NEEDS TO BE REFACTORED, TOO MUCH REPETITION IN LOOP
-        /// 
+        /// now add the DXCC country information the HQP needs for multipliers
         /// </summary>
         /// <param name="qsoCollection"></param>
         /// <param name="contestLog"></param>
-        private void SetDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
+        private void SetHQPDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
         {
-            bool isValidHQPEntity = false;
-            string[] info = new string[2] { "0", "0" };
-
-            string prefix = string.Empty;
-            string suffix = string.Empty;
-            string territory = null;
-            string operatorCall = null;
-            string contactCall = null;
+            string[] info;
+            string operatorCall;
+            string contactCall;
 
             contestLog.IsHQPEntity = false;
             contestLog.TotalPoints = 0;
 
 
             // FIGURE OUT WHAT IS HAPPENING HERE AND MAKE SOME COMMENTS.
+            bool isValidHQPEntity = Enum.IsDefined(typeof(HQPMults), contestLog.QSOCollection[0].OperatorEntity);
+            contestLog.IsHQPEntity = isValidHQPEntity;
 
             foreach (QSO qso in qsoCollection)
             {
-                territory = null;
                 info = new string[2] { "0", "0" };
-                qso.IsHQPEntity = false;
 
                 operatorCall = qso.OperatorCall;
                 contactCall = qso.ContactCall;
 
-                if (contactCall.All(b => char.IsLetter(b)) == true)
+                if (!CheckForValidCallsign(contactCall))
                 {
                     qso.Status = QSOStatus.InvalidQSO;
                     qso.GetRejectReasons().Clear();
                     qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
                     continue;
                 }
-
-                if (contactCall.All(b => char.IsNumber(b)) == true)
-                {
-                    qso.Status = QSOStatus.InvalidQSO;
-                    qso.GetRejectReasons().Clear();
-                    qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
-                    continue;
-                }
-
-                qso.HQPPoints = GetPoints(qso.Mode);
-
-                // determine if this operator is an Hawawiin station
-                isValidHQPEntity = Enum.IsDefined(typeof(HQPMults), qso.OperatorEntity);
-                contestLog.IsHQPEntity = isValidHQPEntity;
 
                 // -----------------------------------------------------------------------------------
                 // DX station contacting Hawaiin station
                 // if DXEntity is not in enum list of Hawaii entities (HIL, MAU, etc.)
                 // QSO: 14242 PH 2017-08-26 1830 N5KXI 59 OK KH7XS 59  DX
                 // this QSO is invalid - complete
-                if (!isValidHQPEntity && qso.ContactEntity == "DX")
+                if (!contestLog.IsHQPEntity && qso.ContactEntity == "DX")
                 {
                     qso.EntityIsInValid = true;
                     qso.Status = QSOStatus.InvalidQSO;
@@ -384,173 +362,228 @@ namespace W6OP.ContestLogAnalyzer
                     continue;
                 }
 
-                IEnumerable<CallSignInfo> hitCollection;
-                List<CallSignInfo> hitList;
+                // at this point we have the country info
+                SetContactEntity(qso);
 
-                //***** get operator information from call parser component ****************//
-                // first check if we already have it from a previous operation
-                if (PrefixTable.Contains(operatorCall))
-                {
-                    // if yes
-                    territory = (string)PrefixTable[operatorCall];
-                }
-                else
-                {
-                    hitCollection = CallLookUp.LookUpCall(operatorCall);
-                    hitList = hitCollection.ToList();
-                    if (hitList.Count != 0)
-                    {
-                        territory = hitList[0].Country;
-                        PrefixTable.Add(operatorCall, territory);
-                    }
-                }
-
-                // NOTE: check for AC7N and see if I have to do anything special for him
-                if (territory == null)
-                {
-                    qso.Status = QSOStatus.InvalidQSO;
-                    qso.GetRejectReasons().Clear();
-                    qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
-                    continue;
-                }
-                //***** end operator information ****************//
-
-
-                //***** set contact information ****************//
-
-                //// This is probably where I should verify the state if USA
-                //// if ContactEntity is more than 2 chars I need to fix so later I get correct 
-                //// entity in LogAnalyser SearchForIncorrect entity?
-                //// should really enhance PrefixTable later to hold tuples so I can do this earlier
-                //// I do this here because if it is a non hawaii to non hawaii contact it is invalid and this 
-                //// never gets fixed.
-                //if (qso.ContactEntity.Length > 2) // counties are 3 or more
-                //{
-                //    // check if its in one of the county files
-                //    qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
-                //}
-
-                if (!PrefixTable.Contains(contactCall))
-                {
-                    if (qso.ContactPrefix != string.Empty)
-                    {
-                        hitCollection = CallLookUp.LookUpCall(qso.ContactPrefix + "/" + contactCall);
-                        hitList = hitCollection.ToList();
-                        if (hitList.Count != 0)
-                        {
-                            territory = hitList[0].Country;
-                        }
-                    }
-                    else if (qso.ContactSuffix != string.Empty)
-                    {
-                        hitCollection = CallLookUp.LookUpCall(contactCall + "/" + qso.ContactSuffix);
-                        hitList = hitCollection.ToList();
-                        if (hitList.Count != 0)
-                        {
-                            territory = hitList[0].Country;
-                        }
-                    }
-                    else
-                    {
-                        hitCollection = CallLookUp.LookUpCall(contactCall);
-                        hitList = hitCollection.ToList();
-                        if (hitList.Count != 0)
-                        {
-                            territory = hitList[0].Country;
-                        }
-                    }
-                    try
-                    {
-                        territory = territory.ToUpper();
-                        PrefixTable.Add(contactCall, territory);
-                    }
-                    catch (Exception ex)
-                    {
-                        var message = ex.Message;
-                    }
-                }
-                else
-                {
-                    territory = (string)PrefixTable[contactCall];
-                }
-
-                //***** end contact information ****************//
-
-                // did I get something back ?
-                if (territory != null)
-                {
-                    qso.ContactTerritory = territory;
-                    if (qso.ContactEntity == "DX" && qso.ContactTerritory != HQPUSALiteral) // Mexico, New Zealand, etc. - don't ovewrite State
-                    {
-                        qso.ContactEntity = territory;
-                    }
-
-                    if (Enum.IsDefined(typeof(HQPMults), qso.ContactEntity))
-                    {
-                        qso.ContactTerritory = HQPHawaiiLiteral; // AC7N
-                    }
-
-                    // This is probably where I should verify the state if USA
-                    // if ContactEntity is more than 2 chars I need to fix so later I get correct 
-                    // entity in LogAnalyser SearchForIncorrect entity?
-                    // should really enhance PrefixTable later to hold tuples so I can do this earlier
-                    // I do this here because if it is a non hawaii to non hawaii contact it is invalid and this 
-                    // never gets fixed.
-                    if (qso.ContactTerritory == HQPUSALiteral && !Enum.IsDefined(typeof(HQPMults), qso.ContactEntity) && qso.ContactEntity.Length > 2) // counties are 3 or more
-                    {
-                        // check if its in one of the county files
-                        qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
-                        if (qso.ContactEntity.Length > 2) // sometimes they put in the contact entity as WA003S - thats wrong
-                        {
-                            qso.EntityIsInValid = true;
-                            qso.Status = QSOStatus.InvalidQSO;
-                            qso.GetRejectReasons().Clear();
-                            qso.GetRejectReasons().Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
-                            continue;
-                        }
-                    }
-                }
-                else
-                {
-                    qso.Status = QSOStatus.InvalidQSO;
-                    qso.GetRejectReasons().Clear();
-                    qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
-                    continue;
-                }
-                // ********************************************
-
-                // set additional DXEntity information
-                // Hawaiian station contacts a non Hawaiian station and puts "DX" as country instead of actual country
-                // QSO:  7039 CW 2017-08-26 0524 AH7U 599 LHN ZL3PAH 599 DX
                 if (isValidHQPEntity)
                 {
                     qso.HQPEntity = qso.OperatorEntity;
-                    qso.IsHQPEntity = true;
-
-                    if (territory != null)
+                    qso.IsHQPEntity = isValidHQPEntity;
+                    if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
                     {
-                        if (qso.ContactTerritory == HQPCanadaLiteral || qso.ContactTerritory == HQPUSALiteral)
-                        {
-                            SetHQPEntityInfo(qso); //, territory
-                        }
+                        SetHQPEntityInfo(qso); //, territory
                     }
+                }
+                else if (qso.ContactCountry == HQPHawaiiLiteral)
+                {
+                    SetNonHQPEntityInfo(qso);
                 }
                 else
                 {
-                    if (qso.ContactTerritory == HQPHawaiiLiteral)
+                    // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.GetRejectReasons().Clear();
+                    qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                }
+            }
+        }
+
+        /// <summary>
+        /// This is an HQP entity so their contacts can be a: 
+        /// US State (two chars)
+        /// Canadian Province (two chars)
+        /// another HQP Entity (three chars)
+        /// another country ("DX")
+        /// </summary>
+        /// <param name="qso"></param>
+        private void SetContactEntity(QSO qso)
+        {
+            IEnumerable<CallSignInfo> hitCollection; // = CallLookUp.LookUpCall(operatorCall);
+            List<CallSignInfo> hitList; // = hitCollection.ToList();
+            string contactEntity = qso.ContactEntity;
+
+            switch (contactEntity.Length)
+            {
+                case 2:
+                    if (contactEntity == "DX")
                     {
-                        SetNonHQPEntityInfo(qso);
+                        // need to look it up
+                        hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
+                        hitList = hitCollection.ToList();
+                        if (hitList.Count != 0)
+                        {
+                            qso.ContactCountry = hitList[0].Country;
+                        }
+                        else
+                        {
+                            qso.Status = QSOStatus.InvalidQSO;
+                            qso.GetRejectReasons().Clear();
+                            qso.GetRejectReasons().Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                        }
                     }
                     else
                     {
-                        // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
+                        if (States.Contains(contactEntity))
+                        {
+                            qso.ContactCountry = HQPUSALiteral;
+                        }
+                        else if (Provinces.Contains(contactEntity))
+                        {
+                            qso.ContactCountry = HQPCanadaLiteral;
+                        }
+                        else
+                        {
+                            qso.Status = QSOStatus.InvalidQSO;
+                            qso.GetRejectReasons().Clear();
+                            qso.GetRejectReasons().Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                        }
+                    }
+                    break;
+                case 3:
+                    if (Enum.IsDefined(typeof(HQPMults), contactEntity))
+                    {
+                        qso.ContactCountry = HQPHawaiiLiteral;
+                    }
+                    else if (CheckCountyFiles(qso.ContactEntity) != null)
+                    {
+                        qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
+                        if (States.Contains(qso.ContactEntity))
+                        {
+                            qso.ContactCountry = HQPUSALiteral;
+                        } else
+                        {
+                            qso.Status = QSOStatus.InvalidQSO;
+                            qso.GetRejectReasons().Clear();
+                            qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                        }
+                    }
+                    else
+                    {
                         qso.Status = QSOStatus.InvalidQSO;
                         qso.GetRejectReasons().Clear();
-                        qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                        qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
                     }
+                    break;
+                case 4:
+                   if (CheckCountyFiles(qso.ContactEntity) != null)
+                    {
+                        qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
+                        if (States.Contains(qso.ContactEntity))
+                        {
+                            qso.ContactCountry = HQPUSALiteral;
+                        }
+                        else
+                        {
+                            qso.Status = QSOStatus.InvalidQSO;
+                            qso.GetRejectReasons().Clear();
+                            qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                        }
+                    }
+                    break;
+                default:
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.GetRejectReasons().Clear();
+                    qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                    break;
+            }
+        }
+
+        //// This is probably where I should verify the state if USA
+        //// if ContactEntity is more than 2 chars I need to fix so later I get correct 
+        //// entity in LogAnalyser SearchForIncorrect entity?
+        //// should really enhance PrefixTable later to hold tuples so I can do this earlier
+        //// I do this here because if it is a non hawaii to non hawaii contact it is invalid and this 
+        //// never gets fixed.
+        ///Must be a state, canadian province or HQPentity or country
+        //if (qso.ContactEntity.Length > 2) // counties are 3 or more
+        //{
+        //    // check if its in one of the county files
+        //    qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
+        //}
+        private string SetContactInformation(QSO qso, string contactCall)
+        {
+            IEnumerable<CallSignInfo> hitCollection;
+            List<CallSignInfo> hitList;
+            string entity = null;
+
+            if (qso.ContactPrefix != string.Empty)
+            {
+                hitCollection = CallLookUp.LookUpCall(qso.ContactPrefix + "/" + contactCall);
+                hitList = hitCollection.ToList();
+                if (hitList.Count != 0)
+                {
+                    if (hitList.Count == 1)
+                    {
+                        return hitList[0].Country;
+                    }
+                    entity = RefineEntity(hitList);
                 }
             }
+            else if (qso.ContactSuffix != string.Empty)
+            {
+                hitCollection = CallLookUp.LookUpCall(contactCall + "/" + qso.ContactSuffix);
+                hitList = hitCollection.ToList();
+                if (hitList.Count != 0)
+                {
+                    if (hitList.Count == 1)
+                    {
+                        return hitList[0].Country;
+                    }
+                    entity = RefineEntity(hitList);
+                }
+            }
+            else
+            {
+                hitCollection = CallLookUp.LookUpCall(contactCall);
+                hitList = hitCollection.ToList();
+                if (hitList.Count != 0)
+                {
+                    if (hitList.Count == 1)
+                    {
+                        return hitList[0].Country;
+                    }
+                    entity = RefineEntity(hitList);
+                }
+            }
+           
 
+            // NOTE: check for AC7N and see if I have to do anything special for him
+            if (entity == null)
+            {
+                qso.Status = QSOStatus.InvalidQSO;
+                qso.GetRejectReasons().Clear();
+                qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                return entity;
+            }
+
+
+            return entity.ToUpper();
+        }
+
+        private string RefineEntity(List<CallSignInfo> hitList)
+        {
+
+
+
+            return "";
+            
+        }
+
+        /// <summary>
+        /// Ensure the call is not all alpha or all numeric
+        /// </summary>
+        /// <param name="contactCall"></param>
+        /// <returns></returns>
+        private bool CheckForValidCallsign(string contactCall)
+        {
+            bool isValid = true;
+
+            if (contactCall.All(b => char.IsLetter(b)) == true || contactCall.All(b => char.IsNumber(b)) == true)
+            {
+                isValid = false;
+            }
+
+            return isValid;
         }
 
         /// <summary>
@@ -567,16 +600,22 @@ namespace W6OP.ContestLogAnalyzer
                 if (qso.OperatorEntity == "DX")
                 {
                     // prefixInfo = GetPrefixInformation(qso.OperatorCall);
-                   IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.OperatorCall);
-                   List<CallSignInfo> hitList = hitCollection.ToList();
+                    IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.OperatorCall);
+                    List<CallSignInfo> hitList = hitCollection.ToList();
                     if (hitList.Count != 0)
                     {
                         qso.OperatorEntity = hitList[0].Country;
 
                         if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
                         {
-                            qso.ContactTerritory = hitList[0].Province;   
+                            qso.ContactCountry = hitList[0].Province;
                         }
+                    }
+                    else
+                    {
+                        qso.Status = QSOStatus.InvalidQSO;
+                        qso.GetRejectReasons().Clear();
+                        qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
                     }
                 }
             }
@@ -601,7 +640,7 @@ namespace W6OP.ContestLogAnalyzer
                     qso.ContactEntity = hitList[0].Province;
                 }
             }   // counties are 3 or more - a ; in it means a list od states
-            else if (qso.ContactEntity.Length > 2 && qso.ContactEntity.IndexOf(";") != -1) 
+            else if (qso.ContactEntity.Length > 2 && qso.ContactEntity.IndexOf(";") != -1)
             {
                 // check if its in one of the county files
                 qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
@@ -619,56 +658,56 @@ namespace W6OP.ContestLogAnalyzer
             // check the Ohio file
             if (Ohio.Contains(entity))
             {
-                entity = "OH";
+                return "OH";
             }
 
             // check the Kansas file
             if (Kansas.Contains(entity))
             {
-                entity = "KS";
+                return "KS";
             }
 
-            return entity;
+            return null;
         }
 
-        // determine points by mode for the HQP
-        private int GetPoints(string mode)
-        {
-            int points;
+        //// determine points by mode for the HQP
+        //private int GetPoints(string mode)
+        //{
+        //    int points;
 
-            try
-            {
-                CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), mode);
+        //    try
+        //    {
+        //        CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), mode);
 
-                switch (catMode)
-                {
-                    case CategoryMode.CW:
-                        points = 3;
-                        break;
-                    case CategoryMode.RTTY:
-                        points = 3;
-                        break;
-                    case CategoryMode.RY:
-                        points = 3;
-                        break;
-                    case CategoryMode.PH:
-                        points = 2;
-                        break;
-                    case CategoryMode.SSB:
-                        points = 2;
-                        break;
-                    default:
-                        points = 0;
-                        break;
-                }
-            }
-            catch (Exception)
-            {
-                throw new Exception("The mode " + mode + " is not valid for this contest.");
-            }
+        //        switch (catMode)
+        //        {
+        //            case CategoryMode.CW:
+        //                points = 3;
+        //                break;
+        //            case CategoryMode.RTTY:
+        //                points = 3;
+        //                break;
+        //            case CategoryMode.RY:
+        //                points = 3;
+        //                break;
+        //            case CategoryMode.PH:
+        //                points = 2;
+        //                break;
+        //            case CategoryMode.SSB:
+        //                points = 2;
+        //                break;
+        //            default:
+        //                points = 0;
+        //                break;
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw new Exception("The mode " + mode + " is not valid for this contest.");
+        //    }
 
-            return points;
-        }
+        //    return points;
+        //}
 
         /// <summary>
         /// Move a file to the inspection folder.
@@ -949,14 +988,14 @@ namespace W6OP.ContestLogAnalyzer
                              SentSerialNumber = ConvertSerialNumber(split[6], line),
                              OperatorName = CheckActiveContest(split[7], "OperatorName"),
                              OperatorEntity = CheckActiveContest(split[7], "OperatorEntity"),
-                             OriginalOperatorEntityEntry = CheckActiveContest(split[7], "OperatorEntity"),
+                             OriginalOperatorEntity = CheckActiveContest(split[7], "OperatorEntity"),
                              ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
                              ReceivedSerialNumber = ConvertSerialNumber(split[9], line),
                              ContactName = CheckActiveContest(split[10], "ContactName"),
                              ContactEntity = CheckActiveContest(split[10], "ContactEntity"),
-                             OriginalContactEntityEntry = CheckActiveContest(split[10], "ContactEntity"),
+                             OriginalContactEntity = CheckActiveContest(split[10], "ContactEntity"),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this?? ValidateCallSign(split[8].ToUpper())
                              SessionIsValid = CheckForvalidSession(session, split[4])
                          };
@@ -980,14 +1019,14 @@ namespace W6OP.ContestLogAnalyzer
                              OperatorSuffix = suffix,
                              OperatorName = CheckActiveContest(split[6], "OperatorName"),
                              OperatorEntity = CheckActiveContest(split[6], "OperatorEntity"),
-                             OriginalOperatorEntityEntry = CheckActiveContest(split[6], "OperatorEntity"),
+                             OriginalOperatorEntity = CheckActiveContest(split[6], "OperatorEntity"),
                              SentSerialNumber = ConvertSerialNumber(split[7], line),
                              ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
                              ContactName = CheckActiveContest(split[9], "ContactName"),
                              ContactEntity = CheckActiveContest(split[9], "ContactEntity"),
-                             OriginalContactEntityEntry = CheckActiveContest(split[9], "ContactEntity"),
+                             OriginalContactEntity = CheckActiveContest(split[9], "ContactEntity"),
                              ReceivedSerialNumber = ConvertSerialNumber(split[10], line),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForvalidSession(session, split[4])

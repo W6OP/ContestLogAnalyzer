@@ -1357,10 +1357,10 @@ namespace W6OP.ContestLogAnalyzer
                     item.SubItems.Add(qso.QsoDate.ToString());
                     item.SubItems.Add(qso.QsoTime.ToString());
                     item.SubItems.Add("");
-                    item.SubItems.Add(qso.OriginalOperatorEntityEntry);
+                    item.SubItems.Add(qso.OriginalOperatorEntity);
                     item.SubItems.Add(qso.ContactCall);
                     item.SubItems.Add("");
-                    item.SubItems.Add(qso.OriginalContactEntityEntry);
+                    item.SubItems.Add(qso.OriginalContactEntity);
                     break;
             }
 

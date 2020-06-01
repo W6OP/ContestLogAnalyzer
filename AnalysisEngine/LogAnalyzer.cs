@@ -276,7 +276,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (ActiveContest == ContestName.HQP)
                 {
-                    if (!qso.IsHQPEntity && qso.ContactTerritory != HQPHawaiiLiteral)
+                    if (!qso.IsHQPEntity && qso.ContactCountry != HQPHawaiiLiteral)
                     {
                         // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
                         qso.Status = QSOStatus.InvalidQSO;
@@ -368,7 +368,7 @@ namespace W6OP.ContestLogAnalyzer
 
                             if (ActiveContest == ContestName.HQP)
                             {
-                                if (qso.ContactTerritory != HQPUSALiteral && qso.ContactTerritory != HQPCanadaLiteral && qso.ContactTerritory != HQPHawaiiLiteral && qso.ContactTerritory != HQPAlaskaLiteral)
+                                if (qso.ContactCountry != HQPUSALiteral && qso.ContactCountry != HQPCanadaLiteral && qso.ContactCountry != HQPHawaiiLiteral && qso.ContactCountry != HQPAlaskaLiteral)
                                 {
                                     qso.GetRejectReasons().Clear();
                                     qso.Status = QSOStatus.ValidQSO;

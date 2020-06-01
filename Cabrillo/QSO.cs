@@ -299,13 +299,57 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Band the QSO was on.
         /// </summary>
-        public Int32 Band { get; set; }
+        public int Band { get; set; }
 
         /// <summary>
         /// Mode used for the QSO.
         /// this should be an enum
         /// </summary>
-        public string Mode { get; set; }
+        private string mode;
+        public string Mode
+        {
+            get { return mode; }
+            set { 
+                mode = value;
+                SetHQPPoints(); 
+            }
+        }
+
+        private void SetHQPPoints()
+        {
+            // determine points by mode for the HQP
+                try
+                {
+                    CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), Mode);
+
+                    switch (catMode)
+                    {
+                        case CategoryMode.CW:
+                        HQPPoints = 3;
+                            break;
+                        case CategoryMode.RTTY:
+                        HQPPoints = 3;
+                            break;
+                        case CategoryMode.RY:
+                        HQPPoints = 3;
+                            break;
+                        case CategoryMode.PH:
+                        HQPPoints = 2;
+                            break;
+                        case CategoryMode.SSB:
+                        HQPPoints = 2;
+                            break;
+                        default:
+                        HQPPoints = 0;
+                            break;
+                    }
+                }
+                catch (Exception)
+                {
+                    throw new Exception("The mode " + Mode + " is not valid for this contest.");
+                };
+        }
+
 
         /// <summary>
         /// Date/Time of the QSO.
@@ -433,12 +477,31 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// The contact entity in the log before any lookups
         /// </summary>
-        public string OriginalContactEntityEntry { get; set; }
+        private string _OriginalContactEntity;
+        public string OriginalContactEntity
+        {
+            get { return _OriginalContactEntity; }
+            set
+            {
+                _OriginalContactEntity = value;
+                ContactEntity = value;
+            }
+        }
+
 
         /// <summary>
         /// The operator entity in the log before any lookups
         /// </summary>
-        public string OriginalOperatorEntityEntry { get; set; }
+        private string _OriginalOperatorEntity;
+        public string OriginalOperatorEntity 
+        {
+            get { return _OriginalOperatorEntity; }
+            set
+            {
+                _OriginalOperatorEntity = value;
+                OperatorEntity = value;
+            }
+        }
 
         /// <summary>
         /// Operator country as defined by HQP
@@ -457,13 +520,13 @@ namespace W6OP.ContestLogAnalyzer
         /// The real or top level country of the  contact or DX station
         /// This is the long name. Cannot be null!
         /// </summary>
-        private string _ContactTerritory = "Unknown";
-        public string ContactTerritory
+        private string _ContactCountry = "Unknown";
+        public string ContactCountry
         {
-            get => _ContactTerritory.ToUpper();
+            get => _ContactCountry.ToUpper();
             set
             {
-                _ContactTerritory = value;
+                _ContactCountry = value;
             }
         }
 
@@ -522,7 +585,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// For HQP contest
         /// </summary>
-        public Int32 HQPPoints { get; set; }
+        public int HQPPoints { get; set; }
 
         /// <summary>
         /// For HQP Contest

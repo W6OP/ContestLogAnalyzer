@@ -137,7 +137,7 @@ namespace W6OP.ContestLogAnalyzer
             contestLog.NonHQPMultipliers = 0;
             contestLog.TotalPoints = 0;
 
-            var query = qsoList.GroupBy(x => new { x.ContactEntity, x.ContactTerritory, x.Status })
+            var query = qsoList.GroupBy(x => new { x.ContactEntity, x.ContactCountry, x.Status })
              .Where(g => g.Count() >= 1)
              .Select(y => y.Key).Where(item => (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO))
              .ToList();
@@ -151,8 +151,8 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    multiList = qsoList.Where(item => item.ContactTerritory == qso.ContactTerritory && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
-                    entity = qso.ContactTerritory;
+                    multiList = qsoList.Where(item => item.ContactCountry == qso.ContactCountry && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
+                    entity = qso.ContactCountry;
                 }
 
                 if (multiList.Any())
