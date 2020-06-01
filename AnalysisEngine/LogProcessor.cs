@@ -111,53 +111,24 @@ namespace W6OP.ContestLogAnalyzer
             string fullName = fileInfo.FullName;
             string fileName = fileInfo.Name;
             string logFileName = null;
-            string version = null;
             string reason = "Unable to build valid header. Check the Inspect folder for details.";
-            int count = 0;
 
             FailReason = reason;
+            FailingLine = "";
 
             try
             {
-                if (File.Exists(fullName))
+                if (File.Exists(fileInfo.FullName))
                 {
                     lineList = File.ReadAllLines(fullName).Select(i => i.ToString()).ToList();
 
-                    version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim();
-
-                    // build the header for the version of the log
-                    if (version != null && version.Length > 2)
+                    try
                     {
-                        if (version.Substring(0, 1) == "2")
-                        {
-                            contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
-                        }
-
-                        if (version.Substring(0, 1) == "3")
-                        {
-                            contestLog.LogHeader = BuildHeaderV3(lineList, fullName);
-                        }
+                        contestLog = ProcessHeader(contestLog, lineList, fileInfo);
                     }
-                    else
+                    catch (Exception)
                     {
-                        // Assume version 2 - this is just for the CWOPEN
-                        contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
-                    }
-
-                    // List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
-
-                    // make sure minimum amout of information is correct
-                    if (contestLog.LogHeader != null && AnalyzeHeader(contestLog, out reason) == true)
-                    {
-                        contestLog.LogHeader.HeaderIsValid = true;
-                        FailReason = "Check the Inspect folder for details.";
-                    }
-                    else
-                    {
-                        FailReason = reason;
-                        contestLog.IsValidLog = false;
-
-                        throw new Exception(fileName); // don't want this added to collection
+                        throw new Exception(fullName);
                     }
 
                     // Find DUPES in list
@@ -177,11 +148,6 @@ namespace W6OP.ContestLogAnalyzer
                             break;
                     }
 
-                    FailingLine = "";
-
-                    //bcount += 1;
-                    //Console.WriteLine(bcount.ToString());
-
                     contestLog.QSOCollection = CollectQSOs(lineList, session, false);
                     // add a reference to the parent log to each QSO
                     contestLog.QSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
@@ -195,69 +161,15 @@ namespace W6OP.ContestLogAnalyzer
                     // merge the two lists together so other logs can search for everything
                     contestLog.QSOCollection = contestLog.QSOCollection.Union(xQSOCollection).ToList();
 
-                    //  it will never be null because line 186 will have an exception first
-                    if (contestLog.QSOCollection.Count == 0)
-                    {
-                        // may want to expand on this for a future report
-                        FailReason = "One or more QSOs may be in an invalid format."; // create enum
-                        if (FailingLine.Length > 0)
-                        {
-                            FailReason += Environment.NewLine + FailingLine;
-                        }
-                        contestLog.IsValidLog = false;
-                        throw new Exception(fileInfo.Name); // don't want this added to collection
-                    }
-                    else
-                    {
-                        // this catches QSOs (or entire log) that do not belong to this session
-                        count = contestLog.QSOCollection.Count;
-                        contestLog.QSOCollection = contestLog.QSOCollection.Where(q => q.SessionIsValid == true).ToList();
-
-                        if (count > 0 && contestLog.QSOCollection.Count == 0)
-                        {
-                            // may want to expand on this for a future report
-                            FailReason = "QSO collection is empty - Invalid session"; // create enum
-                            contestLog.IsValidLog = false;
-                            throw new Exception(fileInfo.Name); // don't want this added to collection
-                        }
-                    }
+                    CheckQSOCollection(fileInfo, contestLog);
 
                     // find out if columns are missing - do something else, need to use reject reason
                     List<QSO> missingQSOS = contestLog.QSOCollection.Where(q => q.ContactName == "MISSING_COLUMN").ToList();
 
-                    if (missingQSOS.Count > 0)
-                    {
-                        FailReason = "One or more columns are missing.";
-                        contestLog.IsValidLog = false;
-                        throw new Exception(fileInfo.Name); // don't want this added to collection
-                    }
+                    CheckHeader(fileInfo, contestLog, missingQSOS);
 
-                    if (contestLog.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
-                    {
-                        contestLog.IsCheckLog = true;
-                    }
-
-                    if (contestLog.LogHeader.NameSent == "NONE")
-                    {
-                        contestLog.LogHeader.NameSent = contestLog.QSOCollection[0].OperatorName;
-                    }
-
-                    // CHECK THESE - temp code so I can test print PDF
-                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                    if (String.IsNullOrEmpty(contestLog.Operator))
-                    {
-                        contestLog.Operator = contestLog.QSOCollection[0].OperatorCall;
-                    }
-
-                    if (String.IsNullOrEmpty(contestLog.Station))
-                    {
-                        contestLog.Station = contestLog.QSOCollection[0].OperatorCall;
-                    }
-
-                    if (String.IsNullOrEmpty(contestLog.OperatorName))
-                    {
-                        contestLog.OperatorName = contestLog.QSOCollection[0].OperatorName;
-                    }
+                    // complete information for printing pdf file
+                    AddMissingLogInformation(contestLog);
 
                     if (contestLog.OperatorName.ToUpper() == "NAME")
                     {
@@ -279,38 +191,191 @@ namespace W6OP.ContestLogAnalyzer
             }
             catch (Exception ex)
             {
-                string message = ex.Message;
-
-                logFileName = fileName;
-
-                if (ex.Message.IndexOf("Input string was not in a correct format.") != -1)
-                {
-                    message += "\r\nThere is probably an alpha character in the header where it should be numeric.";
-                }
-                else if (ex.Message.IndexOf("Object reference not set to an instance of an object.") != -1)
-                {
-                    message = "\r\nA required field is missing from the header. Possibly the Contest Name.";
-                }
-                else
-                {
-                    if (contestLog.QSOCollection == null)
-                    {
-                        FailReason = FailReason + " - QSO collection is null." + Environment.NewLine + FailingLine;
-                    }
-                    else
-                    {
-                        FailReason = FailReason + " - Unable to process log." + Environment.NewLine + FailingLine;
-                    }
-                }
-
-                if (message.IndexOf("Value cannot be null") != -1)
-                {
-                    message = "Unable to process log.";
-                }
-                MoveFileToInpectFolder(fileName, message);
+                logFileName = HandleExceptions(contestLog, fileName, ex);
             }
 
             return logFileName;
+        }
+
+        /// <summary>
+        /// Handle exceptions.
+        /// </summary>
+        /// <param name="contestLog"></param>
+        /// <param name="fileName"></param>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        private string HandleExceptions(ContestLog contestLog, string fileName, Exception ex)
+        {
+            string logFileName;
+            string message = ex.Message;
+
+            logFileName = fileName;
+
+            if (ex.Message.IndexOf("Input string was not in a correct format.") != -1)
+            {
+                message += "\r\nThere is probably an alpha character in the header where it should be numeric.";
+            }
+            else if (ex.Message.IndexOf("Object reference not set to an instance of an object.") != -1)
+            {
+                message = "\r\nA required field is missing from the header. Possibly the Contest Name.";
+            }
+            else
+            {
+                if (contestLog.QSOCollection == null)
+                {
+                    FailReason = FailReason + " - QSO collection is null." + Environment.NewLine + FailingLine;
+                }
+                else
+                {
+                    FailReason = FailReason + " - Unable to process log." + Environment.NewLine + FailingLine;
+                }
+            }
+
+            if (message.IndexOf("Value cannot be null") != -1)
+            {
+                message = "Unable to process log.";
+            }
+            MoveFileToInpectFolder(fileName, message);
+            return logFileName;
+        }
+
+        /// <summary>
+        /// Verify the header and general structure.
+        /// </summary>
+        /// <param name="fileInfo"></param>
+        /// <param name="contestLog"></param>
+        /// <param name="missingQSOS"></param>
+        private void CheckHeader(FileInfo fileInfo, ContestLog contestLog, List<QSO> missingQSOS)
+        {
+            if (missingQSOS.Count > 0)
+            {
+                FailReason = "One or more columns are missing.";
+                contestLog.IsValidLog = false;
+                throw new Exception(fileInfo.Name); // don't want this added to collection
+            }
+
+            if (contestLog.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
+            {
+                contestLog.IsCheckLog = true;
+            }
+
+            if (contestLog.LogHeader.NameSent == "NONE")
+            {
+                contestLog.LogHeader.NameSent = contestLog.QSOCollection[0].OperatorName;
+            }
+        }
+
+        /// <summary>
+        /// Do a light check on the QSO collection.
+        /// </summary>
+        /// <param name="fileInfo"></param>
+        /// <param name="contestLog"></param>
+        private void CheckQSOCollection(FileInfo fileInfo, ContestLog contestLog)
+        {
+            //  it will never be null because line we will have an exception first
+            switch (contestLog.QSOCollection.Count)
+            {
+                case 0:
+                    // may want to expand on this for a future report
+                    FailReason = "One or more QSOs may be in an invalid format."; // create enum
+                    if (FailingLine.Length > 0)
+                    {
+                        FailReason += Environment.NewLine + FailingLine;
+                    }
+                    contestLog.IsValidLog = false;
+                    throw new Exception(fileInfo.Name); // don't want this added to collection
+                default:
+                    {
+                        // this catches QSOs (or entire log) that do not belong to this session
+                        //count = contestLog.QSOCollection.Count;
+                        contestLog.QSOCollection = contestLog.QSOCollection.Where(q => q.SessionIsValid == true).ToList();
+
+                        if (contestLog.QSOCollection.Count == 0)
+                        {
+                            // may want to expand on this for a future report
+                            FailReason = "QSO collection is empty - Invalid session"; // create enum
+                            contestLog.IsValidLog = false;
+                            throw new Exception(fileInfo.Name); // don't want this added to collection
+                        }
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Add missing information needed for printing PDF file.
+        /// </summary>
+        /// <param name="contestLog"></param>
+        private void AddMissingLogInformation(ContestLog contestLog)
+        {
+            if (String.IsNullOrEmpty(contestLog.Operator))
+            {
+                contestLog.Operator = contestLog.QSOCollection[0].OperatorCall;
+            }
+
+            if (String.IsNullOrEmpty(contestLog.Station))
+            {
+                contestLog.Station = contestLog.QSOCollection[0].OperatorCall;
+            }
+
+            if (String.IsNullOrEmpty(contestLog.OperatorName))
+            {
+                contestLog.OperatorName = contestLog.QSOCollection[0].OperatorName;
+            }
+        }
+
+        /// <summary>
+        /// Process and build the log header.
+        /// </summary>
+        /// <param name="contestLog"></param>
+        /// <param name="lineList"></param>
+        /// <param name="fileInfo"></param>
+        /// <returns></returns>
+        private ContestLog ProcessHeader(ContestLog contestLog, List<string> lineList, FileInfo fileInfo)
+        {
+            string fullName = fileInfo.FullName;
+            string fileName = fileInfo.Name;
+            string version = null;
+            string reason = "Unable to build valid header. Check the Inspect folder for details.";
+
+            FailReason = reason;
+
+            version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim();
+
+            // build the header for the version of the log
+            if (version != null && version.Length > 2)
+            {
+                if (version.Substring(0, 1) == "2")
+                {
+                    contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
+                }
+
+                if (version.Substring(0, 1) == "3")
+                {
+                    contestLog.LogHeader = BuildHeaderV3(lineList, fullName);
+                }
+            }
+            else
+            {
+                // Assume version 2 - this is just for the CWOPEN
+                contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
+            }
+
+            // make sure minimum amout of information is correct
+            if (contestLog.LogHeader != null && AnalyzeHeader(contestLog, out reason) == true)
+            {
+                contestLog.LogHeader.HeaderIsValid = true;
+                FailReason = "Check the Inspect folder for details.";
+            }
+            else
+            {
+                FailReason = reason;
+                contestLog.IsValidLog = false;
+
+                throw new Exception(fullName); // don't want this added to collection
+            }
+
+            return contestLog;
         }
 
         /// <summary>
@@ -488,87 +553,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        //// This is probably where I should verify the state if USA
-        //// if ContactEntity is more than 2 chars I need to fix so later I get correct 
-        //// entity in LogAnalyser SearchForIncorrect entity?
-        //// should really enhance PrefixTable later to hold tuples so I can do this earlier
-        //// I do this here because if it is a non hawaii to non hawaii contact it is invalid and this 
-        //// never gets fixed.
-        ///Must be a state, canadian province or HQPentity or country
-        //if (qso.ContactEntity.Length > 2) // counties are 3 or more
-        //{
-        //    // check if its in one of the county files
-        //    qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
-        //}
-        private string SetContactInformation(QSO qso, string contactCall)
-        {
-            IEnumerable<CallSignInfo> hitCollection;
-            List<CallSignInfo> hitList;
-            string entity = null;
-
-            if (qso.ContactPrefix != string.Empty)
-            {
-                hitCollection = CallLookUp.LookUpCall(qso.ContactPrefix + "/" + contactCall);
-                hitList = hitCollection.ToList();
-                if (hitList.Count != 0)
-                {
-                    if (hitList.Count == 1)
-                    {
-                        return hitList[0].Country;
-                    }
-                    entity = RefineEntity(hitList);
-                }
-            }
-            else if (qso.ContactSuffix != string.Empty)
-            {
-                hitCollection = CallLookUp.LookUpCall(contactCall + "/" + qso.ContactSuffix);
-                hitList = hitCollection.ToList();
-                if (hitList.Count != 0)
-                {
-                    if (hitList.Count == 1)
-                    {
-                        return hitList[0].Country;
-                    }
-                    entity = RefineEntity(hitList);
-                }
-            }
-            else
-            {
-                hitCollection = CallLookUp.LookUpCall(contactCall);
-                hitList = hitCollection.ToList();
-                if (hitList.Count != 0)
-                {
-                    if (hitList.Count == 1)
-                    {
-                        return hitList[0].Country;
-                    }
-                    entity = RefineEntity(hitList);
-                }
-            }
-           
-
-            // NOTE: check for AC7N and see if I have to do anything special for him
-            if (entity == null)
-            {
-                qso.Status = QSOStatus.InvalidQSO;
-                qso.GetRejectReasons().Clear();
-                qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
-                return entity;
-            }
-
-
-            return entity.ToUpper();
-        }
-
-        private string RefineEntity(List<CallSignInfo> hitList)
-        {
-
-
-
-            return "";
-            
-        }
-
+   
         /// <summary>
         /// Ensure the call is not all alpha or all numeric
         /// </summary>
