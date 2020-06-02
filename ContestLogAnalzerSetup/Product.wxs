@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?define ProductVersion = "1.2.20"?>
+<?define ProductVersion = "1.2.25"?>
 <?define ProductUpgradeCode = "e7d24a3a-1258-402f-8cbc-8a4a603f6542"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Product Id="*" Name="Contest Log Analzer" Language="1033" Version="$(var.ProductVersion)" Manufacturer="W6OP" UpgradeCode="$(var.ProductUpgradeCode)">
@@ -66,6 +66,8 @@
        <File Id='PrintEngine' Name='PrintEngine.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\PrintEngine.dll' KeyPath='no'></File>
        <File Id='itextsharp' Name='itextsharp.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\itextsharp.dll' KeyPath='no'></File>
        <File Id='csvhelper' Name='csvhelper.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\csvhelper.dll' KeyPath='no'></File>
+       <File Id='Microsoft.Bcl.AsyncInterfaces' Name='Microsoft.Bcl.AsyncInterfaces.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\Microsoft.Bcl.AsyncInterfaces.dll' KeyPath='no'></File>
+       <File Id='System.Threading.Tasks.Extensions' Name='System.Threading.Tasks.Extensions.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\System.Threading.Tasks.Extensions.dll' KeyPath='no'></File>
        <File Id='DocumentFormat.OpenXml' Name='DocumentFormat.OpenXml.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\DocumentFormat.OpenXml.dll' KeyPath='no'></File>
        <File Id='CallParser' Name='CallParser.dll' DiskId='1' Source='C:\Users\pbourget\Documents\Visual Studio Projects\Ham Radio\ContestLogAnalyzer\Deploy\CallParser.dll' KeyPath='no'></File>
        <File Id='Licensertf' Name='License.rtf' DiskId='1' Source='$(var.ContestLogAnalyzer.ProjectDir)License.rtf'/>
