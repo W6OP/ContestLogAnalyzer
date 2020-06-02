@@ -74,7 +74,6 @@ namespace W6OP.ContestLogAnalyzer
                     fileNameFormat = "*_" + ((uint)session).ToString() + ".log";
                     break;
                 case ContestName.HQP:
-                    //InitializeHQPLogProcessor();
                     fileNameFormat = "*.log";
                     break;
                 default:
@@ -96,7 +95,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         #region Load and Pre Process Logs
-        //int bcount = 0;
+
         /// <summary>
         /// See if there is a header and a footer. Load and process the header.
         /// Collect all of the QSOs for each log.
@@ -120,6 +119,15 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (File.Exists(fileInfo.FullName))
                 {
+                    switch (ActiveContest)
+                    {
+                        case ContestName.CW_OPEN:
+                            contestLog.Session = (int)session;
+                            break;
+                        default:
+                            break;
+                    }
+
                     lineList = File.ReadAllLines(fullName).Select(i => i.ToString()).ToList();
 
                     try
@@ -139,15 +147,7 @@ namespace W6OP.ContestLogAnalyzer
                     lineListX = lineList.Where(x => (x.IndexOf("XQSO:", 0) != -1) || (x.IndexOf("X-QSO:", 0) != -1)).ToList();
                     lineList = lineList.Where(x => (x.IndexOf("QSO:", 0) != -1) && (x.IndexOf("XQSO:", 0) == -1) && (x.IndexOf("X-QSO:", 0) == -1)).ToList();
 
-                    switch (ActiveContest)
-                    {
-                        case ContestName.CW_OPEN:
-                            contestLog.Session = (int)session;
-                            break;
-                        default:
-                            break;
-                    }
-
+                    // collext regular QSOs
                     contestLog.QSOCollection = CollectQSOs(lineList, session, false);
                     // add a reference to the parent log to each QSO
                     contestLog.QSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
@@ -161,23 +161,13 @@ namespace W6OP.ContestLogAnalyzer
                     // merge the two lists together so other logs can search for everything
                     contestLog.QSOCollection = contestLog.QSOCollection.Union(xQSOCollection).ToList();
 
+                    // check for valid QSOs
                     CheckQSOCollection(fileInfo, contestLog);
 
-                    // find out if columns are missing - do something else, need to use reject reason
-                    List<QSO> missingQSOS = contestLog.QSOCollection.Where(q => q.ContactName == "MISSING_COLUMN").ToList();
+                    // complete information for printing pdf file - must be before CheckHeader()
+                    AddPrintInformation(contestLog);
 
-                    CheckHeader(fileInfo, contestLog, missingQSOS);
-
-                    // complete information for printing pdf file
-                    AddMissingLogInformation(contestLog);
-
-                    if (contestLog.OperatorName.ToUpper() == "NAME")
-                    {
-                        // may want to expand on this for a future report
-                        FailReason = "Name sent is 'NAME' - Invalid name."; // create enum
-                        contestLog.IsValidLog = false;
-                        throw new Exception(fileInfo.Name); // don't want this added to collection
-                    }
+                    CheckHeader(fileInfo, contestLog);
 
                     // now add the DXCC information some contests need for multipliers
                     if (ActiveContest == ContestName.HQP)
@@ -198,7 +188,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Handle exceptions.
+        /// Format exceptions.
         /// </summary>
         /// <param name="contestLog"></param>
         /// <param name="fileName"></param>
@@ -240,13 +230,16 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Verify the header and general structure.
+        /// Verify QSOs are not missing the contact name column.
+        /// Verify there is an operator name.
         /// </summary>
         /// <param name="fileInfo"></param>
         /// <param name="contestLog"></param>
         /// <param name="missingQSOS"></param>
-        private void CheckHeader(FileInfo fileInfo, ContestLog contestLog, List<QSO> missingQSOS)
+        private void CheckHeader(FileInfo fileInfo, ContestLog contestLog)
         {
+            List<QSO> missingQSOS = contestLog.QSOCollection.Where(q => q.ContactName == "MISSING_COLUMN").ToList();
+
             if (missingQSOS.Count > 0)
             {
                 FailReason = "One or more columns are missing.";
@@ -263,10 +256,19 @@ namespace W6OP.ContestLogAnalyzer
             {
                 contestLog.LogHeader.NameSent = contestLog.QSOCollection[0].OperatorName;
             }
+
+            if (contestLog.OperatorName.ToUpper() == "NAME")
+            {
+                // may want to expand on this for a future report
+                FailReason = "Name sent is 'NAME' - Invalid name."; // create enum
+                contestLog.IsValidLog = false;
+                throw new Exception(fileInfo.Name); // don't want this added to collection
+            }
         }
 
         /// <summary>
-        /// Do a light check on the QSO collection.
+        /// Do a light check on the QSO collection. make sure there is at least one QSO.
+        /// make sure the QSOs are for this session if its the CWOpen
         /// </summary>
         /// <param name="fileInfo"></param>
         /// <param name="contestLog"></param>
@@ -287,7 +289,6 @@ namespace W6OP.ContestLogAnalyzer
                 default:
                     {
                         // this catches QSOs (or entire log) that do not belong to this session
-                        //count = contestLog.QSOCollection.Count;
                         contestLog.QSOCollection = contestLog.QSOCollection.Where(q => q.SessionIsValid == true).ToList();
 
                         if (contestLog.QSOCollection.Count == 0)
@@ -306,7 +307,7 @@ namespace W6OP.ContestLogAnalyzer
         /// Add missing information needed for printing PDF file.
         /// </summary>
         /// <param name="contestLog"></param>
-        private void AddMissingLogInformation(ContestLog contestLog)
+        private void AddPrintInformation(ContestLog contestLog)
         {
             if (String.IsNullOrEmpty(contestLog.Operator))
             {
@@ -380,32 +381,36 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// HQP Only
-        /// now add the DXCC country information the HQP needs for multipliers
+        /// Now add the DXCC country information the HQP needs for multipliers
+        /// Non Hawaii stations contacting Hawaii stations from US or Canada send state or province
+        /// Sometimes they are in another QSO party and send 3 or 4 letter county - need to change to state
+        /// Other country stations contacting Hawaii stations send "DX" - need to get real country for multipliers
+        /// Hawaii stations work anyone – non-Hawaii stations work only Hawaii
         /// </summary>
         /// <param name="qsoCollection"></param>
         /// <param name="contestLog"></param>
         private void SetHQPDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
         {
-            string[] info;
-            string operatorCall;
-            string contactCall;
-
-            contestLog.IsHQPEntity = false;
-            contestLog.TotalPoints = 0;
-
-
-            // FIGURE OUT WHAT IS HAPPENING HERE AND MAKE SOME COMMENTS.
             bool isValidHQPEntity = Enum.IsDefined(typeof(HQPMults), contestLog.QSOCollection[0].OperatorEntity);
+
             contestLog.IsHQPEntity = isValidHQPEntity;
 
+            if (isValidHQPEntity)
+            {
+                ProcessHawaiiQSOs(qsoCollection);
+                return;
+            }
+            else
+            {
+                ProcessOtherQSOs(qsoCollection);
+            }
+        }
+
+        private void ProcessOtherQSOs(List<QSO> qsoCollection)
+        {
             foreach (QSO qso in qsoCollection)
             {
-                info = new string[2] { "0", "0" };
-
-                operatorCall = qso.OperatorCall;
-                contactCall = qso.ContactCall;
-
-                if (!CheckForValidCallsign(contactCall))
+                if (!CheckForValidCallsign(qso.ContactCall))
                 {
                     qso.Status = QSOStatus.InvalidQSO;
                     qso.GetRejectReasons().Clear();
@@ -414,11 +419,11 @@ namespace W6OP.ContestLogAnalyzer
                 }
 
                 // -----------------------------------------------------------------------------------
-                // DX station contacting Hawaiin station
+                // DX station contacting Hawaii station
                 // if DXEntity is not in enum list of Hawaii entities (HIL, MAU, etc.)
                 // QSO: 14242 PH 2017-08-26 1830 N5KXI 59 OK KH7XS 59  DX
                 // this QSO is invalid - complete
-                if (!contestLog.IsHQPEntity && qso.ContactEntity == "DX")
+                if (qso.ContactEntity == "DX")
                 {
                     qso.EntityIsInValid = true;
                     qso.Status = QSOStatus.InvalidQSO;
@@ -430,16 +435,7 @@ namespace W6OP.ContestLogAnalyzer
                 // at this point we have the country info
                 SetContactEntity(qso);
 
-                if (isValidHQPEntity)
-                {
-                    qso.HQPEntity = qso.OperatorEntity;
-                    qso.IsHQPEntity = isValidHQPEntity;
-                    if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
-                    {
-                        SetHQPEntityInfo(qso); //, territory
-                    }
-                }
-                else if (qso.ContactCountry == HQPHawaiiLiteral)
+                if (qso.ContactCountry == HQPHawaiiLiteral)
                 {
                     SetNonHQPEntityInfo(qso);
                 }
@@ -449,6 +445,31 @@ namespace W6OP.ContestLogAnalyzer
                     qso.Status = QSOStatus.InvalidQSO;
                     qso.GetRejectReasons().Clear();
                     qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                }
+            }
+        }
+
+        private void ProcessHawaiiQSOs(List<QSO> qsoCollection)
+        {
+            foreach (QSO qso in qsoCollection)
+            {
+                if (!CheckForValidCallsign(qso.ContactCall))
+                {
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.GetRejectReasons().Clear();
+                    qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    continue;
+                }
+
+                // at this point we have the country info
+                SetContactEntity(qso);
+
+                qso.HQPEntity = qso.OperatorEntity;
+                qso.IsHQPEntity = true;
+
+                if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
+                {
+                    SetHQPEntityInfo(qso);
                 }
             }
         }
@@ -515,7 +536,8 @@ namespace W6OP.ContestLogAnalyzer
                         if (States.Contains(qso.ContactEntity))
                         {
                             qso.ContactCountry = HQPUSALiteral;
-                        } else
+                        }
+                        else
                         {
                             qso.Status = QSOStatus.InvalidQSO;
                             qso.GetRejectReasons().Clear();
@@ -530,7 +552,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     break;
                 case 4:
-                   if (CheckCountyFiles(qso.ContactEntity) != null)
+                    if (CheckCountyFiles(qso.ContactEntity) != null)
                     {
                         qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
                         if (States.Contains(qso.ContactEntity))
@@ -553,7 +575,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-   
+
         /// <summary>
         /// Ensure the call is not all alpha or all numeric
         /// </summary>
@@ -625,7 +647,7 @@ namespace W6OP.ContestLogAnalyzer
                     qso.ContactEntity = hitList[0].Province;
                 }
             }   // counties are 3 or more - a ; in it means a list od states
-            else if (qso.ContactEntity.Length > 2 && qso.ContactEntity.IndexOf(";") != -1)
+            else if (qso.ContactEntity.Length > 2)
             {
                 // check if its in one of the county files
                 qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
@@ -982,7 +1004,7 @@ namespace W6OP.ContestLogAnalyzer
                              ContactEntity = CheckActiveContest(split[10], "ContactEntity"),
                              OriginalContactEntity = CheckActiveContest(split[10], "ContactEntity"),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this?? ValidateCallSign(split[8].ToUpper())
-                             SessionIsValid = CheckForvalidSession(session, split[4])
+                             SessionIsValid = CheckForValidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
                 }
@@ -1014,7 +1036,7 @@ namespace W6OP.ContestLogAnalyzer
                              OriginalContactEntity = CheckActiveContest(split[9], "ContactEntity"),
                              ReceivedSerialNumber = ConvertSerialNumber(split[10], line),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
-                             SessionIsValid = CheckForvalidSession(session, split[4])
+                             SessionIsValid = CheckForValidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
                 }
@@ -1073,7 +1095,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Make sure all columns are present
+        /// Make sure all columns are present. This is 11 because it includes QSO:
         /// </summary>
         /// <param name="split"></param>
         /// <returns></returns>
@@ -1088,7 +1110,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 for (int i = 11 - missing; i < 11; i++)
                 {
-                    split[i] = "missing_column";
+                    split[i] = "MISSING_COLUMN";
                 }
 
             }
@@ -1265,7 +1287,7 @@ namespace W6OP.ContestLogAnalyzer
 
             WorkingLine = line;
 
-            if (split[10] == "missing_column")
+            if (split[10] == "MISSING_COLUMN")
             {
                 status = QSOStatus.InvalidQSO;
                 FailingLine += Environment.NewLine + "One or more columns are missing.";
@@ -1311,7 +1333,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qsoDate"></param>
         /// <param name="qsoTime"></param>
         /// <returns></returns>
-        private bool CheckForvalidSession(Session session, string qsoTime)
+        private bool CheckForValidSession(Session session, string qsoTime)
         {
             bool isValidSession = false;
             int qsoSessionTime = Convert.ToInt16(qsoTime);
