@@ -77,10 +77,6 @@
       <Project>{b033bebd-9c13-4ead-909a-5348cbdc3f30}</Project>
       <Name>LogAnalyzerCommon</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NetworkLookup\NetworkLookup.csproj">
-      <Project>{f34c4d57-5cc5-48e2-8873-ef483ecd8254}</Project>
-      <Name>NetworkLookup</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PrintEngine\PrintEngine.csproj">
       <Project>{0829f3ea-1697-4323-9fc6-e405634ecfab}</Project>
       <Name>PrintEngine</Name>
