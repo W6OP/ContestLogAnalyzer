@@ -309,45 +309,46 @@ namespace W6OP.ContestLogAnalyzer
         public string Mode
         {
             get { return mode; }
-            set { 
+            set
+            {
                 mode = value;
-                SetHQPPoints(); 
+                SetHQPPoints();
             }
         }
 
+        // determine points by mode for the HQP
         private void SetHQPPoints()
         {
-            // determine points by mode for the HQP
-                try
-                {
-                    CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), Mode);
+            try
+            {
+                CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), Mode);
 
-                    switch (catMode)
-                    {
-                        case CategoryMode.CW:
-                        HQPPoints = 3;
-                            break;
-                        case CategoryMode.RTTY:
-                        HQPPoints = 3;
-                            break;
-                        case CategoryMode.RY:
-                        HQPPoints = 3;
-                            break;
-                        case CategoryMode.PH:
-                        HQPPoints = 2;
-                            break;
-                        case CategoryMode.SSB:
-                        HQPPoints = 2;
-                            break;
-                        default:
-                        HQPPoints = 0;
-                            break;
-                    }
-                }
-                catch (Exception)
+                switch (catMode)
                 {
-                    throw new Exception("The mode " + Mode + " is not valid for this contest.");
-                };
+                    case CategoryMode.CW:
+                        HQPPoints = 3;
+                        break;
+                    case CategoryMode.RTTY:
+                        HQPPoints = 3;
+                        break;
+                    case CategoryMode.RY:
+                        HQPPoints = 3;
+                        break;
+                    case CategoryMode.PH:
+                        HQPPoints = 2;
+                        break;
+                    case CategoryMode.SSB:
+                        HQPPoints = 2;
+                        break;
+                    default:
+                        HQPPoints = 0;
+                        break;
+                }
+            }
+            catch (Exception)
+            {
+                throw new Exception("The mode " + Mode + " is not valid for this contest.");
+            };
         }
 
 
@@ -456,13 +457,14 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
         #endregion
-        
+
         #region HQP (Hawaiin QSO Party)
 
         public string OperatortPrefix { get; set; }
         public string OperatorSuffix { get; set; }
         public string ContactPrefix { get; set; }
         public string ContactSuffix { get; set; }
+
         /// <summary>
         /// HQP only.
         /// Lists the incorrect entity if available.
@@ -493,7 +495,7 @@ namespace W6OP.ContestLogAnalyzer
         /// The operator entity in the log before any lookups
         /// </summary>
         private string _OriginalOperatorEntity;
-        public string OriginalOperatorEntity 
+        public string OriginalOperatorEntity
         {
             get { return _OriginalOperatorEntity; }
             set
@@ -579,7 +581,7 @@ namespace W6OP.ContestLogAnalyzer
             { return _ContactEntity; }
             set
             {
-                   _ContactEntity = value.ToUpper();
+                _ContactEntity = value.ToUpper();
             }
         }
         /// <summary>

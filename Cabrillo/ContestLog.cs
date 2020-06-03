@@ -124,37 +124,35 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         //private bool _IsCheckLog;
         public bool IsCheckLog { get; set; }
-       
 
-        //private Int32 _ClaimedScore;
-        public Int32 ClaimedScore { get; set; }
+        #region Scoring
 
-        //private Int32 _ActualScore;
-        public Int32 ActualScore { get; set; }
-        //{
-        //    get { return _ActualScore; }
-        //    set { _ActualScore = value; }
-        //}
+        public int ClaimedScore { get; set; }
 
-        private Int32 _Multipliers;
-        public Int32 Multipliers
+        public int ActualScore { get; set; }
+
+        private int _Multipliers;
+        public int Multipliers
         {
             get { return _Multipliers; }
             set 
             { 
                 _Multipliers = value;
-                // IS THIS CORRECT???
-                //Int32 count = QSOCollection.Where(q =>  q.Status == QSOStatus.ValidQSO).ToList().Count();
-                //ActualScore = _Multipliers * count;
             }
         }
 
-        // For debugging use in HQP
-        public Int32 HQPMultipliers { get; set; }
-        public Int32 NonHQPMultipliers { get; set; }
+        #endregion
+
+        #region Points and Multipliers
+
+        public int HQPMultipliers { get; set; }
+
+        public int NonHQPMultipliers { get; set; }
 
         // used for the HQP
         public int TotalPoints { get; set; }
+
+        #endregion
 
         // for determining multipliers for HQP
         public bool  IsHQPEntity { get; set; }
