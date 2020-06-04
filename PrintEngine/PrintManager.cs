@@ -3,8 +3,8 @@ using CsvHelper;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using iTextSharp.text;
-using iTextSharp.text.pdf;
+//using iTextSharp.text;
+//using iTextSharp.text.pdf;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -140,277 +140,289 @@ namespace W6OP.PrintEngine
         // using iTextSharp
         public void PrintCWOpenPdfScoreSheet(List<ContestLog> contestLogs)
         {
-            Document doc = null;
-            Paragraph para = null;
-            string reportFileName = null;
-            string fileName = null;
-            string session = null;
-            string year = DateTime.Now.ToString("yyyy");
-            string message = null;
-            ContestLog contestlog;
-            string assisted = null;
-            //string so2r = null;
-            List<QSO> validQsoList;
-
             PrintCsvFile(contestLogs);
 
+            PDFGenerator pdfGenerator = new PDFGenerator(ActiveContest);
+            pdfGenerator.ScoreFolder = ScoreFolder;
+            pdfGenerator.PrintCWOpenPdfScoreSheet(contestLogs);
 
-            // sort ascending by score
-            contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
+            //    Document doc = null;
+            //    Paragraph para = null;
+            //    string reportFileName = null;
+            //    string fileName = null;
+            //    string session = null;
+            //    string year = DateTime.Now.ToString("yyyy");
+            //    string message = null;
+            //    ContestLog contestlog;
+            //    string assisted = null;
+            //    //string so2r = null;
+            //    List<QSO> validQsoList;
 
-            session = contestLogs[0].Session.ToString();
-            fileName = year + ContestDescription + session + ".pdf"; // later convert to PDF
-            reportFileName = Path.Combine(ScoreFolder, fileName);
-
-            try
-            {
-                if (File.Exists(reportFileName))
-                {
-                    File.Delete(reportFileName);
-                }
-
-                FileStream fs = new FileStream(reportFileName, FileMode.Create, FileAccess.Write, FileShare.None);
-
-                // margins are set in points - iTextSharp uses 72 pts/inch (36 = .5 inch)
-                doc = new Document(PageSize.LETTER, 36, 36, 36, 36); // L,R,T,B margins
-                PdfWriter writer = PdfWriter.GetInstance(doc, fs);
-                doc.Open();
-
-                // set document meta data
-                doc.AddTitle(Title);
-                doc.AddSubject(Subject + session);
-                doc.AddKeywords(Keywords);
-                doc.AddCreator("Contest Log Analyser");
-                doc.AddAuthor("W6OP");
-
-                // define fonts
-                BaseFont bfTimes = BaseFont.CreateFont(BaseFont.COURIER, BaseFont.CP1252, false);
-                iTextSharp.text.Font times = new iTextSharp.text.Font(bfTimes, 9, iTextSharp.text.Font.BOLD, iTextSharp.text.BaseColor.BLACK);
-
-                PdfPTable table = BuildPdfTable();
-                iTextSharp.text.Font fontTable = FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL, BaseColor.BLACK);
+            //    PrintCsvFile(contestLogs);
 
 
-                message = year + Message + session;
-                para = new Paragraph(message, times)
-                {
-                    // Setting paragraph's text alignment using iTextSharp.text.Element class
-                    Alignment = Element.ALIGN_CENTER
-                };
-                // Adding this 'para' to the Document object
-                doc.Add(para);
+            //    // sort ascending by score
+            //    contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
 
-                message = message = "Call" + "          " + "Operator" + "     " + "Station" + "     " + "Name" + "         " + "QSOs" + "    " + "Mults" + "     " + "Final" + "     " + "Power" + "   " + "Assisted";
-                para = new Paragraph(message, times)
-                {
-                    // Setting paragraph's text alignment using iTextSharp.text.Element class
-                    Alignment = Element.ALIGN_LEFT
-                };
-                // Adding this 'para' to the Document object
-                doc.Add(para);
+            //    session = contestLogs[0].Session.ToString();
+            //    fileName = year + ContestDescription + session + ".pdf"; // later convert to PDF
+            //    reportFileName = Path.Combine(ScoreFolder, fileName);
 
-                Int32 line = 2; // 2 header lines initially
-                bool firstPage = true;
-                for (int i = 0; i < contestLogs.Count; i++)
-                {
-                    line++;
-                    contestlog = contestLogs[i];
-                    if (contestlog != null)
-                    {
-                        assisted = "N";
-                        //so2r = "N";
+            //    try
+            //    {
+            //        if (File.Exists(reportFileName))
+            //        {
+            //            File.Delete(reportFileName);
+            //        }
 
-                        // only look at valid QSOs
-                        validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
+            //        FileStream fs = new FileStream(reportFileName, FileMode.Create, FileAccess.Write, FileShare.None);
 
-                        if (contestlog.LogHeader.Assisted == CategoryAssisted.Assisted)
-                        {
-                            assisted = "Y";
-                        }
+            //        // margins are set in points - iTextSharp uses 72 pts/inch (36 = .5 inch)
+            //        doc = new Document(PageSize.LETTER, 36, 36, 36, 36); // L,R,T,B margins
+            //        PdfWriter writer = PdfWriter.GetInstance(doc, fs);
+            //        doc.Open();
 
-                        if (contestlog.SO2R == true)
-                        {
-                            //so2r = "Y";
-                        }
+            //        // set document meta data
+            //        doc.AddTitle(Title);
+            //        doc.AddSubject(Subject + session);
+            //        doc.AddKeywords(Keywords);
+            //        doc.AddCreator("Contest Log Analyser");
+            //        doc.AddAuthor("W6OP");
 
-                        table.AddCell(new Phrase(contestlog.LogOwner, fontTable));
-                        table.AddCell(new Phrase(contestlog.Operator, fontTable));
-                        table.AddCell(new Phrase(contestlog.Station, fontTable));
-                        table.AddCell(new Phrase(contestlog.OperatorName, fontTable));
-                        table.AddCell(new Phrase(validQsoList.Count.ToString(), fontTable));
-                        table.AddCell(new Phrase(contestlog.Multipliers.ToString(), fontTable));
-                        table.AddCell(new Phrase(contestlog.ActualScore.ToString(), fontTable));
-                        table.AddCell(new Phrase(contestlog.LogHeader.Power.ToString(), fontTable));
-                        table.AddCell(new Phrase(assisted, fontTable));
+            //        // define fonts
+            //        BaseFont bfTimes = BaseFont.CreateFont(BaseFont.COURIER, BaseFont.CP1252, false);
+            //        iTextSharp.text.Font times = new iTextSharp.text.Font(bfTimes, 9, iTextSharp.text.Font.BOLD, iTextSharp.text.BaseColor.BLACK);
 
-                        if (firstPage == true && line == 50)
-                        {
-                            line = 51;
-                        }
+            //        PdfPTable table = BuildPdfTable();
+            //        iTextSharp.text.Font fontTable = FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL, BaseColor.BLACK);
 
-                        if (line > 50)
-                        {
-                            firstPage = false;
-                            doc.Add(table);
-                            doc.NewPage();
-                            table = BuildPdfTable();
-                            line = 0;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                string a = ex.Message;
-            }
-            finally
-            {
-                doc.Close();
-            }
+
+            //        message = year + Message + session;
+            //        para = new Paragraph(message, times)
+            //        {
+            //            // Setting paragraph's text alignment using iTextSharp.text.Element class
+            //            Alignment = Element.ALIGN_CENTER
+            //        };
+            //        // Adding this 'para' to the Document object
+            //        doc.Add(para);
+
+            //        message = message = "Call" + "          " + "Operator" + "     " + "Station" + "     " + "Name" + "         " + "QSOs" + "    " + "Mults" + "     " + "Final" + "     " + "Power" + "   " + "Assisted";
+            //        para = new Paragraph(message, times)
+            //        {
+            //            // Setting paragraph's text alignment using iTextSharp.text.Element class
+            //            Alignment = Element.ALIGN_LEFT
+            //        };
+            //        // Adding this 'para' to the Document object
+            //        doc.Add(para);
+
+            //        Int32 line = 2; // 2 header lines initially
+            //        bool firstPage = true;
+            //        for (int i = 0; i < contestLogs.Count; i++)
+            //        {
+            //            line++;
+            //            contestlog = contestLogs[i];
+            //            if (contestlog != null)
+            //            {
+            //                assisted = "N";
+            //                //so2r = "N";
+
+            //                // only look at valid QSOs
+            //                validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
+
+            //                if (contestlog.LogHeader.Assisted == CategoryAssisted.Assisted)
+            //                {
+            //                    assisted = "Y";
+            //                }
+
+            //                if (contestlog.SO2R == true)
+            //                {
+            //                    //so2r = "Y";
+            //                }
+
+            //                table.AddCell(new Phrase(contestlog.LogOwner, fontTable));
+            //                table.AddCell(new Phrase(contestlog.Operator, fontTable));
+            //                table.AddCell(new Phrase(contestlog.Station, fontTable));
+            //                table.AddCell(new Phrase(contestlog.OperatorName, fontTable));
+            //                table.AddCell(new Phrase(validQsoList.Count.ToString(), fontTable));
+            //                table.AddCell(new Phrase(contestlog.Multipliers.ToString(), fontTable));
+            //                table.AddCell(new Phrase(contestlog.ActualScore.ToString(), fontTable));
+            //                table.AddCell(new Phrase(contestlog.LogHeader.Power.ToString(), fontTable));
+            //                table.AddCell(new Phrase(assisted, fontTable));
+
+            //                if (firstPage == true && line == 50)
+            //                {
+            //                    line = 51;
+            //                }
+
+            //                if (line > 50)
+            //                {
+            //                    firstPage = false;
+            //                    doc.Add(table);
+            //                    doc.NewPage();
+            //                    table = BuildPdfTable();
+            //                    line = 0;
+            //                }
+            //            }
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        string a = ex.Message;
+            //    }
+            //    finally
+            //    {
+            //        doc.Close();
+            //    }
         }
 
         // using iTextSharp
         public void PrintHQPPdfScoreSheet(List<ContestLog> contestLogs)
         {
-            Document doc = null;
-            Paragraph para = null;
-            string reportFileName = null;
-            string fileName = null;
-            string year = DateTime.Now.ToString("yyyy");
-            string message = null;
-            ContestLog contestlog;
-            List<QSO> validQsoList;
-
             PrintCsvFile(contestLogs);
 
+            PDFGenerator pdfGenerator = new PDFGenerator(ActiveContest);
+            pdfGenerator.ScoreFolder = ScoreFolder;
+            pdfGenerator.PrintHQPPdfScoreSheet(contestLogs);
 
-            // sort ascending by score
-            contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
+            //    iTextSharp.text.Document doc = null;
+            //    Paragraph para = null;
+            //    string reportFileName = null;
+            //    string fileName = null;
+            //    string year = DateTime.Now.ToString("yyyy");
+            //    string message = null;
+            //    ContestLog contestlog;
+            //    List<QSO> validQsoList;
 
-            fileName = year + ContestDescription + ".pdf"; // later convert to PDF
-            reportFileName = Path.Combine(ScoreFolder, fileName);
-
-            try
-            {
-                if (File.Exists(reportFileName))
-                {
-                    File.Delete(reportFileName);
-                }
-
-                FileStream fs = new FileStream(reportFileName, FileMode.Create, FileAccess.Write, FileShare.None);
-
-                // margins are set in points - iTextSharp uses 72 pts/inch (36 = .5 inch)
-                doc = new Document(PageSize.LETTER, 36, 36, 36, 36); // L,R,T,B margins
-                PdfWriter writer = PdfWriter.GetInstance(doc, fs);
-                doc.Open();
-
-                // set document meta data
-                doc.AddTitle(Title);
-                doc.AddSubject(Subject);
-                doc.AddKeywords(Keywords);
-                doc.AddCreator("Contest Log Analyser");
-                doc.AddAuthor("W6OP");
-                //doc.AddHeader("Nothing", "No Header");
-
-                // define fonts
-                BaseFont bfTimes = BaseFont.CreateFont(BaseFont.COURIER, BaseFont.CP1252, false);
-                iTextSharp.text.Font times = new iTextSharp.text.Font(bfTimes, 9, iTextSharp.text.Font.BOLD, iTextSharp.text.BaseColor.BLACK);
-
-                PdfPTable table = BuildPdfTable();
-                //PdfPCell cell = null;
-                iTextSharp.text.Font fontTable = FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL, BaseColor.BLACK);
+            //    PrintCsvFile(contestLogs);
 
 
-                message = year + Message;
-                para = new Paragraph(message, times)
-                {
-                    //para.Font = new iTextSharp.text.Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 50);
-                    // Setting paragraph's text alignment using iTextSharp.text.Element class
-                    Alignment = Element.ALIGN_CENTER
-                };
-                // Adding this 'para' to the Document object
-                doc.Add(para);
+            //    // sort ascending by score
+            //    contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
 
-                message = message = "Call" + "          " + "Operator" + "     " + "Station" + "     " + "Entity" + "         " + "QSOs" + "    " + "Mults" + "     " + "Points" + "     " + "Final" + "   " + "";
-                para = new Paragraph(message, times)
-                {
-                    // Setting paragraph's text alignment using iTextSharp.text.Element class
-                    Alignment = Element.ALIGN_LEFT
-                };
-                // Adding this 'para' to the Document object
-                doc.Add(para);
+            //    fileName = year + ContestDescription + ".pdf"; // later convert to PDF
+            //    reportFileName = Path.Combine(ScoreFolder, fileName);
 
-                Int32 line = 2; // 2 header lines initially
-                bool firstPage = true;
-                for (int i = 0; i < contestLogs.Count; i++)
-                {
-                    line++;
-                    contestlog = contestLogs[i];
-                    if (contestlog != null)
-                    {
-                        // only look at valid QSOs
-                        validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
+            //    try
+            //    {
+            //        if (File.Exists(reportFileName))
+            //        {
+            //            File.Delete(reportFileName);
+            //        }
 
-                        table.AddCell(new Phrase(contestlog.LogOwner, fontTable));
-                        table.AddCell(new Phrase(contestlog.Operator, fontTable));
-                        table.AddCell(new Phrase(contestlog.Station, fontTable));
-                        table.AddCell(new Phrase(contestlog.OperatorName, fontTable));
-                        table.AddCell(new Phrase(validQsoList.Count.ToString(), fontTable));
-                        table.AddCell(new Phrase(contestlog.Multipliers.ToString(), fontTable));
-                        table.AddCell(new Phrase(contestlog.TotalPoints.ToString(), fontTable));
-                        table.AddCell(new Phrase(contestlog.ActualScore.ToString(), fontTable));
-                        table.AddCell(new Phrase("", fontTable));
-                        //table.AddCell(new Phrase(contestlog.LogHeader.Power.ToString(), fontTable));
-                        //table.AddCell(new Phrase(assisted, fontTable));
+            //        FileStream fs = new FileStream(reportFileName, System.IO.FileMode.OpenOrCreate);
 
-                        if (firstPage == true && line == 50)
-                        {
-                            line = 51;
-                        }
+            //        // margins are set in points - iTextSharp uses 72 pts/inch (36 = .5 inch)
+            //        doc = new Document(PageSize.LETTER, 36, 36, 36, 36); // L,R,T,B margins
+            //        PdfWriter writer = PdfWriter.GetInstance(doc, fs);
+            //        doc.Open();
 
-                        if (line > 50)
-                        {
-                            firstPage = false;
-                            doc.Add(table);
-                            doc.NewPage();
-                            table = BuildPdfTable();
-                            line = 0;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                string a = ex.Message;
-            }
-            finally
-            {
-                doc.Close();
-            }
+            //        // set document meta data
+            //        doc.AddTitle(Title);
+            //        doc.AddSubject(Subject);
+            //        doc.AddKeywords(Keywords);
+            //        doc.AddCreator("Contest Log Analyser");
+            //        doc.AddAuthor("W6OP");
+            //        //doc.AddHeader("Nothing", "No Header");
+
+            //        // define fonts
+            //        BaseFont bfTimes = BaseFont.CreateFont(BaseFont.COURIER, BaseFont.CP1252, false);
+            //        iTextSharp.text.Font times = new iTextSharp.text.Font(bfTimes, 9, iTextSharp.text.Font.BOLD, iTextSharp.text.BaseColor.BLACK);
+
+            //        PdfPTable table = BuildPdfTable();
+            //        //PdfPCell cell = null;
+            //        iTextSharp.text.Font fontTable = FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL, BaseColor.BLACK);
+
+
+            //        message = year + Message;
+            //        para = new Paragraph(message, times)
+            //        {
+            //            //para.Font = new iTextSharp.text.Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 50);
+            //            // Setting paragraph's text alignment using iTextSharp.text.Element class
+            //            Alignment = Element.ALIGN_CENTER
+            //        };
+            //        // Adding this 'para' to the Document object
+            //        doc.Add(para);
+
+            //        message = message = "Call" + "          " + "Operator" + "     " + "Station" + "     " + "Entity" + "         " + "QSOs" + "    " + "Mults" + "     " + "Points" + "     " + "Final" + "   " + "";
+            //        para = new Paragraph(message, times)
+            //        {
+            //            // Setting paragraph's text alignment using iTextSharp.text.Element class
+            //            Alignment = Element.ALIGN_LEFT
+            //        };
+            //        // Adding this 'para' to the Document object
+            //        doc.Add(para);
+
+            //        Int32 line = 2; // 2 header lines initially
+            //        bool firstPage = true;
+            //        for (int i = 0; i < contestLogs.Count; i++)
+            //        {
+            //            line++;
+            //            contestlog = contestLogs[i];
+            //            if (contestlog != null)
+            //            {
+            //                // only look at valid QSOs
+            //                validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
+
+            //                table.AddCell(new Phrase(contestlog.LogOwner, fontTable));
+            //                table.AddCell(new Phrase(contestlog.Operator, fontTable));
+            //                table.AddCell(new Phrase(contestlog.Station, fontTable));
+            //                table.AddCell(new Phrase(contestlog.OperatorName, fontTable));
+            //                table.AddCell(new Phrase(validQsoList.Count.ToString(), fontTable));
+            //                table.AddCell(new Phrase(contestlog.Multipliers.ToString(), fontTable));
+            //                table.AddCell(new Phrase(contestlog.TotalPoints.ToString(), fontTable));
+            //                table.AddCell(new Phrase(contestlog.ActualScore.ToString(), fontTable));
+            //                table.AddCell(new Phrase("", fontTable));
+            //                //table.AddCell(new Phrase(contestlog.LogHeader.Power.ToString(), fontTable));
+            //                //table.AddCell(new Phrase(assisted, fontTable));
+
+            //                if (firstPage == true && line == 50)
+            //                {
+            //                    line = 51;
+            //                }
+
+            //                if (line > 50)
+            //                {
+            //                    firstPage = false;
+            //                    doc.Add(table);
+            //                    doc.NewPage();
+            //                    table = BuildPdfTable();
+            //                    line = 0;
+            //                }
+            //            }
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        string a = ex.Message;
+            //    }
+            //    finally
+            //    {
+            //        doc.Close();
+            //    }
         }
         /// <summary>
         /// Build a table to hold the results.
         /// </summary>
         /// <returns></returns>
-        private PdfPTable BuildPdfTable()
-        {
-            PdfPTable table = new PdfPTable(9)
-            {
-                //actual width of table in points
-                TotalWidth = 514,
-                //fix the absolute width of the table
-                LockedWidth = true
-            };
+        //private PdfPTable BuildPdfTable()
+        //{
+        //    PdfPTable table = new PdfPTable(9)
+        //    {
+        //        //actual width of table in points
+        //        TotalWidth = 514,
+        //        //fix the absolute width of the table
+        //        LockedWidth = true
+        //    };
 
-            float[] widths = new float[] { 68f, 68f, 68f, 68f, 50f, 54f, 54f, 54f, 30f };
-            table.SetWidths(widths);
-            table.HorizontalAlignment = 0;
-            //leave a gap before and after the table
-            table.SpacingBefore = 20f;
-            //table.SpacingAfter = 30f;
+        //    float[] widths = new float[] { 68f, 68f, 68f, 68f, 50f, 54f, 54f, 54f, 30f };
+        //    table.SetWidths(widths);
+        //    table.HorizontalAlignment = 0;
+        //    //leave a gap before and after the table
+        //    table.SpacingBefore = 20f;
+        //    //table.SpacingAfter = 30f;
 
-            return table;
-        }
+        //    return table;
+        //}
 
         #endregion
 
