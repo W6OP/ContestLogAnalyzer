@@ -194,6 +194,9 @@ copy "$(TargetDir)/PrintEngine.pdb" ..\..\..\Deploy
 copy "$(TargetDir)/itext.io.dll" ..\..\..\Deploy
 copy "$(TargetDir)/itext.kernel.dll" ..\..\..\Deploy
 copy "$(TargetDir)/itext.layout.dll" ..\..\..\Deploy
+copy "$(TargetDir)/BouncyCastle.Crypto.dll" ..\..\..\Deploy
+copy "$(TargetDir)/Common.Logging.dll" ..\..\..\Deploy
+copy "$(TargetDir)/Common.Logging.Core.dll" ..\..\..\Deploy
 copy "$(TargetDir)/csvhelper.dll" ..\..\..\Deploy
 copy "$(TargetDir)/DocumentFormat.OpenXml.dll" ..\..\..\Deploy</PostBuildEvent>
   </PropertyGroup>

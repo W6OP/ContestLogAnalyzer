@@ -429,7 +429,7 @@ namespace W6OP.PrintEngine
             string message = null;
             string callsign = null;
             var value = "";
-            Int32 session = 1;
+            int session = 1;
 
             reportFileName = Path.Combine(ReviewFolder, "Review.rpt");
 
@@ -692,7 +692,7 @@ namespace W6OP.PrintEngine
                 {
                     // Add a row to the cell table.
                     Row row;
-                    row = new Row() { RowIndex = (UInt32)i + 1 };
+                    row = new Row() { RowIndex = (uint)i + 1 };
                     sheetData.Append(row);
 
                     // In the new row, find the column location to insert a cell in A1.  
@@ -715,7 +715,6 @@ namespace W6OP.PrintEngine
                         // Set the cell value to be a numeric value of 100.
                         newCell.CellValue = new CellValue(header1);
                         newCell.DataType = new EnumValue<CellValues>(CellValues.String);
-                        //newCell.SetAttribute()
 
                         // Add the cell to the cell table at A2.
                         newCell = new Cell() { CellReference = "B" + row.RowIndex.ToString() };
@@ -793,7 +792,7 @@ namespace W6OP.PrintEngine
                 {
                     // Add a row to the cell table.
                     Row row;
-                    row = new Row() { RowIndex = (UInt32)i + 1 };
+                    row = new Row() { RowIndex = (uint)i + 1 };
                     sheetData.Append(row);
 
                     // In the new row, find the column location to insert a cell in A1.  
@@ -873,40 +872,6 @@ namespace W6OP.PrintEngine
             }
         }
 
-
-        //private void ThisWillPopulateAnotherWorksheet(WorkbookPart workbookPart, WorksheetPart worksheetPart)
-        //{
-        //    // Add another worksheet with data
-        //    worksheetPart = AddWorkSheetPart(workbookPart);
-        //    AddWorkSheet(workbookPart, worksheetPart, "More Stuff");
-
-        //    SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
-        //    //// Add a row to the cell table.
-        //    Row row2;
-        //    row2 = new Row() { RowIndex = (UInt32)1 };
-        //    sheetData.Append(row2);
-
-
-
-        //    Cell refCell2 = null;
-        //    foreach (Cell cell2 in row2.Elements<Cell>())
-        //    {
-        //        if (string.Compare(cell2.CellReference.Value, "A1", true) > 0)
-        //        {
-        //            refCell2 = cell2;
-        //            break;
-        //        }
-        //    }
-
-        //    // Add the cell to the cell table at A1.
-        //    Cell newCell2 = new Cell() { CellReference = "A" + row2.RowIndex.ToString() };
-        //    row2.InsertBefore(newCell2, refCell2);
-
-        //    // Set the cell value to be a numeric value of 100.
-        //    newCell2.CellValue = new CellValue("Testing");
-        //    newCell2.DataType = new EnumValue<CellValues>(CellValues.String);
-        //}
-
         #endregion
 
         #region Excel Functions
@@ -945,7 +910,7 @@ namespace W6OP.PrintEngine
         /// <param name="name"></param>
         private void AddWorkSheet(WorkbookPart workbookPart, WorksheetPart worksheetPart, string sheetName)
         {
-            UInt32 sheetId = 1;
+            uint sheetId = 1;
             Sheet sheet = null;
 
             Sheets sheets = workbookPart.Workbook.GetFirstChild<Sheets>();
@@ -961,37 +926,9 @@ namespace W6OP.PrintEngine
                 sheets = workbookPart.Workbook.AppendChild(new Sheets());
                 sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = sheetId, Name = sheetName };
             }
-
-            // probably can put this in calling function
-            //SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>(); 
-
+         
             sheets.Append(sheet);
-
-            //return sheetData;
-
         }
-
-
-
-        /*
-            Sheets sheets = workbookPart.Workbook.GetFirstChild<Sheets>();
-            string relationshipId = workbookPart.GetIdOfPart(worksheetPart);
-
- 
-
-            if (sheets.Elements<Sheet>().Count() > 0)
-            {
-                sheetId = sheets.Elements<Sheet>().Select(s => s.SheetId.Value).Max() + 1;
-            }
-
-            string sheetName = name;
-
-            // Append the new worksheet and associate it with the workbook.
-            Sheet sheet = new Sheet() { Id = relationshipId, SheetId = sheetId, Name = sheetName };
-
-
-         */
-
 
         #endregion
 
@@ -1021,11 +958,11 @@ namespace W6OP.PrintEngine
         /// <param name="distinctCallNamePairs"></param>
         /// <param name="contestLogList"></param>
         /// <returns></returns>
-        private List<Tuple<string, Int32, string, Int32>> CollectCallNameHitData(List<Tuple<string, string>> distinctCallNamePairs, List<ContestLog> contestLogList)
+        private List<Tuple<string, int, string, int>> CollectCallNameHitData(List<Tuple<string, string>> distinctCallNamePairs, List<ContestLog> contestLogList)
         {
             string currentCall = "";
             string previousCall = "";
-            Int32 count = 0;
+            int count = 0;
 
             _CallNameCountList = new List<Tuple<string, int, string, int>>();
 
@@ -1050,7 +987,7 @@ namespace W6OP.PrintEngine
                     count = 0;
                 }
 
-                Tuple<string, Int32, string, Int32> tuple = new Tuple<string, Int32, string, Int32>(currentCall, count, distinctCallNamePairs[i].Item2, nameCount.Count());
+                Tuple<string, int, string, int> tuple = new Tuple<string, int, string, int>(currentCall, count, distinctCallNamePairs[i].Item2, nameCount.Count());
 
                 _CallNameCountList.Add(tuple);
             }

@@ -1210,11 +1210,6 @@ namespace W6OP.ContestLogAnalyzer
             // calls with <= 3 hits
             string session = _Session.ToString();
 
-            //if (_Session == Session.Session_0)
-            //{
-            //    session = "";
-            //}
-
             // list of all call/name pairs
             UpdateListViewLoad("List Unique Call Name Pairs", "", false);
             _PrintManager.PrintPreAnalysisReport(_ReportFolder, session, _ContestLogs);

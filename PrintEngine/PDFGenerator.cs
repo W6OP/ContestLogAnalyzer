@@ -78,6 +78,8 @@ namespace W6OP.PrintEngine
                 .SetTextAlignment(TextAlignment.CENTER)
                 .SetBackgroundColor(ColorConstants.LIGHT_GRAY);
 
+            document.Add(header);
+
             Table table = new Table(UnitValue.CreatePercentArray(9)).UseAllAvailableWidth();
 
             table.AddHeaderCell("Call");
