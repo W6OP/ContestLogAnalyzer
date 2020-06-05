@@ -16,13 +16,6 @@ namespace W6OP.PrintEngine
 {
     public class PrintManager
     {
-        //private List<ContestLog> _ContestLogs;
-        //private ScoreList _ScoreList = new ScoreList();
-
-        //private ExcelPackage _Excelpackage;
-        //private ExcelWorkbook _Workbook;
-        //private ExcelWorksheet _Worksheet;
-
         public string WorkingFolder { get; set; }
         public string InspectionFolder { get; set; }
         public string ReportFolder { get; set; }
@@ -30,13 +23,8 @@ namespace W6OP.PrintEngine
         public string ScoreFolder { get; set; }
         public string ReviewFolder { get; set; }
         private string ContestDescription { get; set; }
-        private string Title { get; set; }
-        private string Subject { get; set; }
-        private string Keywords { get; set; }
-        private string Message { get; set; }
         private ContestName ActiveContest { get; set; }
 
-        //private List<Tuple<string, string>> _DistinctCallNamePairs;
         private List<Tuple<string, int, string, int>> _CallNameCountList;
 
         /// <summary>
@@ -50,27 +38,23 @@ namespace W6OP.PrintEngine
             {
                 case ContestName.CW_OPEN:
                     ContestDescription = " CWO Box Scores Session ";
-                    Title = "CWOpen Score Sheet";
-                    Subject = "Final Score Sheet ";
-                    Keywords = "CW, CWOpen";
-                    Message = " CW Open Session ";
                     break;
                 case ContestName.HQP:
                     ContestDescription = " Hawaii QSO Party ";
-                    Title = "HQP Score Sheet";
-                    Subject = "Final Score Sheet ";
-                    Keywords = "HQP";
-                    Message = " Hawaii QSO Party ";
                     break;
             }
         }
 
         #region Print Scores
 
-        public void PrintCsvFile(List<ContestLog> contestLogs)
+        /// <summary>
+        /// Print the final score CSV file for the CWOpen.
+        /// </summary>
+        /// <param name="contestLogs"></param>
+        public void PrintCWOpenCsvFile(List<ContestLog> contestLogs)
         {
-            ScoreList scoreList = new ScoreList();
-            List<ScoreList> scores = new List<ScoreList>();
+            CWOpenScoreList scoreList;
+            List<CWOpenScoreList> scores = new List<CWOpenScoreList>();
             ContestLog contestlog;
             List<QSO> validQsoList;
             string assisted = null;
@@ -113,7 +97,7 @@ namespace W6OP.PrintEngine
                         //so2r = "Y";
                     }
 
-                    scoreList = new ScoreList
+                    scoreList = new CWOpenScoreList
                     {
                         LogOwner = contestlog.LogOwner,
                         Operator = contestlog.Operator,
@@ -137,292 +121,56 @@ namespace W6OP.PrintEngine
             }
         }
 
-        // using iTextSharp
-        public void PrintCWOpenPdfScoreSheet(List<ContestLog> contestLogs)
-        {
-            PrintCsvFile(contestLogs);
-
-            PDFGenerator pdfGenerator = new PDFGenerator(ActiveContest);
-            pdfGenerator.ScoreFolder = ScoreFolder;
-            pdfGenerator.PrintCWOpenPdfScoreSheet(contestLogs);
-
-            //    Document doc = null;
-            //    Paragraph para = null;
-            //    string reportFileName = null;
-            //    string fileName = null;
-            //    string session = null;
-            //    string year = DateTime.Now.ToString("yyyy");
-            //    string message = null;
-            //    ContestLog contestlog;
-            //    string assisted = null;
-            //    //string so2r = null;
-            //    List<QSO> validQsoList;
-
-            //    PrintCsvFile(contestLogs);
-
-
-            //    // sort ascending by score
-            //    contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
-
-            //    session = contestLogs[0].Session.ToString();
-            //    fileName = year + ContestDescription + session + ".pdf"; // later convert to PDF
-            //    reportFileName = Path.Combine(ScoreFolder, fileName);
-
-            //    try
-            //    {
-            //        if (File.Exists(reportFileName))
-            //        {
-            //            File.Delete(reportFileName);
-            //        }
-
-            //        FileStream fs = new FileStream(reportFileName, FileMode.Create, FileAccess.Write, FileShare.None);
-
-            //        // margins are set in points - iTextSharp uses 72 pts/inch (36 = .5 inch)
-            //        doc = new Document(PageSize.LETTER, 36, 36, 36, 36); // L,R,T,B margins
-            //        PdfWriter writer = PdfWriter.GetInstance(doc, fs);
-            //        doc.Open();
-
-            //        // set document meta data
-            //        doc.AddTitle(Title);
-            //        doc.AddSubject(Subject + session);
-            //        doc.AddKeywords(Keywords);
-            //        doc.AddCreator("Contest Log Analyser");
-            //        doc.AddAuthor("W6OP");
-
-            //        // define fonts
-            //        BaseFont bfTimes = BaseFont.CreateFont(BaseFont.COURIER, BaseFont.CP1252, false);
-            //        iTextSharp.text.Font times = new iTextSharp.text.Font(bfTimes, 9, iTextSharp.text.Font.BOLD, iTextSharp.text.BaseColor.BLACK);
-
-            //        PdfPTable table = BuildPdfTable();
-            //        iTextSharp.text.Font fontTable = FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL, BaseColor.BLACK);
-
-
-            //        message = year + Message + session;
-            //        para = new Paragraph(message, times)
-            //        {
-            //            // Setting paragraph's text alignment using iTextSharp.text.Element class
-            //            Alignment = Element.ALIGN_CENTER
-            //        };
-            //        // Adding this 'para' to the Document object
-            //        doc.Add(para);
-
-            //        message = message = "Call" + "          " + "Operator" + "     " + "Station" + "     " + "Name" + "         " + "QSOs" + "    " + "Mults" + "     " + "Final" + "     " + "Power" + "   " + "Assisted";
-            //        para = new Paragraph(message, times)
-            //        {
-            //            // Setting paragraph's text alignment using iTextSharp.text.Element class
-            //            Alignment = Element.ALIGN_LEFT
-            //        };
-            //        // Adding this 'para' to the Document object
-            //        doc.Add(para);
-
-            //        Int32 line = 2; // 2 header lines initially
-            //        bool firstPage = true;
-            //        for (int i = 0; i < contestLogs.Count; i++)
-            //        {
-            //            line++;
-            //            contestlog = contestLogs[i];
-            //            if (contestlog != null)
-            //            {
-            //                assisted = "N";
-            //                //so2r = "N";
-
-            //                // only look at valid QSOs
-            //                validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
-
-            //                if (contestlog.LogHeader.Assisted == CategoryAssisted.Assisted)
-            //                {
-            //                    assisted = "Y";
-            //                }
-
-            //                if (contestlog.SO2R == true)
-            //                {
-            //                    //so2r = "Y";
-            //                }
-
-            //                table.AddCell(new Phrase(contestlog.LogOwner, fontTable));
-            //                table.AddCell(new Phrase(contestlog.Operator, fontTable));
-            //                table.AddCell(new Phrase(contestlog.Station, fontTable));
-            //                table.AddCell(new Phrase(contestlog.OperatorName, fontTable));
-            //                table.AddCell(new Phrase(validQsoList.Count.ToString(), fontTable));
-            //                table.AddCell(new Phrase(contestlog.Multipliers.ToString(), fontTable));
-            //                table.AddCell(new Phrase(contestlog.ActualScore.ToString(), fontTable));
-            //                table.AddCell(new Phrase(contestlog.LogHeader.Power.ToString(), fontTable));
-            //                table.AddCell(new Phrase(assisted, fontTable));
-
-            //                if (firstPage == true && line == 50)
-            //                {
-            //                    line = 51;
-            //                }
-
-            //                if (line > 50)
-            //                {
-            //                    firstPage = false;
-            //                    doc.Add(table);
-            //                    doc.NewPage();
-            //                    table = BuildPdfTable();
-            //                    line = 0;
-            //                }
-            //            }
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        string a = ex.Message;
-            //    }
-            //    finally
-            //    {
-            //        doc.Close();
-            //    }
-        }
-
-        // using iTextSharp
-        public void PrintHQPPdfScoreSheet(List<ContestLog> contestLogs)
-        {
-            PrintCsvFile(contestLogs);
-
-            PDFGenerator pdfGenerator = new PDFGenerator(ActiveContest);
-            pdfGenerator.ScoreFolder = ScoreFolder;
-            pdfGenerator.PrintHQPPdfScoreSheet(contestLogs);
-
-            //    iTextSharp.text.Document doc = null;
-            //    Paragraph para = null;
-            //    string reportFileName = null;
-            //    string fileName = null;
-            //    string year = DateTime.Now.ToString("yyyy");
-            //    string message = null;
-            //    ContestLog contestlog;
-            //    List<QSO> validQsoList;
-
-            //    PrintCsvFile(contestLogs);
-
-
-            //    // sort ascending by score
-            //    contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
-
-            //    fileName = year + ContestDescription + ".pdf"; // later convert to PDF
-            //    reportFileName = Path.Combine(ScoreFolder, fileName);
-
-            //    try
-            //    {
-            //        if (File.Exists(reportFileName))
-            //        {
-            //            File.Delete(reportFileName);
-            //        }
-
-            //        FileStream fs = new FileStream(reportFileName, System.IO.FileMode.OpenOrCreate);
-
-            //        // margins are set in points - iTextSharp uses 72 pts/inch (36 = .5 inch)
-            //        doc = new Document(PageSize.LETTER, 36, 36, 36, 36); // L,R,T,B margins
-            //        PdfWriter writer = PdfWriter.GetInstance(doc, fs);
-            //        doc.Open();
-
-            //        // set document meta data
-            //        doc.AddTitle(Title);
-            //        doc.AddSubject(Subject);
-            //        doc.AddKeywords(Keywords);
-            //        doc.AddCreator("Contest Log Analyser");
-            //        doc.AddAuthor("W6OP");
-            //        //doc.AddHeader("Nothing", "No Header");
-
-            //        // define fonts
-            //        BaseFont bfTimes = BaseFont.CreateFont(BaseFont.COURIER, BaseFont.CP1252, false);
-            //        iTextSharp.text.Font times = new iTextSharp.text.Font(bfTimes, 9, iTextSharp.text.Font.BOLD, iTextSharp.text.BaseColor.BLACK);
-
-            //        PdfPTable table = BuildPdfTable();
-            //        //PdfPCell cell = null;
-            //        iTextSharp.text.Font fontTable = FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL, BaseColor.BLACK);
-
-
-            //        message = year + Message;
-            //        para = new Paragraph(message, times)
-            //        {
-            //            //para.Font = new iTextSharp.text.Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 50);
-            //            // Setting paragraph's text alignment using iTextSharp.text.Element class
-            //            Alignment = Element.ALIGN_CENTER
-            //        };
-            //        // Adding this 'para' to the Document object
-            //        doc.Add(para);
-
-            //        message = message = "Call" + "          " + "Operator" + "     " + "Station" + "     " + "Entity" + "         " + "QSOs" + "    " + "Mults" + "     " + "Points" + "     " + "Final" + "   " + "";
-            //        para = new Paragraph(message, times)
-            //        {
-            //            // Setting paragraph's text alignment using iTextSharp.text.Element class
-            //            Alignment = Element.ALIGN_LEFT
-            //        };
-            //        // Adding this 'para' to the Document object
-            //        doc.Add(para);
-
-            //        Int32 line = 2; // 2 header lines initially
-            //        bool firstPage = true;
-            //        for (int i = 0; i < contestLogs.Count; i++)
-            //        {
-            //            line++;
-            //            contestlog = contestLogs[i];
-            //            if (contestlog != null)
-            //            {
-            //                // only look at valid QSOs
-            //                validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
-
-            //                table.AddCell(new Phrase(contestlog.LogOwner, fontTable));
-            //                table.AddCell(new Phrase(contestlog.Operator, fontTable));
-            //                table.AddCell(new Phrase(contestlog.Station, fontTable));
-            //                table.AddCell(new Phrase(contestlog.OperatorName, fontTable));
-            //                table.AddCell(new Phrase(validQsoList.Count.ToString(), fontTable));
-            //                table.AddCell(new Phrase(contestlog.Multipliers.ToString(), fontTable));
-            //                table.AddCell(new Phrase(contestlog.TotalPoints.ToString(), fontTable));
-            //                table.AddCell(new Phrase(contestlog.ActualScore.ToString(), fontTable));
-            //                table.AddCell(new Phrase("", fontTable));
-            //                //table.AddCell(new Phrase(contestlog.LogHeader.Power.ToString(), fontTable));
-            //                //table.AddCell(new Phrase(assisted, fontTable));
-
-            //                if (firstPage == true && line == 50)
-            //                {
-            //                    line = 51;
-            //                }
-
-            //                if (line > 50)
-            //                {
-            //                    firstPage = false;
-            //                    doc.Add(table);
-            //                    doc.NewPage();
-            //                    table = BuildPdfTable();
-            //                    line = 0;
-            //                }
-            //            }
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        string a = ex.Message;
-            //    }
-            //    finally
-            //    {
-            //        doc.Close();
-            //    }
-        }
         /// <summary>
-        /// Build a table to hold the results.
+        /// Print the final score CSV file for the HQP.
         /// </summary>
-        /// <returns></returns>
-        //private PdfPTable BuildPdfTable()
-        //{
-        //    PdfPTable table = new PdfPTable(9)
-        //    {
-        //        //actual width of table in points
-        //        TotalWidth = 514,
-        //        //fix the absolute width of the table
-        //        LockedWidth = true
-        //    };
+        /// <param name="contestLogs"></param>
+        public void PrintHQPCsvFile(List<ContestLog> contestLogs)
+        {
+            HQPScoreList scoreList;
+            List<HQPScoreList> scores = new List<HQPScoreList>();
+            ContestLog contestlog;
+            List<QSO> validQsoList;
+            string reportFileName = null;
+            string fileName = null;
+            string year = DateTime.Now.ToString("yyyy");
 
-        //    float[] widths = new float[] { 68f, 68f, 68f, 68f, 50f, 54f, 54f, 54f, 30f };
-        //    table.SetWidths(widths);
-        //    table.HorizontalAlignment = 0;
-        //    //leave a gap before and after the table
-        //    table.SpacingBefore = 20f;
-        //    //table.SpacingAfter = 30f;
+            fileName = year + ContestDescription + ".csv";
+            reportFileName = Path.Combine(ScoreFolder, fileName);
 
-        //    return table;
-        //}
+            contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
+
+            for (int i = 0; i < contestLogs.Count; i++)
+            {
+                contestlog = contestLogs[i];
+                if (contestlog != null)
+                {
+                   
+                    // only look at valid QSOs
+                    validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
+
+                    scoreList = new HQPScoreList
+                    {
+                        LogOwner = contestlog.LogOwner,
+                        Operator = contestlog.Operator,
+                        Station = contestlog.Station,
+                        Entity = contestlog.QSOCollection[0].OperatorEntity,
+                        QSOCount = validQsoList.Count.ToString(),
+                        Multipliers = contestlog.Multipliers.ToString(),
+                        Points = contestlog.TotalPoints.ToString(),
+                        Score = contestlog.ActualScore.ToString(),
+                    };
+
+                    scores.Add(scoreList);
+                }
+            }
+
+            using (var writer = new StreamWriter(reportFileName))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                csv.WriteRecords(scores);
+            }
+        }
 
         #endregion
 
@@ -442,8 +190,7 @@ namespace W6OP.PrintEngine
             string reportFileName = null;
             string message = null;
             var value = "";
-            Int32 session = contestLog.Session;
-            //string message2 = null;
+            int session = contestLog.Session;
 
             // strip "/" from callsign
             if (callsign.IndexOf(@"/") != -1)
@@ -455,9 +202,7 @@ namespace W6OP.PrintEngine
 
             // only look at invalid QSOs
             List<QSO> inValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
-            // get list of valid qsos for dupes
-            //List<QSO> validQsoList = contestLog.QSOCollection.Where(q => q.QSOHasDupes == true).ToList();
-
+            
             try
             {
                 using (StreamWriter sw = File.CreateText(reportFileName))
@@ -773,17 +518,17 @@ namespace W6OP.PrintEngine
         private void AddFooter(ContestLog contestLog, StreamWriter sw)
         {
             string message = "";
-            Int32 totalQSOs = 0;
-            Int32 totalValidQSOs = 0;
-            Int32 totalInvalidQSOs = 0;
-            Int32 totalPhoneQSOS = 0;
-            Int32 totalCWQSOs = 0;
-            Int32 totalDigiQSOS = 0;
-            Int32 totalValidPhoneQSOS = 0;
-            Int32 totalValidCWQSOs = 0;
-            Int32 totalValidDigiQSOS = 0;
-            Int32 multiplierCount = 0;
-            Int32 score = 0;
+            int totalQSOs = 0;
+            int totalValidQSOs = 0;
+            int totalInvalidQSOs = 0;
+            int totalPhoneQSOS = 0;
+            int totalCWQSOs = 0;
+            int totalDigiQSOS = 0;
+            int totalValidPhoneQSOS = 0;
+            int totalValidCWQSOs = 0;
+            int totalValidDigiQSOS = 0;
+            int multiplierCount = 0;
+            int score = 0;
 
             totalQSOs = contestLog.QSOCollection.Count;
             totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
@@ -863,7 +608,7 @@ namespace W6OP.PrintEngine
 
         #endregion
 
-
+        #region PrintInspectionReport
 
         public void PrintInspectionReport(string fileName, string failReason)
         {
@@ -874,6 +619,7 @@ namespace W6OP.PrintEngine
             }
         }
 
+        #endregion
 
         #region Create Pre Analysis Reports
 

@@ -8,14 +8,12 @@ using W6OP.ContestLogAnalyzer;
 namespace W6OP.PrintEngine
 {
     /// <summary>
-    /// Class with scores so CSV generator can write file.
+    /// Helper class for printing CSV files.
     /// </summary>
-    public class ScoreList
+    public class CWOpenScoreList
     {
-        public ScoreList()
+        public CWOpenScoreList()
         {
-
-
         }
 
         public string LogOwner { get; internal set; }
@@ -27,7 +25,24 @@ namespace W6OP.PrintEngine
         public string ActualScore { get; internal set; }
         public string Power { get; internal set; }
         public string Assisted { get; internal set; }
-       
+    } // end class
 
+    /// <summary>
+    /// Helper class for printing CSV files.
+    /// </summary>
+    public class HQPScoreList
+    {
+        public HQPScoreList()
+        {
+        }
+
+        public string LogOwner { get; internal set; }
+        public string Operator { get; internal set; }
+        public string Station { get; internal set; }
+        public string Entity { get; internal set; }
+        public string QSOCount { get; internal set; }
+        public string Multipliers { get; internal set; }
+        public string Points { get; internal set; }
+        public string Score { get; internal set; }
     } // end class
 }

@@ -1039,6 +1039,9 @@ namespace W6OP.ContestLogAnalyzer
             PrintQSORejectReport();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void PrintQSORejectReport()
         {
             try
@@ -1055,14 +1058,14 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void PrintQSOReviewReport()
         {
             try
             {
-                //foreach (ContestLog contestLog in _ContestLogs)
-                //{
                 _PrintManager.PrintReviewReport(_ContestLogs);
-                //}
             }
             catch (Exception ex)
             {
@@ -1071,17 +1074,27 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// Print the final score report for the CWOpen and HQP contest.
+        /// </summary>
         private void PrintFinalScoreReport()
         {
+            PDFGenerator pdfGenerator = new PDFGenerator(_ActiveContest)
+            {
+                ScoreFolder = _ScoreFolder
+            };
+
             try
             {
                 switch (_ActiveContest)
                 {
                     case ContestName.CW_OPEN:
-                        _PrintManager.PrintCWOpenPdfScoreSheet(_ContestLogs);
+                        _PrintManager.PrintCWOpenCsvFile(_ContestLogs);
+                        pdfGenerator.PrintCWOpenPdfScoreSheet(_ContestLogs);
                         break;
                     case ContestName.HQP:
-                        _PrintManager.PrintHQPPdfScoreSheet(_ContestLogs);
+                        _PrintManager.PrintHQPCsvFile(_ContestLogs);
+                        pdfGenerator.PrintHQPPdfScoreSheet(_ContestLogs);
                         break;
                 }
             }
@@ -1089,18 +1102,6 @@ namespace W6OP.ContestLogAnalyzer
             {
                 MessageBox.Show(ex.Message);
             }
-
-            //MessageBox.Show("Score report completed");
-        }
-
-        /// <summary>
-        /// Create a PDF file with all the scores.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ButtonPrintScores_Click(object sender, EventArgs e)
-        {
-            PrintFinalScoreReport();
         }
 
         private void ButtonLoadBadcalls_Click(object sender, EventArgs e)
@@ -1134,7 +1135,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// 
+        /// Load the bad call list.
         /// </summary>
         /// <returns></returns>
         private ILookup<string, string> LoadFile()

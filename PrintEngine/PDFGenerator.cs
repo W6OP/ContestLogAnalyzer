@@ -21,9 +21,6 @@ namespace W6OP.PrintEngine
         private string ContestDescription { get; set; }
         public string ScoreFolder { get; set; }
 
-        private string Title { get; set; }
-        private string Subject { get; set; }
-        private string Keywords { get; set; }
         private string Message { get; set; }
 
         private ContestName ActiveContest { get; set; }
@@ -36,21 +33,19 @@ namespace W6OP.PrintEngine
             {
                 case ContestName.CW_OPEN:
                     ContestDescription = " CWO Box Scores Session ";
-                    Title = "CWOpen Score Sheet";
-                    Subject = "Final Score Sheet ";
-                    Keywords = "CW, CWOpen";
                     Message = " CW Open Session ";
                     break;
                 case ContestName.HQP:
                     ContestDescription = " Hawaii QSO Party ";
-                    Title = "HQP Score Sheet";
-                    Subject = "Final Score Sheet ";
-                    Keywords = "HQP";
                     Message = " Hawaii QSO Party ";
                     break;
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="contestLogs"></param>
         public void PrintCWOpenPdfScoreSheet(List<ContestLog> contestLogs)
         {
             string reportFileName = null;
@@ -60,7 +55,6 @@ namespace W6OP.PrintEngine
             string message = null;
             ContestLog contestlog;
             string assisted = null;
-            //string so2r = null;
             List<QSO> validQsoList;
 
             // sort ascending by score
@@ -86,15 +80,15 @@ namespace W6OP.PrintEngine
 
             Table table = new Table(UnitValue.CreatePercentArray(9)).UseAllAvailableWidth();
 
-            table.AddHeaderCell("Call");//.SetFontSize(12);
-            table.AddHeaderCell("Operator");//.SetFontSize(12);
-            table.AddHeaderCell("Station");//.SetFontSize(12);
-            table.AddHeaderCell("Name");//.SetFontSize(12);
-            table.AddHeaderCell("QSOs");//.SetFontSize(12);
-            table.AddHeaderCell("Mults");//.SetFontSize(12);
-            table.AddHeaderCell("Score");//.SetFontSize(12);
-            table.AddHeaderCell("Power");//.SetFontSize(12);
-            table.AddHeaderCell("Assisted");//.SetFontSize(12);
+            table.AddHeaderCell("Call");
+            table.AddHeaderCell("Operator");
+            table.AddHeaderCell("Station");
+            table.AddHeaderCell("Name");
+            table.AddHeaderCell("QSOs");
+            table.AddHeaderCell("Mults");
+            table.AddHeaderCell("Score");
+            table.AddHeaderCell("Power");
+            table.AddHeaderCell("Assisted");
 
             for (int i = 0; i < contestLogs.Count; i++)
             {
@@ -116,7 +110,6 @@ namespace W6OP.PrintEngine
                     table.AddCell(contestlog.OperatorName).SetFontSize(10);
                     table.AddCell(validQsoList.Count.ToString()).SetFontSize(10);
                     table.AddCell(contestlog.Multipliers.ToString()).SetFontSize(10);
-                    //table.AddCell(contestlog.TotalPoints.ToString()).SetFontSize(10);
                     table.AddCell(contestlog.ActualScore.ToString()).SetFontSize(10);
                     table.AddCell(contestlog.LogHeader.Power.ToString()).SetFontSize(10);
                     table.AddCell(assisted).SetFontSize(10);
@@ -128,7 +121,10 @@ namespace W6OP.PrintEngine
             document.Close();
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="contestLogs"></param>
         public void PrintHQPPdfScoreSheet(List<ContestLog> contestLogs)
         {
             string reportFileName = null;
@@ -164,14 +160,14 @@ namespace W6OP.PrintEngine
 
             Table table = new Table(UnitValue.CreatePercentArray(8)).UseAllAvailableWidth();
 
-            table.AddHeaderCell("Call").SetFontSize(12);
-            table.AddHeaderCell("Operator").SetFontSize(12);
-            table.AddHeaderCell("Station").SetFontSize(12);
-            table.AddHeaderCell("Entity").SetFontSize(12);
-            table.AddHeaderCell("QSOs").SetFontSize(12);
-            table.AddHeaderCell("Mults").SetFontSize(12);
-            table.AddHeaderCell("Points").SetFontSize(12);
-            table.AddHeaderCell("Score").SetFontSize(12);
+            table.AddHeaderCell("Call");
+            table.AddHeaderCell("Operator");
+            table.AddHeaderCell("Station");
+            table.AddHeaderCell("Entity");
+            table.AddHeaderCell("QSOs");
+            table.AddHeaderCell("Mults");
+            table.AddHeaderCell("Points");
+            table.AddHeaderCell("Score");
 
             for (int i = 0; i < contestLogs.Count; i++)
             {
