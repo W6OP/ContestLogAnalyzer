@@ -550,6 +550,7 @@ namespace W6OP.ContestLogAnalyzer
             UpdateLabel("Load contest logs completed");
 
             EnableControl(ButtonStartAnalysis, true);
+            EnableControl(buttonLogSearch, true);
 
             ResetProgressBar(true);
         }
@@ -806,7 +807,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (InvokeRequired)
             {
-                this.BeginInvoke(new Action<string, string, bool>(this.UpdateListViewLoad), message, status, clear);
+                BeginInvoke(new Action<string, string, bool>(this.UpdateListViewLoad), message, status, clear);
                 return;
             }
 
@@ -817,7 +818,6 @@ namespace W6OP.ContestLogAnalyzer
             else
             {
                 ListViewItem item = new ListViewItem(message);
-                //item.Tag = contestLog;
                 item.SubItems.Add(status);
                 ListViewLoad.Items.Insert(0, item);
             }
@@ -893,7 +893,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (InvokeRequired)
             {
-                this.BeginInvoke(new Action<string, bool>(this.UpdateListViewScore), message, clear);
+                BeginInvoke(new Action<string, bool>(this.UpdateListViewScore), message, clear);
                 return;
             }
 
@@ -904,9 +904,40 @@ namespace W6OP.ContestLogAnalyzer
             else
             {
                 ListViewItem item = new ListViewItem(message);
-                ListViewScore.Items.Insert(0, item);
+                _ = ListViewScore.Items.Insert(0, item);
             }
         }
+
+        /// <summary>
+        ///  Of course it would not necessarily have ALL QSOs the guy made, 
+        ///  but probably most of them. From that I can see trends for band, mode, etc. 
+        /// </summary>
+        /// <param name="contestLog"></param>
+        /// <param name="clear"></param>
+        private void UpdateListViewLogSearch(QSO qso, bool clear)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action<QSO, bool>(this.UpdateListViewLogSearch), qso, clear);
+                return;
+            }
+
+            if (clear)
+            {
+                ListViewLogSearch.Items.Clear();
+            }
+            else
+            {
+                
+                ListViewItem item = new ListViewItem(qso.OperatorCall);
+                item.SubItems.Add(qso.ContactCall);
+                item.SubItems.Add(qso.Band.ToString());
+                item.SubItems.Add(qso.Mode);
+                item.SubItems.Add(qso.QSODateTime.ToString());
+                ListViewLogSearch.Items.Insert(0, item);
+            }
+        }
+
 
         /// <summary>
         /// Increment the progress bar. Prevent cross thread calls.
@@ -916,7 +947,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (InvokeRequired)
             {
-                this.BeginInvoke(new Action<Int32>(this.UpdateProgress), count);
+                BeginInvoke(new Action<Int32>(this.UpdateProgress), count);
                 return;
             }
 
@@ -940,8 +971,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (InvokeRequired)
             {
-                this.BeginInvoke(new Action<Control, bool>(this.EnableControl), control, clear);
-                //this.BeginInvoke(new Action<bool>(this.EnableControl), clear);
+                BeginInvoke(new Action<Control, bool>(this.EnableControl), control, clear);
                 return;
             }
 
@@ -956,7 +986,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (InvokeRequired)
             {
-                this.BeginInvoke(new Action<bool>(this.ResetProgressBar), clear);
+                BeginInvoke(new Action<bool>(this.ResetProgressBar), clear);
                 return;
             }
 
@@ -1359,6 +1389,40 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             ListViewCompare.Items.Insert(0, item);
+        }
+
+        #endregion
+
+        #region Search Logs
+
+        /// <summary>
+        /// Search for all logs a specific call sign is in.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ButtonLogSearch_Click(object sender, EventArgs e)
+        {
+            List<QSO> callList = new List<QSO>();
+            string sourceCall = textBoxLogSearch.Text;
+            QSO qso;
+
+            TabControlMain.SelectTab(TabPageSearchLogs);
+            ListViewLogSearch.Items.Clear();
+
+            if (sourceCall != "")
+            {
+                foreach (ContestLog contestLog in _ContestLogs)
+                {
+                    List<QSO> qsoList = contestLog.QSOCollection.Where(q => q.ContactCall == sourceCall).ToList();
+                    if (qsoList.Count > 0)
+                    {
+                        foreach (QSO q in qsoList)
+                        {
+                            UpdateListViewLogSearch(q, false);
+                        }
+                    }
+                }
+            }
         }
 
         #endregion

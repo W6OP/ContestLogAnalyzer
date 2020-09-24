@@ -54,10 +54,20 @@ namespace W6OP.ContestLogAnalyzer
         {
             FailingLine = "";
             WorkingLine = "";
-
-
         }
 
+        //public List<string> SearchLogs(string call)
+        //{
+        //    List<string> calls = new List<string>();
+
+        //    foreach (ContestLog contestLog in contestLogList)
+        //    {
+
+        //    }
+
+
+        //        return calls;
+        //}
         /// <summary>
         /// Create a list of all of the log files in the working folder. Once the list is
         /// filled pass the list on to another thread.
@@ -71,7 +81,8 @@ namespace W6OP.ContestLogAnalyzer
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    fileNameFormat = "*_" + ((uint)session).ToString() + ".log";
+                    //fileNameFormat = "*_" + ((uint)session).ToString() + ".log";
+                    fileNameFormat = "*.log";
                     break;
                 case ContestName.HQP:
                     fileNameFormat = "*.log";

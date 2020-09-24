@@ -73,6 +73,13 @@
             this.columnHeader21 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader22 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader23 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.TabPageSearchLogs = new System.Windows.Forms.TabPage();
+            this.ListViewLogSearch = new System.Windows.Forms.ListView();
+            this.columnHeader14 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader24 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader25 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader26 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader27 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ComboBoxSelectSession = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.ButtonLoadBadcalls = new System.Windows.Forms.Button();
@@ -83,11 +90,14 @@
             this.TextBoxLog1 = new System.Windows.Forms.TextBox();
             this.TextBoxLog2 = new System.Windows.Forms.TextBox();
             this.SessionDateTimePicker = new System.Windows.Forms.DateTimePicker();
+            this.buttonLogSearch = new System.Windows.Forms.Button();
+            this.textBoxLogSearch = new System.Windows.Forms.TextBox();
             this.TabControlMain.SuspendLayout();
             this.TabPageLogStatus.SuspendLayout();
             this.TabPageAnalysis.SuspendLayout();
             this.TabPageScoring.SuspendLayout();
             this.TabPageCompare.SuspendLayout();
+            this.TabPageSearchLogs.SuspendLayout();
             this.SuspendLayout();
             // 
             // LogFolderBrowserDialog
@@ -142,6 +152,7 @@
             this.columnHeader7});
             this.ListViewLoad.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ListViewLoad.GridLines = true;
+            this.ListViewLoad.HideSelection = false;
             this.ListViewLoad.Location = new System.Drawing.Point(3, 3);
             this.ListViewLoad.Name = "ListViewLoad";
             this.ListViewLoad.Size = new System.Drawing.Size(949, 520);
@@ -228,6 +239,7 @@
             this.columnHeader13});
             this.ListViewAnalysis.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ListViewAnalysis.GridLines = true;
+            this.ListViewAnalysis.HideSelection = false;
             this.ListViewAnalysis.Location = new System.Drawing.Point(3, 3);
             this.ListViewAnalysis.Name = "ListViewAnalysis";
             this.ListViewAnalysis.Size = new System.Drawing.Size(949, 520);
@@ -266,6 +278,7 @@
             this.ListViewScore.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ListViewScore.FullRowSelect = true;
             this.ListViewScore.GridLines = true;
+            this.ListViewScore.HideSelection = false;
             this.ListViewScore.Location = new System.Drawing.Point(0, 0);
             this.ListViewScore.MultiSelect = false;
             this.ListViewScore.Name = "ListViewScore";
@@ -342,6 +355,7 @@
             this.TabControlMain.Controls.Add(this.TabPageAnalysis);
             this.TabControlMain.Controls.Add(this.TabPageScoring);
             this.TabControlMain.Controls.Add(this.TabPageCompare);
+            this.TabControlMain.Controls.Add(this.TabPageSearchLogs);
             this.TabControlMain.Location = new System.Drawing.Point(24, 163);
             this.TabControlMain.Name = "TabControlMain";
             this.TabControlMain.SelectedIndex = 0;
@@ -405,6 +419,7 @@
             this.columnHeader23});
             this.ListViewCompare.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ListViewCompare.GridLines = true;
+            this.ListViewCompare.HideSelection = false;
             this.ListViewCompare.Location = new System.Drawing.Point(0, 0);
             this.ListViewCompare.Name = "ListViewCompare";
             this.ListViewCompare.Size = new System.Drawing.Size(955, 526);
@@ -451,6 +466,60 @@
             // columnHeader23
             // 
             this.columnHeader23.Text = "Recv\'d";
+            // 
+            // TabPageSearchLogs
+            // 
+            this.TabPageSearchLogs.Controls.Add(this.ListViewLogSearch);
+            this.TabPageSearchLogs.Location = new System.Drawing.Point(4, 24);
+            this.TabPageSearchLogs.Name = "TabPageSearchLogs";
+            this.TabPageSearchLogs.Size = new System.Drawing.Size(955, 526);
+            this.TabPageSearchLogs.TabIndex = 6;
+            this.TabPageSearchLogs.Text = "Log Search";
+            this.TabPageSearchLogs.UseVisualStyleBackColor = true;
+            // 
+            // ListViewLogSearch
+            // 
+            this.ListViewLogSearch.BackColor = System.Drawing.SystemColors.Info;
+            this.ListViewLogSearch.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader14,
+            this.columnHeader24,
+            this.columnHeader25,
+            this.columnHeader26,
+            this.columnHeader27});
+            this.ListViewLogSearch.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ListViewLogSearch.GridLines = true;
+            this.ListViewLogSearch.HideSelection = false;
+            this.ListViewLogSearch.Location = new System.Drawing.Point(0, 0);
+            this.ListViewLogSearch.Name = "ListViewLogSearch";
+            this.ListViewLogSearch.Size = new System.Drawing.Size(955, 526);
+            this.ListViewLogSearch.TabIndex = 0;
+            this.ListViewLogSearch.UseCompatibleStateImageBehavior = false;
+            this.ListViewLogSearch.View = System.Windows.Forms.View.Details;
+            // 
+            // columnHeader14
+            // 
+            this.columnHeader14.Text = "Operator";
+            this.columnHeader14.Width = 100;
+            // 
+            // columnHeader24
+            // 
+            this.columnHeader24.Text = "Contact";
+            this.columnHeader24.Width = 100;
+            // 
+            // columnHeader25
+            // 
+            this.columnHeader25.Text = "Band";
+            this.columnHeader25.Width = 100;
+            // 
+            // columnHeader26
+            // 
+            this.columnHeader26.Text = "Mode";
+            this.columnHeader26.Width = 100;
+            // 
+            // columnHeader27
+            // 
+            this.columnHeader27.Text = "Time";
+            this.columnHeader27.Width = 200;
             // 
             // ComboBoxSelectSession
             // 
@@ -549,12 +618,34 @@
             this.SessionDateTimePicker.Size = new System.Drawing.Size(57, 23);
             this.SessionDateTimePicker.TabIndex = 1400;
             // 
+            // buttonLogSearch
+            // 
+            this.buttonLogSearch.Enabled = false;
+            this.buttonLogSearch.Location = new System.Drawing.Point(694, 68);
+            this.buttonLogSearch.Name = "buttonLogSearch";
+            this.buttonLogSearch.Size = new System.Drawing.Size(94, 23);
+            this.buttonLogSearch.TabIndex = 1401;
+            this.buttonLogSearch.Text = "Log Search";
+            this.buttonLogSearch.UseVisualStyleBackColor = true;
+            this.buttonLogSearch.Click += new System.EventHandler(this.ButtonLogSearch_Click);
+            // 
+            // textBoxLogSearch
+            // 
+            this.textBoxLogSearch.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
+            this.textBoxLogSearch.Location = new System.Drawing.Point(794, 68);
+            this.textBoxLogSearch.MaxLength = 15;
+            this.textBoxLogSearch.Name = "textBoxLogSearch";
+            this.textBoxLogSearch.Size = new System.Drawing.Size(90, 23);
+            this.textBoxLogSearch.TabIndex = 1402;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Honeydew;
             this.ClientSize = new System.Drawing.Size(1008, 729);
+            this.Controls.Add(this.textBoxLogSearch);
+            this.Controls.Add(this.buttonLogSearch);
             this.Controls.Add(this.SessionDateTimePicker);
             this.Controls.Add(this.TextBoxLog2);
             this.Controls.Add(this.TextBoxLog1);
@@ -586,6 +677,7 @@
             this.TabPageAnalysis.ResumeLayout(false);
             this.TabPageScoring.ResumeLayout(false);
             this.TabPageCompare.ResumeLayout(false);
+            this.TabPageSearchLogs.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -648,6 +740,15 @@
         private System.Windows.Forms.ColumnHeader columnHeader22;
         private System.Windows.Forms.ColumnHeader columnHeader23;
         private System.Windows.Forms.DateTimePicker SessionDateTimePicker;
+        private System.Windows.Forms.Button buttonLogSearch;
+        private System.Windows.Forms.TextBox textBoxLogSearch;
+        private System.Windows.Forms.TabPage TabPageSearchLogs;
+        private System.Windows.Forms.ListView ListViewLogSearch;
+        private System.Windows.Forms.ColumnHeader columnHeader14;
+        private System.Windows.Forms.ColumnHeader columnHeader24;
+        private System.Windows.Forms.ColumnHeader columnHeader25;
+        private System.Windows.Forms.ColumnHeader columnHeader26;
+        private System.Windows.Forms.ColumnHeader columnHeader27;
     }
 }
 
