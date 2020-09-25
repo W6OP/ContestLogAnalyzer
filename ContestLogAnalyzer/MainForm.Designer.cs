@@ -92,6 +92,7 @@
             this.SessionDateTimePicker = new System.Windows.Forms.DateTimePicker();
             this.buttonLogSearch = new System.Windows.Forms.Button();
             this.textBoxLogSearch = new System.Windows.Forms.TextBox();
+            this.columnHeader28 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TabControlMain.SuspendLayout();
             this.TabPageLogStatus.SuspendLayout();
             this.TabPageAnalysis.SuspendLayout();
@@ -485,7 +486,8 @@
             this.columnHeader24,
             this.columnHeader25,
             this.columnHeader26,
-            this.columnHeader27});
+            this.columnHeader27,
+            this.columnHeader28});
             this.ListViewLogSearch.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ListViewLogSearch.GridLines = true;
             this.ListViewLogSearch.HideSelection = false;
@@ -519,7 +521,7 @@
             // columnHeader27
             // 
             this.columnHeader27.Text = "Time";
-            this.columnHeader27.Width = 200;
+            this.columnHeader27.Width = 150;
             // 
             // ComboBoxSelectSession
             // 
@@ -638,6 +640,11 @@
             this.textBoxLogSearch.Size = new System.Drawing.Size(90, 23);
             this.textBoxLogSearch.TabIndex = 1402;
             // 
+            // columnHeader28
+            // 
+            this.columnHeader28.Text = "Raw QSO";
+            this.columnHeader28.Width = 400;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -749,6 +756,7 @@
         private System.Windows.Forms.ColumnHeader columnHeader25;
         private System.Windows.Forms.ColumnHeader columnHeader26;
         private System.Windows.Forms.ColumnHeader columnHeader27;
+        private System.Windows.Forms.ColumnHeader columnHeader28;
     }
 }
 

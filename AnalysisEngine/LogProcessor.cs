@@ -56,18 +56,6 @@ namespace W6OP.ContestLogAnalyzer
             WorkingLine = "";
         }
 
-        //public List<string> SearchLogs(string call)
-        //{
-        //    List<string> calls = new List<string>();
-
-        //    foreach (ContestLog contestLog in contestLogList)
-        //    {
-
-        //    }
-
-
-        //        return calls;
-        //}
         /// <summary>
         /// Create a list of all of the log files in the working folder. Once the list is
         /// filled pass the list on to another thread.
@@ -995,6 +983,7 @@ namespace W6OP.ContestLogAnalyzer
                          let split = CheckQSOLength(line.Split(' '))
                          select new QSO()
                          {
+                             RawQSO = line,
                              Status = CheckCompleteQSO(split, line),
                              Frequency = CheckFrequency(split[1], line),
                              Mode = NormalizeMode(split[2]),
@@ -1027,6 +1016,7 @@ namespace W6OP.ContestLogAnalyzer
 
                          select new QSO()
                          {
+                             RawQSO = line,
                              Status = CheckCompleteQSO(split, line),
                              Frequency = CheckFrequency(split[1], line),
                              Mode = NormalizeMode(split[2]),

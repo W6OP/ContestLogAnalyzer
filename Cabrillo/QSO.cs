@@ -460,6 +460,9 @@ namespace W6OP.ContestLogAnalyzer
 
         #region HQP (Hawaiin QSO Party)
 
+        // the raw text of the qso line
+        public string RawQSO { get; set; }
+
         public string OperatortPrefix { get; set; }
         public string OperatorSuffix { get; set; }
         public string ContactPrefix { get; set; }

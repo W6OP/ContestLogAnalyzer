@@ -934,6 +934,7 @@ namespace W6OP.ContestLogAnalyzer
                 item.SubItems.Add(qso.Band.ToString());
                 item.SubItems.Add(qso.Mode);
                 item.SubItems.Add(qso.QSODateTime.ToString());
+                item.SubItems.Add(qso.RawQSO);
                 ListViewLogSearch.Items.Insert(0, item);
             }
         }
