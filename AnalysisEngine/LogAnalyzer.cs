@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.AccessControl;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using W6OP.CallParser;
 
 namespace W6OP.ContestLogAnalyzer
@@ -16,6 +19,10 @@ namespace W6OP.ContestLogAnalyzer
         private const string HQPAlaskaLiteral = "ALASKA";
         private const string HQPCanadaLiteral = "CANADA";
 
+        readonly string[] States = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", };
+        readonly string[] Provinces = { "NL", "NS", "PE", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU" };
+
+
         public ContestName ActiveContest;
 
         private ILookup<string, string> _BadCallList;
@@ -24,12 +31,16 @@ namespace W6OP.ContestLogAnalyzer
 
         public CallLookUp CallLookUp;
 
+        //private Dictionary<string, string> stateCodes = new Dictionary<string, string>(){
+        //    {"AL", "Alabama"},{"AZ", "Arizona"},{"AR", "Arkansas"},{"CA", "California"},{"CO", "Colorado"}, {"CT", "Connecticut"},{"AZ", "Arizona"},{"AR", "Arkansas"},{"CA", "California"},{"CO", "Colorado"}
+        //};
+
         /// <summary>
         /// Default constructor.
         /// </summary>
         public LogAnalyzer()
         {
-     
+
         }
 
         /// <summary>
@@ -134,7 +145,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 call = contestLog.LogOwner;
                 name = contestLog.LogHeader.NameSent.ToUpper();
-               // Console.WriteLine(call);
+                // Console.WriteLine(call);
                 progress++;
 
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
@@ -246,12 +257,10 @@ namespace W6OP.ContestLogAnalyzer
 
             foreach (QSO qso in qsoList)
             {
-                //testCount += 1;
-                //if (testCount == 183)
-                //{
-                //   // Console.WriteLine("Count = " + testCount.ToString());
-                //}
-
+                /*
+                 * The entity is incorrect - BC --> British Columbia
+QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
+                 */
                 qsoDateTime = qso.QSODateTime;
                 band = qso.Band;
                 mode = qso.Mode;
@@ -314,8 +323,17 @@ namespace W6OP.ContestLogAnalyzer
                             break;
                         case ContestName.HQP:
                             // now see if a QSO matches this QSO
-                            matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.ContactEntity == dxEntity && q.OperatorCall == contactCall &&
-                                                  q.ContactCall == operatorCall && q.Mode == mode && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).Minutes) <= 5);
+
+                            if ((CategoryMode)Enum.Parse(typeof(CategoryMode), mode) == CategoryMode.RY)
+                            {
+                                // don't check the time on digi contacts per Alan 09/25,2020
+                                matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.ContactEntity == dxEntity && q.OperatorCall == contactCall &&
+                                                      q.ContactCall == operatorCall && q.Mode == mode);
+                            } else
+                            {
+                                matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.ContactEntity == dxEntity && q.OperatorCall == contactCall &&
+                                                     q.ContactCall == operatorCall && q.Mode == mode && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).Minutes) <= 5);
+                            }
 
                             break;
                     }
@@ -391,9 +409,17 @@ namespace W6OP.ContestLogAnalyzer
                         }
                         else
                         {
-                            qso.Status = QSOStatus.InvalidQSO;
-                            qso.GetRejectReasons().Clear();
-                            qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+                            if (ActiveContest == ContestName.HQP)
+                            {
+                                // if only in one log give it to them per Alan 09/25/2020
+                                qso.Status = QSOStatus.ValidQSO;
+                            }
+                            else 
+                            { 
+                                qso.Status = QSOStatus.InvalidQSO;
+                                qso.GetRejectReasons().Clear();
+                                qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+                            }
                         }
                     }
                     else
@@ -449,7 +475,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (ActiveContest == ContestName.HQP)
                 {
-                    found = SearchForIncorrectEntityEx(qso, contestLogList);
+                    found = SearchForIncorrectEntity(qso, contestLogList);
                 }
                 else
                 {
@@ -539,13 +565,24 @@ namespace W6OP.ContestLogAnalyzer
             return wasFound;
         }
 
+
+        /*
+         Busted call requires a matching QSO
+         Unique call give to it to him
+
+         */
+
         /// <summary>
         /// HQP only
+        /// Is this a Hawaiin station then, state, province, DX
+        /// Non Hawaiin ststion then
+        /// if US or Canadian - Hawwaiin entity
+        /// DX then Hawaiin entity
         /// </summary>
         /// <param name="qso"></param>
         /// <param name="contestLogList"></param>
         /// <returns></returns>
-        private bool SearchForIncorrectEntityEx(QSO qso, List<ContestLog> contestLogList)
+        private bool SearchForIncorrectEntity(QSO qso, List<ContestLog> contestLogList)
         {
             bool isCorrect = false;
             int matchCount = 0;
@@ -609,21 +646,49 @@ namespace W6OP.ContestLogAnalyzer
                     entity = firstMatch.ContactEntity;
                 }
                 else
-                {
+                { // two entries, either could be correct
                     IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
                     List<CallSignInfo> hitList = hitCollection.ToList();
                     if (hitList.Count != 0)
                     {
                         entity = hitList[0].Country;
 
-                        if (entity == "United States of America" || entity == "Canada")
+                        switch (entity)
                         {
-                            entity = hitList[0].Province;
-                        }
-
-                        if (entity == "Hawaii")
-                        {
-                            return isCorrect;
+                            case "United States of America":
+                                if (qso.ContactEntity.Length > 2)
+                                {
+                                    entity = hitList[0].Province; // this gives State, need state code
+                                }
+                                else
+                                {
+                                    if (States.Contains(qso.ContactEntity.ToUpper()))
+                                    {
+                                        return isCorrect;
+                                    }
+                                }
+                                break;
+                            case "Canada":
+                                if (qso.ContactEntity.Length > 2)
+                                {
+                                    entity = hitList[0].Admin1;
+                                }
+                                else
+                                {
+                                    if (Provinces.Contains(qso.ContactEntity.ToUpper()))
+                                    {
+                                        return isCorrect;
+                                    }
+                                }
+                                break;
+                            case "Hawaii":
+                                return isCorrect;
+                            default:
+                                if (qso.IsHQPEntity)
+                                {
+                                    entity = "DX";
+                                } 
+                                break;
                         }
                     }
                 }
@@ -692,6 +757,17 @@ namespace W6OP.ContestLogAnalyzer
             return reason;
         }
 
+
+       
+        // test without checking for time
+        // maybe check to be sure it in contest time
+
+        /*
+         I would simply accept ANY digital QSO where the software thinks there was a busted call. That may be the simplest solution. 
+        Allowing FTx in the contest brings new challenges and hassles. However, at least for HQP I think it's a good thing overall.
+         */
+
+
         /// <summary>
         /// See if the qso was rejected because the time stamps don't match.
         /// </summary>
@@ -711,8 +787,15 @@ namespace W6OP.ContestLogAnalyzer
                        q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) > 5);
                     break;
                 case ContestName.HQP:
-                    matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.Mode == qso.Mode &&
-                       q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) > 5);
+                    // don't check the time on digi contacts per Alan 09/25,2020
+                    if ((CategoryMode)Enum.Parse(typeof(CategoryMode), qso.Mode) != CategoryMode.RY)
+                    {
+                        matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.Mode == qso.Mode &&
+                      q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) > 5); //  && q.ContactEntity == qso.ContactEntity 
+                    } else
+                    {
+                        return reason;
+                    }
                     break;
             }
 
@@ -764,23 +847,24 @@ namespace W6OP.ContestLogAnalyzer
             RejectReason reason = RejectReason.None;
             bool isMatchQSO = false;
 
-                switch (ActiveContest)
-                {
-                    case ContestName.CW_OPEN:
-                        matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
-                             q.ContactCall == qso.OperatorCall);
-                        break;
-                    case ContestName.HQP:
-                        matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && q.Mode == qso.Mode &&
-                            q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
-                        break;
-                }
+            switch (ActiveContest)
+            {
+                case ContestName.CW_OPEN:
+                    matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
+                         q.ContactCall == qso.OperatorCall);
+                    break;
+                case ContestName.HQP:
+                    matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && q.Mode == qso.Mode &&
+                        q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
+                    break;
+            }
 
             if (matchQSO != null)
             {
-                try { 
-                // determine who is at fault
-                isMatchQSO = DetermineBandFault(matchLog, qso, matchQSO);
+                try
+                {
+                    // determine who is at fault
+                    isMatchQSO = DetermineBandFault(matchLog, qso, matchQSO);
                 }
                 catch (Exception ex)
                 {

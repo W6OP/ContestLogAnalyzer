@@ -5,6 +5,7 @@ using System.Reflection;
 
 namespace W6OP.ContestLogAnalyzer
 {
+    
     public enum RejectReason
     {
         [Description("The band does not match")]
@@ -116,7 +117,7 @@ namespace W6OP.ContestLogAnalyzer
         [Description("Light")]
         Light
     }
-   
+
     public enum FaultType
     {
         Band,
@@ -306,10 +307,6 @@ namespace W6OP.ContestLogAnalyzer
         PERL,
         [Description("PRL")] PEARL
     }
-
-    public class Enumerations
-    {
-    } // end class
 
     //https://www.horizonmb.com/threads/137828-Storing-additional-data-in-enums
     /// <summary>

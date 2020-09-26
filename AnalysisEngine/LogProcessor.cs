@@ -5,8 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using W6OP.CallParser;
 using W6OP.PrintEngine;
-using System.Collections;
-using System.Threading;
 
 namespace W6OP.ContestLogAnalyzer
 {
@@ -17,7 +15,7 @@ namespace W6OP.ContestLogAnalyzer
         readonly string[] States = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", };
         readonly string[] Provinces = { "NL", "NS", "PE", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU" };
 
-        public delegate void ProgressUpdate(Int32 progress);
+        public delegate void ProgressUpdate(int progress);
         public event ProgressUpdate OnProgressUpdate;
 
         private const string HQPHawaiiLiteral = "HAWAII";
@@ -645,7 +643,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     qso.ContactEntity = hitList[0].Province;
                 }
-            }   // counties are 3 or more - a ; in it means a list od states
+            }   // counties are 3 or more - a ; in it means a list of states
             else if (qso.ContactEntity.Length > 2)
             {
                 // check if its in one of the county files

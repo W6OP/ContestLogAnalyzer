@@ -1404,8 +1404,7 @@ namespace W6OP.ContestLogAnalyzer
         private void ButtonLogSearch_Click(object sender, EventArgs e)
         {
             List<QSO> callList = new List<QSO>();
-            string sourceCall = textBoxLogSearch.Text;
-            QSO qso;
+            string sourceCall = textBoxLogSearch.Text.Trim();
 
             TabControlMain.SelectTab(TabPageSearchLogs);
             ListViewLogSearch.Items.Clear();
@@ -1417,9 +1416,9 @@ namespace W6OP.ContestLogAnalyzer
                     List<QSO> qsoList = contestLog.QSOCollection.Where(q => q.ContactCall == sourceCall).ToList();
                     if (qsoList.Count > 0)
                     {
-                        foreach (QSO q in qsoList)
+                        foreach (QSO qso in qsoList)
                         {
-                            UpdateListViewLogSearch(q, false);
+                            UpdateListViewLogSearch(qso, false);
                         }
                     }
                 }
