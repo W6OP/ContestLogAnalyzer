@@ -698,7 +698,9 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
             {
                 return isCorrect;
             }
-            qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {entity}";
+
+            // was qso.ContactEntity - 10/01/2020
+            qso.IncorrectDXEntity = $"{qso.OriginalContactEntity} --> {entity}";
             qso.EntityIsInValid = true;
             return true;
         }
