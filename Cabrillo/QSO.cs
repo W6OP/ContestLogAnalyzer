@@ -183,7 +183,7 @@ namespace W6OP.ContestLogAnalyzer
         public string OperatorCall
         {
             get { return _OperatorCall.ToUpper(); }
-            set { _OperatorCall = value; }
+            set { _OperatorCall = value;}
         }
 
         /// <summary>
@@ -202,12 +202,8 @@ namespace W6OP.ContestLogAnalyzer
         private string _ContactCall;
         public string ContactCall
         {
-            get
-            { return _ContactCall.ToUpper(); }
-            set
-            {
-                _ContactCall = value;
-            }
+            get { return _ContactCall.ToUpper(); }
+            set { _ContactCall = value;}
         }
 
         /// <summary>
@@ -304,6 +300,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Mode used for the QSO.
         /// this should be an enum
+        /// Later change this to use CategoryMode Enum
         /// </summary>
         private string mode;
         public string Mode

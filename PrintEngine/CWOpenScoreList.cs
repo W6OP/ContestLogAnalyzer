@@ -29,6 +29,7 @@ namespace W6OP.PrintEngine
 
     /// <summary>
     /// Helper class for printing CSV files.
+    /// Call QTH PH CW  DG QSOs    HI mults    Score
     /// </summary>
     public class HQPScoreList
     {
@@ -36,13 +37,24 @@ namespace W6OP.PrintEngine
         {
         }
 
-        public string LogOwner { get; internal set; }
-        public string Operator { get; internal set; }
-        public string Station { get; internal set; }
-        public string Entity { get; internal set; }
-        public string QSOCount { get; internal set; }
-        public string Multipliers { get; internal set; }
-        public string Points { get; internal set; }
+        public string Call { get; internal set; }
+        public string QTH { get; internal set; }
+       // public string Country { get; internal set; }
+        public string PH { get; internal set; }
+        public string CW { get; internal set; }
+        public string DG { get; internal set; }
+        public string QSOs { get; internal set; }
+        public string HI_Mults { get; internal set; }
+
+       
+        //public string LogOwner { get; internal set; }
+       // public string Operator { get; internal set; }
+        //public string Station { get; internal set; }
+       
+       // public string Entity { get; internal set; }
+       // public string QSOCount { get; internal set; }
+        //public string Multipliers { get; internal set; }
+        //public string Points { get; internal set; }
         public string Score { get; internal set; }
     } // end class
 }

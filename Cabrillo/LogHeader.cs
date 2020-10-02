@@ -150,6 +150,10 @@ namespace W6OP.ContestLogAnalyzer
         //    set { _EmailAddress = value; }
         //}
 
+        public string QTH { get; set; }
+
+        public string Country { get; set; }
+
         private string _Location;
         public string Location
         {

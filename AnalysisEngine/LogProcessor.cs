@@ -173,6 +173,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
 
                     contestLogs.Add(contestLog);
+
                     OnProgressUpdate?.Invoke(contestLogs.Count);
                 }
             }
@@ -895,6 +896,8 @@ namespace W6OP.ContestLogAnalyzer
                     LogFileName = logFileName,
                     Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
                     Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: UNKNOWN").First().Substring(9).Trim(),
+                    QTH = lineList.Where(l => l.StartsWith("ADDRESS-STATE-PROVINCE:")).DefaultIfEmpty("ADDRESS-STATE-PROVINCE: ").First().Substring(23).Trim(),
+                    Country = lineList.Where(l => l.StartsWith("ADDRESS-COUNTRY:")).DefaultIfEmpty("ADDRESS-COUNTRY: ").First().Substring(16).Trim(),
                     OperatorCallSign = ParseCallSign(CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN"), out prefix, out suffix).ToUpper(),
                     OperatorPrefix = prefix,
                     OperatorSuffix = suffix,

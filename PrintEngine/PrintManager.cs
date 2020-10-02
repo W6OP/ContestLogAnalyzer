@@ -123,9 +123,15 @@ namespace W6OP.PrintEngine
 
         /// <summary>
         /// Print the final score CSV file for the HQP.
+        /// LogOwner,Operator,Station,Entity,QSOCount,Multipliers,Points,Score
+        /// KH6TU,KH6TU,KH6TU,MAU,1586,139,0,522858
+        /// AH6KO,AH6KO,AH6KO,HIL,733,65,0,202308
+        /// 
+        /// LogOwner,Operator,Station,Entity,QSOCount,Multipliers,Points,Score
+        /// Call QTH PH CW  DG QSOs    HI mults    Score
         /// </summary>
         /// <param name="contestLogs"></param>
-        public void PrintHQPCsvFile(List<ContestLog> contestLogs)
+        public void PrintHQPCsvFileEx(List<ContestLog> contestLogs)
         {
             HQPScoreList scoreList;
             List<HQPScoreList> scores = new List<HQPScoreList>();
@@ -135,6 +141,8 @@ namespace W6OP.PrintEngine
             string fileName = null;
             string year = DateTime.Now.ToString("yyyy");
 
+            string qth;
+
             fileName = year + ContestDescription + ".csv";
             reportFileName = Path.Combine(ScoreFolder, fileName);
 
@@ -143,21 +151,29 @@ namespace W6OP.PrintEngine
             for (int i = 0; i < contestLogs.Count; i++)
             {
                 contestlog = contestLogs[i];
-                if (contestlog != null)
+
+                if (contestlog.LogHeader.QTH != "")
                 {
-                   
+                    qth = contestlog.LogHeader.QTH;
+                } else
+                {
+                    qth = contestlog.LogHeader.Country;
+                }
+
+                    if (contestlog != null)
+                {
                     // only look at valid QSOs
                     validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
 
                     scoreList = new HQPScoreList
                     {
-                        LogOwner = contestlog.LogOwner,
-                        Operator = contestlog.Operator,
-                        Station = contestlog.Station,
-                        Entity = contestlog.QSOCollection[0].OperatorEntity,
-                        QSOCount = validQsoList.Count.ToString(),
-                        Multipliers = contestlog.Multipliers.ToString(),
-                        Points = contestlog.TotalPoints.ToString(),
+                        Call = contestlog.LogOwner,
+                        QTH = qth, // contestlog.LogHeader.QTH, 
+                        PH = contestlog.PhoneTotal.ToString(), // Phone total
+                        CW = contestlog.CWTotal.ToString(), // CW total
+                        DG = contestlog.DIGITotal.ToString(), // DIGI total
+                        QSOs = validQsoList.Count.ToString(),
+                        HI_Mults = contestlog.HQPMultipliers.ToString(), 
                         Score = contestlog.ActualScore.ToString(),
                     };
 
@@ -171,6 +187,63 @@ namespace W6OP.PrintEngine
                 csv.WriteRecords(scores);
             }
         }
+
+        /// <summary>
+        /// Print the final score CSV file for the HQP.
+        /// /// LogOwner,Operator,Station,Entity,QSOCount,Multipliers,Points,Score
+        /// KH6TU,KH6TU,KH6TU,MAU,1586,139,0,522858
+        /// AH6KO,AH6KO,AH6KO,HIL,733,65,0,202308
+        /// 
+        /// 
+        /// Call QTH PH CW  DG QSOs    HI mults    Score
+        /// </summary>
+        /// <param name="contestLogs"></param>
+        //public void PrintHQPCsvFile(List<ContestLog> contestLogs)
+        //{
+        //    HQPScoreList scoreList;
+        //    List<HQPScoreList> scores = new List<HQPScoreList>();
+        //    ContestLog contestlog;
+        //    List<QSO> validQsoList;
+        //    string reportFileName = null;
+        //    string fileName = null;
+        //    string year = DateTime.Now.ToString("yyyy");
+
+        //    fileName = year + ContestDescription + ".csv";
+        //    reportFileName = Path.Combine(ScoreFolder, fileName);
+
+        //    contestLogs = contestLogs.OrderByDescending(o => (int)o.ActualScore).ToList();
+
+        //    for (int i = 0; i < contestLogs.Count; i++)
+        //    {
+        //        contestlog = contestLogs[i];
+        //        if (contestlog != null)
+        //        {
+                   
+        //            // only look at valid QSOs
+        //            validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
+
+        //            scoreList = new HQPScoreList
+        //            {
+        //                LogOwner = contestlog.LogOwner,
+        //                Operator = contestlog.Operator,
+        //                Station = contestlog.Station,
+        //                Entity = contestlog.QSOCollection[0].OperatorEntity,
+        //                QSOCount = validQsoList.Count.ToString(),
+        //                Multipliers = contestlog.Multipliers.ToString(),
+        //                Points = contestlog.TotalPoints.ToString(),
+        //                Score = contestlog.ActualScore.ToString(),
+        //            };
+
+        //            scores.Add(scoreList);
+        //        }
+        //    }
+
+        //    using (var writer = new StreamWriter(reportFileName))
+        //    using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+        //    {
+        //        csv.WriteRecords(scores);
+        //    }
+        //}
 
         #endregion
 

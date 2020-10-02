@@ -141,6 +141,10 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        public int PhoneTotal { get; set; }
+        public int CWTotal { get; set; }
+        public int DIGITotal { get; set; }
+
         #endregion
 
         #region Points and Multipliers

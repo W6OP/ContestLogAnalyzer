@@ -80,6 +80,19 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     call = contestLog.LogOwner;
 
+
+                    if (contestLog.LogOwner == "WH7W")
+                    {
+                        for (int i = 0; i < contestLog.QSOCollection.Count; i++)
+                        {
+                            if (contestLog.QSOCollection[i].ContactCall == "W6LFB")
+                            {
+                                var a = contestLog.QSOCollection[i].ContactCall;
+                            }
+                        }
+                    }
+
+
                     progress++;
 
                     if (!contestLog.IsCheckLog && contestLog.IsValidLog)
@@ -660,6 +673,10 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                                 {
                                     entity = hitList[0].Province; // this gives State, need state code
                                 }
+                                else if (Provinces.Contains(qso.ContactEntity.ToUpper()))
+                                {
+                                    entity = hitList[0].Province; // this gives State, need state code
+                                }
                                 else
                                 {
                                     if (States.Contains(qso.ContactEntity.ToUpper()))
@@ -985,6 +1002,11 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
             QSO matchQSO = null;
             RejectReason reason = RejectReason.None;
 
+            //if (qso.ContactCall == "W6LFB")
+            //{
+            //    var a = 1;
+            //}
+
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
@@ -993,13 +1015,17 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                     break;
                 case ContestName.HQP:
                     matchQSO = (QSO)matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall != qso.OperatorCall &&
-                        q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5); // 
+                        q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 1); // SHOULD I REDUCE THIS ??
                     break;
             }
 
             if (matchQSO != null) // this QSO is not in the other log
             {
-                // determine which guy is at fault
+                if (matchQSO.ContactCall == "W6LFB")
+                {
+                    var a = 1;
+                }
+                //determine which guy is at fault
                 if (qso.ContactCall != matchQSO.OperatorCall)
                 {
                     qso.MatchingQSO = matchQSO;
