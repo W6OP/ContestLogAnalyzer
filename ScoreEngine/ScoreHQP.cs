@@ -36,10 +36,6 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
-                    // I don't think this is necessary right now
-                    // not unless I have multiple reject reasons
-                    //ValidateDuplicates(contestLog);
-
                     // first separate Hawaii and Non Hawaii
                     switch (contestLog.IsHQPEntity)
                     {

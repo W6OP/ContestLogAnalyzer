@@ -173,8 +173,8 @@ namespace W6OP.PrintEngine
                         CW = contestlog.CWTotal.ToString(), // CW total
                         DG = contestlog.DIGITotal.ToString(), // DIGI total
                         QSOs = validQsoList.Count.ToString(),
-                        Mults = (contestlog.HQPMultipliers + contestlog.NonHQPMultipliers).ToString(), 
-                        Score = contestlog.ActualScore.ToString(),
+                        Mults = (contestlog.HQPMultipliers + contestlog.NonHQPMultipliers).ToString(),
+                        Score = (contestlog.Multipliers * contestlog.TotalPoints).ToString(), // contestlog.ActualScore.ToString(),
                     };
 
                     scores.Add(scoreList);
