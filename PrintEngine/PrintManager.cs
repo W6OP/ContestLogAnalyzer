@@ -173,7 +173,7 @@ namespace W6OP.PrintEngine
                         CW = contestlog.CWTotal.ToString(), // CW total
                         DG = contestlog.DIGITotal.ToString(), // DIGI total
                         QSOs = validQsoList.Count.ToString(),
-                        HI_Mults = contestlog.HQPMultipliers.ToString(), 
+                        Mults = (contestlog.HQPMultipliers + contestlog.NonHQPMultipliers).ToString(), 
                         Score = contestlog.ActualScore.ToString(),
                     };
 
@@ -602,6 +602,7 @@ namespace W6OP.PrintEngine
             int totalValidDigiQSOS = 0;
             int multiplierCount = 0;
             int score = 0;
+            int totalPoints;
 
             totalQSOs = contestLog.QSOCollection.Count;
             totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
@@ -616,7 +617,10 @@ namespace W6OP.PrintEngine
             totalValidDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "RY").ToList().Count();
 
             multiplierCount = contestLog.Multipliers;
-            score = contestLog.ActualScore;
+            totalPoints = contestLog.TotalPoints;
+
+            // this should really be in Scoring but it doesn't work there
+            score = multiplierCount * totalPoints; //contestLog.ActualScore;
 
             sw.WriteLine(message);
 
@@ -628,43 +632,43 @@ namespace W6OP.PrintEngine
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    message = String.Format(" Final:   Valid QSOs: {0}   Mults: {1}   Score: {2}", totalValidQSOs.ToString(), multiplierCount.ToString(), score.ToString());
+                    message = string.Format(" Final:   Valid QSOs: {0}   Mults: {1}   Score: {2}", totalValidQSOs.ToString(), multiplierCount.ToString(), score.ToString());
                     sw.WriteLine(message);
                     break;
                 case ContestName.HQP:
                     if (contestLog.IsHQPEntity)
                     {
-                        message = String.Format(" Total QSOs: {0}   Valid QSOs: {1}  Invalid QSOs: {2}", totalQSOs.ToString(), totalValidQSOs.ToString(), totalInvalidQSOs.ToString());
+                        message = string.Format(" Total QSOs: {0}   Valid QSOs: {1}  Invalid QSOs: {2}", totalQSOs.ToString(), totalValidQSOs.ToString(), totalInvalidQSOs.ToString());
                         sw.WriteLine(message);
 
-                        message = String.Format(" Valid PH: {0}({1})  Valid CW: {2}({3})   Valid RY: {4}({5})", totalValidPhoneQSOS.ToString(), totalPhoneQSOS.ToString(), totalValidCWQSOs.ToString(), totalCWQSOs.ToString(), totalValidDigiQSOS.ToString(), totalDigiQSOS.ToString());
+                        message = string.Format(" Valid PH: {0}({1})  Valid CW: {2}({3})   Valid RY: {4}({5})", totalValidPhoneQSOS.ToString(), totalPhoneQSOS.ToString(), totalValidCWQSOs.ToString(), totalCWQSOs.ToString(), totalValidDigiQSOS.ToString(), totalDigiQSOS.ToString());
                         sw.WriteLine(message);
 
-                        message = String.Format(" HQP Mults: {0}   NonHQP Mults: {1}   Total Mults: {2}", contestLog.HQPMultipliers.ToString(), contestLog.NonHQPMultipliers.ToString(), multiplierCount.ToString());
+                        message = string.Format(" HQP Mults: {0}   NonHQP Mults: {1}   Total Mults: {2}", contestLog.HQPMultipliers.ToString(), contestLog.NonHQPMultipliers.ToString(), multiplierCount.ToString());
                         sw.WriteLine(message);
 
-                        message = String.Format(" Points: {0}  Score: {1}", contestLog.TotalPoints.ToString(), score.ToString());
+                        message = string.Format(" Points: {0}  Score: {1}", totalPoints.ToString(), score.ToString());
                         sw.WriteLine(message);
                     }
                     else
                     {
-                        message = String.Format(" Final:   Valid QSOs: {0}  Invalid QSOs: {1}",
+                        message = string.Format(" Final:   Valid QSOs: {0}  Invalid QSOs: {1}",
                        totalValidQSOs.ToString(), totalInvalidQSOs.ToString());
                         sw.WriteLine(message);
 
-                        message = String.Format(" Valid PH: {0}({1})  Valid CW: {2}({3})   Valid RY: {4}({5})", totalValidPhoneQSOS.ToString(), totalPhoneQSOS.ToString(), totalValidCWQSOs.ToString(), totalCWQSOs.ToString(), totalValidDigiQSOS.ToString(), totalDigiQSOS.ToString());
+                        message = string.Format(" Valid PH: {0}({1})  Valid CW: {2}({3})   Valid RY: {4}({5})", totalValidPhoneQSOS.ToString(), totalPhoneQSOS.ToString(), totalValidCWQSOs.ToString(), totalCWQSOs.ToString(), totalValidDigiQSOS.ToString(), totalDigiQSOS.ToString());
                         sw.WriteLine(message);
 
-                        message = String.Format(" HQP Mults: {0} Total Mults: {1}", contestLog.HQPMultipliers.ToString(), multiplierCount.ToString());
+                        message = string.Format(" HQP Mults: {0} Total Mults: {1}", contestLog.HQPMultipliers.ToString(), multiplierCount.ToString());
                         sw.WriteLine(message);
 
-                        message = String.Format(" Points: {0}  Score: {1}", contestLog.TotalPoints.ToString(), score.ToString());
+                        message = string.Format(" Points: {0}  Score: {1}", totalPoints.ToString(), score.ToString());
                         sw.WriteLine(message);
                     }
                     break;
             }
 
-            message = String.Format(" Category:   {0}   Power: {1} ", contestLog.LogHeader.OperatorCategory, contestLog.LogHeader.Power);
+            message = string.Format(" Category:   {0}   Power: {1} ", contestLog.LogHeader.OperatorCategory, contestLog.LogHeader.Power);
             sw.WriteLine(message);
 
             sw.WriteLine("");

@@ -475,6 +475,10 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                     break;
             }
 
+            /*
+                QSO: 14039 CW 2020-08-22 2226 AH6KO 599 HIL NS6T 599 AL
+                QSO: 14039 CW 2020-08-22 2226 NH6T 599 AL AH6KO 599 HIL
+             */
             if (matchingQSOs != null && matchingQSOs.Count > 0)
             {
                 if (matchingQSOs.Count == 1)
@@ -1007,6 +1011,11 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
             //    var a = 1;
             //}
 
+            /*
+                QSO: 14039 CW 2020-08-22 2226 AH6KO 599 HIL NS6T 599 AL
+                QSO: 14039 CW 2020-08-22 2226 NH6T 599 AL AH6KO 599 HIL
+             */
+
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
@@ -1025,6 +1034,11 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                 {
                     var a = 1;
                 }
+
+                /*
+                QSO: 14039 CW 2020-08-22 2226 AH6KO 599 HIL NS6T 599 AL
+                QSO: 14039 CW 2020-08-22 2226 NH6T 599 AL AH6KO 599 HIL
+             */
                 //determine which guy is at fault
                 if (qso.ContactCall != matchQSO.OperatorCall)
                 {

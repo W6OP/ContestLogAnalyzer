@@ -879,7 +879,8 @@ namespace W6OP.ContestLogAnalyzer
                 item.SubItems.Add(validQsoCount.ToString());
                 item.SubItems.Add(contestLog.Multipliers.ToString());
                 item.SubItems.Add(contestLog.ClaimedScore.ToString());
-                item.SubItems.Add(contestLog.ActualScore.ToString());
+                //item.SubItems.Add(contestLog.ActualScore.ToString());
+                item.SubItems.Add((contestLog.Multipliers * contestLog.TotalPoints).ToString());
                 ListViewScore.Items.Insert(0, item);
             }
         }

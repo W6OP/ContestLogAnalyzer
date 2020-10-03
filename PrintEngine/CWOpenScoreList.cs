@@ -44,7 +44,7 @@ namespace W6OP.PrintEngine
         public string CW { get; internal set; }
         public string DG { get; internal set; }
         public string QSOs { get; internal set; }
-        public string HI_Mults { get; internal set; }
+        public string Mults { get; internal set; }
 
        
         //public string LogOwner { get; internal set; }

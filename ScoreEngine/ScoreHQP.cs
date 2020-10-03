@@ -117,7 +117,7 @@ namespace W6OP.ContestLogAnalyzer
             contestLog.Multipliers = 0;
             contestLog.HQPMultipliers = 0;
             contestLog.NonHQPMultipliers = 0;
-            contestLog.TotalPoints = 0;
+            //contestLog.TotalPoints = 0;
 
             var query = qsoList.GroupBy(x => new { x.ContactEntity, x.ContactCountry, x.Status })
             .Where(g => g.Count() >= 1)
@@ -175,6 +175,7 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             contestLog.Multipliers = contestLog.NonHQPMultipliers + contestLog.HQPMultipliers;
+            //contestLog.ActualScore = contestLog.Multipliers * contestLog.TotalPoints;
         }
 
         /// <summary>
