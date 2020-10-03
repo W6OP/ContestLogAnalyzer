@@ -130,16 +130,7 @@ namespace W6OP.ContestLogAnalyzer
         public int ClaimedScore { get; set; }
 
         public int ActualScore { get; set; }
-
-        private int _Multipliers;
-        public int Multipliers
-        {
-            get { return _Multipliers; }
-            set 
-            { 
-                _Multipliers = value;
-            }
-        }
+        public int Multipliers { get; set; }
 
         public int PhoneTotal { get; set; }
         public int CWTotal { get; set; }

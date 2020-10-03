@@ -173,8 +173,8 @@ namespace W6OP.PrintEngine
                         CW = contestlog.CWTotal.ToString(), // CW total
                         DG = contestlog.DIGITotal.ToString(), // DIGI total
                         QSOs = validQsoList.Count.ToString(),
-                        Mults = (contestlog.HQPMultipliers + contestlog.NonHQPMultipliers).ToString(),
-                        Score = (contestlog.Multipliers * contestlog.TotalPoints).ToString(), // contestlog.ActualScore.ToString(),
+                        Mults = contestlog.Multipliers.ToString(),
+                        Score = contestlog.ActualScore.ToString(),
                     };
 
                     scores.Add(scoreList);
@@ -293,7 +293,7 @@ namespace W6OP.PrintEngine
 
                     sw.WriteLine("");
 
-                    if (!String.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
+                    if (!string.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
                     {
                         sw.WriteLine(contestLog.LogHeader.SoapBox);
                         sw.WriteLine("");
@@ -541,7 +541,7 @@ namespace W6OP.PrintEngine
                             
                             sw.WriteLine("");
 
-                            if (!String.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
+                            if (!string.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
                             {
                                 sw.WriteLine(contestLog.LogHeader.SoapBox);
                                 sw.WriteLine("");
