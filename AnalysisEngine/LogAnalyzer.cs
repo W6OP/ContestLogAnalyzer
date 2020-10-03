@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
@@ -34,12 +36,10 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Dictionary of all calls in all the logs as keys
         /// the values are a list of all logs those calls are in
+        /// this almost quadruples lookup performance
         /// </summary>
         public Dictionary<string, List<ContestLog>> CallDictionary;
-        //private Dictionary<string, string> stateCodes = new Dictionary<string, string>(){
-        //    {"AL", "Alabama"},{"AZ", "Arizona"},{"AR", "Arkansas"},{"CA", "California"},{"CO", "Colorado"}, {"CT", "Connecticut"},{"AZ", "Arizona"},{"AR", "Arkansas"},{"CA", "California"},{"CO", "Colorado"}
-        //};
-
+       
         /// <summary>
         /// Default constructor.
         /// </summary>
@@ -112,7 +112,6 @@ namespace W6OP.ContestLogAnalyzer
                                 MarkIncorrectSentEntity(qsoList, mostUsedOperatorEntity[0]);
                                 break;
                         }
-
 
                         MatchQSOs(qsoList, contestLogList, call);
 
@@ -258,15 +257,8 @@ namespace W6OP.ContestLogAnalyzer
             string dxEntity = null;
             int receivedSerialNumber = 0;
 
-
-            //int testCount = 0;
-
             foreach (QSO qso in qsoList)
             {
-                /*
-                 * The entity is incorrect - BC --> British Columbia
-QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
-                 */
                 qsoDateTime = qso.QSODateTime;
                 band = qso.Band;
                 mode = qso.Mode;
@@ -276,9 +268,17 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                 receivedSerialNumber = qso.ReceivedSerialNumber;
                 tempLog = null;
 
-                if (qso.Status == QSOStatus.InvalidQSO && qso.GetRejectReasons().Count > 0)
+                //if (qso.Status == QSOStatus.InvalidQSO && qso.GetRejectReasons().Count > 0)
+                //{
+                //    if (qso.GetRejectReasons().ContainsKey(RejectReason.InvalidCall))
+                //    {
+                //        continue;
+                //    }
+                //}
+
+                if (qso.Status == QSOStatus.InvalidQSO && qso.ReasonRejected != RejectReason.None)
                 {
-                    if (qso.GetRejectReasons().ContainsKey(RejectReason.InvalidCall))
+                    if (qso.ReasonRejected == RejectReason.InvalidCall)
                     {
                         continue;
                     }
@@ -290,8 +290,9 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                     {
                         // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
                         qso.Status = QSOStatus.InvalidQSO;
-                        qso.GetRejectReasons().Clear();
-                        qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                        //qso.GetRejectReasons().Clear();
+                        //qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                        qso.ReasonRejected = RejectReason.NotCounted;
                         continue;
                     }
                 }
@@ -300,8 +301,9 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                 if (qso.IsXQSO)
                 {
                     qso.Status = QSOStatus.InvalidQSO;
-                    qso.GetRejectReasons().Clear();
-                    qso.GetRejectReasons().Add(RejectReason.Marked_XQSO, EnumHelper.GetDescription(RejectReason.Marked_XQSO));
+                    //qso.GetRejectReasons().Clear();
+                    //qso.GetRejectReasons().Add(RejectReason.Marked_XQSO, EnumHelper.GetDescription(RejectReason.Marked_XQSO));
+                    qso.ReasonRejected = RejectReason.Marked_XQSO;
                     continue;
                 }
 
@@ -360,8 +362,9 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                         if (reason != RejectReason.InvalidTime && reason != RejectReason.None)
                         {
                             qso.Status = QSOStatus.InvalidQSO;
-                            qso.GetRejectReasons().Clear();
-                            qso.GetRejectReasons().Add(reason, EnumHelper.GetDescription(reason));
+                            //qso.GetRejectReasons().Clear();
+                            //qso.GetRejectReasons().Add(reason, EnumHelper.GetDescription(reason));
+                            qso.ReasonRejected = reason;
                         }
                     }
                 }
@@ -381,19 +384,21 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                         if (!qso.HasMatchingQso)
                         {
                             qso.Status = QSOStatus.ReviewQSO;
-                            qso.GetRejectReasons().Clear();
+                            //qso.GetRejectReasons().Clear();
                             if (ActiveContest == ContestName.CW_OPEN)
                             {
                                 // give them the point anyway
                                 qso.IsMultiplier = true;
-                                qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                                //qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                                qso.ReasonRejected = RejectReason.NoQSO;
                             }
 
                             if (ActiveContest == ContestName.HQP)
                             {
                                 if (qso.ContactCountry != HQPUSALiteral && qso.ContactCountry != HQPCanadaLiteral && qso.ContactCountry != HQPHawaiiLiteral && qso.ContactCountry != HQPAlaskaLiteral)
                                 {
-                                    qso.GetRejectReasons().Clear();
+                                    //qso.GetRejectReasons().Clear();
+                                    qso.ReasonRejected = RejectReason.None;
                                     qso.Status = QSOStatus.ValidQSO;
                                 }
                                 else
@@ -407,7 +412,8 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                                     }
                                     else
                                     {
-                                        qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
+                                        qso.ReasonRejected = RejectReason.NoQSO;
+                                        //qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
                                     }
                                 }
                             }
@@ -422,8 +428,9 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                             else 
                             { 
                                 qso.Status = QSOStatus.InvalidQSO;
-                                qso.GetRejectReasons().Clear();
-                                qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+                                //qso.GetRejectReasons().Clear();
+                                //qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+                                qso.ReasonRejected = RejectReason.BustedCallSign;
                             }
                         }
                     }
@@ -516,8 +523,9 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                     qso.Status = QSOStatus.InvalidQSO;
                     qso.CallIsBusted = true;
                     qso.BustedCallGuess = uniqueResults[0];
-                    qso.GetRejectReasons().Clear();
-                    qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+                    //qso.GetRejectReasons().Clear();
+                    //qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+                    qso.ReasonRejected = RejectReason.BustedCallSign;
 
                     return true;
                 }
@@ -617,6 +625,8 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
 
             // if the above counts are different then someone is wrong
             matchCount = matchingQSOsGeneral.Count - matchingQSOSpecific.Count;
+
+            int test = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).Count();
 
             // if no mismatches then assume it is correct
             if (matchCount == 0)
@@ -901,8 +911,9 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
 
                 if (isMatchQSO)
                 {
-                    matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
-                    matchQSO.GetRejectReasons().Add(RejectReason.Band, EnumHelper.GetDescription(RejectReason.Band));
+                    // matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
+                    //matchQSO.GetRejectReasons().Add(RejectReason.Band, EnumHelper.GetDescription(RejectReason.Band));
+                    matchQSO.ReasonRejected = RejectReason.Band;
                 }
                 else
                 {
@@ -942,8 +953,9 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
 
                 if (isMatchQSO)
                 {
-                    matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
-                    matchQSO.GetRejectReasons().Add(RejectReason.Mode, EnumHelper.GetDescription(RejectReason.Mode));
+                    //matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
+                    //matchQSO.GetRejectReasons().Add(RejectReason.Mode, EnumHelper.GetDescription(RejectReason.Mode));
+                    matchQSO.ReasonRejected = RejectReason.Mode;
                 }
                 else
                 {
@@ -1041,8 +1053,9 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                 {
                     matchQSO.HasMatchingQso = true;
                     matchQSO.MatchingQSO = qso;
-                    matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
-                    matchQSO.GetRejectReasons().Add(RejectReason.NoQSOMatch, EnumHelper.GetDescription(RejectReason.NoQSOMatch));
+                    //matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
+                    //matchQSO.GetRejectReasons().Add(RejectReason.NoQSOMatch, EnumHelper.GetDescription(RejectReason.NoQSOMatch));
+                    matchQSO.ReasonRejected = RejectReason.NoQSOMatch;
                 }
             }
 

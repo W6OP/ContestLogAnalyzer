@@ -34,13 +34,13 @@ namespace W6OP.ContestLogAnalyzer
 
             foreach (var field in type.GetFields())
             {
-                var attribute = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
+                // var attribute = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
                 var cwopenContest = Attribute.GetCustomAttribute(field, typeof(CWOPENContestDescription)) as CWOPENContestDescription;
                 var hqpContest = Attribute.GetCustomAttribute(field, typeof(HQPContestDescription)) as HQPContestDescription;
 
                 if (cwopenContest == null && hqpContest == null)
                 {
-                    if (attribute != null)
+                    if (Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) is DescriptionAttribute attribute)
                     {
                         // maybe need to look at the TYPE and then do indexOf or something
                         if (attribute.Description == description)

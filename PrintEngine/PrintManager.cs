@@ -331,90 +331,188 @@ namespace W6OP.PrintEngine
                                 }
                             }
 
-                            // should only be one reason so lets change the collection type
-                            foreach (var key in qso.GetRejectReasons().Keys)
+                            switch (qso.ReasonRejected)
                             {
-                                if (key == RejectReason.OperatorName)
-                                {
+                                case RejectReason.OperatorName:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
                                     }
                                     else
                                     {
-                                        value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectName;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectName;
                                     }
-                                }
-                                else if (key == RejectReason.EntityName)
-                                {
-                                    if (qso.MatchingQSO != null)
-                                    {
-                                        value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
-                                    }
-                                    else
-                                    {
-                                        value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity;
-                                    }
-                                }
-                                else if (key == RejectReason.InvalidEntity)
-                                {
-                                    if (qso.MatchingQSO != null)
-                                    {
-                                        value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
-                                    }
-                                    else
-                                    {
-                                        value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity;
-                                    }
-                                }
-                                else if (key == RejectReason.SerialNumber)
-                                {
-                                    if (qso.MatchingQSO != null)
-                                    {
-                                        value = qso.GetRejectReasons()[key] + " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
-                                    }
-                                    else
-                                    {
-                                        value = qso.GetRejectReasons()[key];
-                                    }
-                                }
-                                else if (key == RejectReason.NotCounted)
-                                {
-                                    value = qso.GetRejectReasons()[key] + " - " + "Non Hawaiian Station";
                                     break;
-                                }
-                                else if (key == RejectReason.BustedCallSign || key == RejectReason.NoQSO)
-                                {
+                                case RejectReason.Band:
+                                    break;
+                                case RejectReason.Mode:
+                                    break;
+                                case RejectReason.NoQSOMatch:
+                                    break;
+                                case RejectReason.NoQSO:
+                                    break;
+                                case RejectReason.BustedCallSign:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = qso.GetRejectReasons()[key] + " - " + qso.ContactCall + " --> " + qso.MatchingQSO.OperatorCall;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.ContactCall + " --> " + qso.MatchingQSO.OperatorCall;
                                     }
                                     else
                                     {
-                                        value = qso.GetRejectReasons()[key] + " - " + qso.ContactCall + " --> " + qso.BustedCallGuess;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.ContactCall + " --> " + qso.BustedCallGuess;
                                         //value = qso.RejectReasons[key];
                                     }
-                                }
-                                else if (key == RejectReason.DuplicateQSO)
-                                {
-                                    message = null;
-
+                                    break;
+                                case RejectReason.SerialNumber:
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
+                                    }
+                                    else
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected);
+                                    }
+                                    break;
+                                case RejectReason.EntityName:
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
+                                    }
+                                    else
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntity;
+                                    }
+                                    break;
+                                case RejectReason.DuplicateQSO:
                                     if (qso.HasBeenPrinted == false)
                                     {
                                         message = "Duplicates ignored for scoring purposes:";
                                         sw.WriteLine(message);
 
-                                        message = null;
-
                                         PrintDuplicates(qso.DupeListLocation, sw);
                                         sw.WriteLine("");
                                     }
-                                }
-                                else
-                                {
-                                    value = qso.GetRejectReasons()[key];
-                                }
+
+                                    message = null;
+                                    break;
+                                case RejectReason.InvalidCall:
+                                    break;
+                                case RejectReason.InvalidTime:
+                                    break;
+                                case RejectReason.InvalidSession:
+                                    break;
+                                case RejectReason.InvalidEntity:
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
+                                    }
+                                    else
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntity;
+                                    }
+                                    break;
+                                case RejectReason.NotCounted:
+                                    value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + "Non Hawaiian Station";
+                                    break;
+                                case RejectReason.Marked_XQSO:
+                                    break;
+                                case RejectReason.MissingColumn:
+                                    break;
+                                case RejectReason.None:
+                                    break;
+                                default:
+                                    if (qso.ReasonRejected != RejectReason.None)
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected);
+                                    }
+                                    break;
                             }
+
+
+
+                            // should only be one reason so lets change the collection type
+                            //foreach (var key in qso.GetRejectReasons().Keys)
+                            //{
+                            //    if (key == RejectReason.OperatorName)
+                            //    {
+                            //        //if (qso.MatchingQSO != null)
+                            //        //{
+                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
+                            //        //}
+                            //        //else
+                            //        //{
+                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectName;
+                            //        //}
+                            //    }
+                            //    else if (key == RejectReason.EntityName)
+                            //    {
+                            //        //if (qso.MatchingQSO != null)
+                            //        //{
+                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
+                            //        //}
+                            //        //else
+                            //        //{
+                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity;
+                            //        //}
+                            //    }
+                            //    else if (key == RejectReason.InvalidEntity)
+                            //    {
+                            //        //if (qso.MatchingQSO != null)
+                            //        //{
+                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
+                            //        //}
+                            //        //else
+                            //        //{
+                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity;
+                            //        //}
+                            //    }
+                            //    else if (key == RejectReason.SerialNumber)
+                            //    {
+                            //        //if (qso.MatchingQSO != null)
+                            //        //{
+                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
+                            //        //}
+                            //        //else
+                            //        //{
+                            //        //    value = qso.GetRejectReasons()[key];
+                            //        //}
+                            //    }
+                            //    else if (key == RejectReason.NotCounted)
+                            //    {
+                            //        //value = qso.GetRejectReasons()[key] + " - " + "Non Hawaiian Station";
+                            //        break;
+                            //    }
+                            //    else if (key == RejectReason.BustedCallSign || key == RejectReason.NoQSO)
+                            //    {
+                            //        //if (qso.MatchingQSO != null)
+                            //        //{
+                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.ContactCall + " --> " + qso.MatchingQSO.OperatorCall;
+                            //        //}
+                            //        //else
+                            //        //{
+                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.ContactCall + " --> " + qso.BustedCallGuess;
+                            //        //    //value = qso.RejectReasons[key];
+                            //        //}
+                            //    }
+                            //    else if (key == RejectReason.DuplicateQSO)
+                            //    {
+                            //        //message = null;
+
+                            //        //if (qso.HasBeenPrinted == false)
+                            //        //{
+                            //        //    message = "Duplicates ignored for scoring purposes:";
+                            //        //    sw.WriteLine(message);
+
+                            //        //    message = null;
+
+                            //        //    PrintDuplicates(qso.DupeListLocation, sw);
+                            //        //    sw.WriteLine("");
+                            //        //}
+                            //    }
+                            //    else
+                            //    {
+                            //        value = qso.GetRejectReasons()[key];
+                            //    }
+                            //}
 
                             if (message != null)
                             {
@@ -501,7 +599,7 @@ namespace W6OP.PrintEngine
             string reportFileName = null;
             string message = null;
             string callsign = null;
-            var value = "";
+            //var value = "";
             int session = 1;
 
             reportFileName = Path.Combine(ReviewFolder, "Review.rpt");
@@ -562,12 +660,12 @@ namespace W6OP.PrintEngine
                                 }
 
                                 // should only be one reason so lets change the collection type
-                                foreach (var key in qso.GetRejectReasons().Keys)
-                                {
-                                    value = qso.GetRejectReasons()[key];
-                                }
+                                //foreach (var key in qso.GetRejectReasons().Keys)
+                                //{
+                                 //   value = EnumHelper.GetDescription(qso.ReasonRejected);
+                                //}
 
-                                sw.WriteLine(message + "\t" + value.ToString());
+                                sw.WriteLine(message + "\t" + EnumHelper.GetDescription(qso.ReasonRejected));
                                 sw.WriteLine("");
                             }
                             sw.WriteLine("---------------------------------------");

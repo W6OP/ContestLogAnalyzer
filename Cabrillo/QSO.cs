@@ -36,9 +36,11 @@ namespace W6OP.ContestLogAnalyzer
         /// A collection of reasons a log was rejected.
         /// Only one reason is ever used so this can be changed to a single item.
         /// </summary>
-        private Dictionary<RejectReason, string> rejectReasons = new Dictionary<RejectReason, string>();
-        public Dictionary<RejectReason, string> GetRejectReasons()
-        { return rejectReasons; }
+       // private Dictionary<RejectReason, string> rejectReasons = new Dictionary<RejectReason, string>();
+        //public Dictionary<RejectReason, string> GetRejectReasons()
+        //{ return rejectReasons; }
+
+        public RejectReason ReasonRejected { get; set; }
 
         /// <summary>
         /// The status of the QSO.
@@ -90,23 +92,29 @@ namespace W6OP.ContestLogAnalyzer
                 if (value == true)
                 {
                     _QSOIsDupe = true;
-                    if (!rejectReasons.ContainsKey(RejectReason.DuplicateQSO))
-                    {
-                        rejectReasons.Add(RejectReason.DuplicateQSO, EnumHelper.GetDescription(RejectReason.DuplicateQSO));
-                        _Status = QSOStatus.InvalidQSO;
-                    }
+                    ReasonRejected = RejectReason.DuplicateQSO;
+                    _Status = QSOStatus.InvalidQSO;
+                    //if (!rejectReasons.ContainsKey(RejectReason.DuplicateQSO))
+                    //{
+                    //    rejectReasons.Add(RejectReason.DuplicateQSO, EnumHelper.GetDescription(RejectReason.DuplicateQSO));
+
+                    //    _Status = QSOStatus.InvalidQSO;
+                    //}
                 }
                 else
                 {
-                    if (rejectReasons.ContainsKey(RejectReason.DuplicateQSO))
-                    {
-                        rejectReasons.Remove(RejectReason.DuplicateQSO);
-                        _QSOIsDupe = false;
-                        if (rejectReasons.Count == 0)
-                        {
-                            _Status = QSOStatus.ValidQSO;
-                        }
-                    }
+                    ReasonRejected = RejectReason.None;
+                    _QSOIsDupe = false;
+                    _Status = QSOStatus.ValidQSO;
+                    //if (rejectReasons.ContainsKey(RejectReason.DuplicateQSO))
+                    //{
+                    //    rejectReasons.Remove(RejectReason.DuplicateQSO);
+                    //    _QSOIsDupe = false;
+                    //    if (rejectReasons.Count == 0)
+                    //    {
+                    //        _Status = QSOStatus.ValidQSO;
+                    //    }
+                    //}
                 }
             }
         }
@@ -126,22 +134,26 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (value == true)
                 {
-                    if (!rejectReasons.ContainsKey(RejectReason.InvalidCall))
-                    {
-                        rejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
-                        _Status = QSOStatus.InvalidQSO;
-                    }
+                    ReasonRejected = RejectReason.InvalidCall;
+                    _Status = QSOStatus.InvalidQSO;
+                    //if (!rejectReasons.ContainsKey(RejectReason.InvalidCall))
+                    //{
+                    //    rejectReasons.Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    //    _Status = QSOStatus.InvalidQSO;
+                    //}
                 }
                 else
                 {
-                    if (rejectReasons.ContainsKey(RejectReason.InvalidCall))
-                    {
-                        rejectReasons.Remove(RejectReason.InvalidCall);
-                        if (rejectReasons.Count == 0)
-                        {
-                            _Status = QSOStatus.ValidQSO;
-                        }
-                    }
+                    ReasonRejected = RejectReason.None;
+                    _Status = QSOStatus.ValidQSO;
+                    //if (rejectReasons.ContainsKey(RejectReason.InvalidCall))
+                    //{
+                    //    rejectReasons.Remove(RejectReason.InvalidCall);
+                    //    if (rejectReasons.Count == 0)
+                    //    {
+                    //        _Status = QSOStatus.ValidQSO;
+                    //    }
+                    //}
                 }
             }
         }
@@ -156,22 +168,27 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (value == true)
                 {
-                    if (!rejectReasons.ContainsKey(RejectReason.BustedCallSign))
-                    {
-                        rejectReasons.Add(RejectReason.BustedCallSign, EnumHelper.GetDescription(RejectReason.BustedCallSign));
-                        _Status = QSOStatus.InvalidQSO;
-                    }
+                    ReasonRejected = RejectReason.BustedCallSign;
+                    _Status = QSOStatus.InvalidQSO;
+
+                    //if (!rejectReasons.ContainsKey(RejectReason.BustedCallSign))
+                    //{
+                    //    rejectReasons.Add(RejectReason.BustedCallSign, EnumHelper.GetDescription(RejectReason.BustedCallSign));
+                    //    _Status = QSOStatus.InvalidQSO;
+                    //}
                 }
                 else
                 {
-                    if (rejectReasons.ContainsKey(RejectReason.BustedCallSign))
-                    {
-                        rejectReasons.Remove(RejectReason.BustedCallSign);
-                        if (rejectReasons.Count == 0)
-                        {
-                            _Status = QSOStatus.ValidQSO;
-                        }
-                    }
+                    ReasonRejected = RejectReason.None;
+                    _Status = QSOStatus.ValidQSO;
+                    //if (rejectReasons.ContainsKey(RejectReason.BustedCallSign))
+                    //{
+                    //    rejectReasons.Remove(RejectReason.BustedCallSign);
+                    //    if (rejectReasons.Count == 0)
+                    //    {
+                    //        _Status = QSOStatus.ValidQSO;
+                    //    }
+                    //}
                 }
             }
         }
@@ -242,22 +259,26 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (value == true)
                 {
-                    if (!rejectReasons.ContainsKey(RejectReason.OperatorName))
-                    {
-                        rejectReasons.Add(RejectReason.OperatorName, EnumHelper.GetDescription(RejectReason.OperatorName));
-                        _Status = QSOStatus.InvalidQSO;
-                    }
+                    ReasonRejected = RejectReason.OperatorName;
+                    _Status = QSOStatus.InvalidQSO;
+                    //if (!rejectReasons.ContainsKey(RejectReason.OperatorName))
+                    //{
+                    //    rejectReasons.Add(RejectReason.OperatorName, EnumHelper.GetDescription(RejectReason.OperatorName));
+                    //    _Status = QSOStatus.InvalidQSO;
+                    //}
                 }
                 else
                 {
-                    if (rejectReasons.ContainsKey(RejectReason.OperatorName))
-                    {
-                        rejectReasons.Remove(RejectReason.OperatorName);
-                        if (rejectReasons.Count == 0)
-                        {
-                            _Status = QSOStatus.ValidQSO;
-                        }
-                    }
+                    ReasonRejected = RejectReason.None;
+                    _Status = QSOStatus.ValidQSO;
+                    //if (rejectReasons.ContainsKey(RejectReason.OperatorName))
+                    //{
+                    //    rejectReasons.Remove(RejectReason.OperatorName);
+                    //    if (rejectReasons.Count == 0)
+                    //    {
+                    //        _Status = QSOStatus.ValidQSO;
+                    //    }
+                    //}
                 }
             }
         }
@@ -400,22 +421,26 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (value == true)
                 {
-                    if (!rejectReasons.ContainsKey(RejectReason.SerialNumber))
-                    {
-                        rejectReasons.Add(RejectReason.SerialNumber, EnumHelper.GetDescription(RejectReason.SerialNumber));
-                        _Status = QSOStatus.InvalidQSO;
-                    }
+                    ReasonRejected = RejectReason.SerialNumber;
+                    _Status = QSOStatus.InvalidQSO;
+                    //if (!rejectReasons.ContainsKey(RejectReason.SerialNumber))
+                    //{
+                    //    rejectReasons.Add(RejectReason.SerialNumber, EnumHelper.GetDescription(RejectReason.SerialNumber));
+                    //    _Status = QSOStatus.InvalidQSO;
+                    //}
                 }
                 else
                 {
-                    if (rejectReasons.ContainsKey(RejectReason.SerialNumber))
-                    {
-                        rejectReasons.Remove(RejectReason.SerialNumber);
-                        if (rejectReasons.Count == 0)
-                        {
-                            _Status = QSOStatus.ValidQSO;
-                        }
-                    }
+                    ReasonRejected = RejectReason.None;
+                    _Status = QSOStatus.ValidQSO;
+                    //if (rejectReasons.ContainsKey(RejectReason.SerialNumber))
+                    //{
+                    //    rejectReasons.Remove(RejectReason.SerialNumber);
+                    //    if (rejectReasons.Count == 0)
+                    //    {
+                    //        _Status = QSOStatus.ValidQSO;
+                    //    }
+                    //}
                 }
             }
         }
@@ -434,22 +459,26 @@ namespace W6OP.ContestLogAnalyzer
                 _SessionIsValid = value;
                 if (value == false)
                 {
-                    if (!rejectReasons.ContainsKey(RejectReason.InvalidSession))
-                    {
-                        rejectReasons.Add(RejectReason.InvalidSession, EnumHelper.GetDescription(RejectReason.InvalidSession));
-                        _Status = QSOStatus.InvalidQSO;
-                    }
+                    ReasonRejected = RejectReason.InvalidSession;
+                    _Status = QSOStatus.InvalidQSO;
+                    //if (!rejectReasons.ContainsKey(RejectReason.InvalidSession))
+                    //{
+                    //    rejectReasons.Add(RejectReason.InvalidSession, EnumHelper.GetDescription(RejectReason.InvalidSession));
+                    //    _Status = QSOStatus.InvalidQSO;
+                    //}
                 }
                 else
                 {
-                    if (rejectReasons.ContainsKey(RejectReason.InvalidSession))
-                    {
-                        rejectReasons.Remove(RejectReason.InvalidSession);
-                        if (rejectReasons.Count == 0)
-                        {
-                            _Status = QSOStatus.ValidQSO;
-                        }
-                    }
+                    ReasonRejected = RejectReason.None;
+                    _Status = QSOStatus.ValidQSO;
+                    //if (rejectReasons.ContainsKey(RejectReason.InvalidSession))
+                    //{
+                    //    rejectReasons.Remove(RejectReason.InvalidSession);
+                    //    if (rejectReasons.Count == 0)
+                    //    {
+                    //        _Status = QSOStatus.ValidQSO;
+                    //    }
+                    //}
                 }
             }
         }
@@ -544,22 +573,26 @@ namespace W6OP.ContestLogAnalyzer
                 _EntityIsInValid = value;
                 if (value == true)
                 {
-                    if (!rejectReasons.ContainsKey(RejectReason.InvalidEntity))
-                    {
-                        rejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
-                        _Status = QSOStatus.InvalidQSO;
-                    }
+                    ReasonRejected = RejectReason.InvalidEntity;
+                    _Status = QSOStatus.InvalidQSO;
+                    //if (!rejectReasons.ContainsKey(RejectReason.InvalidEntity))
+                    //{
+                    //    rejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                    //    _Status = QSOStatus.InvalidQSO;
+                    //}
                 }
                 else
                 {
-                    if (rejectReasons.ContainsKey(RejectReason.InvalidEntity))
-                    {
-                        rejectReasons.Remove(RejectReason.InvalidEntity);
-                        if (rejectReasons.Count == 0)
-                        {
-                            _Status = QSOStatus.ValidQSO;
-                        }
-                    }
+                    ReasonRejected = RejectReason.None;
+                    _Status = QSOStatus.ValidQSO;
+                    //if (rejectReasons.ContainsKey(RejectReason.InvalidEntity))
+                    //{
+                    //    rejectReasons.Remove(RejectReason.InvalidEntity);
+                    //    if (rejectReasons.Count == 0)
+                    //    {
+                    //        _Status = QSOStatus.ValidQSO;
+                    //    }
+                    //}
                 }
             }
             get

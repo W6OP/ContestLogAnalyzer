@@ -179,7 +179,7 @@ namespace W6OP.ContestLogAnalyzer
                         SetHQPDXCCInformation(contestLog.QSOCollection, contestLog);
                     }
 
-                    // --------------------------------------------------------------------------------
+                    // -----------------Performance upgrade---------------------------------------------------------------
 
                     List<ContestLog> logOwners;
                     foreach (QSO qso in contestLog.QSOCollection)
@@ -441,8 +441,9 @@ namespace W6OP.ContestLogAnalyzer
                 if (!CheckForValidCallsign(qso.ContactCall))
                 {
                     qso.Status = QSOStatus.InvalidQSO;
-                    qso.GetRejectReasons().Clear();
-                    qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    //qso.GetRejectReasons().Clear();
+                    //qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    qso.ReasonRejected = RejectReason.InvalidCall;
                     continue;
                 }
 
@@ -455,8 +456,9 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     qso.EntityIsInValid = true;
                     qso.Status = QSOStatus.InvalidQSO;
-                    qso.GetRejectReasons().Clear();
-                    qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                    //qso.GetRejectReasons().Clear();
+                    //qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                    qso.ReasonRejected = RejectReason.NotCounted;
                     continue;
                 }
 
@@ -471,8 +473,9 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
                     qso.Status = QSOStatus.InvalidQSO;
-                    qso.GetRejectReasons().Clear();
-                    qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                    //qso.GetRejectReasons().Clear();
+                    //qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
+                    qso.ReasonRejected = RejectReason.NotCounted;
                 }
             }
         }
@@ -484,8 +487,9 @@ namespace W6OP.ContestLogAnalyzer
                 if (!CheckForValidCallsign(qso.ContactCall))
                 {
                     qso.Status = QSOStatus.InvalidQSO;
-                    qso.GetRejectReasons().Clear();
-                    qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    //qso.GetRejectReasons().Clear();
+                    //qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
+                    qso.ReasonRejected = RejectReason.InvalidCall;
                     continue;
                 }
 
@@ -531,8 +535,9 @@ namespace W6OP.ContestLogAnalyzer
                         else
                         {
                             qso.Status = QSOStatus.InvalidQSO;
-                            qso.GetRejectReasons().Clear();
-                            qso.GetRejectReasons().Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                            //qso.GetRejectReasons().Clear();
+                            //qso.GetRejectReasons().Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                            qso.ReasonRejected = RejectReason.InvalidEntity;
                         }
                     }
                     else
@@ -548,8 +553,9 @@ namespace W6OP.ContestLogAnalyzer
                         else
                         {
                             qso.Status = QSOStatus.InvalidQSO;
-                            qso.GetRejectReasons().Clear();
-                            qso.GetRejectReasons().Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                            //qso.GetRejectReasons().Clear();
+                            //qso.GetRejectReasons().Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
+                            qso.ReasonRejected = RejectReason.InvalidEntity;
                         }
                     }
                     break;
@@ -568,15 +574,17 @@ namespace W6OP.ContestLogAnalyzer
                         else
                         {
                             qso.Status = QSOStatus.InvalidQSO;
-                            qso.GetRejectReasons().Clear();
-                            qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                            //qso.GetRejectReasons().Clear();
+                            //qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                            qso.ReasonRejected = RejectReason.EntityName;
                         }
                     }
                     else
                     {
                         qso.Status = QSOStatus.InvalidQSO;
-                        qso.GetRejectReasons().Clear();
-                        qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                        //qso.GetRejectReasons().Clear();
+                        //qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                        qso.ReasonRejected = RejectReason.EntityName;
                     }
                     break;
                 case 4:
@@ -590,15 +598,17 @@ namespace W6OP.ContestLogAnalyzer
                         else
                         {
                             qso.Status = QSOStatus.InvalidQSO;
-                            qso.GetRejectReasons().Clear();
-                            qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                            //qso.GetRejectReasons().Clear();
+                            //qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                            qso.ReasonRejected = RejectReason.EntityName;
                         }
                     }
                     break;
                 default:
                     qso.Status = QSOStatus.InvalidQSO;
-                    qso.GetRejectReasons().Clear();
-                    qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                    // qso.GetRejectReasons().Clear();
+                    //qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                    qso.ReasonRejected = RejectReason.EntityName;
                     break;
             }
         }
@@ -649,8 +659,9 @@ namespace W6OP.ContestLogAnalyzer
                     else
                     {
                         qso.Status = QSOStatus.InvalidQSO;
-                        qso.GetRejectReasons().Clear();
-                        qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                        // qso.GetRejectReasons().Clear();
+                        //qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
+                        qso.ReasonRejected = RejectReason.EntityName;
                     }
                 }
             }
@@ -704,45 +715,6 @@ namespace W6OP.ContestLogAnalyzer
 
             return null;
         }
-
-        //// determine points by mode for the HQP
-        //private int GetPoints(string mode)
-        //{
-        //    int points;
-
-        //    try
-        //    {
-        //        CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), mode);
-
-        //        switch (catMode)
-        //        {
-        //            case CategoryMode.CW:
-        //                points = 3;
-        //                break;
-        //            case CategoryMode.RTTY:
-        //                points = 3;
-        //                break;
-        //            case CategoryMode.RY:
-        //                points = 3;
-        //                break;
-        //            case CategoryMode.PH:
-        //                points = 2;
-        //                break;
-        //            case CategoryMode.SSB:
-        //                points = 2;
-        //                break;
-        //            default:
-        //                points = 0;
-        //                break;
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        throw new Exception("The mode " + mode + " is not valid for this contest.");
-        //    }
-
-        //    return points;
-        //}
 
         /// <summary>
         /// Move a file to the inspection folder.
@@ -1415,9 +1387,9 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="serialNumber"></param>
         /// <returns></returns>
-        private Int32 ConvertSerialNumber(string serialNumber, string line)
+        private int ConvertSerialNumber(string serialNumber, string line)
         {
-            Int32 number; // catches invalid serial number
+            int number; // catches invalid serial number
 
             // catch when SN is swapped with Name - set serial number so it will never match
             if (Regex.Match(serialNumber, @"\d+").Success)
@@ -1434,66 +1406,6 @@ namespace W6OP.ContestLogAnalyzer
 
             return number;
         }
-
-        /// <summary>
-        /// Check for empty call.
-        /// Check for no alpha characters.
-        /// A call must be made up of only alpha, numeric and can have one or more "/".
-        /// Must start with letter or number.
-        /// </summary>
-        /// <param name="callSign"></param>
-        /// <returns></returns>
-        //private bool ValidateCallSign(string callSign)
-        //{
-        //    // check for empty or null string
-        //    if (string.IsNullOrEmpty(callSign)) { return false; }
-
-        //    // check if first character is "/"
-        //    if (callSign.IndexOf("/", 0, 1) == 0) { return false; }
-
-        //    // check if second character is "/"
-        //    if (callSign.IndexOf("/", 1, 1) == 1) { return false; }
-
-        //    // check for a "-" ie: VE7CC-7, OH6BG-1, WZ7I-3 
-        //    if (callSign.IndexOf("-") != -1) { return false; }
-
-        //    // can't be all numbers
-        //    if (IsNumeric(callSign)) { return false; }
-
-        //    // look for at least one number character
-        //    if (!callSign.Where(x => Char.IsDigit(x)).Any()) { return false; }
-
-        //    return true;
-        //}
-
-        public bool IsNumeric(string value)
-        {
-            return value.All(char.IsNumber);
-        }
-
-        /// <summary>
-        /// Quick check to see if a call sign is formatted correctly.
-        /// </summary>
-        /// <param name="call"></param>
-        /// <returns></returns>
-        //private bool CheckCallSignFormat(string call)
-        //{
-        //    string regex = @"^([A-Z]{1,2}|[0-9][A-Z])([0-9])([A-Z]{1,3})$";
-        //    bool invalid = true;
-
-        //    // should this pass "DR50RRDXA" it does not currently
-        //    if (Regex.IsMatch(call.ToUpper(), regex, RegexOptions.IgnoreCase))
-        //    {
-        //        invalid = false;
-        //    }
-
-        //    if (call == "S57DX")
-        //    {
-        //        invalid = false;
-        //    }
-
-        //    return invalid;
-        //}
 
         #endregion
     } // end class
