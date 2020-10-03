@@ -23,12 +23,15 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="logList"></param>
         public void ScoreContestLogs(List<ContestLog> logList)
         {
-            Int32 progress = 0;
+            int progress = 0;
 
             List<ContestLog> contestLogList = logList.OrderByDescending(o => o.LogOwner).ToList();
 
             foreach (ContestLog contestLog in contestLogList)
             {
+                // clear so we can run scoring multiple times
+                contestLog.Entities.Clear();
+
                 progress++;
 
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
@@ -162,6 +165,13 @@ namespace W6OP.ContestLogAnalyzer
                         }
                     }
                 }
+            }
+
+            // a little bit of a hack - we weren't allowing Hawaii stations to get a multiplier for
+            // the first time they worked a Hawaiin station
+            if (contestLog.HQPMultipliers > 0)
+            {
+                contestLog.HQPMultipliers += 1;
             }
 
             contestLog.Multipliers = contestLog.NonHQPMultipliers + contestLog.HQPMultipliers;
