@@ -21,7 +21,7 @@ namespace W6OP.ContestLogAnalyzer
         /// Comments I add while I am anlyzing the logs. May be from when I first load
         /// or anywhere along the line.
         /// </summary>
-        public List<string> AnalyzerComments { get; set; } = new List<string>();
+        //public List<string> AnalyzerComments { get; set; } = new List<string>();
 
         /// <summary>
         /// Call sign of the log owner.
@@ -95,21 +95,21 @@ namespace W6OP.ContestLogAnalyzer
         /// A list of all of the logs that have a reference to the call represented by this log.
         /// </summary>
         //private Dictionary<string, ContestLog> _MatchLogs;
-        public Dictionary<string, ContestLog> MatchLogs { get; set; } = new Dictionary<string, ContestLog>();
+        //public Dictionary<string, ContestLog> MatchLogs { get; set; } = new Dictionary<string, ContestLog>();
        
 
         /// <summary>
         /// List of logs that do not have a QSO with this operator.
         /// </summary>
         //private Dictionary<string, ContestLog> _OtherLogs;
-        public Dictionary<string, ContestLog> OtherLogs { get; set; } = new Dictionary<string, ContestLog>();
+        //public Dictionary<string, ContestLog> OtherLogs { get; set; } = new Dictionary<string, ContestLog>();
         
 
         /// <summary>
         /// Logs that need review.
         /// </summary>
         //private Dictionary<string, ContestLog> _ReviewLogs;
-        public Dictionary<string, ContestLog> ReviewLogs { get; set; } = new Dictionary<string, ContestLog>();
+        //public Dictionary<string, ContestLog> ReviewLogs { get; set; } = new Dictionary<string, ContestLog>();
        
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Holds the soap box comment the log owner made
         /// </summary>
-        public string SoapBox { get; set; }
+        //public string SoapBox { get; set; }
 
         private HashSet<string> _Entities = new HashSet<string>();
         public HashSet<string> Entities { get => _Entities; set => _Entities = value; }

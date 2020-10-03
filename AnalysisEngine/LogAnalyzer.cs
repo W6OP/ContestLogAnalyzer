@@ -31,6 +31,11 @@ namespace W6OP.ContestLogAnalyzer
 
         public CallLookUp CallLookUp;
 
+        /// <summary>
+        /// Dictionary of all calls in all the logs as keys
+        /// the values are a list of all logs those calls are in
+        /// </summary>
+        public Dictionary<string, List<ContestLog>> CallDictionary;
         //private Dictionary<string, string> stateCodes = new Dictionary<string, string>(){
         //    {"AL", "Alabama"},{"AZ", "Arizona"},{"AR", "Arkansas"},{"CA", "California"},{"CO", "Colorado"}, {"CT", "Connecticut"},{"AZ", "Arizona"},{"AR", "Arkansas"},{"CA", "California"},{"CO", "Colorado"}
         //};
@@ -63,8 +68,9 @@ namespace W6OP.ContestLogAnalyzer
         /// Does it show up in any other logs? Good check to see if it is a valid callsign
         /// Build a collection of totaly unique calls
         /// </summary>
-        public void PreAnalyzeContestLogs(List<ContestLog> contestLogList)
+        public void PreAnalyzeContestLogs(List<ContestLog> contestLogList, Dictionary<string, List<ContestLog>> callDictionary)
         {
+            CallDictionary = callDictionary;
             List<QSO> qsoList = new List<QSO>();
             string call = null;
             string name = null;
@@ -79,19 +85,6 @@ namespace W6OP.ContestLogAnalyzer
                 foreach (ContestLog contestLog in contestLogList)
                 {
                     call = contestLog.LogOwner;
-
-
-                    if (contestLog.LogOwner == "WH7W")
-                    {
-                        for (int i = 0; i < contestLog.QSOCollection.Count; i++)
-                        {
-                            if (contestLog.QSOCollection[i].ContactCall == "W6LFB")
-                            {
-                                var a = contestLog.QSOCollection[i].ContactCall;
-                            }
-                        }
-                    }
-
 
                     progress++;
 
@@ -291,11 +284,6 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                     }
                 }
 
-                //if (qso.OperatorCall == "KH6RC" || contactCall == "KH6RC")
-                //{
-                //    Console.WriteLine(qso.OperatorCall + ":" + contactCall);
-                //}
-
                 if (ActiveContest == ContestName.HQP)
                 {
                     if (!qso.IsHQPEntity && qso.ContactCountry != HQPHawaiiLiteral)
@@ -317,9 +305,10 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                     continue;
                 }
 
+               
                 // get the other log that matches this QSO contact call
                 matchLog = contestLogList.FirstOrDefault(q => q.LogOwner == qso.ContactCall);
-
+               
                 if (qso.ContactCall.IndexOf(@"/") != -1)             //                                |
                 {                           //                                |
                     continue;   // Skip the remainder of this iteration. -----+
@@ -381,7 +370,10 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
                     // can't find a matching log
                     // find all the logs this operator is in so we can try to get a match without call signs
                     // don't want to exclude invalid QSOs as we are checking all logs and all QSOs
-                    tempLog = contestLogList.Where(q => q.QSOCollection.Any(p => p.ContactCall == qso.ContactCall)).ToList();
+                    //tempLog = contestLogList.Where(q => q.QSOCollection.Any(p => p.ContactCall == qso.ContactCall)).ToList();
+
+                    // speeds up from 44 sec to 28 sec on first pass
+                    tempLog = CallDictionary[qso.ContactCall];
 
                     if (tempLog.Count <= 1) // 1 would mean this call sign only in this log
                     {
@@ -548,6 +540,9 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
             List<QSO> matchingQSOs = null;
             string matchName = null;
 
+            // speeds up from ? sec to ? sec on first pass
+            //List<ContestLog> tempLog = CallDictionary[qso.ContactCall];
+            
             // now look for a match without the operator name
             matchingQSOs = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
 
@@ -609,10 +604,17 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
             string[] info = new string[2] { "0", "0" };
             int count = 0;
 
+
+            // speeds up from 28 sec to 12 sec on first pass
+           List<ContestLog> tempLog = CallDictionary[qso.ContactCall];
+
             // get a list of all QSOs with the same contact callsign and same entity
-            matchingQSOSpecific = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactEntity == qso.ContactEntity).ToList();
+            //matchingQSOSpecific = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactEntity == qso.ContactEntity).ToList();
+            matchingQSOSpecific = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactEntity == qso.ContactEntity).ToList();
             // get a list of all QSOs with the same contact callsign but may have different entity
-            matchingQSOsGeneral = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
+            //matchingQSOsGeneral = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
+            matchingQSOsGeneral = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
+
             // if the above counts are different then someone is wrong
             matchCount = matchingQSOsGeneral.Count - matchingQSOSpecific.Count;
 
@@ -1006,12 +1008,7 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
             QSO matchQSO = null;
             RejectReason reason = RejectReason.None;
 
-            //if (qso.ContactCall == "W6LFB")
-            //{
-            //    var a = 1;
-            //}
-
-            /*
+            /* figure out how to catch this
                 QSO: 14039 CW 2020-08-22 2226 AH6KO 599 HIL NS6T 599 AL
                 QSO: 14039 CW 2020-08-22 2226 NH6T 599 AL AH6KO 599 HIL
              */
@@ -1030,11 +1027,6 @@ QSO: 	14034	CW	2020-08-22	1849	KH6TU	599	MAU	VE7JH	599	BC
 
             if (matchQSO != null) // this QSO is not in the other log
             {
-                if (matchQSO.ContactCall == "W6LFB")
-                {
-                    var a = 1;
-                }
-
                 /*
                 QSO: 14039 CW 2020-08-22 2226 AH6KO 599 HIL NS6T 599 AL
                 QSO: 14039 CW 2020-08-22 2226 NH6T 599 AL AH6KO 599 HIL

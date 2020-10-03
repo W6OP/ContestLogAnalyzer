@@ -40,6 +40,12 @@ namespace W6OP.ContestLogAnalyzer
 
         public CallLookUp CallLookUp;
 
+        /// <summary>
+        /// Dictionary of all calls in all the logs as keys
+        /// the values are a list of all logs those calls are in
+        /// </summary>
+        public Dictionary<string, List<ContestLog>> CallDictionary;
+
         // later replace this
         //private Hashtable PrefixTable;
         // with
@@ -50,6 +56,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public LogProcessor()
         {
+            CallDictionary = new Dictionary<string, List<ContestLog>>();
             FailingLine = "";
             WorkingLine = "";
         }
@@ -171,6 +178,29 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         SetHQPDXCCInformation(contestLog.QSOCollection, contestLog);
                     }
+
+                    // --------------------------------------------------------------------------------
+
+                    List<ContestLog> logOwners;
+                    foreach (QSO qso in contestLog.QSOCollection)
+                    {
+                        if (CallDictionary.ContainsKey(qso.ContactCall)) 
+                        {
+                            logOwners = CallDictionary[qso.ContactCall];
+                            if (!logOwners.Contains(contestLog))
+                            {
+                              logOwners.Add(contestLog);
+                            }
+                        } 
+                        else
+                        {
+                            logOwners = new List<ContestLog>();
+                            logOwners.Add(contestLog);
+                            CallDictionary.Add(qso.ContactCall, logOwners);
+                        }
+                    }
+
+                    // --------------------------------------------------------------------------------
 
                     contestLogs.Add(contestLog);
 
@@ -1053,7 +1083,9 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        qsoList = CollectQSOs(lineList, session, true);
+                        qsoList = CollectQSOs(lineList,
+                                              session,
+                                              true);
                     }
                 }
                 else
