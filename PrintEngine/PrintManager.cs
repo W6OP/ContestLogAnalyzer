@@ -344,12 +344,16 @@ namespace W6OP.PrintEngine
                                     }
                                     break;
                                 case RejectReason.Band:
+                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 case RejectReason.Mode:
+                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 case RejectReason.NoQSOMatch:
+                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 case RejectReason.NoQSO:
+                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 case RejectReason.BustedCallSign:
                                     if (qso.MatchingQSO != null)
@@ -395,10 +399,13 @@ namespace W6OP.PrintEngine
                                     message = null;
                                     break;
                                 case RejectReason.InvalidCall:
+                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 case RejectReason.InvalidTime:
+                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 case RejectReason.InvalidSession:
+                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 case RejectReason.InvalidEntity:
                                     if (qso.MatchingQSO != null)
@@ -414,10 +421,13 @@ namespace W6OP.PrintEngine
                                     value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + "Non Hawaiian Station";
                                     break;
                                 case RejectReason.Marked_XQSO:
+                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 case RejectReason.MissingColumn:
+                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 case RejectReason.None:
+                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 default:
                                     if (qso.ReasonRejected != RejectReason.None)
@@ -428,91 +438,6 @@ namespace W6OP.PrintEngine
                             }
 
 
-
-                            // should only be one reason so lets change the collection type
-                            //foreach (var key in qso.GetRejectReasons().Keys)
-                            //{
-                            //    if (key == RejectReason.OperatorName)
-                            //    {
-                            //        //if (qso.MatchingQSO != null)
-                            //        //{
-                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
-                            //        //}
-                            //        //else
-                            //        //{
-                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectName;
-                            //        //}
-                            //    }
-                            //    else if (key == RejectReason.EntityName)
-                            //    {
-                            //        //if (qso.MatchingQSO != null)
-                            //        //{
-                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
-                            //        //}
-                            //        //else
-                            //        //{
-                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity;
-                            //        //}
-                            //    }
-                            //    else if (key == RejectReason.InvalidEntity)
-                            //    {
-                            //        //if (qso.MatchingQSO != null)
-                            //        //{
-                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
-                            //        //}
-                            //        //else
-                            //        //{
-                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.IncorrectDXEntity;
-                            //        //}
-                            //    }
-                            //    else if (key == RejectReason.SerialNumber)
-                            //    {
-                            //        //if (qso.MatchingQSO != null)
-                            //        //{
-                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
-                            //        //}
-                            //        //else
-                            //        //{
-                            //        //    value = qso.GetRejectReasons()[key];
-                            //        //}
-                            //    }
-                            //    else if (key == RejectReason.NotCounted)
-                            //    {
-                            //        //value = qso.GetRejectReasons()[key] + " - " + "Non Hawaiian Station";
-                            //        break;
-                            //    }
-                            //    else if (key == RejectReason.BustedCallSign || key == RejectReason.NoQSO)
-                            //    {
-                            //        //if (qso.MatchingQSO != null)
-                            //        //{
-                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.ContactCall + " --> " + qso.MatchingQSO.OperatorCall;
-                            //        //}
-                            //        //else
-                            //        //{
-                            //        //    value = qso.GetRejectReasons()[key] + " - " + qso.ContactCall + " --> " + qso.BustedCallGuess;
-                            //        //    //value = qso.RejectReasons[key];
-                            //        //}
-                            //    }
-                            //    else if (key == RejectReason.DuplicateQSO)
-                            //    {
-                            //        //message = null;
-
-                            //        //if (qso.HasBeenPrinted == false)
-                            //        //{
-                            //        //    message = "Duplicates ignored for scoring purposes:";
-                            //        //    sw.WriteLine(message);
-
-                            //        //    message = null;
-
-                            //        //    PrintDuplicates(qso.DupeListLocation, sw);
-                            //        //    sw.WriteLine("");
-                            //        //}
-                            //    }
-                            //    else
-                            //    {
-                            //        value = qso.GetRejectReasons()[key];
-                            //    }
-                            //}
 
                             if (message != null)
                             {
@@ -769,14 +694,17 @@ namespace W6OP.PrintEngine
             message = string.Format(" Category:   {0}   Power: {1} ", contestLog.LogHeader.OperatorCategory, contestLog.LogHeader.Power);
             sw.WriteLine(message);
 
-            sw.WriteLine("");
-            sw.WriteLine(" Multipliers:");
-
-            if (contestLog.Entities != null)
+            if (ActiveContest == ContestName.HQP)
             {
-                foreach (string entity in contestLog.Entities)
+                sw.WriteLine("");
+                sw.WriteLine(" Multipliers:");
+
+                if (contestLog.Entities != null)
                 {
-                    sw.WriteLine("--" + entity);
+                    foreach (string entity in contestLog.Entities)
+                    {
+                        sw.WriteLine("--" + entity);
+                    }
                 }
             }
         }

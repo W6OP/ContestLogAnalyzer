@@ -598,7 +598,7 @@ namespace W6OP.ContestLogAnalyzer
             UpdateLabel("");
 
             _LogAnalyser.ActiveContest = _ActiveContest;
-            _LogAnalyser.PreAnalyzeContestLogs(_ContestLogs, _LogProcessor.CallDictionary);
+            _LogAnalyser.PreAnalyzeContestLogs(_ContestLogs, _LogProcessor.CallDictionary, _LogProcessor.BandDictionary, _LogProcessor.ModeDictionary);
 
             UpdateListViewAnalysis("Pass 1 completed", "----------", "----------", false);
             ResetProgressBar(true);
@@ -879,8 +879,8 @@ namespace W6OP.ContestLogAnalyzer
                 item.SubItems.Add(validQsoCount.ToString());
                 item.SubItems.Add(contestLog.Multipliers.ToString());
                 item.SubItems.Add(contestLog.ClaimedScore.ToString());
-                //item.SubItems.Add(contestLog.ActualScore.ToString());
-                item.SubItems.Add((contestLog.Multipliers * contestLog.TotalPoints).ToString());
+                item.SubItems.Add(contestLog.ActualScore.ToString());
+                //item.SubItems.Add((contestLog.Multipliers * contestLog.TotalPoints).ToString());
                 ListViewScore.Items.Insert(0, item);
             }
         }

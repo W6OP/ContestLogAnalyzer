@@ -171,7 +171,7 @@ namespace W6OP.ContestLogAnalyzer
         private string _NameSent;
         public string NameSent
         {
-            get { return _NameSent; }
+            get { return _NameSent.ToUpper(); }
             set { _NameSent = value; }
         }
 

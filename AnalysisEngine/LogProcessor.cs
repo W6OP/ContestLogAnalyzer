@@ -41,15 +41,12 @@ namespace W6OP.ContestLogAnalyzer
         public CallLookUp CallLookUp;
 
         /// <summary>
-        /// Dictionary of all calls in all the logs as keys
+        /// Dictionary of all calls, bands, modes in all the logs as keys
         /// the values are a list of all logs those calls are in
         /// </summary>
         public Dictionary<string, List<ContestLog>> CallDictionary;
-
-        // later replace this
-        //private Hashtable PrefixTable;
-        // with
-        // private ILookup<string, string> _PrefixTable;
+        public Dictionary<int, List<ContestLog>> BandDictionary;
+        public Dictionary<string, List<ContestLog>> ModeDictionary;
 
         /// <summary>
         /// Default constructor.
@@ -57,6 +54,9 @@ namespace W6OP.ContestLogAnalyzer
         public LogProcessor()
         {
             CallDictionary = new Dictionary<string, List<ContestLog>>();
+            BandDictionary = new Dictionary<int, List<ContestLog>>();
+            ModeDictionary = new Dictionary<string, List<ContestLog>>();
+
             FailingLine = "";
             WorkingLine = "";
         }
@@ -181,24 +181,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     // -----------------Performance upgrade---------------------------------------------------------------
 
-                    List<ContestLog> logOwners;
-                    foreach (QSO qso in contestLog.QSOCollection)
-                    {
-                        if (CallDictionary.ContainsKey(qso.ContactCall)) 
-                        {
-                            logOwners = CallDictionary[qso.ContactCall];
-                            if (!logOwners.Contains(contestLog))
-                            {
-                              logOwners.Add(contestLog);
-                            }
-                        } 
-                        else
-                        {
-                            logOwners = new List<ContestLog>();
-                            logOwners.Add(contestLog);
-                            CallDictionary.Add(qso.ContactCall, logOwners);
-                        }
-                    }
+                    BuildDictionaries(contestLog);
 
                     // --------------------------------------------------------------------------------
 
@@ -213,6 +196,68 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return logFileName;
+        }
+
+        /// <summary>
+        /// By building bthses dictionaries I save significant time in the
+        /// LogAnalyzer() linq queries. I only have to query a subset
+        /// of all the contest logs.
+        /// </summary>
+        /// <param name="contestLog"></param>
+        private void BuildDictionaries(ContestLog contestLog)
+        {
+            List<ContestLog> contestLogs;
+
+            foreach (QSO qso in contestLog.QSOCollection)
+            {
+                // Call
+                if (CallDictionary.ContainsKey(qso.ContactCall))
+                {
+                    contestLogs = CallDictionary[qso.ContactCall];
+                    if (!contestLogs.Contains(contestLog))
+                    {
+                        contestLogs.Add(contestLog);
+                    }
+                }
+                else
+                {
+                    contestLogs = new List<ContestLog>();
+                    contestLogs.Add(contestLog);
+                    CallDictionary.Add(qso.ContactCall, contestLogs);
+                }
+
+                // Band
+                if (BandDictionary.ContainsKey(qso.Band))
+                {
+                    contestLogs = BandDictionary[qso.Band];
+                    if (!contestLogs.Contains(contestLog))
+                    {
+                        contestLogs.Add(contestLog);
+                    }
+                }
+                else
+                {
+                    contestLogs = new List<ContestLog>();
+                    contestLogs.Add(contestLog);
+                    BandDictionary.Add(qso.Band, contestLogs);
+                }
+
+                // Mode
+                if (ModeDictionary.ContainsKey(qso.Mode))
+                {
+                    contestLogs = ModeDictionary[qso.Mode];
+                    if (!contestLogs.Contains(contestLog))
+                    {
+                        contestLogs.Add(contestLog);
+                    }
+                }
+                else
+                {
+                    contestLogs = new List<ContestLog>();
+                    contestLogs.Add(contestLog);
+                    ModeDictionary.Add(qso.Mode, contestLogs);
+                }
+            }
         }
 
         /// <summary>
@@ -376,6 +421,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (version.Substring(0, 1) == "2")
                 {
+                    // this is probably obsolete
                     contestLog.LogHeader = BuildHeaderV2(lineList, fullName);
                 }
 
@@ -419,82 +465,72 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="contestLog"></param>
         private void SetHQPDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
         {
-            bool isValidHQPEntity = Enum.IsDefined(typeof(HQPMults), contestLog.QSOCollection[0].OperatorEntity);
+            // set the entity of the log owner
+            contestLog.IsHQPEntity = Enum.IsDefined(typeof(HQPMults), contestLog.QSOCollection[0].OperatorEntity);
 
-            contestLog.IsHQPEntity = isValidHQPEntity;
-
-            if (isValidHQPEntity)
+            if (contestLog.IsHQPEntity)
             {
-                ProcessHawaiiQSOs(qsoCollection);
-                return;
+                ProcessHawaiiOperators(qsoCollection);
             }
             else
             {
-                ProcessOtherQSOs(qsoCollection);
+                ProcessNonHawaiiOperators(qsoCollection);
             }
         }
 
-        private void ProcessOtherQSOs(List<QSO> qsoCollection)
+        /// <summary>
+        /// HQP Only
+        /// DX station contacting Hawaii station
+        /// if DXEntity is not in enum list of Hawaii entities (HIL, MAU, etc.)
+        /// this QSO is invalid
+        /// </summary>
+        /// <param name="qsoCollection"></param>
+        private void ProcessNonHawaiiOperators(List<QSO> qsoCollection)
         {
             foreach (QSO qso in qsoCollection)
             {
                 if (!CheckForValidCallsign(qso.ContactCall))
                 {
                     qso.Status = QSOStatus.InvalidQSO;
-                    //qso.GetRejectReasons().Clear();
-                    //qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
                     qso.ReasonRejected = RejectReason.InvalidCall;
                     continue;
                 }
 
-                // -----------------------------------------------------------------------------------
-                // DX station contacting Hawaii station
-                // if DXEntity is not in enum list of Hawaii entities (HIL, MAU, etc.)
-                // QSO: 14242 PH 2017-08-26 1830 N5KXI 59 OK KH7XS 59  DX
-                // this QSO is invalid - complete
-                if (qso.ContactEntity == "DX")
+                if (qso.ContactEntity.Length != 3)
                 {
                     qso.EntityIsInValid = true;
                     qso.Status = QSOStatus.InvalidQSO;
-                    //qso.GetRejectReasons().Clear();
-                    //qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
-                    qso.ReasonRejected = RejectReason.NotCounted;
+                    qso.ReasonRejected = RejectReason.InvalidEntity;
                     continue;
                 }
 
                 // at this point we have the country info
-                SetContactEntity(qso);
+                SetContactCountry(qso);
 
                 if (qso.ContactCountry == HQPHawaiiLiteral)
                 {
                     SetNonHQPEntityInfo(qso);
                 }
-                else
-                {
-                    // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
-                    qso.Status = QSOStatus.InvalidQSO;
-                    //qso.GetRejectReasons().Clear();
-                    //qso.GetRejectReasons().Add(RejectReason.NotCounted, EnumHelper.GetDescription(RejectReason.NotCounted));
-                    qso.ReasonRejected = RejectReason.NotCounted;
-                }
             }
         }
 
-        private void ProcessHawaiiQSOs(List<QSO> qsoCollection)
+        /// <summary>
+        /// HQP Only
+        /// </summary>
+        /// <param name="qsoCollection"></param>
+        private void ProcessHawaiiOperators(List<QSO> qsoCollection)
         {
             foreach (QSO qso in qsoCollection)
             {
                 if (!CheckForValidCallsign(qso.ContactCall))
                 {
                     qso.Status = QSOStatus.InvalidQSO;
-                    //qso.GetRejectReasons().Clear();
-                    //qso.GetRejectReasons().Add(RejectReason.InvalidCall, EnumHelper.GetDescription(RejectReason.InvalidCall));
                     qso.ReasonRejected = RejectReason.InvalidCall;
                     continue;
                 }
 
                 // at this point we have the country info
-                SetContactEntity(qso);
+                SetContactCountry(qso);
 
                 qso.HQPEntity = qso.OperatorEntity;
                 qso.IsHQPEntity = true;
@@ -507,6 +543,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
+        /// HQP only
         /// This is an HQP entity so their contacts can be a: 
         /// US State (two chars)
         /// Canadian Province (two chars)
@@ -514,7 +551,7 @@ namespace W6OP.ContestLogAnalyzer
         /// another country ("DX")
         /// </summary>
         /// <param name="qso"></param>
-        private void SetContactEntity(QSO qso)
+        private void SetContactCountry(QSO qso)
         {
             IEnumerable<CallSignInfo> hitCollection; // = CallLookUp.LookUpCall(operatorCall);
             List<CallSignInfo> hitList; // = hitCollection.ToList();
@@ -523,7 +560,7 @@ namespace W6OP.ContestLogAnalyzer
             switch (contactEntity.Length)
             {
                 case 2:
-                    if (contactEntity == "DX")
+                    if (qso.ContactEntity == "DX")
                     {
                         // need to look it up
                         hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
@@ -535,8 +572,6 @@ namespace W6OP.ContestLogAnalyzer
                         else
                         {
                             qso.Status = QSOStatus.InvalidQSO;
-                            //qso.GetRejectReasons().Clear();
-                            //qso.GetRejectReasons().Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
                             qso.ReasonRejected = RejectReason.InvalidEntity;
                         }
                     }
@@ -553,8 +588,6 @@ namespace W6OP.ContestLogAnalyzer
                         else
                         {
                             qso.Status = QSOStatus.InvalidQSO;
-                            //qso.GetRejectReasons().Clear();
-                            //qso.GetRejectReasons().Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
                             qso.ReasonRejected = RejectReason.InvalidEntity;
                         }
                     }
@@ -564,50 +597,15 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         qso.ContactCountry = HQPHawaiiLiteral;
                     }
-                    else if (CheckCountyFiles(qso.ContactEntity) != null)
-                    {
-                        qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
-                        if (States.Contains(qso.ContactEntity))
-                        {
-                            qso.ContactCountry = HQPUSALiteral;
-                        }
-                        else
-                        {
-                            qso.Status = QSOStatus.InvalidQSO;
-                            //qso.GetRejectReasons().Clear();
-                            //qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
-                            qso.ReasonRejected = RejectReason.EntityName;
-                        }
-                    }
                     else
                     {
                         qso.Status = QSOStatus.InvalidQSO;
-                        //qso.GetRejectReasons().Clear();
-                        //qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
                         qso.ReasonRejected = RejectReason.EntityName;
                     }
-                    break;
-                case 4:
-                    if (CheckCountyFiles(qso.ContactEntity) != null)
-                    {
-                        qso.ContactEntity = CheckCountyFiles(qso.ContactEntity);
-                        if (States.Contains(qso.ContactEntity))
-                        {
-                            qso.ContactCountry = HQPUSALiteral;
-                        }
-                        else
-                        {
-                            qso.Status = QSOStatus.InvalidQSO;
-                            //qso.GetRejectReasons().Clear();
-                            //qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
-                            qso.ReasonRejected = RejectReason.EntityName;
-                        }
-                    }
+                    
                     break;
                 default:
                     qso.Status = QSOStatus.InvalidQSO;
-                    // qso.GetRejectReasons().Clear();
-                    //qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
                     qso.ReasonRejected = RejectReason.EntityName;
                     break;
             }
@@ -644,7 +642,6 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (qso.OperatorEntity == "DX")
                 {
-                    // prefixInfo = GetPrefixInformation(qso.OperatorCall);
                     IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.OperatorCall);
                     List<CallSignInfo> hitList = hitCollection.ToList();
                     if (hitList.Count != 0)
@@ -659,8 +656,6 @@ namespace W6OP.ContestLogAnalyzer
                     else
                     {
                         qso.Status = QSOStatus.InvalidQSO;
-                        // qso.GetRejectReasons().Clear();
-                        //qso.GetRejectReasons().Add(RejectReason.EntityName, EnumHelper.GetDescription(RejectReason.EntityName));
                         qso.ReasonRejected = RejectReason.EntityName;
                     }
                 }
@@ -668,8 +663,8 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
+        /// This never seems to get hit!
         /// Set the correct entity for HQP participants (contacts).
-        ///
         /// The correct territory was found from the CallParser component
         /// </summary>
         /// <param name="qso"></param>
@@ -989,23 +984,23 @@ namespace W6OP.ContestLogAnalyzer
                              RawQSO = line,
                              Status = CheckCompleteQSO(split, line),
                              Frequency = CheckFrequency(split[1], line),
-                             Mode = NormalizeMode(split[2]),
+                             Mode = NormalizeMode(split[2]).ToUpper(),
                              QsoDate = split[3],
                              QsoTime = CheckTime(split[4], line),
                              OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
                              OperatortPrefix = prefix,
                              OperatorSuffix = suffix,
                              SentSerialNumber = ConvertSerialNumber(split[6], line),
-                             OperatorName = CheckActiveContest(split[7], "OperatorName"),
-                             OperatorEntity = CheckActiveContest(split[7], "OperatorEntity"),
-                             OriginalOperatorEntity = CheckActiveContest(split[7], "OperatorEntity"),
+                             OperatorName = CheckActiveContest(split[7], "OperatorName").ToUpper(),
+                             OperatorEntity = CheckActiveContest(split[7], "OperatorEntity").ToUpper(),
+                             OriginalOperatorEntity = CheckActiveContest(split[7], "OperatorEntity").ToUpper(),
                              ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
                              ReceivedSerialNumber = ConvertSerialNumber(split[9], line),
-                             ContactName = CheckActiveContest(split[10], "ContactName"),
-                             ContactEntity = CheckActiveContest(split[10], "ContactEntity"),
-                             OriginalContactEntity = CheckActiveContest(split[10], "ContactEntity"),
+                             ContactName = CheckActiveContest(split[10], "ContactName").ToUpper(),
+                             ContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
+                             OriginalContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this?? ValidateCallSign(split[8].ToUpper())
                              SessionIsValid = CheckForValidSession(session, split[4])
                          };
@@ -1022,22 +1017,22 @@ namespace W6OP.ContestLogAnalyzer
                              RawQSO = line,
                              Status = CheckCompleteQSO(split, line),
                              Frequency = CheckFrequency(split[1], line),
-                             Mode = NormalizeMode(split[2]),
+                             Mode = NormalizeMode(split[2]).ToUpper(),
                              QsoDate = split[3],
                              QsoTime = CheckTime(split[4], line),
                              OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
                              OperatortPrefix = prefix,
                              OperatorSuffix = suffix,
-                             OperatorName = CheckActiveContest(split[6], "OperatorName"),
-                             OperatorEntity = CheckActiveContest(split[6], "OperatorEntity"),
-                             OriginalOperatorEntity = CheckActiveContest(split[6], "OperatorEntity"),
+                             OperatorName = CheckActiveContest(split[6], "OperatorName").ToUpper(),
+                             OperatorEntity = CheckActiveContest(split[6], "OperatorEntity").ToUpper(),
+                             OriginalOperatorEntity = CheckActiveContest(split[6], "OperatorEntity").ToUpper(),
                              SentSerialNumber = ConvertSerialNumber(split[7], line),
                              ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
-                             ContactName = CheckActiveContest(split[9], "ContactName"),
-                             ContactEntity = CheckActiveContest(split[9], "ContactEntity"),
-                             OriginalContactEntity = CheckActiveContest(split[9], "ContactEntity"),
+                             ContactName = CheckActiveContest(split[9], "ContactName").ToUpper(),
+                             ContactEntity = CheckActiveContest(split[9], "ContactEntity").ToUpper(),
+                             OriginalContactEntity = CheckActiveContest(split[9], "ContactEntity").ToUpper(),
                              ReceivedSerialNumber = ConvertSerialNumber(split[10], line),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForValidSession(session, split[4])

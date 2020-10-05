@@ -123,13 +123,15 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private void CalculateScore(ContestLog contestLog)
         {
-            Int32 multiplierCount = 0;
-            Int32 totalValidQSOs = 0;
+            int multiplierCount = 0;
+            int totalValidQSOs = 0;
 
             totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
             multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO)).ToList().Count();
-            
+
+            contestLog.TotalPoints = totalValidQSOs;
             contestLog.Multipliers = multiplierCount;
+
             if (multiplierCount != 0)
             {
                 contestLog.ActualScore = totalValidQSOs * multiplierCount;

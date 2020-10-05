@@ -199,7 +199,7 @@ namespace W6OP.ContestLogAnalyzer
         private string _OperatorCall;
         public string OperatorCall
         {
-            get { return _OperatorCall.ToUpper(); }
+            get { return _OperatorCall; }
             set { _OperatorCall = value;}
         }
 
@@ -210,7 +210,7 @@ namespace W6OP.ContestLogAnalyzer
         public string OperatorName
         {
             get { return _OperatorName; }
-            set { _OperatorName = value.ToUpper(); }
+            set { _OperatorName = value; }
         }
 
         /// <summary>
@@ -219,7 +219,7 @@ namespace W6OP.ContestLogAnalyzer
         private string _ContactCall;
         public string ContactCall
         {
-            get { return _ContactCall.ToUpper(); }
+            get { return _ContactCall; }
             set { _ContactCall = value;}
         }
 
@@ -231,7 +231,7 @@ namespace W6OP.ContestLogAnalyzer
         private string _ContactName;
         public string ContactName
         {
-            get { return _ContactName.ToUpper(); }
+            get { return _ContactName; }
             set
             {
                 _ContactName = value;
@@ -544,7 +544,7 @@ namespace W6OP.ContestLogAnalyzer
         public string OperatorEntity
         {
             get { return _OperatorEntity; }
-            set { _OperatorEntity = value.ToUpper(); }
+            set { _OperatorEntity = value; }
         }
 
         /// <summary>
@@ -554,11 +554,8 @@ namespace W6OP.ContestLogAnalyzer
         private string _ContactCountry = "Unknown";
         public string ContactCountry
         {
-            get => _ContactCountry.ToUpper();
-            set
-            {
-                _ContactCountry = value;
-            }
+            get => _ContactCountry;
+            set {_ContactCountry = value;}
         }
 
         /// <summary>
@@ -612,10 +609,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             get
             { return _ContactEntity; }
-            set
-            {
-                _ContactEntity = value.ToUpper();
-            }
+            set{_ContactEntity = value;}
         }
         /// <summary>
         /// For HQP contest

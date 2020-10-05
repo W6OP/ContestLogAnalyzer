@@ -305,7 +305,8 @@ namespace W6OP.ContestLogAnalyzer
         MAUI,
         [Description("PRL")]
         PERL,
-        [Description("PRL")] PEARL
+        [Description("PRL")] 
+        PEARL
     }
 
     //https://www.horizonmb.com/threads/137828-Storing-additional-data-in-enums
