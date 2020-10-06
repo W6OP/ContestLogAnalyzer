@@ -25,7 +25,18 @@ namespace W6OP.ContestLogAnalyzer
         /// Indicates a QSO this operator does not get credit for
         /// but others do.
         /// </summary>
-        public bool IsXQSO { get; set; }
+        private bool _IsXQSO;
+        public bool IsXQSO { 
+            get
+            {
+                //Console.WriteLine("xqso get");
+                return _IsXQSO;
+            }
+            set {
+                _IsXQSO = value;
+                Console.WriteLine("xqso set: " + value);
+            }
+        }
 
         /// <summary>
         /// The log reference for a particuler QSO.
@@ -261,24 +272,28 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     ReasonRejected = RejectReason.OperatorName;
                     _Status = QSOStatus.InvalidQSO;
-                    //if (!rejectReasons.ContainsKey(RejectReason.OperatorName))
-                    //{
-                    //    rejectReasons.Add(RejectReason.OperatorName, EnumHelper.GetDescription(RejectReason.OperatorName));
-                    //    _Status = QSOStatus.InvalidQSO;
-                    //}
                 }
                 else
                 {
                     ReasonRejected = RejectReason.None;
                     _Status = QSOStatus.ValidQSO;
-                    //if (rejectReasons.ContainsKey(RejectReason.OperatorName))
-                    //{
-                    //    rejectReasons.Remove(RejectReason.OperatorName);
-                    //    if (rejectReasons.Count == 0)
-                    //    {
-                    //        _Status = QSOStatus.ValidQSO;
-                    //    }
-                    //}
+                }
+            }
+        }
+
+        public bool ContactNameIsInValid
+        {
+            set
+            {
+                if (value == true)
+                {
+                    ReasonRejected = RejectReason.ContactName;
+                    _Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    ReasonRejected = RejectReason.None;
+                    _Status = QSOStatus.ValidQSO;
                 }
             }
         }
@@ -572,24 +587,11 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     ReasonRejected = RejectReason.InvalidEntity;
                     _Status = QSOStatus.InvalidQSO;
-                    //if (!rejectReasons.ContainsKey(RejectReason.InvalidEntity))
-                    //{
-                    //    rejectReasons.Add(RejectReason.InvalidEntity, EnumHelper.GetDescription(RejectReason.InvalidEntity));
-                    //    _Status = QSOStatus.InvalidQSO;
-                    //}
                 }
                 else
                 {
                     ReasonRejected = RejectReason.None;
                     _Status = QSOStatus.ValidQSO;
-                    //if (rejectReasons.ContainsKey(RejectReason.InvalidEntity))
-                    //{
-                    //    rejectReasons.Remove(RejectReason.InvalidEntity);
-                    //    if (rejectReasons.Count == 0)
-                    //    {
-                    //        _Status = QSOStatus.ValidQSO;
-                    //    }
-                    //}
                 }
             }
             get

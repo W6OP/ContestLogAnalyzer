@@ -74,13 +74,30 @@ namespace W6OP.ContestLogAnalyzer
             List<QSO> multiList;
             string entity;
 
-            var query = qsoList.GroupBy(x => new { x.ContactEntity, x.ContactCountry, x.Status })
-           .Where(g => g.Count() >= 1)
-           .Select(y => y.Key).Where(item => (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO))
-           .ToList();
+            var query = qsoList.Where(item => item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO);
+
+           // var query = qsoList.GroupBy(x => new { x.ContactEntity, x.ContactCountry, x.Status, x.IsXQSO })
+           //.Where(g => g.Count() >= 1)
+           //.Select(y => y.Key).Where(item => item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)
+           //.ToList();
+
+
+            //  var entities = qsoList
+            // .GroupBy(x => new { x.ContactEntity, x.ContactCountry, x.Status, x.IsXQSO })
+            // .Select(g => new
+            // {
+            //     entity = g.Key,
+            //     qsos = g.Select(c => c).Where(item => item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)
+            // });
+
 
             foreach (var qso in query)
             {
+                    if (qso.ContactEntity == "XX")
+                    {
+                        var a = 1;
+                    }
+
                 if (qso.ContactEntity == "DX")
                 {
                     multiList = qsoList.Where(item => item.ContactCountry == qso.ContactCountry && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
@@ -98,24 +115,30 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         if (!contestLog.Entities.Contains(entity))
                         {
-                            // if not in hashset, add it
-                            contestLog.Entities.Add(entity);
-                            // now set the first one as a multiplier
-                            multiList.First().IsMultiplier = true;
-                            // for debugging
-                            contestLog.HQPMultipliers += 1;
+                            if (!qso.IsXQSO)
+                            {
+                                // if not in hashset, add it
+                                contestLog.Entities.Add(entity);
+                                // now set the first one as a multiplier
+                                multiList.First().IsMultiplier = true;
+                                // for debugging
+                                contestLog.HQPMultipliers += 1;
+                            }
                         }
                     }
                     else
                     {
                         if (!contestLog.Entities.Contains(entity))
                         {
-                            // if not in hashset, add it
-                            contestLog.Entities.Add(entity);
-                            // now set the first one as a multiplier
-                            multiList.First().IsMultiplier = true;
-                            // for debugging
-                            contestLog.NonHQPMultipliers += 1;
+                            if (!qso.IsXQSO)
+                            {
+                                // if not in hashset, add it
+                                contestLog.Entities.Add(entity);
+                                // now set the first one as a multiplier
+                                multiList.First().IsMultiplier = true;
+                                // for debugging
+                                contestLog.NonHQPMultipliers += 1;
+                            }
                         }
                     }
                 }

@@ -206,19 +206,21 @@ namespace W6OP.ContestLogAnalyzer
                                     .Select(g => g.Key).ToList();
 
                                 MarkIncorrectSentEntity(qsoList, mostUsedOperatorEntity[0]);
-
                                 break;
                         }
 
                         foreach (QSO qso in qsoList)
                         {
-                            if (ActiveContest == ContestName.HQP)
+                            if (qso.Status == QSOStatus.ValidQSO)
                             {
-                                SearchForIncorrectEntity(qso, contestLogList);
-                            }
-                            else
-                            {
-                                SearchForIncorrectName(qso, contestLogList);
+                                if (ActiveContest == ContestName.HQP)
+                                {
+                                    SearchForIncorrectEntity(qso);
+                                }
+                                else
+                                {
+                                    SearchForIncorrectName(qso);
+                                }
                             }
                         }
 
@@ -227,6 +229,7 @@ namespace W6OP.ContestLogAnalyzer
                         MarkDuplicateQSOs(qsoList);
 
                         validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
+                        //Console.WriteLine("Pre - forward: " + contestLog.LogOwner + " : " + validQsos.ToString());
 
                         // ReportProgress with Callsign
                         OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
@@ -242,6 +245,7 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// All we want to do here is look for matching QSOs
+        /// I wonder if I still need this?
         /// </summary>
         /// <param name="contestLogList"></param>
         public void PreAnalyzeContestLogsReverse(List<ContestLog> contestLogList)
@@ -250,7 +254,7 @@ namespace W6OP.ContestLogAnalyzer
             string call = null;
             string name = null;
             int progress = 0;
-            Int32 validQsos;
+            int validQsos;
 
             OnProgressUpdate?.Invoke("2", "", "", 0);
             contestLogList.Reverse();
@@ -259,7 +263,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 call = contestLog.LogOwner;
                 name = contestLog.LogHeader.NameSent;
-                // Console.WriteLine(call);
+               
                 progress++;
 
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
@@ -270,6 +274,8 @@ namespace W6OP.ContestLogAnalyzer
                     MatchQSOs(qsoList, contestLogList, call);
 
                     validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
+
+                    Console.WriteLine("Pre - reverse: " + contestLog.LogOwner + " : " + validQsos.ToString());
 
                     OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
                 }
@@ -378,13 +384,13 @@ namespace W6OP.ContestLogAnalyzer
                 tempLog = null;
 
               
-                // why would this ever happen ???
-                if (qso.Status == QSOStatus.InvalidQSO && qso.ReasonRejected != RejectReason.None)
+                // if its invalid we don't care about matches
+                if (qso.Status == QSOStatus.InvalidQSO) // && qso.ReasonRejected != RejectReason.None)
                 {
-                    if (qso.ReasonRejected == RejectReason.InvalidCall)
-                    {
+                    //if (qso.ReasonRejected == RejectReason.InvalidCall)
+                    //{
                         continue;
-                    }
+                    //}
                 }
 
                 if (ActiveContest == ContestName.HQP)
@@ -538,10 +544,11 @@ namespace W6OP.ContestLogAnalyzer
                         switch (CheckBadCallList(qso))
                         {
                             case false:
-                                if (SearchForBustedCall(qso, contestLogList) == false) // did not find it so is name incorrect
-                                {
-                                    qso.Status = QSOStatus.ValidQSO;
-                                }
+                                //  not used right now
+                                //if (SearchForBustedCall(qso, contestLogList) == false) // did not find it so is name incorrect
+                                //{
+                                //    qso.Status = QSOStatus.ValidQSO;
+                                //}
 
                                 break;
                             default:
@@ -608,14 +615,14 @@ namespace W6OP.ContestLogAnalyzer
             //}
             //else// did not find it
             //{
-                if (ActiveContest == ContestName.HQP)
-                {
-                    found = SearchForIncorrectEntity(qso, contestLogList);
-                }
-                else
-                {
-                    found = SearchForIncorrectName(qso, contestLogList);
-                }
+                //if (ActiveContest == ContestName.HQP)
+                //{
+                //    SearchForIncorrectEntity(qso, contestLogList);
+                //}
+                //else
+                //{
+                //    found = SearchForIncorrectName(qso, contestLogList);
+                //}
             //}
 
             return found;
@@ -654,18 +661,18 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
+        /// CWOpen
         /// Now see if the name is incorrect and that is why we can't find the QSO
         /// This is only when the call sign did not submit a log
         /// </summary>
         /// <param name="qso"></param>
         /// <param name="contestLogList"></param>
         /// <returns></returns>
-        private bool SearchForIncorrectName(QSO qso, List<ContestLog> contestLogList)
+        private void SearchForIncorrectName(QSO qso)
         {
-            bool wasFound = false;
-            Int32 matchCount = 0;
+            int matchCount = 0;
             List<QSO> matchingQSOs = null;
-            string matchName = null;
+            List<string> matchNames = new List<string>();
 
             // speeds up from 34 sec to 22 sec on first pass
             List<ContestLog> tempLog = CallDictionary[qso.ContactCall];
@@ -680,28 +687,33 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (qso.ContactName != matchingQSOs[i].ContactName)
                     {
-                        matchCount++;
-
-                        // THIS NEEDS TO BE BETTER - WHAT AM I REALLY TRYING TO DO
-                        // should I do a vote ?
-                        matchName = matchingQSOs[i].ContactName;
+                        matchNames.Add(matchingQSOs[i].ContactName);
                     }
                 }
 
-                if (matchName == null)
+                switch (matchNames.Count)
                 {
-                    return wasFound;
-                }
+                    case 0:
+                        // unique call
+                        return;
+                    case 1:
+                        // only one so we give it to him
+                        return;
+                    default:
+                        var mostUsed = (from i in matchNames
+                                    group i by i into grp
+                                    orderby grp.Count() descending
+                                    select grp.Key).First();
+                        
+                        if (qso.ContactName != mostUsed)
+                        {
+                            qso.IncorrectName = qso.ContactName + " --> " + mostUsed;
+                            qso.ContactNameIsInValid = true;
+                        }
 
-                if ((Convert.ToDouble(matchCount) / Convert.ToDouble(matchingQSOs.Count)) * 100 > 50)
-                {
-                    wasFound = true;
-                    qso.IncorrectName = qso.ContactName + " --> " + matchName;
-                    qso.OpNameIsInValid = true;
+                        break;
                 }
             }
-
-            return wasFound;
         }
 
 
@@ -734,9 +746,8 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qso"></param>
         /// <param name="contestLogList"></param>
         /// <returns></returns>
-        private bool SearchForIncorrectEntity(QSO qso, List<ContestLog> contestLogList)
+        private void SearchForIncorrectEntity(QSO qso)
         {
-            bool isCorrect = false;
             int matchCount = 0;
             List<QSO> matchingQSOSpecific = null;
             List<QSO> matchingQSOsGeneral = null;
@@ -749,21 +760,18 @@ namespace W6OP.ContestLogAnalyzer
            List<ContestLog> tempLog = CallDictionary[qso.ContactCall];
 
             // get a list of all QSOs with the same contact callsign and same entity
-            //matchingQSOSpecific = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactEntity == qso.ContactEntity).ToList();
             matchingQSOSpecific = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactEntity == qso.ContactEntity).ToList();
+            
             // get a list of all QSOs with the same contact callsign but may have different entity
-            //matchingQSOsGeneral = contestLogList.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
             matchingQSOsGeneral = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
 
             // if the above counts are different then someone is wrong
             matchCount = matchingQSOsGeneral.Count - matchingQSOSpecific.Count;
 
-            int test = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).Count();
-
             // if no mismatches then assume it is correct
             if (matchCount == 0)
             {
-                return false;
+                return;
             }
 
             // need to have more than two QSOs to VOTE on most prevalent contactEntity
@@ -829,7 +837,7 @@ namespace W6OP.ContestLogAnalyzer
                                 {
                                     if (States.Contains(qso.ContactEntity))
                                     {
-                                        return isCorrect;
+                                        return;
                                     }
                                 }
                                 break;
@@ -842,12 +850,12 @@ namespace W6OP.ContestLogAnalyzer
                                 {
                                     if (Provinces.Contains(qso.ContactEntity))
                                     {
-                                        return isCorrect;
+                                        return;
                                     }
                                 }
                                 break;
                             case "Hawaii":
-                                return isCorrect;
+                                return;
                             default:
                                 if (qso.IsHQPEntity)
                                 {
@@ -859,15 +867,12 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
 
-            if (entity.Contains(qso.ContactEntity)) // LOOK FOR AK AND DX ALSO why is entity = "WA003S" sometimes
+            // if entity is different
+            if (!entity.Contains(qso.ContactEntity))
             {
-                return isCorrect;
+                qso.IncorrectDXEntity = $"{qso.OriginalContactEntity} --> {entity}";
+                qso.EntityIsInValid = true;
             }
-
-            // was qso.ContactEntity - 10/01/2020
-            qso.IncorrectDXEntity = $"{qso.OriginalContactEntity} --> {entity}";
-            qso.EntityIsInValid = true;
-            return true;
         }
 
         /// <summary>

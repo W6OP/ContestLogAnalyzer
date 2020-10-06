@@ -499,8 +499,8 @@ namespace W6OP.ContestLogAnalyzer
                 if (qso.ContactEntity.Length != 3)
                 {
                     qso.EntityIsInValid = true;
-                    qso.Status = QSOStatus.InvalidQSO;
-                    qso.ReasonRejected = RejectReason.InvalidEntity;
+                    //qso.Status = QSOStatus.InvalidQSO;
+                   // qso.ReasonRejected = RejectReason.InvalidEntity;
                     continue;
                 }
 
@@ -570,9 +570,8 @@ namespace W6OP.ContestLogAnalyzer
                             qso.ContactCountry = hitList[0].Country;
                         }
                         else
-                        {
-                            qso.Status = QSOStatus.InvalidQSO;
-                            qso.ReasonRejected = RejectReason.InvalidEntity;
+                        {;
+                            qso.EntityIsInValid = true;
                         }
                     }
                     else
@@ -587,8 +586,7 @@ namespace W6OP.ContestLogAnalyzer
                         }
                         else
                         {
-                            qso.Status = QSOStatus.InvalidQSO;
-                            qso.ReasonRejected = RejectReason.InvalidEntity;
+                            qso.EntityIsInValid = true;
                         }
                     }
                     break;
@@ -599,14 +597,12 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        qso.Status = QSOStatus.InvalidQSO;
-                        qso.ReasonRejected = RejectReason.EntityName;
+                        qso.EntityIsInValid = true;
                     }
                     
                     break;
                 default:
-                    qso.Status = QSOStatus.InvalidQSO;
-                    qso.ReasonRejected = RejectReason.EntityName;
+                    qso.EntityIsInValid = true;
                     break;
             }
         }

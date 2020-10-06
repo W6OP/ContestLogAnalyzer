@@ -152,12 +152,29 @@ namespace W6OP.PrintEngine
             {
                 contestlog = contestLogs[i];
 
-                if (contestlog.LogHeader.QTH != "")
+                //if (contestlog.LogHeader.QTH != "")
+                //{
+                //    qth = contestlog.LogHeader.QTH;
+                //} else
+                //{
+                //    qth = contestlog.LogHeader.Country;
+                //}
+
+                if (contestlog.IsHQPEntity)
                 {
-                    qth = contestlog.LogHeader.QTH;
-                } else
+                    qth = contestlog.QSOCollection[0].OperatorEntity;
+                }
+                else
                 {
-                    qth = contestlog.LogHeader.Country;
+                    if (contestlog.QSOCollection[0].OperatorEntity.Length > 2)
+                    {
+                        qth = "DX";
+                    } 
+                    else
+                    {
+                        qth = contestlog.QSOCollection[0].OperatorEntity;
+                    }
+                    
                 }
 
                     if (contestlog != null)
