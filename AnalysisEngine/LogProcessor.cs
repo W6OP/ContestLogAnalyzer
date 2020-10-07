@@ -202,14 +202,33 @@ namespace W6OP.ContestLogAnalyzer
         /// By building bthses dictionaries I save significant time in the
         /// LogAnalyzer() linq queries. I only have to query a subset
         /// of all the contest logs.
+        /// 
+        /// The CallDictionary contains every log that contains a specific call sign
+        /// The QSO Dictionary contains all QSOs in a log keyed by call sign
         /// </summary>
         /// <param name="contestLog"></param>
         private void BuildDictionaries(ContestLog contestLog)
         {
             List<ContestLog> contestLogs;
+            List<QSO> qsos;
 
             foreach (QSO qso in contestLog.QSOCollection)
             {
+                // QSODictionary
+                if (contestLog.QSODictionary.ContainsKey(qso.ContactCall))
+                {
+                    qsos = contestLog.QSODictionary[qso.ContactCall];
+                    qsos.Add(qso);
+                }
+                else
+                {
+                    qsos = new List<QSO>
+                    {
+                        qso
+                    };
+                    contestLog.QSODictionary.Add(qso.ContactCall, qsos);
+                }
+
                 // Call
                 if (CallDictionary.ContainsKey(qso.ContactCall))
                 {
@@ -217,7 +236,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (!contestLogs.Contains(contestLog))
                     {
                         contestLogs.Add(contestLog);
-                    }
+                    } 
                 }
                 else
                 {
@@ -984,7 +1003,7 @@ namespace W6OP.ContestLogAnalyzer
                              QsoDate = split[3],
                              QsoTime = CheckTime(split[4], line),
                              OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
-                             OperatortPrefix = prefix,
+                             OperatorPrefix = prefix,
                              OperatorSuffix = suffix,
                              SentSerialNumber = ConvertSerialNumber(split[6], line),
                              OperatorName = CheckActiveContest(split[7], "OperatorName").ToUpper(),
@@ -1017,7 +1036,7 @@ namespace W6OP.ContestLogAnalyzer
                              QsoDate = split[3],
                              QsoTime = CheckTime(split[4], line),
                              OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
-                             OperatortPrefix = prefix,
+                             OperatorPrefix = prefix,
                              OperatorSuffix = suffix,
                              OperatorName = CheckActiveContest(split[6], "OperatorName").ToUpper(),
                              OperatorEntity = CheckActiveContest(split[6], "OperatorEntity").ToUpper(),

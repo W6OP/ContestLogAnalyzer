@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Objects.SqlClient;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
@@ -216,6 +217,12 @@ namespace W6OP.ContestLogAnalyzer
                                 if (ActiveContest == ContestName.HQP)
                                 {
                                     SearchForIncorrectEntity(qso);
+                                    // probably should only look at valid QSOS
+                                    // may combine this withMatchQSOs()
+                                    if (qso.Status != QSOStatus.InvalidQSO)
+                                    {
+                                        SearchHQPBustedCallSigns(qso);
+                                    }
                                 }
                                 else
                                 {
@@ -224,13 +231,12 @@ namespace W6OP.ContestLogAnalyzer
                             }
                         }
 
-                        MatchQSOs(qsoList, contestLogList, call);
+                        //MatchQSOs(qsoList, contestLogList, call);
 
                         MarkDuplicateQSOs(qsoList);
 
                         validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
-                        //Console.WriteLine("Pre - forward: " + contestLog.LogOwner + " : " + validQsos.ToString());
-
+                     
                         // ReportProgress with Callsign
                         OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
                     }
@@ -557,6 +563,83 @@ namespace W6OP.ContestLogAnalyzer
                         }
                     }
                 }
+            }
+        }
+
+        private void SearchCWOpenBustedCallSigns(QSO qso)
+        {
+
+        }
+
+        /// <summary>
+        /// Need to look through every log and find the match for this QSO.
+        /// If there are no matches either the call is busted or it is a unique
+        /// call. If the QSO has a time match but the calls don't match we need
+        /// to do some work to see if the call is busted.
+        /// 
+        /// Get a list of all logs from the CallDictionary that have this call sign in it
+        /// Now we can query the QSODictionary for each QSO that may match
+        /// 
+        /// We can also flag some duplicates here
+        /// </summary>
+        /// <param name="contestLog"></param>
+        /// <param name="qso"></param>
+        private void SearchHQPBustedCallSigns(QSO qso)
+        {
+            List<QSO> matches;
+            List<KeyValuePair<string, List<QSO>>> qsos;
+
+            // all logs with this operator call sign
+            List<ContestLog> contestLogs = CallDictionary[qso.OperatorCall];
+
+            // List of List<QSO> from the list of contest logs that match this operator call sign
+            qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall).ToList();
+
+            // this can have more entries than qsos because the list is flattened
+            matches = qsos.SelectMany(x => x.Value)
+                .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band && y.Mode == qso.Mode && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= 1)
+                .ToList();
+
+            // found a match so we mark both as matches and add matching QSO
+            if (matches.Count == 1)
+            {
+                qso.MatchingQSO = matches[0];
+                matches[0].MatchingQSO = qso;
+                return;
+            }
+
+            // match not found so lets widen the search
+            if (matches.Count == 0)
+            {
+               matches = qsos.SelectMany(x => x.Value)
+                    .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band && y.Mode == qso.Mode &&  Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= 5)
+                    .ToList();
+            }
+
+            // found a single match so we mark both as matches and add matching QSO
+            if (matches.Count == 1)
+            {
+                qso.MatchingQSO = matches[0];
+                matches[0].MatchingQSO = qso;
+                return;
+            }
+
+            // multiple matches found so need to narrow the search
+            // these are probably dupes
+            if (matches.Count > 1)
+            {
+                qso.MatchingQSO = matches[0];
+                matches[0].MatchingQSO = qso;
+                matches[1].QSOIsDupe = true;
+
+                // have QSO class handle this
+                qso.DuplicateQsoList.Add(matches[1]);
+
+            }
+
+            foreach (QSO o in matches)
+            {
+                Console.WriteLine(qso.ContactCall + ":" + o.OperatorCall + ":" + o.QSODateTime);
             }
         }
 

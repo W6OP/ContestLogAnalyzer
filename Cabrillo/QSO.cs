@@ -436,7 +436,7 @@ namespace W6OP.ContestLogAnalyzer
         // the raw text of the qso line
         public string RawQSO { get; set; }
 
-        public string OperatortPrefix { get; set; }
+        public string OperatorPrefix { get; set; }
         public string OperatorSuffix { get; set; }
         public string ContactPrefix { get; set; }
         public string ContactSuffix { get; set; }

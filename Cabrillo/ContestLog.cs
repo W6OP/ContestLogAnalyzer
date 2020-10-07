@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace W6OP.ContestLogAnalyzer
 {
@@ -15,13 +11,10 @@ namespace W6OP.ContestLogAnalyzer
         {
             HQPMultipliers = 0;
             NonHQPMultipliers = 0;
-        }
 
-        /// <summary>
-        /// Comments I add while I am anlyzing the logs. May be from when I first load
-        /// or anywhere along the line.
-        /// </summary>
-        //public List<string> AnalyzerComments { get; set; } = new List<string>();
+            QSOCollection = new List<QSO>();
+            QSODictionary = new Dictionary<string, List<QSO>>();
+        }
 
         /// <summary>
         /// Call sign of the log owner.
@@ -74,43 +67,11 @@ namespace W6OP.ContestLogAnalyzer
         public bool SO2R { get; set; }
 
         /// <summary>
-        /// Top level country - Used in HQP
-        /// Applied to US and Canadian stations so I can check the state or province
-        /// 
-        /// I don't think this is ever looked at or used.
-        /// </summary>
-        //public string RealOperatorEntity { get; set; }
-
-        /// <summary>
         /// List of all the QSOs in this log.
         /// </summary>
-        public List<QSO> QSOCollection { get; set; } = new List<QSO>();
+        public List<QSO> QSOCollection { get; set; }
 
-        /// <summary>
-        /// List of all the XQSOs in this log.
-        /// </summary>
-       // public List<QSO> QSOCollectionX { get; set; } = new List<QSO>();
-
-        /// <summary>
-        /// A list of all of the logs that have a reference to the call represented by this log.
-        /// </summary>
-        //private Dictionary<string, ContestLog> _MatchLogs;
-        //public Dictionary<string, ContestLog> MatchLogs { get; set; } = new Dictionary<string, ContestLog>();
-       
-
-        /// <summary>
-        /// List of logs that do not have a QSO with this operator.
-        /// </summary>
-        //private Dictionary<string, ContestLog> _OtherLogs;
-        //public Dictionary<string, ContestLog> OtherLogs { get; set; } = new Dictionary<string, ContestLog>();
-        
-
-        /// <summary>
-        /// Logs that need review.
-        /// </summary>
-        //private Dictionary<string, ContestLog> _ReviewLogs;
-        //public Dictionary<string, ContestLog> ReviewLogs { get; set; } = new Dictionary<string, ContestLog>();
-       
+        public Dictionary<string, List<QSO>> QSODictionary { get; set; }
 
         /// <summary>
         /// Indicates the log meets the criteria necessary to be analysed.
@@ -159,9 +120,6 @@ namespace W6OP.ContestLogAnalyzer
 
         private HashSet<string> _Entities = new HashSet<string>();
         public HashSet<string> Entities { get => _Entities; set => _Entities = value; }
-
-        
-
-
+       
     } // end class
 }
