@@ -1,13 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Objects.SqlClient;
 using System.Linq;
-using System.Security.AccessControl;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
 using W6OP.CallParser;
 
 namespace W6OP.ContestLogAnalyzer
@@ -24,7 +17,6 @@ namespace W6OP.ContestLogAnalyzer
 
         readonly string[] States = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", };
         readonly string[] Provinces = { "NL", "NS", "PE", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU" };
-
 
         public ContestName ActiveContest;
 
@@ -111,7 +103,7 @@ namespace W6OP.ContestLogAnalyzer
                                 // this may be useful other places too
                                 // maybe call all QSOs for an individual for their entity
                                 var mostUsedOperatorEntity = qsoList
-                                    .GroupBy(q => q.OperatorEntity)
+                                    .GroupBy(q => q.OriginalOperatorEntity)
                                     .OrderByDescending(gp => gp.Count())
                                     .Take(5)
                                     .Select(g => g.Key).ToList();
@@ -201,7 +193,7 @@ namespace W6OP.ContestLogAnalyzer
                                 // this may be useful other places too
                                 // maybe call all QSOs for an individual for their entity
                                 var mostUsedOperatorEntity = qsoList
-                                    .GroupBy(q => q.OperatorEntity)
+                                    .GroupBy(q => q.OriginalOperatorEntity)
                                     .OrderByDescending(gp => gp.Count())
                                     .Take(5)
                                     .Select(g => g.Key).ToList();
@@ -221,7 +213,7 @@ namespace W6OP.ContestLogAnalyzer
                                     // may combine this withMatchQSOs()
                                     if (qso.Status != QSOStatus.InvalidQSO)
                                     {
-                                       // SearchHQPBustedCallSigns(qso);
+                                        //SearchHQPBustedCallSigns(qso);
                                     }
                                 }
                                 else
@@ -597,10 +589,10 @@ namespace W6OP.ContestLogAnalyzer
 
             // List of List<QSO> from the list of contest logs that match this operator call sign
             qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall).ToList();
-
+            
             // this can have more entries than qsos because the list is flattened
             matches = qsos.SelectMany(x => x.Value)
-                .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band && y.Mode == qso.Mode && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= 1)
+                .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band && y.Mode == qso.Mode && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= 2)
                 .ToList();
 
             // found a match so we mark both as matches and add matching QSO
@@ -610,7 +602,7 @@ namespace W6OP.ContestLogAnalyzer
                 matches[0].MatchingQSO = qso;
                 return;
             }
-
+ 
             // match not found so lets widen the search
             if (matches.Count == 0)
             {
@@ -1561,11 +1553,33 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="entity"></param>
         private void MarkIncorrectSentEntity(List<QSO> qsoList, string entity)
         {
-            List<QSO> qsos = qsoList.Where(q => q.OperatorEntity != entity && q.Status == QSOStatus.ValidQSO).ToList();
+            List<QSO> qsos = qsoList.Where(q => q.OriginalOperatorEntity != entity && q.Status == QSOStatus.ValidQSO).ToList();
+
+            //  case string _ when pattern.Last().ToString().Contains("/"):
+            //  if (Enum.IsDefined(typeof(HQPMults), qso.ContactEntity))
+            // if there is only one then check it is valid
+            if (qsoList.Count == 1)
+            {
+                switch (qsoList[0].OriginalOperatorEntity)
+                {
+                    case "DX":
+                        return;
+                    case string _ when States.Contains(qsoList[0].OriginalOperatorEntity):
+                        return;
+                    case string _ when Provinces.Contains(qsoList[0].OriginalOperatorEntity):
+                        return;
+                    case string _ when Enum.IsDefined(typeof(HQPMults), qsoList[0].OriginalOperatorEntity):
+                        return;
+                    default:
+                        qsoList[0].SentEntityIsInValid = true;
+                        break;
+                }
+
+            }
 
             if (qsos.Any())
             {
-                _ = qsos.Select(c => { c.EntityIsInValid = false; return c; })
+                _ = qsos.Select(c => { c.SentEntityIsInValid = true; return c; })
                         .ToList();
             }
         }

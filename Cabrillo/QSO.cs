@@ -533,6 +533,33 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
+        /// HQP only.
+        /// The entity does not match this QSO.
+        /// </summary>
+        private bool _SentEntityIsInValid = false;
+        public bool SentEntityIsInValid
+        {
+            set
+            {
+                _SentEntityIsInValid = value;
+                if (value == true)
+                {
+                    ReasonRejected = RejectReason.InvalidSentEntity;
+                    _Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    ReasonRejected = RejectReason.None;
+                    _Status = QSOStatus.ValidQSO;
+                }
+            }
+            get
+            {
+                return _SentEntityIsInValid;
+            }
+        }
+
+        /// <summary>
         /// Contact country - HQP - This can be state or Canadian province 2 letter code
         /// or 3 letter HQP entity code
         /// This is equivalent to the Contact Name for the CWOpen
