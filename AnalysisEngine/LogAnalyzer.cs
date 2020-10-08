@@ -221,7 +221,7 @@ namespace W6OP.ContestLogAnalyzer
                                     // may combine this withMatchQSOs()
                                     if (qso.Status != QSOStatus.InvalidQSO)
                                     {
-                                        SearchHQPBustedCallSigns(qso);
+                                       // SearchHQPBustedCallSigns(qso);
                                     }
                                 }
                                 else
@@ -231,8 +231,10 @@ namespace W6OP.ContestLogAnalyzer
                             }
                         }
 
-                        //MatchQSOs(qsoList, contestLogList, call);
+                        // did busted call signs take care of this?
+                        MatchQSOs(qsoList, contestLogList, call);
 
+                        // need to account for some already being marked
                         MarkDuplicateQSOs(qsoList);
 
                         validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
@@ -385,9 +387,10 @@ namespace W6OP.ContestLogAnalyzer
                 mode = qso.Mode;
                 contactName = qso.ContactName;
                 contactCall = qso.ContactCall;
-                dxEntity = qso.OperatorEntity;
+                dxEntity = qso.OriginalOperatorEntity;   //qso.OperatorEntity; NEED TO MAKE EVERYTHING CONSISTANT
                 receivedSerialNumber = qso.ReceivedSerialNumber;
                 tempLog = null;
+                matchLog = null;
 
               
                 // if its invalid we don't care about matches
@@ -442,12 +445,12 @@ namespace W6OP.ContestLogAnalyzer
                             if ((CategoryMode)Enum.Parse(typeof(CategoryMode), mode) == CategoryMode.RY)
                             {
                                 // don't check the time on digi contacts per Alan 09/25,2020
-                                matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.ContactEntity == dxEntity && q.OperatorCall == contactCall &&
+                                matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.OriginalContactEntity == dxEntity && q.OperatorCall == contactCall &&
                                                       q.ContactCall == operatorCall && q.Mode == mode);
                             } else
                             {
-                                matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.ContactEntity == dxEntity && q.OperatorCall == contactCall &&
-                                                     q.ContactCall == operatorCall && q.Mode == mode && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).Minutes) <= 5);
+                                matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.OriginalContactEntity == dxEntity && q.OperatorCall == contactCall &&
+                                                     q.ContactCall == operatorCall && q.Mode == mode && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).TotalMinutes) <= 5);
                             }
 
                             break;

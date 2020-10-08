@@ -331,6 +331,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             List<QSO> query = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
 
+            // use IEnumerable and get count directlt without ToList()
             List<QSO> phoneTotal = query.Where(q => q.Mode == "PH").ToList();
             List<QSO> cwTotal = query.Where(q => q.Mode == "CW").ToList();
             List<QSO> digiTotal = query.Where(q => q.Mode != "PH" && q.Mode != "CW").ToList();
