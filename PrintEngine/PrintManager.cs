@@ -373,15 +373,22 @@ namespace W6OP.PrintEngine
                                     value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 case RejectReason.BustedCallSign:
-                                    if (qso.MatchingQSO != null)
+                                    //value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.ContactCall + " --> " + qso.BustedCallGuess;
+                                    if (qso.HasBeenPrinted == false)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.ContactCall + " --> " + qso.MatchingQSO.OperatorCall;
+                                        /*
+                                         > This QSO is not in the other operators log or the call may be busted
+> QSO: 14039 CW 2020-08-22 2226 AH6KO 599 HIL NS6T 599 AL
+> QSO: 14039 CW 2020-08-22 2226 NH6T 599 AL AH6KO 599 HIL
+                                         */
+                                        message = "This QSO is not in the other operators log or the call may be busted:";
+                                        sw.WriteLine(message);
+
+                                        PrintNearestMatches(qso, sw);
+                                        sw.WriteLine("");
                                     }
-                                    else
-                                    {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.ContactCall + " --> " + qso.BustedCallGuess;
-                                        //value = qso.RejectReasons[key];
-                                    }
+
+                                    message = null;
                                     break;
                                 case RejectReason.SerialNumber:
                                     if (qso.MatchingQSO != null)
@@ -496,6 +503,47 @@ namespace W6OP.PrintEngine
             }
         }
 
+        private void PrintNearestMatches(QSO qso, StreamWriter sw)
+        {
+            string message = "";
+
+            switch (ActiveContest)
+            {
+                case ContestName.CW_OPEN:
+                    message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
+                  qso.MatchingQSO.OperatorName + "\t" + qso.MatchingQSO.ContactCall + "\t" + qso.MatchingQSO.ReceivedSerialNumber.ToString() + "\t" + qso.MatchingQSO.ContactName;
+                    break;
+                case ContestName.HQP:
+                    message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentReport.ToString() + "\t" +
+                  qso.OperatorEntity + "\t" + qso.ContactCall + "\t" + qso.ReceivedReport.ToString() + "\t" + qso.ContactEntity;
+                    break;
+            }
+
+            sw.WriteLine(message);
+
+            if (qso.NearestMatches.Count > 0)
+            {
+                sw.WriteLine("Nearest matches found:");
+                foreach (QSO item in qso.NearestMatches)
+                {
+                    qso = item;
+                    switch (ActiveContest)
+                    {
+                        case ContestName.CW_OPEN:
+                            message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
+                          qso.MatchingQSO.OperatorName + "\t" + qso.MatchingQSO.ContactCall + "\t" + qso.MatchingQSO.ReceivedSerialNumber.ToString() + "\t" + qso.MatchingQSO.ContactName;
+                            break;
+                        case ContestName.HQP:
+                            message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentReport.ToString() + "\t" +
+                       qso.OperatorEntity + "\t" + qso.ContactCall + "\t" + qso.ReceivedReport.ToString() + "\t" + qso.ContactEntity;
+                            break;
+                    }
+
+                    sw.WriteLine(message);
+                }
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -503,7 +551,7 @@ namespace W6OP.PrintEngine
         /// <param name="sw"></param>
         private void PrintDuplicates(QSO qso, StreamWriter sw) // dupeListLocation
         {
-            string message = null;
+            string message = "";
 
             QSO item = qso.MatchingQSO;
 

@@ -127,7 +127,7 @@ namespace W6OP.ContestLogAnalyzer
                                     // may combine this withMatchQSOs()
                                     if (qso.Status != QSOStatus.InvalidQSO)
                                     {
-                                        SearchHQPBustedCallSigns(qso);
+                                        FindHQPMatches(qso);
                                     }
                                 }
                                 else
@@ -493,7 +493,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="contestLog"></param>
         /// <param name="qso"></param>
-        private void SearchHQPBustedCallSigns(QSO qso)
+        private void FindHQPMatches(QSO qso)
         {
             List<QSO> matches;
             List<KeyValuePair<string, List<QSO>>> qsos;
@@ -516,14 +516,14 @@ namespace W6OP.ContestLogAnalyzer
             {
                 return;
             }
-
+            // QSO: 14037 CW 2020-08-22 0420 AH6KO 599 HIL K6ICS 599 CA
             // all logs with this operator call sign
             List<ContestLog> contestLogs = CallDictionary[qso.OperatorCall];
 
             // List of List<QSO> from the list of contest logs that match this operator call sign
             qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall).ToList();
 
-            matches = FindMatch(qsos, qso, 1, 2);
+            matches = FindMatch(qsos, qso, 2, 1);
 
             switch(matches.Count)
             {
@@ -556,6 +556,7 @@ namespace W6OP.ContestLogAnalyzer
                 default:
                     // more than two so we have to do more analysis
                     var a = 1;
+                    Console.WriteLine("FindHQPMatches:");
                     break;
             }
 
@@ -590,6 +591,7 @@ namespace W6OP.ContestLogAnalyzer
                     return;
                 default:
                     var b = 1;
+                    Console.WriteLine("FindHQPMatches:");
                     break;
             }
 
