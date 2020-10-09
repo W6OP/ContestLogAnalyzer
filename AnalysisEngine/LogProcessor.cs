@@ -67,23 +67,23 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public int BuildFileList(Session session, out IEnumerable<FileInfo> logFileList)
         {
-            string fileNameFormat = null;
+            string fileNameFormat = "*.log";
             // Take a snapshot of the file system. http://msdn.microsoft.com/en-us/library/bb546159.aspx
             DirectoryInfo dir = new DirectoryInfo(LogSourceFolder);
 
-            switch (ActiveContest)
-            {
-                case ContestName.CW_OPEN:
-                    //fileNameFormat = "*_" + ((uint)session).ToString() + ".log";
-                    fileNameFormat = "*.log";
-                    break;
-                case ContestName.HQP:
-                    fileNameFormat = "*.log";
-                    break;
-                default:
-                    fileNameFormat = "*.log";
-                    break;
-            }
+            // CWOpen logs are no longer named by session
+            //switch (ActiveContest)
+            //{
+            //    case ContestName.CW_OPEN:
+            //        fileNameFormat = "*.log";
+            //        break;
+            //    case ContestName.HQP:
+            //        fileNameFormat = "*.log";
+            //        break;
+            //    default:
+            //        fileNameFormat = "*.log";
+            //        break;
+            //}
 
             // This method assumes that the application has discovery permissions for all folders under the specified path.
             IEnumerable<FileInfo> fileList = dir.GetFiles(fileNameFormat, System.IO.SearchOption.TopDirectoryOnly);
@@ -518,8 +518,6 @@ namespace W6OP.ContestLogAnalyzer
                 if (qso.ContactEntity.Length != 3)
                 {
                     qso.EntityIsInValid = true;
-                    //qso.Status = QSOStatus.InvalidQSO;
-                   // qso.ReasonRejected = RejectReason.InvalidEntity;
                     continue;
                 }
 
@@ -551,6 +549,7 @@ namespace W6OP.ContestLogAnalyzer
                 // at this point we have the country info
                 SetContactCountry(qso);
 
+                qso.OperatorCountry = HQPHawaiiLiteral;
                 qso.HQPEntity = qso.OperatorEntity;
                 qso.IsHQPEntity = true;
 
@@ -655,30 +654,64 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (qso.Status != QSOStatus.InvalidQSO)
             {
-                if (qso.OperatorEntity == "DX")
-                {
-                    IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.OperatorCall);
-                    List<CallSignInfo> hitList = hitCollection.ToList();
-                    if (hitList.Count != 0)
-                    {
-                        qso.OperatorEntity = hitList[0].Country;
 
-                        if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
+                switch (qso.OperatorEntity)
+                {
+                    case "DX":
+                        IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.OperatorCall);
+                        List<CallSignInfo> hitList = hitCollection.ToList();
+                        if (hitList.Count != 0)
                         {
-                            qso.ContactCountry = hitList[0].Province;
+                            qso.OperatorCountry = hitList[0].Country;
+                            // qso.OperatorEntity = hitList[0].Country;
+
+                            if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
+                            {
+                                qso.ContactCountry = hitList[0].Province;
+                            }
                         }
-                    }
-                    else
-                    {
-                        qso.Status = QSOStatus.InvalidQSO;
-                        qso.ReasonRejected = RejectReason.EntityName;
-                    }
+                        else
+                        {
+                            qso.Status = QSOStatus.InvalidQSO;
+                            qso.ReasonRejected = RejectReason.EntityName;
+                        }
+                        break;
+                    case string _ when States.Contains(qso.OperatorEntity):
+                        qso.OperatorCountry = HQPUSALiteral;
+                        break;
+                    case string _ when Provinces.Contains(qso.OperatorEntity):
+                        qso.OperatorCountry = HQPCanadaLiteral;
+                        return;
+                    case string _ when Enum.IsDefined(typeof(HQPMults), qso.OperatorEntity):
+                        qso.OperatorCountry = HQPHawaiiLiteral;
+                        return;
                 }
+              
+                //if (qso.OperatorEntity == "DX")
+                //{
+                //    IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.OperatorCall);
+                //    List<CallSignInfo> hitList = hitCollection.ToList();
+                //    if (hitList.Count != 0)
+                //    {
+                //        qso.OperatorCountry = hitList[0].Country;
+                //        // qso.OperatorEntity = hitList[0].Country;
+
+                //        if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
+                //        {
+                //            qso.ContactCountry = hitList[0].Province;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        qso.Status = QSOStatus.InvalidQSO;
+                //        qso.ReasonRejected = RejectReason.EntityName;
+                //    }
+                //}
             }
         }
 
         /// <summary>
-        /// This never seems to get hit!
+        /// This never seems to get hit! -> if (qso.ContactEntity == "DX")
         /// Set the correct entity for HQP participants (contacts).
         /// The correct territory was found from the CallParser component
         /// </summary>
@@ -1006,16 +1039,18 @@ namespace W6OP.ContestLogAnalyzer
                              OperatorPrefix = prefix,
                              OperatorSuffix = suffix,
                              SentSerialNumber = ConvertSerialNumber(split[6], line),
+                             SentReport = split[6],
                              OperatorName = CheckActiveContest(split[7], "OperatorName").ToUpper(),
                              OperatorEntity = CheckActiveContest(split[7], "OperatorEntity").ToUpper(),
-                             OriginalOperatorEntity = CheckActiveContest(split[7], "OperatorEntity").ToUpper(),
+                             //OriginalOperatorEntity = CheckActiveContest(split[7], "OperatorEntity").ToUpper(),
                              ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
                              ReceivedSerialNumber = ConvertSerialNumber(split[9], line),
+                             ReceivedReport = split[9],
                              ContactName = CheckActiveContest(split[10], "ContactName").ToUpper(),
                              ContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
-                             OriginalContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
+                            // OriginalContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this?? ValidateCallSign(split[8].ToUpper())
                              SessionIsValid = CheckForValidSession(session, split[4])
                          };
@@ -1040,15 +1075,17 @@ namespace W6OP.ContestLogAnalyzer
                              OperatorSuffix = suffix,
                              OperatorName = CheckActiveContest(split[6], "OperatorName").ToUpper(),
                              OperatorEntity = CheckActiveContest(split[6], "OperatorEntity").ToUpper(),
-                             OriginalOperatorEntity = CheckActiveContest(split[6], "OperatorEntity").ToUpper(),
+                             //OriginalOperatorEntity = CheckActiveContest(split[6], "OperatorEntity").ToUpper(),
                              SentSerialNumber = ConvertSerialNumber(split[7], line),
+                             SentReport =split[6],
                              ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
                              ContactPrefix = prefix,
                              ContactSuffix = suffix,
                              ContactName = CheckActiveContest(split[9], "ContactName").ToUpper(),
                              ContactEntity = CheckActiveContest(split[9], "ContactEntity").ToUpper(),
-                             OriginalContactEntity = CheckActiveContest(split[9], "ContactEntity").ToUpper(),
+                             //OriginalContactEntity = CheckActiveContest(split[9], "ContactEntity").ToUpper(),
                              ReceivedSerialNumber = ConvertSerialNumber(split[10], line),
+                             ReceivedReport = split[9],
                              CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForValidSession(session, split[4])
                          };
@@ -1392,7 +1429,7 @@ namespace W6OP.ContestLogAnalyzer
         // http://stackoverflow.com/questions/18547354/c-sharp-linq-find-duplicates-in-list
 
         /// <summary>
-        /// Convert a string to an Int32. Also extract a number from a string as a serial
+        /// Convert a string to an int. Also extract a number from a string as a serial
         /// number may be O39 instead of 039.
         /// </summary>
         /// <param name="serialNumber"></param>

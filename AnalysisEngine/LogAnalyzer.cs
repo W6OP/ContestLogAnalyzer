@@ -34,6 +34,7 @@ namespace W6OP.ContestLogAnalyzer
         public Dictionary<string, List<ContestLog>> CallDictionary;
         public Dictionary<int, List<ContestLog>> BandDictionary;
         public Dictionary<string, List<ContestLog>> ModeDictionary;
+        private List<ContestLog> ContestLogList;
 
         /// <summary>
         /// Default constructor.
@@ -63,92 +64,6 @@ namespace W6OP.ContestLogAnalyzer
         /// Does it show up in any other logs? Good check to see if it is a valid callsign
         /// Build a collection of totaly unique calls
         /// </summary>
-        public void PreAnalyzeContestLogsOld(List<ContestLog> contestLogList, Dictionary<string, List<ContestLog>> callDictionary, Dictionary<int, List<ContestLog>> bandlDictionary, Dictionary<string, List<ContestLog>> modeDictionary)
-        {
-            CallDictionary = callDictionary;
-            BandDictionary = bandlDictionary;
-            ModeDictionary = modeDictionary;
-
-            List<QSO> qsoList = new List<QSO>();
-            string call = null;
-            string name = null;
-            int progress = 0;
-            int validQsos;
-
-            // Display the label
-            OnProgressUpdate?.Invoke("1", "", "", 0);
-
-            try
-            {
-                foreach (ContestLog contestLog in contestLogList)
-                {
-                    call = contestLog.LogOwner;
-
-                    progress++;
-
-                    if (!contestLog.IsCheckLog && contestLog.IsValidLog)
-                    {
-                        qsoList = contestLog.QSOCollection;
-
-                        MarkIncorrectCallSigns(qsoList, call);
-
-                        switch (ActiveContest)
-                        {
-                            case ContestName.CW_OPEN:
-                                name = contestLog.LogHeader.NameSent;
-                                MarkIncorrectSentName(qsoList, name);
-                                break;
-                            case ContestName.HQP:
-                                // find the operator entity used on the majority of qsos
-                                // this may be useful other places too
-                                // maybe call all QSOs for an individual for their entity
-                                var mostUsedOperatorEntity = qsoList
-                                    .GroupBy(q => q.OriginalOperatorEntity)
-                                    .OrderByDescending(gp => gp.Count())
-                                    .Take(5)
-                                    .Select(g => g.Key).ToList();
-
-                                MarkIncorrectSentEntity(qsoList, mostUsedOperatorEntity[0]);
-                                break;
-                        }
-
-                        /*
-                         if (ActiveContest == ContestName.HQP)
-                {
-                    found = SearchForIncorrectEntity(qso, contestLogList);
-                }
-                else
-                {
-                    found = SearchForIncorrectName(qso, contestLogList);
-                } 
-                         */
-
-
-
-                        MatchQSOs(qsoList, contestLogList, call);
-
-
-
-
-                        MarkDuplicateQSOs(qsoList);
-
-                        validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
-
-                        // ReportProgress with Callsign
-                        OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                OnProgressUpdate?.Invoke("Error" + ex.Message, "", "", 0);
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="contestLogList"></param>
         /// <param name="callDictionary"></param>
         /// <param name="bandlDictionary"></param>
@@ -158,6 +73,7 @@ namespace W6OP.ContestLogAnalyzer
             CallDictionary = callDictionary;
             BandDictionary = bandlDictionary;
             ModeDictionary = modeDictionary;
+            ContestLogList = contestLogList;
 
             List<QSO> qsoList = new List<QSO>();
             string call = null;
@@ -180,7 +96,7 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         qsoList = contestLog.QSOCollection;
 
-                        MarkIncorrectCallSigns(qsoList, call);
+                        MarkIncorrectOperatorCallSigns(qsoList, call);
 
                         switch (ActiveContest)
                         {
@@ -190,10 +106,8 @@ namespace W6OP.ContestLogAnalyzer
                                 break;
                             case ContestName.HQP:
                                 // find the operator entity used on the majority of qsos
-                                // this may be useful other places too
-                                // maybe call all QSOs for an individual for their entity
                                 var mostUsedOperatorEntity = qsoList
-                                    .GroupBy(q => q.OriginalOperatorEntity)
+                                    .GroupBy(q => q.OperatorEntity)
                                     .OrderByDescending(gp => gp.Count())
                                     .Take(5)
                                     .Select(g => g.Key).ToList();
@@ -213,7 +127,7 @@ namespace W6OP.ContestLogAnalyzer
                                     // may combine this withMatchQSOs()
                                     if (qso.Status != QSOStatus.InvalidQSO)
                                     {
-                                        //SearchHQPBustedCallSigns(qso);
+                                        SearchHQPBustedCallSigns(qso);
                                     }
                                 }
                                 else
@@ -224,10 +138,10 @@ namespace W6OP.ContestLogAnalyzer
                         }
 
                         // did busted call signs take care of this?
-                        MatchQSOs(qsoList, contestLogList, call);
+                        //MatchQSOs(qsoList, contestLogList, call);
 
                         // need to account for some already being marked
-                        MarkDuplicateQSOs(qsoList);
+                        //MarkDuplicateQSOs(qsoList);
 
                         validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
                      
@@ -313,18 +227,18 @@ namespace W6OP.ContestLogAnalyzer
                 if (dupeList.Any())
                 {
                     // set all as dupes
-                    dupeList.Select(c => { c.QSOIsDupe = true && c.Status == QSOStatus.ValidQSO; return c; }).ToList();
+                    dupeList.Select(c => { c.IsDuplicateMatch = true && c.Status == QSOStatus.ValidQSO; return c; }).ToList();
                     // now reset the first one as not a dupe
-                    dupeList.First().QSOIsDupe = false;
+                    dupeList.First().IsDuplicateMatch = false;
                     // let me know it has dupes for the rejected qso report
                     dupeList.First().QSOHasDupes = true;
                     // add all the dupes to the QSO
                     foreach (var item in dupeList.Skip(1))
                     {
-                        dupeList.First().DuplicateQsoList.Add(item);
-                        item.DupeListLocation = dupeList.First();
+                        //dupeList.First().DuplicateQsoList.Add(item);
+                        //item.DupeListLocation = dupeList.First();
                     }
-                    //dupeList[0].DuplicateQsoList = (List<QSO>)dupeList.Skip(1);
+                    
                 }
             }
         }
@@ -334,7 +248,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="qsoList"></param>
         /// <param name="call"></param>
-        private void MarkIncorrectCallSigns(List<QSO> qsoList, string call)
+        private void MarkIncorrectOperatorCallSigns(List<QSO> qsoList, string call)
         {
             List<QSO> qsos = qsoList.Where(q => q.OperatorCall != call && q.Status == QSOStatus.ValidQSO).ToList();
 
@@ -379,7 +293,7 @@ namespace W6OP.ContestLogAnalyzer
                 mode = qso.Mode;
                 contactName = qso.ContactName;
                 contactCall = qso.ContactCall;
-                dxEntity = qso.OriginalOperatorEntity;   //qso.OperatorEntity; NEED TO MAKE EVERYTHING CONSISTANT
+                dxEntity = qso.OperatorEntity;   //qso.OperatorEntity; NEED TO MAKE EVERYTHING CONSISTANT
                 receivedSerialNumber = qso.ReceivedSerialNumber;
                 tempLog = null;
                 matchLog = null;
@@ -437,11 +351,11 @@ namespace W6OP.ContestLogAnalyzer
                             if ((CategoryMode)Enum.Parse(typeof(CategoryMode), mode) == CategoryMode.RY)
                             {
                                 // don't check the time on digi contacts per Alan 09/25,2020
-                                matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.OriginalContactEntity == dxEntity && q.OperatorCall == contactCall &&
+                                matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.ContactEntity == dxEntity && q.OperatorCall == contactCall &&
                                                       q.ContactCall == operatorCall && q.Mode == mode);
                             } else
                             {
-                                matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.OriginalContactEntity == dxEntity && q.OperatorCall == contactCall &&
+                                matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.ContactEntity == dxEntity && q.OperatorCall == contactCall &&
                                                      q.ContactCall == operatorCall && q.Mode == mode && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).TotalMinutes) <= 5);
                             }
 
@@ -451,7 +365,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (matchQSO != null) // found it
                     {
                         // store the matching QSO
-                        qso.HasMatchingQso = true;
+                        qso.HasBeenMatched = true;
                         qso.MatchingQSO = matchQSO;
                     }
                     else if (matchQSO_X != null) // found it
@@ -487,7 +401,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (tempLog.Count <= 1) // 1 would mean this call sign only in this log
                     {
                         // the call is not in any other log
-                        if (!qso.HasMatchingQso)
+                        if (!qso.HasBeenMatched)
                         {
                             qso.Status = QSOStatus.ReviewQSO;
                             //qso.GetRejectReasons().Clear();
@@ -584,58 +498,176 @@ namespace W6OP.ContestLogAnalyzer
             List<QSO> matches;
             List<KeyValuePair<string, List<QSO>>> qsos;
 
+            // if there is only one log this call is in then it is unique
+            if (CallDictionary[qso.ContactCall].Count == 1)
+            {
+                qso.IsUniqueCall = true;
+                return;
+            }
+
+            // there is no matching log for this call so we give him the qso
+            if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() == 0)
+            {
+                return;
+            }
+
+            // no reason to process if it already has a match
+            if (qso.HasBeenMatched)
+            {
+                return;
+            }
+
             // all logs with this operator call sign
             List<ContestLog> contestLogs = CallDictionary[qso.OperatorCall];
 
             // List of List<QSO> from the list of contest logs that match this operator call sign
             qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall).ToList();
-            
-            // this can have more entries than qsos because the list is flattened
-            matches = qsos.SelectMany(x => x.Value)
-                .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band && y.Mode == qso.Mode && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= 2)
-                .ToList();
 
-            // found a match so we mark both as matches and add matching QSO
-            if (matches.Count == 1)
+            matches = FindMatch(qsos, qso, 1, 2);
+
+            switch(matches.Count)
             {
-                qso.MatchingQSO = matches[0];
-                matches[0].MatchingQSO = qso;
-                return;
+                case 0:
+                    // match not found so lets widen the search
+                    matches = FindMatch(qsos, qso, 5, 1);
+                    break;
+                case 1:
+                    // found one match so we mark both as matches and add matching QSO
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+                    return;
+                case 2:
+                    // two matches so these are probably dupes
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+                    qso.QSOHasDupes = true;
+
+                    matches[0].HasBeenMatched = true;
+                    matches[0].MatchingQSO = qso;
+
+                    matches[1].HasBeenMatched = true;
+                    matches[1].MatchingQSO = qso;
+                    matches[1].FirstMatchingQSO = matches[0];
+                    matches[1].IsDuplicateMatch = true;
+                    return;
+                default:
+                    // more than two so we have to do more analysis
+                    var a = 1;
+                    break;
             }
- 
-            // match not found so lets widen the search
-            if (matches.Count == 0)
+
+            // this is hit only if previous switch hit case 0: so we up the time interval
+            switch (matches.Count)
             {
-               matches = qsos.SelectMany(x => x.Value)
-                    .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band && y.Mode == qso.Mode &&  Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= 5)
+                case 0:
+                    // match not found so lets widen the search
+                    matches = FindMatch(qsos, qso, 5, 2);
+                    break;
+                case 1:
+                    // found one match so we mark both as matches and add matching QSO
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+                    return;
+                case 2:
+                    // two matches so these are probably dupes
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+                    qso.QSOHasDupes = true;
+
+                    matches[0].HasBeenMatched = true;
+                    matches[0].MatchingQSO = qso;
+
+                    matches[1].HasBeenMatched = true;
+                    matches[1].MatchingQSO = qso;
+                    matches[1].FirstMatchingQSO = matches[0];
+                    matches[1].IsDuplicateMatch = true;
+                    return;
+                default:
+                    var b = 1;
+                    break;
+            }
+
+            // ok, no hits yet so lets do some more checking and see if we find something with a different call
+            switch (matches.Count)
+            {
+                case 0:
+                    // match not found so lets widen the search
+                    matches = FindMatch(qsos, qso, 5, 3);
+                    break;
+                default:
+                    if (matches.Count > 0)
+                    {
+                        foreach (QSO near in matches)
+                        {
+                            qso.NearestMatches.Add(near);
+                        }
+                    }
+
+                    qso.CallIsBusted = true;
+                    return;
+            }
+
+            switch (matches.Count)
+            {
+                case 0:
+                    // match not found because he is not in that log
+                    // that log does not show up in the CallDictionary for that contact call
+                    qso.CallIsBusted = true;
+                    return;
+                default:
+                    if (matches.Count > 0)
+                    {
+                        foreach (QSO near in matches)
+                        {
+                            qso.NearestMatches.Add(near);
+                        }
+                    }
+
+                    qso.CallIsBusted = true;
+                    return;
+            }
+
+        }
+
+        /// <summary>
+        /// // this can have more entries than qsos because the list is flattened
+        /// </summary>
+        /// <param name="contestLogs"></param>
+        /// <param name="qso"></param>
+        /// <param name="timeInterval"></param>
+        /// <returns></returns>
+        private List<QSO> FindMatch (List<KeyValuePair<string, List<QSO>>> qsos, QSO qso, int timeInterval, int queryLevel)
+        {
+            List<QSO> matches = new List<QSO>();
+
+            switch (queryLevel)
+            {
+                case 1:
+                    matches = qsos.SelectMany(x => x.Value)
+                          .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band && 
+                          y.Mode == qso.Mode && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
+                          .ToList();
+                    break;
+                case 2:
+                    qsos.SelectMany(x => x.Value)
+                    .Where(y => y.OperatorCall == qso.ContactCall && y.Band == qso.Band && y.Mode == qso.Mode && 
+                    Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
                     .ToList();
+                    break;
+                case 3:
+                    matches = qsos.SelectMany(x => x.Value)
+                  .Where(y => y.Band == qso.Band && y.Mode == qso.Mode && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
+                  .ToList();
+                    break;
             }
 
-            // found a single match so we mark both as matches and add matching QSO
-            if (matches.Count == 1)
-            {
-                qso.MatchingQSO = matches[0];
-                matches[0].MatchingQSO = qso;
-                return;
-            }
-
-            // multiple matches found so need to narrow the search
-            // these are probably dupes
-            if (matches.Count > 1)
-            {
-                qso.MatchingQSO = matches[0];
-                matches[0].MatchingQSO = qso;
-                matches[1].QSOIsDupe = true;
-
-                // have QSO class handle this
-                qso.DuplicateQsoList.Add(matches[1]);
-
-            }
-
-            foreach (QSO o in matches)
-            {
-                Console.WriteLine(qso.ContactCall + ":" + o.OperatorCall + ":" + o.QSODateTime);
-            }
+            return matches;
         }
 
         /// <summary>
@@ -948,7 +980,7 @@ namespace W6OP.ContestLogAnalyzer
             // if entity is different
             if (!entity.Contains(qso.ContactEntity))
             {
-                qso.IncorrectDXEntity = $"{qso.OriginalContactEntity} --> {entity}";
+                qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {entity}";
                 qso.EntityIsInValid = true;
             }
         }
@@ -1057,7 +1089,7 @@ namespace W6OP.ContestLogAnalyzer
                 // store the matching QSO
                 qso.MatchingQSO = matchQSO;
                 ts = qso.QSODateTime.Subtract(matchQSO.QSODateTime);
-                qso.ExcessTimeSpan = Math.Abs(ts.Minutes);
+                //qso.ExcessTimeSpan = Math.Abs(ts.Minutes);
 
                 reason = RejectReason.InvalidTime;
             }
@@ -1125,7 +1157,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
 
                 qso.MatchingQSO = matchQSO;
-                qso.HasMatchingQso = true;
+                qso.HasBeenMatched = true;
 
                 if (isMatchQSO)
                 {
@@ -1269,7 +1301,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    matchQSO.HasMatchingQso = true;
+                    matchQSO.HasBeenMatched = true;
                     matchQSO.MatchingQSO = qso;
                     //matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
                     //matchQSO.GetRejectReasons().Add(RejectReason.NoQSOMatch, EnumHelper.GetDescription(RejectReason.NoQSOMatch));
@@ -1553,22 +1585,22 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="entity"></param>
         private void MarkIncorrectSentEntity(List<QSO> qsoList, string entity)
         {
-            List<QSO> qsos = qsoList.Where(q => q.OriginalOperatorEntity != entity && q.Status == QSOStatus.ValidQSO).ToList();
+            List<QSO> qsos = qsoList.Where(q => q.OperatorEntity != entity && q.Status == QSOStatus.ValidQSO).ToList();
 
             //  case string _ when pattern.Last().ToString().Contains("/"):
             //  if (Enum.IsDefined(typeof(HQPMults), qso.ContactEntity))
             // if there is only one then check it is valid
             if (qsoList.Count == 1)
             {
-                switch (qsoList[0].OriginalOperatorEntity)
+                switch (qsoList[0].OperatorEntity)
                 {
                     case "DX":
                         return;
-                    case string _ when States.Contains(qsoList[0].OriginalOperatorEntity):
+                    case string _ when States.Contains(qsoList[0].OperatorEntity):
                         return;
-                    case string _ when Provinces.Contains(qsoList[0].OriginalOperatorEntity):
+                    case string _ when Provinces.Contains(qsoList[0].OperatorEntity):
                         return;
-                    case string _ when Enum.IsDefined(typeof(HQPMults), qsoList[0].OriginalOperatorEntity):
+                    case string _ when Enum.IsDefined(typeof(HQPMults), qsoList[0].OperatorEntity):
                         return;
                     default:
                         qsoList[0].SentEntityIsInValid = true;

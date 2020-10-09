@@ -333,8 +333,8 @@ namespace W6OP.PrintEngine
                                 continue;
                             }
 
-                            if (qso.QSOHasDupes == false && qso.QSOIsDupe == false)
-                            {
+                            if (qso.IsDuplicateMatch == false)
+                                {
                                 switch (ActiveContest)
                                 {
                                     case ContestName.CW_OPEN:
@@ -409,7 +409,7 @@ namespace W6OP.PrintEngine
                                         message = "Duplicates ignored for scoring purposes:";
                                         sw.WriteLine(message);
 
-                                        PrintDuplicates(qso.DupeListLocation, sw);
+                                        PrintDuplicates(qso, sw); // .DupeListLocation
                                         sw.WriteLine("");
                                     }
 
@@ -490,7 +490,7 @@ namespace W6OP.PrintEngine
                     AddFooter(contestLog, sw);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 throw;
             }
@@ -501,16 +501,45 @@ namespace W6OP.PrintEngine
         /// </summary>
         /// <param name="dupeListLocation"></param>
         /// <param name="sw"></param>
-        private void PrintDuplicates(QSO dupeListLocation, StreamWriter sw)
+        private void PrintDuplicates(QSO qso, StreamWriter sw) // dupeListLocation
         {
             string message = null;
 
-            foreach (QSO item in dupeListLocation.DuplicateQsoList)
+            QSO item = qso.MatchingQSO;
+
+            switch (ActiveContest)
             {
+                case ContestName.CW_OPEN:
+                    message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                   item.OperatorName + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactName;
+                    break;
+                case ContestName.HQP:
+                    message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                    item.OperatorEntity + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactEntity;
+                    break;
+            }
 
-                item.HasBeenPrinted = true;
+            sw.WriteLine(message);
 
-                switch (ActiveContest)
+            item = qso.FirstMatchingQSO;
+            sw.WriteLine("First match:");
+            switch (ActiveContest)
+            {
+                case ContestName.CW_OPEN:
+                    message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                   item.OperatorName + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactName;
+                    break;
+                case ContestName.HQP:
+                    message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                    item.OperatorEntity + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactEntity;
+                    break;
+            }
+
+            sw.WriteLine(message);
+
+            item = qso;
+            sw.WriteLine("Duplicate match:");
+            switch (ActiveContest)
                 {
                     case ContestName.CW_OPEN:
                         message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
@@ -523,7 +552,9 @@ namespace W6OP.PrintEngine
                 }
 
                 sw.WriteLine(message);
-            }
+
+            item.HasBeenPrinted = true;
+            //}
         }
 
 
