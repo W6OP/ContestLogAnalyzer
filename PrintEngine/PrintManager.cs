@@ -434,7 +434,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.InvalidEntity:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntity; // + " --> " + qso.MatchingQSO.OperatorEntity;
                                     }
                                     else
                                     {

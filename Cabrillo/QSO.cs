@@ -31,6 +31,12 @@ namespace W6OP.ContestLogAnalyzer
 
         #region Common Properties
 
+        // Indicates a log for this call does not exist
+        public bool NoMatchingLog { get; set; }
+
+        // additional qsos found when no matching log exists - just for reference right now
+        public List<QSO> AdditionalQSOs { get; set; } = new List<QSO>();
+
         public bool IsUniqueCall { get; set; }
         /// <summary>
         /// Indicates a QSO this operator does not get credit for

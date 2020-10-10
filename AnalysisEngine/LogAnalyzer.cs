@@ -497,6 +497,9 @@ namespace W6OP.ContestLogAnalyzer
         {
             List<QSO> matches;
             List<KeyValuePair<string, List<QSO>>> qsos;
+            
+            // all logs with this operator call sign
+            List<ContestLog> contestLogs = CallDictionary[qso.OperatorCall];
 
             // if there is only one log this call is in then it is unique
             if (CallDictionary[qso.ContactCall].Count == 1)
@@ -506,8 +509,21 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // there is no matching log for this call so we give him the qso
+            // may should see if anyone else worked him?
             if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() == 0)
             {
+                qsos = ContestLogList.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.ContactCall).ToList();
+               
+                foreach (KeyValuePair<string, List<QSO>> item in qsos)
+                {
+                    foreach (QSO qItem in item.Value)
+                    {
+                        qso.AdditionalQSOs.Add(qItem);
+                    }
+                }
+
+                qso.NoMatchingLog = true;
+
                 return;
             }
 
@@ -516,16 +532,21 @@ namespace W6OP.ContestLogAnalyzer
             {
                 return;
             }
-            // QSO: 14037 CW 2020-08-22 0420 AH6KO 599 HIL K6ICS 599 CA
-            // all logs with this operator call sign
-            List<ContestLog> contestLogs = CallDictionary[qso.OperatorCall];
+           
 
             // List of List<QSO> from the list of contest logs that match this operator call sign
             qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall).ToList();
 
-            matches = FindMatch(qsos, qso, 2, 1);
+            if (qso.Mode != "RY")
+            {
+                matches = FindMatch(qsos, qso, 2, 1);
+            } 
+            else
+            {
+                matches = FindMatch(qsos, qso, 15, 1);
+            }
 
-            switch(matches.Count)
+            switch (matches.Count)
             {
                 case 0:
                     // match not found so lets widen the search

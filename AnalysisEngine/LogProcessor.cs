@@ -588,7 +588,7 @@ namespace W6OP.ContestLogAnalyzer
                             qso.ContactCountry = hitList[0].Country;
                         }
                         else
-                        {;
+                        {
                             qso.EntityIsInValid = true;
                         }
                     }
@@ -605,6 +605,25 @@ namespace W6OP.ContestLogAnalyzer
                         else
                         {
                             qso.EntityIsInValid = true;
+
+                            hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
+                            hitList = hitCollection.ToList();
+                            if (hitList.Count != 0)
+                            {
+                                qso.ContactCountry = hitList[0].Country.ToUpper();
+                                if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
+                                {
+                                    qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {hitList[0].Province}";
+                                }
+                                else
+                                {
+                                    qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX ({qso.ContactCountry})";
+                                }
+                            } 
+                            else
+                            {
+                                qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {qso.ContactCountry}";
+                            }
                         }
                     }
                     break;
@@ -616,11 +635,16 @@ namespace W6OP.ContestLogAnalyzer
                     else
                     {
                         qso.EntityIsInValid = true;
+                        qso.IncorrectDXEntity = $"{qso.ContactEntity} is not valid for this contest";
                     }
                     
                     break;
                 default:
                     qso.EntityIsInValid = true;
+                    if (qso.ContactEntity == "MISSING_COLUMN")
+                    {
+                        qso.IncorrectDXEntity = "The contact entity column is missing";
+                    }
                     break;
             }
         }
@@ -654,7 +678,6 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (qso.Status != QSOStatus.InvalidQSO)
             {
-
                 switch (qso.OperatorEntity)
                 {
                     case "DX":
@@ -686,27 +709,6 @@ namespace W6OP.ContestLogAnalyzer
                         qso.OperatorCountry = HQPHawaiiLiteral;
                         return;
                 }
-              
-                //if (qso.OperatorEntity == "DX")
-                //{
-                //    IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.OperatorCall);
-                //    List<CallSignInfo> hitList = hitCollection.ToList();
-                //    if (hitList.Count != 0)
-                //    {
-                //        qso.OperatorCountry = hitList[0].Country;
-                //        // qso.OperatorEntity = hitList[0].Country;
-
-                //        if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
-                //        {
-                //            qso.ContactCountry = hitList[0].Province;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        qso.Status = QSOStatus.InvalidQSO;
-                //        qso.ReasonRejected = RejectReason.EntityName;
-                //    }
-                //}
             }
         }
 
