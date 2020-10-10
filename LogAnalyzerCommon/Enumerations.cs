@@ -68,7 +68,7 @@ namespace W6OP.ContestLogAnalyzer
     /// <summary>
     /// http://stackoverflow.com/questions/3916914/c-sharp-using-numbers-in-an-enum
     /// </summary>
-    public enum CategoryBand
+    public enum QSOBand
     {
         [Description("ALL")]
         ALL,
@@ -127,17 +127,27 @@ namespace W6OP.ContestLogAnalyzer
     }
 
 
-    public enum CategoryMode
+    public enum QSOMode
     {
+        [Description("PH")]
         SSB,
+        [Description("PH")]
         USB,
+        [Description("CW")]
         CW,
+        [Description("RY")]
         DIGI,
+        [Description("RY")]
         DG,
+        [Description("PH")]
         PH,
+        [Description("RY")]
         RTTY,
+        [Description("RY")]
         RY,
+        [Description("RY")]
         FT8,
+        [Description("MIXED")]
         MIXED
     }
 

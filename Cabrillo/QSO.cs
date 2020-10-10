@@ -25,7 +25,7 @@ namespace W6OP.ContestLogAnalyzer
         private bool qsoIsDupe = false;
         private DateTime qsoDateTime;
         private string frequency;
-        private string mode;
+        private QSOMode mode;
 
         #endregion
 
@@ -38,6 +38,7 @@ namespace W6OP.ContestLogAnalyzer
         public List<QSO> AdditionalQSOs { get; set; } = new List<QSO>();
 
         public bool IsUniqueCall { get; set; }
+
         /// <summary>
         /// Indicates a QSO this operator does not get credit for
         /// but others do.
@@ -65,7 +66,6 @@ namespace W6OP.ContestLogAnalyzer
         public QSO MatchingQSO { get; set; }
 
         public QSO FirstMatchingQSO { get; set; }
-
 
         public List<QSO> NearestMatches { get; set; } = new List<QSO>();
 
@@ -235,7 +235,7 @@ namespace W6OP.ContestLogAnalyzer
         /// this should be an enum
         /// Later change this to use CategoryMode Enum
         /// </summary>
-        public string Mode
+        public QSOMode Mode
         {
             get { return mode; }
             set
@@ -514,29 +514,17 @@ namespace W6OP.ContestLogAnalyzer
         {
             try
             {
-                CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), Mode);
+                //CategoryMode catMode = mode;
 
-                switch (catMode)
+                HQPPoints = mode switch
                 {
-                    case CategoryMode.CW:
-                        HQPPoints = 3;
-                        break;
-                    case CategoryMode.RTTY:
-                        HQPPoints = 3;
-                        break;
-                    case CategoryMode.RY:
-                        HQPPoints = 3;
-                        break;
-                    case CategoryMode.PH:
-                        HQPPoints = 2;
-                        break;
-                    case CategoryMode.SSB:
-                        HQPPoints = 2;
-                        break;
-                    default:
-                        HQPPoints = 0;
-                        break;
-                }
+                    QSOMode.CW => 3,
+                    QSOMode.RTTY => 3,
+                    QSOMode.RY => 3,
+                    QSOMode.PH => 2,
+                    QSOMode.SSB => 2,
+                    _ => 0,
+                };
             }
             catch (Exception)
             {

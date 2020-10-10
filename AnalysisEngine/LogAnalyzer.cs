@@ -68,11 +68,11 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="callDictionary"></param>
         /// <param name="bandlDictionary"></param>
         /// <param name="modeDictionary"></param>
-        public void PreAnalyzeContestLogs(List<ContestLog> contestLogList, Dictionary<string, List<ContestLog>> callDictionary, Dictionary<int, List<ContestLog>> bandlDictionary, Dictionary<string, List<ContestLog>> modeDictionary)
+        public void PreAnalyzeContestLogs(List<ContestLog> contestLogList, Dictionary<string, List<ContestLog>> callDictionary, Dictionary<int, List<ContestLog>> bandlDictionary)
         {
             CallDictionary = callDictionary;
             BandDictionary = bandlDictionary;
-            ModeDictionary = modeDictionary;
+           // ModeDictionary = modeDictionary;
             ContestLogList = contestLogList;
 
             List<QSO> qsoList = new List<QSO>();
@@ -290,7 +290,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 qsoDateTime = qso.QSODateTime;
                 band = qso.Band;
-                mode = qso.Mode;
+                mode = EnumHelper.GetDescription(qso.Mode);
                 contactName = qso.ContactName;
                 contactCall = qso.ContactCall;
                 dxEntity = qso.OperatorEntity;   //qso.OperatorEntity; NEED TO MAKE EVERYTHING CONSISTANT
@@ -348,15 +348,15 @@ namespace W6OP.ContestLogAnalyzer
                         case ContestName.HQP:
                             // now see if a QSO matches this QSO
 
-                            if ((CategoryMode)Enum.Parse(typeof(CategoryMode), mode) == CategoryMode.RY)
+                            if ((QSOMode)Enum.Parse(typeof(QSOMode), mode) == QSOMode.RY)
                             {
                                 // don't check the time on digi contacts per Alan 09/25,2020
                                 matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.ContactEntity == dxEntity && q.OperatorCall == contactCall &&
-                                                      q.ContactCall == operatorCall && q.Mode == mode);
+                                                      q.ContactCall == operatorCall && EnumHelper.GetDescription(q.Mode) == mode);
                             } else
                             {
                                 matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.ContactEntity == dxEntity && q.OperatorCall == contactCall &&
-                                                     q.ContactCall == operatorCall && q.Mode == mode && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).TotalMinutes) <= 5);
+                                                     q.ContactCall == operatorCall && EnumHelper.GetDescription(q.Mode) == mode && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).TotalMinutes) <= 5);
                             }
 
                             break;
@@ -537,7 +537,7 @@ namespace W6OP.ContestLogAnalyzer
             // List of List<QSO> from the list of contest logs that match this operator call sign
             qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall).ToList();
 
-            if (qso.Mode != "RY")
+            if (EnumHelper.GetDescription(qso.Mode) != "RY")
             {
                 matches = FindMatch(qsos, qso, 2, 1);
             } 
@@ -1096,7 +1096,7 @@ namespace W6OP.ContestLogAnalyzer
                     break;
                 case ContestName.HQP:
                     // don't check the time on digi contacts per Alan 09/25,2020
-                    if ((CategoryMode)Enum.Parse(typeof(CategoryMode), qso.Mode) != CategoryMode.RY)
+                    if (qso.Mode != QSOMode.RY)
                     {
                         matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.Mode == qso.Mode &&
                       q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) > 5); //  && q.ContactEntity == qso.ContactEntity 

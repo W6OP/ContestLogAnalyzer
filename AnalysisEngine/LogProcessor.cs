@@ -46,7 +46,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public Dictionary<string, List<ContestLog>> CallDictionary;
         public Dictionary<int, List<ContestLog>> BandDictionary;
-        public Dictionary<string, List<ContestLog>> ModeDictionary;
+        public Dictionary<QSOMode, List<ContestLog>> ModeDictionary;
 
         /// <summary>
         /// Default constructor.
@@ -55,7 +55,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             CallDictionary = new Dictionary<string, List<ContestLog>>();
             BandDictionary = new Dictionary<int, List<ContestLog>>();
-            ModeDictionary = new Dictionary<string, List<ContestLog>>();
+            ModeDictionary = new Dictionary<QSOMode, List<ContestLog>>();
 
             FailingLine = "";
             WorkingLine = "";
@@ -869,9 +869,9 @@ namespace W6OP.ContestLogAnalyzer
                         OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY:")).DefaultIfEmpty("CATEGORY: SINGLE-OP").First().Substring(9).Trim().ToUpper()),
                         // this is for when the CATEGORY-ASSISTED: is missing or has no value
                         Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: ASSISTED").First(), 18, "ASSISTED")),   //.Substring(18).Trim().ToUpper()),
-                        Band = Utility.GetValueFromDescription<CategoryBand>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).DefaultIfEmpty("CATEGORY-BAND: ALL").First(), 14, "ALL")),
+                        Band = Utility.GetValueFromDescription<QSOBand>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).DefaultIfEmpty("CATEGORY-BAND: ALL").First(), 14, "ALL")),
                         Power = Utility.GetValueFromDescription<CategoryPower>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-POWER:")).DefaultIfEmpty("CATEGORY-POWER: HIGH").First(), 15, "HIGH")),
-                        Mode = Utility.GetValueFromDescription<CategoryMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
+                        Mode = Utility.GetValueFromDescription<QSOMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
                         Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
                         Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
                         ClaimedScore = Convert.ToInt32(CheckForNumeric(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First(), 14, "0"))),
@@ -951,9 +951,9 @@ namespace W6OP.ContestLogAnalyzer
                     OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY-OPERATOR:")).DefaultIfEmpty("CATEGORY-OPERATOR: SINGLE-OP").First().Substring(18).Trim().ToUpper()),
                     // this is for when the CATEGORY-ASSISTED: is missing or has no value
                     Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: ASSISTED").First(), 18, "ASSISTED")),
-                    Band = Utility.GetValueFromDescription<CategoryBand>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).DefaultIfEmpty("CATEGORY-BAND: ALL").First(), 14, "ALL")),
+                    Band = Utility.GetValueFromDescription<QSOBand>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).DefaultIfEmpty("CATEGORY-BAND: ALL").First(), 14, "ALL")),
                     Power = Utility.GetValueFromDescription<CategoryPower>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-POWER:")).DefaultIfEmpty("CATEGORY-POWER: HIGH").First(), 15, "HIGH")),
-                    Mode = Utility.GetValueFromDescription<CategoryMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
+                    Mode = Utility.GetValueFromDescription<QSOMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
                     Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
                     Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
                     ClaimedScore = Convert.ToInt32(CheckForNumeric(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First().Replace(",", ""), 14, "0"))), // some guys do score as 52,000
@@ -1034,7 +1034,7 @@ namespace W6OP.ContestLogAnalyzer
                              RawQSO = line,
                              Status = CheckCompleteQSO(split, line),
                              Frequency = CheckFrequency(split[1], line),
-                             Mode = NormalizeMode(split[2]).ToUpper(),
+                             Mode = NormalizeMode(split[2]),
                              QsoDate = split[3],
                              QsoTime = CheckTime(split[4], line),
                              OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
@@ -1069,7 +1069,7 @@ namespace W6OP.ContestLogAnalyzer
                              RawQSO = line,
                              Status = CheckCompleteQSO(split, line),
                              Frequency = CheckFrequency(split[1], line),
-                             Mode = NormalizeMode(split[2]).ToUpper(),
+                             Mode = NormalizeMode(split[2]),
                              QsoDate = split[3],
                              QsoTime = CheckTime(split[4], line),
                              OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
@@ -1179,48 +1179,38 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="mode"></param>
         /// <returns></returns>
-        private string NormalizeMode(string mode)
+        private QSOMode NormalizeMode(string mode)
         {
             if (ActiveContest == ContestName.HQP)
             {
-                CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), mode);
+                QSOMode catMode = (QSOMode)Enum.Parse(typeof(QSOMode), mode);
 
                 switch (catMode)
                 {
-                    case CategoryMode.CW:
-                        mode = "CW";
-                        break;
-                    case CategoryMode.RTTY:
-                        mode = "RY";
-                        break;
-                    case CategoryMode.RY:
-                        mode = "RY";
-                        break;
-                    case CategoryMode.FT8:
-                        mode = "RY";
-                        break;
-                    case CategoryMode.DG:
-                        mode = "RY";
-                        break;
-                    case CategoryMode.DIGI:
-                        mode = "RY";
-                        break;
-                    case CategoryMode.PH:
-                        mode = "PH";
-                        break;
-                    case CategoryMode.SSB:
-                        mode = "PH";
-                        break;
-                    case CategoryMode.USB:
-                        mode = "PH";
-                        break;
+                    case QSOMode.CW:
+                        return QSOMode.CW;
+                    case QSOMode.RTTY:
+                        return QSOMode.RY;
+                    case QSOMode.RY:
+                        return QSOMode.RY;
+                    case QSOMode.FT8:
+                        return QSOMode.RY;
+                    case QSOMode.DG:
+                        return QSOMode.RY;
+                    case QSOMode.DIGI:
+                        return QSOMode.RY;
+                    case QSOMode.PH:
+                        return QSOMode.PH;
+                    case QSOMode.SSB:
+                        return QSOMode.PH;
+                    case QSOMode.USB:
+                        return QSOMode.PH;
                     default:
-                        mode = "Unknown";
-                        break;
+                        return catMode;
                 }
             }
 
-            return mode;
+            return QSOMode.MIXED;
         }
 
 

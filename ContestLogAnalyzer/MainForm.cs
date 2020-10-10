@@ -598,7 +598,7 @@ namespace W6OP.ContestLogAnalyzer
             UpdateLabel("");
 
             _LogAnalyser.ActiveContest = _ActiveContest;
-            _LogAnalyser.PreAnalyzeContestLogs(_ContestLogs, _LogProcessor.CallDictionary, _LogProcessor.BandDictionary, _LogProcessor.ModeDictionary);
+            _LogAnalyser.PreAnalyzeContestLogs(_ContestLogs, _LogProcessor.CallDictionary, _LogProcessor.BandDictionary);
 
             UpdateListViewAnalysis("Pass 1 completed", "----------", "----------", false);
             ResetProgressBar(true);
@@ -934,7 +934,7 @@ namespace W6OP.ContestLogAnalyzer
                 ListViewItem item = new ListViewItem(qso.OperatorCall);
                 item.SubItems.Add(qso.ContactCall);
                 item.SubItems.Add(qso.Band.ToString());
-                item.SubItems.Add(qso.Mode);
+                item.SubItems.Add(EnumHelper.GetDescription(qso.Mode));
                 item.SubItems.Add(qso.QSODateTime.ToString());
                 item.SubItems.Add(qso.RawQSO);
                 ListViewLogSearch.Items.Insert(0, item);
@@ -1370,7 +1370,7 @@ namespace W6OP.ContestLogAnalyzer
             switch (_ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    item.SubItems.Add(qso.Mode);
+                    item.SubItems.Add(EnumHelper.GetDescription(qso.Mode));
                     item.SubItems.Add(qso.QsoDate.ToString());
                     item.SubItems.Add(qso.QsoTime.ToString());
                     item.SubItems.Add(qso.SentSerialNumber.ToString());
@@ -1380,7 +1380,7 @@ namespace W6OP.ContestLogAnalyzer
                     item.SubItems.Add(qso.ContactName);
                     break;
                 case ContestName.HQP:
-                    item.SubItems.Add(qso.Mode);
+                    item.SubItems.Add(EnumHelper.GetDescription(qso.Mode));
                     item.SubItems.Add(qso.QsoDate.ToString());
                     item.SubItems.Add(qso.QsoTime.ToString());
                     item.SubItems.Add("");

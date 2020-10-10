@@ -727,13 +727,13 @@ namespace W6OP.PrintEngine
             totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
             totalInvalidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList().Count();
 
-            totalPhoneQSOS = contestLog.QSOCollection.Where(q => q.Mode == "PH").ToList().Count();
-            totalCWQSOs = contestLog.QSOCollection.Where(q => q.Mode == "CW").ToList().Count();
-            totalDigiQSOS = contestLog.QSOCollection.Where(q => q.Mode == "RY").ToList().Count();
+            totalPhoneQSOS = contestLog.QSOCollection.Where(q => EnumHelper.GetDescription(q.Mode) == "PH").ToList().Count();
+            totalCWQSOs = contestLog.QSOCollection.Where(q => EnumHelper.GetDescription(q.Mode) == "CW").ToList().Count();
+            totalDigiQSOS = contestLog.QSOCollection.Where(q => EnumHelper.GetDescription(q.Mode) == "RY").ToList().Count();
 
-            totalValidPhoneQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "PH").ToList().Count();
-            totalValidCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "CW").ToList().Count();
-            totalValidDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "RY").ToList().Count();
+            totalValidPhoneQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && EnumHelper.GetDescription(q.Mode) == "PH").ToList().Count();
+            totalValidCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && EnumHelper.GetDescription(q.Mode) == "CW").ToList().Count();
+            totalValidDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && EnumHelper.GetDescription(q.Mode) == "RY").ToList().Count();
 
             multiplierCount = contestLog.Multipliers;
             totalPoints = contestLog.TotalPoints;
