@@ -506,7 +506,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (Enum.IsDefined(typeof(ALTHQPMults), qso.ContactEntity))
                     {
                         // they just used alternate HPQ Mult entity - correct it for them
-                        ALTHQPMults entity = (ALTHQPMults)Enum.Parse(typeof(ALTHQPMults), qso.ContactEntity);
+                        var entity = (ALTHQPMults)Enum.Parse(typeof(ALTHQPMults), qso.ContactEntity);
                          qso.ContactEntity = EnumHelper.GetDescription(entity);
                     }
                     else
@@ -588,6 +588,7 @@ namespace W6OP.ContestLogAnalyzer
                         else
                         {
                             qso.EntityIsInValid = true;
+                            qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX or State or Province";
                         }
                     }
                     else
@@ -632,8 +633,17 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        qso.EntityIsInValid = true;
-                        qso.IncorrectDXEntity = $"{qso.ContactEntity} is not valid for this contest";
+                        if (Enum.IsDefined(typeof(ALTHQPMults), qso.ContactEntity))
+                        {
+                            // they just used alternate HPQ Mult entity - correct it for them
+                            var entity = (ALTHQPMults)Enum.Parse(typeof(ALTHQPMults), qso.ContactEntity);
+                            qso.ContactEntity = EnumHelper.GetDescription(entity);
+                        }
+                        else
+                        {
+                            qso.EntityIsInValid = true;
+                            qso.IncorrectDXEntity = $"{qso.ContactEntity} is not valid for this contest";
+                        }
                     }
                     
                     break;
