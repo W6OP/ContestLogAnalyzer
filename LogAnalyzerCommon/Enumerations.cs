@@ -1,12 +1,12 @@
 ﻿
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 
 namespace W6OP.ContestLogAnalyzer
 {
-    
-    public enum RejectReason
+        public enum RejectReason
     {
         [Description("The band does not match")]
         Band,
@@ -280,6 +280,10 @@ namespace W6OP.ContestLogAnalyzer
         VOL,
         [Description("WHN")]
         WHN,
+    }
+
+    public enum ALTHQPMults
+    {
         // Non Standard HQPMults
         [Description("HIL")]
         HILO,
@@ -290,11 +294,11 @@ namespace W6OP.ContestLogAnalyzer
         [Description("MOL")]
         MOLOKAI,
         [Description("MOL")]
-        MOLO,
+        MOLOL,
         [Description("VOL")]
         VOLCANO,
         [Description("VOL")]
-        VOLC,
+        VOLCL,
         [Description("HON")]
         HNL,
         [Description("HON")]
@@ -309,15 +313,15 @@ namespace W6OP.ContestLogAnalyzer
         KALAWAO,
         [Description("KAU")]
         KAUI,
-        [Description("LAN")]
+        [Description("LNI")]
         LAN,
-        [Description("LAN")]
+        [Description("LNI")]
         LANI,
         [Description("MAU")]
         MAUI,
         [Description("PRL")]
         PERL,
-        [Description("PRL")] 
+        [Description("PRL")]
         PEARL
     }
 
@@ -387,4 +391,5 @@ namespace W6OP.ContestLogAnalyzer
         }
 
     } // end class
+
 }

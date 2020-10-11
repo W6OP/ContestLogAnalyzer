@@ -65,25 +65,11 @@ namespace W6OP.ContestLogAnalyzer
         /// Create a list of all of the log files in the working folder. Once the list is
         /// filled pass the list on to another thread.
         /// </summary>
-        public int BuildFileList(Session session, out IEnumerable<FileInfo> logFileList)
+        public int BuildFileList(out IEnumerable<FileInfo> logFileList)
         {
             string fileNameFormat = "*.log";
-            // Take a snapshot of the file system. http://msdn.microsoft.com/en-us/library/bb546159.aspx
+            
             DirectoryInfo dir = new DirectoryInfo(LogSourceFolder);
-
-            // CWOpen logs are no longer named by session
-            //switch (ActiveContest)
-            //{
-            //    case ContestName.CW_OPEN:
-            //        fileNameFormat = "*.log";
-            //        break;
-            //    case ContestName.HQP:
-            //        fileNameFormat = "*.log";
-            //        break;
-            //    default:
-            //        fileNameFormat = "*.log";
-            //        break;
-            //}
 
             // This method assumes that the application has discovery permissions for all folders under the specified path.
             IEnumerable<FileInfo> fileList = dir.GetFiles(fileNameFormat, System.IO.SearchOption.TopDirectoryOnly);
@@ -246,36 +232,36 @@ namespace W6OP.ContestLogAnalyzer
                 }
 
                 // Band
-                if (BandDictionary.ContainsKey(qso.Band))
-                {
-                    contestLogs = BandDictionary[qso.Band];
-                    if (!contestLogs.Contains(contestLog))
-                    {
-                        contestLogs.Add(contestLog);
-                    }
-                }
-                else
-                {
-                    contestLogs = new List<ContestLog>();
-                    contestLogs.Add(contestLog);
-                    BandDictionary.Add(qso.Band, contestLogs);
-                }
+                //if (BandDictionary.ContainsKey(qso.Band))
+                //{
+                //    contestLogs = BandDictionary[qso.Band];
+                //    if (!contestLogs.Contains(contestLog))
+                //    {
+                //        contestLogs.Add(contestLog);
+                //    }
+                //}
+                //else
+                //{
+                //    contestLogs = new List<ContestLog>();
+                //    contestLogs.Add(contestLog);
+                //    BandDictionary.Add(qso.Band, contestLogs);
+                //}
 
                 // Mode
-                if (ModeDictionary.ContainsKey(qso.Mode))
-                {
-                    contestLogs = ModeDictionary[qso.Mode];
-                    if (!contestLogs.Contains(contestLog))
-                    {
-                        contestLogs.Add(contestLog);
-                    }
-                }
-                else
-                {
-                    contestLogs = new List<ContestLog>();
-                    contestLogs.Add(contestLog);
-                    ModeDictionary.Add(qso.Mode, contestLogs);
-                }
+                //if (ModeDictionary.ContainsKey(qso.Mode))
+                //{
+                //    contestLogs = ModeDictionary[qso.Mode];
+                //    if (!contestLogs.Contains(contestLog))
+                //    {
+                //        contestLogs.Add(contestLog);
+                //    }
+                //}
+                //else
+                //{
+                //    contestLogs = new List<ContestLog>();
+                //    contestLogs.Add(contestLog);
+                //    ModeDictionary.Add(qso.Mode, contestLogs);
+                //}
             }
         }
 
@@ -517,7 +503,18 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (qso.ContactEntity.Length != 3)
                 {
-                    qso.EntityIsInValid = true;
+                    if (Enum.IsDefined(typeof(ALTHQPMults), qso.ContactEntity))
+                    {
+                        // they just used alternate HPQ Mult entity - correct it for them
+                        ALTHQPMults entity = (ALTHQPMults)Enum.Parse(typeof(ALTHQPMults), qso.ContactEntity);
+                         qso.ContactEntity = EnumHelper.GetDescription(entity);
+                    }
+                    else
+                    {
+                        qso.EntityIsInValid = true;
+                        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> should be a Hawai’i district )";
+                    }
+                        
                     continue;
                 }
 
@@ -529,6 +526,7 @@ namespace W6OP.ContestLogAnalyzer
                     SetNonHQPEntityInfo(qso);
                 }
             }
+
         }
 
         /// <summary>
@@ -979,20 +977,20 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// 
+        /// Handle a null for a header value that is missing.
         /// </summary>
-        /// <param name="s"></param>
-        /// <param name="len"></param>
+        /// <param name="source"></param>
+        /// <param name="length"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        private string CheckForNull(string s, Int32 len, string defaultValue)
+        private string CheckForNull(string source, int length, string defaultValue)
         {
-            if (s.Trim().Length <= len)
+            if (source.Trim().Length <= length)
             {
                 return defaultValue;
             }
 
-            return s.Substring(len).Trim().ToUpper();
+            return source.Substring(length).Trim().ToUpper();
         }
 
         /// <summary>
