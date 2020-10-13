@@ -152,14 +152,6 @@ namespace W6OP.PrintEngine
             {
                 contestlog = contestLogs[i];
 
-                //if (contestlog.LogHeader.QTH != "")
-                //{
-                //    qth = contestlog.LogHeader.QTH;
-                //} else
-                //{
-                //    qth = contestlog.LogHeader.Country;
-                //}
-
                 if (contestlog.IsHQPEntity)
                 {
                     qth = contestlog.QSOCollection[0].OperatorEntity;
@@ -350,14 +342,24 @@ namespace W6OP.PrintEngine
 
                             switch (qso.ReasonRejected)
                             {
-                                case RejectReason.OperatorName:
+                                case RejectReason.ContactName:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue + " --> " + qso.MatchingQSO.ContactName;
                                     }
                                     else
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectName;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue;
+                                    }
+                                    break;
+                                case RejectReason.OperatorName:
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue + " --> " + qso.MatchingQSO.OperatorName;
+                                    }
+                                    else
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue;
                                     }
                                     break;
                                 case RejectReason.Band:
@@ -373,18 +375,12 @@ namespace W6OP.PrintEngine
                                     value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 case RejectReason.BustedCallSign:
-                                    //value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.ContactCall + " --> " + qso.BustedCallGuess;
                                     if (qso.HasBeenPrinted == false)
                                     {
-                                        /*
-                                         > This QSO is not in the other operators log or the call may be busted
-> QSO: 14039 CW 2020-08-22 2226 AH6KO 599 HIL NS6T 599 AL
-> QSO: 14039 CW 2020-08-22 2226 NH6T 599 AL AH6KO 599 HIL
-                                         */
                                         message = "This QSO is not in the other operators log or the call may be busted:";
                                         sw.WriteLine(message);
 
-                                        PrintNearestMatches(qso, sw);
+                                        //PrintNearestMatches(qso, sw);
                                         sw.WriteLine("");
                                     }
 
@@ -416,7 +412,10 @@ namespace W6OP.PrintEngine
                                         message = "Duplicates ignored for scoring purposes:";
                                         sw.WriteLine(message);
 
-                                        PrintDuplicates(qso, sw); // .DupeListLocation
+                                        if (qso.HasBeenMatched)
+                                        {
+                                            PrintDuplicates(qso, sw); 
+                                        }
                                         sw.WriteLine("");
                                     }
 

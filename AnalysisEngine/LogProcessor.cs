@@ -20,7 +20,6 @@ namespace W6OP.ContestLogAnalyzer
 
         private const string HQPHawaiiLiteral = "HAWAII";
         private const string HQPUSALiteral = "UNITED STATES OF AMERICA";
-        //private const string HQPAlaskaLiteral = "ALASKA";
         private const string HQPCanadaLiteral = "CANADA";
 
         public PrintManager _PrintManager = null;
@@ -46,7 +45,6 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public Dictionary<string, List<ContestLog>> CallDictionary;
         public Dictionary<int, List<ContestLog>> BandDictionary;
-        public Dictionary<QSOMode, List<ContestLog>> ModeDictionary;
 
         /// <summary>
         /// Default constructor.
@@ -55,7 +53,6 @@ namespace W6OP.ContestLogAnalyzer
         {
             CallDictionary = new Dictionary<string, List<ContestLog>>();
             BandDictionary = new Dictionary<int, List<ContestLog>>();
-            ModeDictionary = new Dictionary<QSOMode, List<ContestLog>>();
 
             FailingLine = "";
             WorkingLine = "";
@@ -185,7 +182,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// By building bthses dictionaries I save significant time in the
+        /// By building both dictionaries I save significant time in the
         /// LogAnalyzer() linq queries. I only have to query a subset
         /// of all the contest logs.
         /// 
@@ -230,38 +227,6 @@ namespace W6OP.ContestLogAnalyzer
                     contestLogs.Add(contestLog);
                     CallDictionary.Add(qso.ContactCall, contestLogs);
                 }
-
-                // Band
-                //if (BandDictionary.ContainsKey(qso.Band))
-                //{
-                //    contestLogs = BandDictionary[qso.Band];
-                //    if (!contestLogs.Contains(contestLog))
-                //    {
-                //        contestLogs.Add(contestLog);
-                //    }
-                //}
-                //else
-                //{
-                //    contestLogs = new List<ContestLog>();
-                //    contestLogs.Add(contestLog);
-                //    BandDictionary.Add(qso.Band, contestLogs);
-                //}
-
-                // Mode
-                //if (ModeDictionary.ContainsKey(qso.Mode))
-                //{
-                //    contestLogs = ModeDictionary[qso.Mode];
-                //    if (!contestLogs.Contains(contestLog))
-                //    {
-                //        contestLogs.Add(contestLog);
-                //    }
-                //}
-                //else
-                //{
-                //    contestLogs = new List<ContestLog>();
-                //    contestLogs.Add(contestLog);
-                //    ModeDictionary.Add(qso.Mode, contestLogs);
-                //}
             }
         }
 
@@ -1061,7 +1026,7 @@ namespace W6OP.ContestLogAnalyzer
                              ContactName = CheckActiveContest(split[10], "ContactName").ToUpper(),
                              ContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
                             // OriginalContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
-                             CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this?? ValidateCallSign(split[8].ToUpper())
+                             IncorrectOperatorCall = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this?? ValidateCallSign(split[8].ToUpper())
                              SessionIsValid = CheckForValidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
@@ -1096,7 +1061,7 @@ namespace W6OP.ContestLogAnalyzer
                              //OriginalContactEntity = CheckActiveContest(split[9], "ContactEntity").ToUpper(),
                              ReceivedSerialNumber = ConvertSerialNumber(split[10], line),
                              ReceivedReport = split[9],
-                             CallIsInValid = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
+                             IncorrectOperatorCall = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
                              SessionIsValid = CheckForValidSession(session, split[4])
                          };
                     qsoList = qso.ToList();
@@ -1131,7 +1096,7 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// Populate the correct field for the Active Contest
-        /// Eliminates cofusion later
+        /// Eliminates confusion later
         /// </summary>
         /// <param name="message"></param>
         /// <param name="literal"></param>
@@ -1189,11 +1154,9 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private QSOMode NormalizeMode(string mode)
         {
-            if (ActiveContest == ContestName.HQP)
-            {
-                QSOMode catMode = (QSOMode)Enum.Parse(typeof(QSOMode), mode);
+                QSOMode qsoMode = (QSOMode)Enum.Parse(typeof(QSOMode), mode);
 
-                switch (catMode)
+                switch (qsoMode)
                 {
                     case QSOMode.CW:
                         return QSOMode.CW;
@@ -1214,11 +1177,8 @@ namespace W6OP.ContestLogAnalyzer
                     case QSOMode.USB:
                         return QSOMode.PH;
                     default:
-                        return catMode;
+                        return qsoMode;
                 }
-            }
-
-            return QSOMode.MIXED;
         }
 
 

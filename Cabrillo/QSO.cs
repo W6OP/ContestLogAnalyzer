@@ -144,7 +144,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// The operators call sign is invalid for this QSO
         /// </summary>
-        public bool CallIsInValid
+        public bool IncorrectOperatorCall
         {
             set
             {
@@ -249,18 +249,51 @@ namespace W6OP.ContestLogAnalyzer
 
         #region CWOpen Fields
 
-       
         private bool sessionIsValid = true;
 
         #endregion
 
         #region CWOpen Properties
 
+        public bool IncorrectQSODateTime
+        {
+            set
+            {
+                if (value == true)
+                {
+                    ReasonRejected = RejectReason.InvalidTime;
+                    Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    ReasonRejected = RejectReason.None;
+                    Status = QSOStatus.ValidQSO;
+                }
+            }
+        }
+
+        public bool IncorrectBand
+        {
+            set
+            {
+                if (value == true)
+                {
+                    ReasonRejected = RejectReason.Band;
+                    Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    ReasonRejected = RejectReason.None;
+                    Status = QSOStatus.ValidQSO;
+                }
+            }
+        }
+
         /// <summary>
         /// CWOpen only?
         /// The operators name does not match for this QSO.
         /// </summary>
-        public bool OpNameIsInValid
+        public bool IncorrectOperatorName
         {
             set
             {
@@ -277,7 +310,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        public bool ContactNameIsInValid
+        public bool IncorrectContactName
         {
             set
             {
@@ -299,24 +332,24 @@ namespace W6OP.ContestLogAnalyzer
         /// Lists the incorrect name if available.
         /// THIS NEEDS CHECKING
         /// </summary>
-        public string IncorrectName { get; set; }
+        public string IncorrectValue { get; set; }
        
         /// <summary>
         /// CWOpen only.
         /// The sent serial number.
         /// </summary>
-        public Int32 SentSerialNumber { get; set; }
+        public int SentSerialNumber { get; set; }
 
         /// <summary>
         /// Not used for HQP
         /// </summary>
-        public Int32 ReceivedSerialNumber { get; set; }
+        public int ReceivedSerialNumber { get; set; }
 
         /// <summary>
         /// CWOpen only.
         /// The serial number does not match the other log.
         /// </summary>
-        public bool SerialNumberIsIncorrect
+        public bool IncorrectSerialNumber
         {
             set
             {
@@ -359,8 +392,8 @@ namespace W6OP.ContestLogAnalyzer
 
         #region HQP Fields
 
-        private string originalContactEntity;
-        private string originalOperatorEntity;
+        //private string originalContactEntity;
+        //private string originalOperatorEntity;
         private bool entityIsInValid = false;
         private bool sentEntityIsInValid = false;
 
