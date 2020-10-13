@@ -126,7 +126,7 @@ namespace W6OP.ContestLogAnalyzer
                                     SearchForIncorrectName(qso);
                                     try
                                     {
-                                        FindCWOpenMatches(qso);
+                                        FindCWOpenMatchingQsos(qso);
                                     }
                                     catch (Exception ex)
                                     {
@@ -721,7 +721,7 @@ namespace W6OP.ContestLogAnalyzer
         /// WHEN DO I USE BAD CALL LIST???
         /// </summary>
         /// <param name="qso"></param>
-        private void FindCWOpenMatches(QSO qso)
+        private void FindCWOpenMatchingQsos(QSO qso)
         {
             List<QSO> matches;
             List<ContestLog> contestLogs;
@@ -761,19 +761,8 @@ namespace W6OP.ContestLogAnalyzer
             // maybe should see if anyone else worked him?
             if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() == 0)
             {
-                //qsos = ContestLogList.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.ContactCall).ToList();
-
-                //foreach (KeyValuePair<string, List<QSO>> item in qsos)
-                //{
-                //    foreach (QSO qItem in item.Value)
-                //    {
-                //        // I don't do anything with this right now
-                //        qso.AdditionalQSOs.Add(qItem);
-                //    }
-                //}
-
                 qso.NoMatchingLog = true;
-
+                qso.IsUniqueCall = true;
                 return;
             }
 
@@ -786,7 +775,7 @@ namespace W6OP.ContestLogAnalyzer
             // List of List<QSO> from the list of contest logs that match this operator call sign
             qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall).ToList();
 
-            // full search - call, band, names, serial number
+            // search for exact match
             matches = RefineCWOpenMatch(qsos, qso, 5, 1);
 
             switch (matches.Count)
@@ -833,11 +822,11 @@ namespace W6OP.ContestLogAnalyzer
                 case 1:
                     qso.MatchingQSO = matches[0];
                     matches[0].MatchingQSO = qso;
-                // QSO: 7028 CW 2016-09-03 0004 AA3B 9 BUD KM4FO 1 DWIGHT - operator
-                //QSO: 7030 CW 2016 - 09 - 03 0004 KM4FO 2 DWIGHT AA3B 10 BUD - contact
+               
                     qso.HasBeenMatched = true;
                     matches[0].HasBeenMatched = true;
 
+                    // determine which serial number(s) are incorrect
                     if (matches[0].ReceivedSerialNumber != qso.SentSerialNumber)
                     {
                         matches[0].IncorrectSerialNumber = true;
@@ -851,7 +840,45 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     return;
                 default:
-                    Console.WriteLine("FindCWOpenMatches: 2");
+                    bool matchFound = false;
+                    // duplicate incorrect serial number QSOs
+                    qso.MatchingQSO = matches[0];
+                    qso.HasBeenMatched = true;
+
+                    // This QSO is not in the other operators log or the call may be busted:
+                    // QSO: 3533    CW  2016 - 09 - 03  0220    K3WA    111 BILL K3WJV   126 BILL
+                    // QSO: 3533 CW 2016-09-03 0220 K3WA 111 BILL K3WJV 126 BILL
+                    // QSO: 3533 CW 2016-09-03 0218 K3WJV 125 BILL K3WA 110 BILL
+                    // QSO: 3533 CW 2016-09-03 0219 K3WJV 126 BILL K3WA 110 BILL
+                    foreach (QSO matchQSO in matches)
+                    {
+                        matchQSO.MatchingQSO = qso;
+                        matchQSO.HasBeenMatched = true;
+
+                        // determine which serial number(s) are incorrect
+                        if (matchQSO.ReceivedSerialNumber != qso.SentSerialNumber)
+                        {
+                            matchQSO.IncorrectSerialNumber = true;
+                            matchQSO.IncorrectValue = $"{matchQSO.ReceivedSerialNumber} --> {qso.SentSerialNumber}";
+                        }
+
+                        // we don't know the order they are evaluated so a later bad QSO could invalidate a good QSO
+                        if (qso.ReceivedSerialNumber != matchQSO.SentSerialNumber)
+                        {
+                            qso.IncorrectSerialNumber = true;
+                            qso.IncorrectValue = $"{qso.ReceivedSerialNumber} --> {matchQSO.SentSerialNumber}";
+                        } 
+                        else
+                        {
+                            matchFound = true;
+                        }
+                    }
+
+                    if (matchFound == true)
+                    {
+                        qso.IncorrectSerialNumber = false;
+                        qso.IncorrectValue = "";
+                    }
                     break;
             }
 
@@ -873,7 +900,28 @@ namespace W6OP.ContestLogAnalyzer
                     qso.IncorrectValue = $"{qso.ContactName} --> {matches[0].OperatorName}";
                     return;
                 default:
-                    Console.WriteLine("FindCWOpenMatches: 2");
+                    // duplicate QSOs
+
+                    if (qso.HasBeenMatched == false)
+                    {
+                        qso.MatchingQSO = matches[0];
+                        qso.HasBeenMatched = true;
+                        Console.WriteLine("FindCWOpenMatches: 4.a");
+                    }
+
+                    foreach (QSO matchQSO in matches)
+                    {
+                        if (qso.HasBeenMatched == false)
+                        {
+                            Console.WriteLine("FindCWOpenMatches: 4.b");
+                            matchQSO.MatchingQSO = qso;
+                            matchQSO.HasBeenMatched = true;
+
+                            matchQSO.IsDuplicateMatch = true;
+                            //matchQSO.IncorrectValue = $"{qso.ContactName} --> {matches[0].OperatorName}";
+                        }
+                    }
+                    Console.WriteLine("FindCWOpenMatches: 4");
                     break;
             }
 
@@ -913,7 +961,28 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     return;
                 default:
-                    Console.WriteLine("FindCWOpenMatches: 2");
+                    // duplicate incorrect QSOs
+                    if (qso.HasBeenMatched == false)
+                    {
+                        qso.MatchingQSO = matches[0];
+                        qso.HasBeenMatched = true;
+                        Console.WriteLine("FindCWOpenMatches: 5.a");
+                    }
+
+                    foreach (QSO matchQSO in matches)
+                    {
+                        if (matchQSO.HasBeenMatched == false)
+                        {
+                            Console.WriteLine("FindCWOpenMatches: 5.b");
+                            matchQSO.MatchingQSO = qso;
+                            matchQSO.HasBeenMatched = true;
+
+                            matchQSO.IsDuplicateMatch = true;
+                            //matchQSO.IncorrectContactName = true;
+                            //matchQSO.IncorrectValue = $"{qso} --> {matches[0].Band}";
+                        }
+                    }
+                    Console.WriteLine("FindCWOpenMatches: 5");
                     break;
             }
 
@@ -934,7 +1003,28 @@ namespace W6OP.ContestLogAnalyzer
                     //qso.IncorrectValue = $"{qso.QSODateTime} --> {matches[0].QSODateTime}";
                     return;
                 default:
-                    Console.WriteLine("FindCWOpenMatches: 2");
+                    // duplicate incorrect QSOs
+                    if (qso.HasBeenMatched == false)
+                    {
+                        qso.MatchingQSO = matches[0];
+                        qso.HasBeenMatched = true;
+                        Console.WriteLine("FindCWOpenMatches: 6.a");
+                    }
+
+                    foreach (QSO matchQSO in matches)
+                    {
+                        if (matchQSO.HasBeenMatched == false)
+                        {
+                            Console.WriteLine("FindCWOpenMatches: 6.b");
+                            matchQSO.MatchingQSO = qso;
+                            matchQSO.HasBeenMatched = true;
+
+                            matchQSO.IsDuplicateMatch = true;
+                            //matchQSO.IncorrectContactName = true;
+                            //matchQSO.IncorrectValue = $"{qso} --> {matches[0].Band}";
+                        }
+                    }
+                    Console.WriteLine("FindCWOpenMatches: 6");
                     break;
             }
 
@@ -946,6 +1036,7 @@ namespace W6OP.ContestLogAnalyzer
                     qso.CallIsBusted = true;
                     return;
                 default:
+                    Console.WriteLine("FindCWOpenMatches: 7");
                     // band error
                     //foreach (QSO near in matches)
                     //{
@@ -972,17 +1063,15 @@ namespace W6OP.ContestLogAnalyzer
 
             switch (queryLevel)
             {
-                case 1:
+                case 1: // exact match
                     matches = qsos.SelectMany(x => x.Value)
                     .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band &&
-                    y.OperatorName == qso.ContactName && y.SentSerialNumber == qso.ReceivedSerialNumber &&
+                    y.OperatorName == qso.ContactName && y.SentSerialNumber == qso.ReceivedSerialNumber && y.ReceivedSerialNumber == qso.SentSerialNumber &&
                     Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
                     .ToList();
 
                     break;
                 case 2:
-                    // QSO: 14034 CW 2016-09-03 0015 AA3B 37 BUD K1DW 5 DALLAS
-                    // QSO: 14030 CW 2016-09-03 0015 K1DW 15 DALLAS AA3B 37 BUD
                     // catch incorrect serial number
                     matches = qsos.SelectMany(x => x.Value)
                     .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band &&
@@ -995,15 +1084,16 @@ namespace W6OP.ContestLogAnalyzer
                     // incorrect name
                     matches = qsos.SelectMany(x => x.Value)
                     .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band &&
-                    y.SentSerialNumber == qso.ReceivedSerialNumber && 
+                    y.SentSerialNumber == qso.ReceivedSerialNumber && y.ReceivedSerialNumber == qso.SentSerialNumber && 
                     Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
                     .ToList();
+
                     break;
                 case 4:
                     // incorrect band
                     matches = qsos.SelectMany(x => x.Value)
                     .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall &&
-                    y.SentSerialNumber == qso.ReceivedSerialNumber && y.OperatorName == qso.ContactName &&
+                    y.SentSerialNumber == qso.ReceivedSerialNumber && y.ReceivedSerialNumber == qso.SentSerialNumber && y.OperatorName == qso.ContactName &&
                     Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
                     .ToList();
                     break;
@@ -1013,6 +1103,9 @@ namespace W6OP.ContestLogAnalyzer
                    .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band &&
                    y.OperatorName == qso.ContactName && y.SentSerialNumber == qso.ReceivedSerialNumber && y.ReceivedSerialNumber == qso.SentSerialNumber)
                    .ToList();
+                    break;
+                default:
+                    Console.WriteLine("Failed search: " + qso.RawQSO);
                     break;
 
             }
@@ -1190,11 +1283,20 @@ namespace W6OP.ContestLogAnalyzer
             // speeds up from 28 sec to 12 sec on first pass
             List<ContestLog> tempLog = CallDictionary[qso.ContactCall];
 
+
+            var  qsos = tempLog.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.ContactCall).ToList();
+            matchingQSOSpecific = qsos.SelectMany(x => x.Value)
+                  .Where(y => y.ContactName == qso.ContactName)
+                  .ToList();
+
             // get a list of all QSOs with the same contact callsign and same entity
-            matchingQSOSpecific = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactName == qso.ContactName).ToList();
+            //matchingQSOSpecific = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactName == qso.ContactName).ToList();
 
             // get a list of all QSOs with the same contact callsign but may have different entity
-            matchingQSOsGeneral = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
+            //matchingQSOsGeneral = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
+            matchingQSOsGeneral = qsos.SelectMany(x => x.Value).ToList();
+                  //.Where(y => y.ContactName == qso.ContactName)
+                  //.ToList();
 
             // if the above counts are different then someone is wrong
             matchCount = matchingQSOsGeneral.Count - matchingQSOSpecific.Count;

@@ -345,7 +345,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.ContactName:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue + " --> " + qso.MatchingQSO.ContactName;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue; // + " --> " + qso.MatchingQSO.ContactName;
                                     }
                                     else
                                     {
@@ -355,7 +355,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.OperatorName:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue + " --> " + qso.MatchingQSO.OperatorName;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue; // + " --> " + qso.MatchingQSO.OperatorName;
                                     }
                                     else
                                     {
@@ -380,7 +380,7 @@ namespace W6OP.PrintEngine
                                         message = "This QSO is not in the other operators log or the call may be busted:";
                                         sw.WriteLine(message);
 
-                                        //PrintNearestMatches(qso, sw);
+                                        PrintNearestMatches(qso, sw);
                                         sw.WriteLine("");
                                     }
 
@@ -389,7 +389,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.SerialNumber:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue; //+ " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
                                     }
                                     else
                                     {
@@ -399,7 +399,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.EntityName:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntity; // + " --> " + qso.MatchingQSO.OperatorEntity;
                                     }
                                     else
                                     {
@@ -509,8 +509,8 @@ namespace W6OP.PrintEngine
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
-                  qso.MatchingQSO.OperatorName + "\t" + qso.MatchingQSO.ContactCall + "\t" + qso.MatchingQSO.ReceivedSerialNumber.ToString() + "\t" + qso.MatchingQSO.ContactName;
+                    message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
+                  qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
                     break;
                 case ContestName.HQP:
                     message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentReport.ToString() + "\t" +
@@ -520,27 +520,27 @@ namespace W6OP.PrintEngine
 
             sw.WriteLine(message);
 
-            if (qso.NearestMatches.Count > 0)
-            {
-                sw.WriteLine("Nearest matches found:");
-                foreach (QSO item in qso.NearestMatches)
-                {
-                    qso = item;
-                    switch (ActiveContest)
-                    {
-                        case ContestName.CW_OPEN:
-                            message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
-                          qso.MatchingQSO.OperatorName + "\t" + qso.MatchingQSO.ContactCall + "\t" + qso.MatchingQSO.ReceivedSerialNumber.ToString() + "\t" + qso.MatchingQSO.ContactName;
-                            break;
-                        case ContestName.HQP:
-                            message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentReport.ToString() + "\t" +
-                       qso.OperatorEntity + "\t" + qso.ContactCall + "\t" + qso.ReceivedReport.ToString() + "\t" + qso.ContactEntity;
-                            break;
-                    }
+            //if (qso.NearestMatches.Count > 0)
+            //{
+            //    sw.WriteLine("Nearest matches found:");
+            //    foreach (QSO item in qso.NearestMatches)
+            //    {
+            //        qso = item;
+            //        switch (ActiveContest)
+            //        {
+            //            case ContestName.CW_OPEN:
+            //                message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
+            //              qso.MatchingQSO.OperatorName + "\t" + qso.MatchingQSO.ContactCall + "\t" + qso.MatchingQSO.ReceivedSerialNumber.ToString() + "\t" + qso.MatchingQSO.ContactName;
+            //                break;
+            //            case ContestName.HQP:
+            //                message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentReport.ToString() + "\t" +
+            //           qso.OperatorEntity + "\t" + qso.ContactCall + "\t" + qso.ReceivedReport.ToString() + "\t" + qso.ContactEntity;
+            //                break;
+            //        }
 
-                    sw.WriteLine(message);
-                }
-            }
+            //        sw.WriteLine(message);
+            //    }
+            //}
         }
 
         /// <summary>
