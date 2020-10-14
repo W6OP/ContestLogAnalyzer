@@ -45,6 +45,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public Dictionary<string, List<ContestLog>> CallDictionary;
         public Dictionary<int, List<ContestLog>> BandDictionary;
+        public Dictionary<string, List<Tuple<string, int>>> NameDictionary;
 
         /// <summary>
         /// Default constructor.
@@ -53,6 +54,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             CallDictionary = new Dictionary<string, List<ContestLog>>();
             BandDictionary = new Dictionary<int, List<ContestLog>>();
+            NameDictionary = new Dictionary<string, List<Tuple<string, int>>>();
 
             FailingLine = "";
             WorkingLine = "";
@@ -194,6 +196,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             List<ContestLog> contestLogs;
             List<QSO> qsos;
+            List<Tuple<string, int>> names = new List<Tuple<string, int>>();
 
             foreach (QSO qso in contestLog.QSOCollection)
             {
@@ -223,9 +226,75 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    contestLogs = new List<ContestLog>();
-                    contestLogs.Add(contestLog);
+                    contestLogs = new List<ContestLog>
+                    {
+                        contestLog
+                    };
                     CallDictionary.Add(qso.ContactCall, contestLogs);
+                }
+
+               
+                // names - first all who submitted logs
+                if (NameDictionary.ContainsKey(qso.OperatorCall))
+                {
+                    names = NameDictionary[qso.OperatorCall];
+                    var item = names.Where(x => x.Item1 == qso.OperatorName).ToList();
+                    
+                    if (item.Count == 1)
+                    {
+                        int count = item[0].Item2;
+                        count += 1;
+                        names.Remove(item[0]);
+
+                        var name = new Tuple<string, int>(qso.OperatorName, count);
+                        names.Add(name);
+                    }
+                    else
+                    {
+                        var name = new Tuple<string, int>(qso.OperatorName, 1);
+                        names.Add(name);
+                    }
+                }
+                else
+                {
+                    var name = new Tuple<string, int>(qso.OperatorName, 1);
+                    names = new List<Tuple<string, int>>
+                            {
+                                name
+                            };
+                    NameDictionary[qso.OperatorCall] = names;
+                }
+
+                // names - may not have submitted logs
+                if (NameDictionary.ContainsKey(qso.ContactCall))
+                {
+                    names = NameDictionary[qso.ContactCall];
+                    var item = names.Where(x => x.Item1 == qso.ContactName).ToList();
+                    
+                    if (item.Count == 1)
+                        {
+                            int count = item[0].Item2;
+                            count += 1;
+                            names.Remove(item[0]);
+
+                            var name = new Tuple<string, int>(qso.ContactName, count);
+                            names.Add(name);
+                    } 
+                    else
+                    {
+                        var name = new Tuple<string, int>(qso.ContactName, 1);
+                        names.Add(name);
+                        NameDictionary[qso.ContactCall] = names;
+                    }
+                }
+                else
+                {
+                    var name = new Tuple<string, int>(qso.ContactName, 1);
+                    names = new List<Tuple<string, int>>
+                            {
+                                name
+                            };
+                    NameDictionary[qso.ContactCall] = names;
                 }
             }
         }

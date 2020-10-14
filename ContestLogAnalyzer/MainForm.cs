@@ -598,7 +598,7 @@ namespace W6OP.ContestLogAnalyzer
             UpdateLabel("");
 
             LogAnalyser.ActiveContest = ActiveContest;
-            LogAnalyser.PreAnalyzeContestLogs(ContestLogs, LogProcessor.CallDictionary, LogProcessor.BandDictionary);
+            LogAnalyser.PreAnalyzeContestLogs(ContestLogs, LogProcessor.CallDictionary, LogProcessor.NameDictionary);
 
             UpdateListViewAnalysis("Pass 1 completed", "----------", "----------", false);
             ResetProgressBar(true);
