@@ -197,6 +197,7 @@ namespace W6OP.ContestLogAnalyzer
             List<ContestLog> contestLogs;
             List<QSO> qsos;
             List<Tuple<string, int>> names = new List<Tuple<string, int>>();
+            string firstOperatorName;
 
             foreach (QSO qso in contestLog.QSOCollection)
             {
@@ -237,6 +238,8 @@ namespace W6OP.ContestLogAnalyzer
                 // names - first all who submitted logs
                 if (NameDictionary.ContainsKey(qso.OperatorCall))
                 {
+                    firstOperatorName = qso.OperatorName;
+
                     names = NameDictionary[qso.OperatorCall];
                     var item = names.Where(x => x.Item1 == qso.OperatorName).ToList();
                     
@@ -284,7 +287,6 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         var name = new Tuple<string, int>(qso.ContactName, 1);
                         names.Add(name);
-                        NameDictionary[qso.ContactCall] = names;
                     }
                 }
                 else
