@@ -524,7 +524,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="value"></param>
         /// <param name="progress"></param>
-        private void LogProcessor_OnProgressUpdate(Int32 progress)
+        private void LogProcessor_OnProgressUpdate(int progress)
         {
             UpdateProgress(progress);
         }
@@ -600,7 +600,7 @@ namespace W6OP.ContestLogAnalyzer
             LogAnalyser.ActiveContest = ActiveContest;
             LogAnalyser.PreAnalyzeContestLogs(ContestLogs, LogProcessor.CallDictionary, LogProcessor.NameDictionary);
 
-            UpdateListViewAnalysis("Pass 1 completed", "----------", "----------", false);
+            UpdateListViewAnalysis("Analysis completed", "----------", "----------", false);
             ResetProgressBar(true);
 
             //Don't think this is necessary
@@ -611,7 +611,7 @@ namespace W6OP.ContestLogAnalyzer
         /// Update the list view with the call sign last processed.
         /// </summary>
         /// <param name="value"></param>
-        private void LogAnalyser_OnProgressUpdate(string value, string qsoCount, string validQsoCount, Int32 progress)
+        private void LogAnalyser_OnProgressUpdate(string value, string qsoCount, string validQsoCount, int progress)
         {
 
             if (value.Length > 1)
@@ -623,7 +623,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 if (value == "1")
                 {
-                    UpdateLabel("Analysing Pass 1");
+                    UpdateLabel("Analysing Contest Logs");
                 }
 
                 if (value == "2")
@@ -699,7 +699,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        private void CWOpen_OnProgressUpdate(ContestLog contestLog, Int32 progress)
+        private void CWOpen_OnProgressUpdate(ContestLog contestLog, int progress)
         {
             UpdateProgress(progress);
             UpdateListViewScore(contestLog, false);
@@ -857,7 +857,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="clear"></param>
         private void UpdateListViewScore(ContestLog contestLog, bool clear)
         {
-            Int32 validQsoCount = 0;
+            int validQsoCount = 0;
 
             if (InvokeRequired)
             {
@@ -950,7 +950,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (InvokeRequired)
             {
-                BeginInvoke(new Action<Int32>(this.UpdateProgress), count);
+                BeginInvoke(new Action<int>(this.UpdateProgress), count);
                 return;
             }
 

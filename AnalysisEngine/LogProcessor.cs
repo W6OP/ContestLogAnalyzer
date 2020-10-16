@@ -67,7 +67,7 @@ namespace W6OP.ContestLogAnalyzer
         public int BuildFileList(out IEnumerable<FileInfo> logFileList)
         {
             string fileNameFormat = "*.log";
-            
+
             DirectoryInfo dir = new DirectoryInfo(LogSourceFolder);
 
             // This method assumes that the application has discovery permissions for all folders under the specified path.
@@ -132,23 +132,28 @@ namespace W6OP.ContestLogAnalyzer
                     //http://stackoverflow.com/questions/454601/how-to-count-duplicates-in-list-with-linq
 
                     // this statement says to copy all QSO lines
-                    // read all the QSOs in and mark any that are duplicates, bad call format, incorrect session
                     lineListX = lineList.Where(x => (x.IndexOf("XQSO:", 0) != -1) || (x.IndexOf("X-QSO:", 0) != -1)).ToList();
                     lineList = lineList.Where(x => (x.IndexOf("QSO:", 0) != -1) && (x.IndexOf("XQSO:", 0) == -1) && (x.IndexOf("X-QSO:", 0) == -1)).ToList();
 
-                    // collext regular QSOs
-                    contestLog.QSOCollection = CollectQSOs(lineList, session, false);
+                    // collect regular QSOs
+                    contestLog.QSOCollection = CollectQSOs(lineList, session);
                     // add a reference to the parent log to each QSO
-                    contestLog.QSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
+                    if (contestLog.QSOCollection != null)
+                    {
+                        contestLog.QSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
+                    }
 
-                    // collect all the X-QSOs so we can mark them as IsXQSO - this log won't count them later but 
-                    // others can get credit for them
-                    xQSOCollection = CollectQSOs(lineListX, session, false);
+                    // collect all the X-QSOs so we can mark them as IsXQSO - this log won't count them 
+                    // but others can get credit for them
+                    xQSOCollection = CollectQSOs(lineListX, session);
                     xQSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
                     xQSOCollection.Select(c => { c.IsXQSO = true; return c; }).ToList();
 
                     // merge the two lists together so other logs can search for everything
-                    contestLog.QSOCollection = contestLog.QSOCollection.Union(xQSOCollection).ToList();
+                    if (contestLog.QSOCollection != null)
+                    {
+                        contestLog.QSOCollection = contestLog.QSOCollection.Union(xQSOCollection).ToList();
+                    }
 
                     // check for valid QSOs
                     CheckQSOCollection(fileInfo, contestLog);
@@ -223,7 +228,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (!contestLogs.Contains(contestLog))
                     {
                         contestLogs.Add(contestLog);
-                    } 
+                    }
                 }
                 else
                 {
@@ -234,7 +239,7 @@ namespace W6OP.ContestLogAnalyzer
                     CallDictionary.Add(qso.ContactCall, contestLogs);
                 }
 
-               
+
                 // names - first all who submitted logs
                 if (NameDictionary.ContainsKey(qso.OperatorCall))
                 {
@@ -242,7 +247,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     names = NameDictionary[qso.OperatorCall];
                     var item = names.Where(x => x.Item1 == qso.OperatorName).ToList();
-                    
+
                     if (item.Count == 1)
                     {
                         int count = item[0].Item2;
@@ -273,16 +278,16 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     names = NameDictionary[qso.ContactCall];
                     var item = names.Where(x => x.Item1 == qso.ContactName).ToList();
-                    
-                    if (item.Count == 1)
-                        {
-                            int count = item[0].Item2;
-                            count += 1;
-                            names.Remove(item[0]);
 
-                            var name = new Tuple<string, int>(qso.ContactName, count);
-                            names.Add(name);
-                    } 
+                    if (item.Count == 1)
+                    {
+                        int count = item[0].Item2;
+                        count += 1;
+                        names.Remove(item[0]);
+
+                        var name = new Tuple<string, int>(qso.ContactName, count);
+                        names.Add(name);
+                    }
                     else
                     {
                         var name = new Tuple<string, int>(qso.ContactName, 1);
@@ -543,14 +548,14 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         // they just used alternate HPQ Mult entity - correct it for them
                         var entity = (ALTHQPMults)Enum.Parse(typeof(ALTHQPMults), qso.ContactEntity);
-                         qso.ContactEntity = EnumHelper.GetDescription(entity);
+                        qso.ContactEntity = EnumHelper.GetDescription(entity);
                     }
                     else
                     {
                         qso.EntityIsInValid = true;
                         qso.IncorrectDXEntity = $"{qso.ContactEntity} --> should be a Hawai’i district )";
                     }
-                        
+
                     continue;
                 }
 
@@ -654,7 +659,7 @@ namespace W6OP.ContestLogAnalyzer
                                 {
                                     qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX ({qso.ContactCountry})";
                                 }
-                            } 
+                            }
                             else
                             {
                                 qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {qso.ContactCountry}";
@@ -681,7 +686,7 @@ namespace W6OP.ContestLogAnalyzer
                             qso.IncorrectDXEntity = $"{qso.ContactEntity} is not valid for this contest";
                         }
                     }
-                    
+
                     break;
                 default:
                     qso.EntityIsInValid = true;
@@ -1046,7 +1051,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="lineList"></param>
         /// <returns></returns>
-        private List<QSO> CollectQSOs(List<string> lineList, Session session, bool reverse)
+        private List<QSO> CollectQSOs(List<string> lineList, Session session)
         {
             List<QSO> qsoList = null;
             List<string> tempList = new List<string>();
@@ -1068,79 +1073,39 @@ namespace W6OP.ContestLogAnalyzer
 
                 lineList = tempList;
 
-                if (!reverse)
-                {
-                    IEnumerable<QSO> qso =
-                         from line in lineList
-                         let split = CheckQSOLength(line.Split(' '))
-                         select new QSO()
-                         {
-                             RawQSO = line,
-                             Status = CheckCompleteQSO(split, line),
-                             Frequency = CheckFrequency(split[1], line),
-                             Mode = NormalizeMode(split[2]),
-                             QsoDate = split[3],
-                             QsoTime = CheckTime(split[4], line),
-                             OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
-                             OperatorPrefix = prefix,
-                             OperatorSuffix = suffix,
-                             SentSerialNumber = ConvertSerialNumber(split[6], line),
-                             SentReport = split[6],
-                             OperatorName = CheckActiveContest(split[7], "OperatorName").ToUpper(),
-                             OperatorEntity = CheckActiveContest(split[7], "OperatorEntity").ToUpper(),
-                             //OriginalOperatorEntity = CheckActiveContest(split[7], "OperatorEntity").ToUpper(),
-                             ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
-                             ContactPrefix = prefix,
-                             ContactSuffix = suffix,
-                             ReceivedSerialNumber = ConvertSerialNumber(split[9], line),
-                             ReceivedReport = split[9],
-                             ContactName = CheckActiveContest(split[10], "ContactName").ToUpper(),
-                             ContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
-                            // OriginalContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
-                             IncorrectOperatorCall = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this?? ValidateCallSign(split[8].ToUpper())
-                             SessionIsValid = CheckForValidSession(session, split[4])
-                         };
-                    qsoList = qso.ToList();
-                }
-                else
-                {
-                    IEnumerable<QSO> qso =
-                         from line in lineList
-                         let split = CheckQSOLength(line.Split(' '))
-
-                         select new QSO()
-                         {
-                             RawQSO = line,
-                             Status = CheckCompleteQSO(split, line),
-                             Frequency = CheckFrequency(split[1], line),
-                             Mode = NormalizeMode(split[2]),
-                             QsoDate = split[3],
-                             QsoTime = CheckTime(split[4], line),
-                             OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
-                             OperatorPrefix = prefix,
-                             OperatorSuffix = suffix,
-                             OperatorName = CheckActiveContest(split[6], "OperatorName").ToUpper(),
-                             OperatorEntity = CheckActiveContest(split[6], "OperatorEntity").ToUpper(),
-                             //OriginalOperatorEntity = CheckActiveContest(split[6], "OperatorEntity").ToUpper(),
-                             SentSerialNumber = ConvertSerialNumber(split[7], line),
-                             SentReport =split[6],
-                             ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
-                             ContactPrefix = prefix,
-                             ContactSuffix = suffix,
-                             ContactName = CheckActiveContest(split[9], "ContactName").ToUpper(),
-                             ContactEntity = CheckActiveContest(split[9], "ContactEntity").ToUpper(),
-                             //OriginalContactEntity = CheckActiveContest(split[9], "ContactEntity").ToUpper(),
-                             ReceivedSerialNumber = ConvertSerialNumber(split[10], line),
-                             ReceivedReport = split[9],
-                             IncorrectOperatorCall = false,  //CheckCallSignFormat(ParseCallSign(split[5]).ToUpper()), Do I need this??
-                             SessionIsValid = CheckForValidSession(session, split[4])
-                         };
-                    qsoList = qso.ToList();
-                }
+                IEnumerable<QSO> qso =
+                     from line in lineList
+                     let split = CheckQSOLength(line.Split(' '))
+                     select new QSO()
+                     {
+                         RawQSO = line,
+                         Status = CheckCompleteQSO(split, line),
+                         Frequency = CheckFrequency(split[1], line),
+                         Mode = NormalizeMode(split[2]),
+                         QsoDate = split[3],
+                         QsoTime = CheckTime(split[4], line),
+                         OperatorCall = ParseCallSign(split[5], out prefix, out suffix).ToUpper(),
+                         OperatorPrefix = prefix,
+                         OperatorSuffix = suffix,
+                         SentSerialNumber = ConvertSerialNumber(split[6], line),
+                         SentReport = split[6],
+                         OperatorName = CheckActiveContest(split[7], "OperatorName").ToUpper(),
+                         OperatorEntity = CheckActiveContest(split[7], "OperatorEntity").ToUpper(),
+                         ContactCall = ParseCallSign(split[8], out prefix, out suffix).ToUpper(),
+                         ContactPrefix = prefix,
+                         ContactSuffix = suffix,
+                         ReceivedSerialNumber = ConvertSerialNumber(split[9], line),
+                         ReceivedReport = split[9],
+                         ContactName = CheckActiveContest(split[10], "ContactName").ToUpper(),
+                         ContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
+                         IncorrectOperatorCall = false,
+                         SessionIsValid = CheckForValidSession(session, split[4])
+                     };
+                qsoList = qso.ToList();
             }
             catch (Exception ex)
             {
-                if (ex is FormatException && reverse == false && ActiveContest == ContestName.CW_OPEN)
+                if (ex is FormatException && ActiveContest == ContestName.CW_OPEN)
                 {
                     if (ex.Message == "Serial Number Format Incorrect.")
                     {
@@ -1148,9 +1113,10 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        qsoList = CollectQSOs(lineList,
-                                              session,
-                                              true);
+                        FailingLine += Environment.NewLine + WorkingLine + " --- " + Environment.NewLine + ex.Message;
+                        //ex.Message == "There is an unspecified error.";
+                        FailingLine += Environment.NewLine;
+                        Console.WriteLine("CollectQSOS()");
                     }
                 }
                 else
@@ -1225,31 +1191,31 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private QSOMode NormalizeMode(string mode)
         {
-                QSOMode qsoMode = (QSOMode)Enum.Parse(typeof(QSOMode), mode);
+            QSOMode qsoMode = (QSOMode)Enum.Parse(typeof(QSOMode), mode);
 
-                switch (qsoMode)
-                {
-                    case QSOMode.CW:
-                        return QSOMode.CW;
-                    case QSOMode.RTTY:
-                        return QSOMode.RY;
-                    case QSOMode.RY:
-                        return QSOMode.RY;
-                    case QSOMode.FT8:
-                        return QSOMode.RY;
-                    case QSOMode.DG:
-                        return QSOMode.RY;
-                    case QSOMode.DIGI:
-                        return QSOMode.RY;
-                    case QSOMode.PH:
-                        return QSOMode.PH;
-                    case QSOMode.SSB:
-                        return QSOMode.PH;
-                    case QSOMode.USB:
-                        return QSOMode.PH;
-                    default:
-                        return qsoMode;
-                }
+            switch (qsoMode)
+            {
+                case QSOMode.CW:
+                    return QSOMode.CW;
+                case QSOMode.RTTY:
+                    return QSOMode.RY;
+                case QSOMode.RY:
+                    return QSOMode.RY;
+                case QSOMode.FT8:
+                    return QSOMode.RY;
+                case QSOMode.DG:
+                    return QSOMode.RY;
+                case QSOMode.DIGI:
+                    return QSOMode.RY;
+                case QSOMode.PH:
+                    return QSOMode.PH;
+                case QSOMode.SSB:
+                    return QSOMode.PH;
+                case QSOMode.USB:
+                    return QSOMode.PH;
+                default:
+                    return qsoMode;
+            }
         }
 
 

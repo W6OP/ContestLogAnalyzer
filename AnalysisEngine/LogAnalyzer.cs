@@ -321,7 +321,6 @@ namespace W6OP.ContestLogAnalyzer
                     return;
                 default:
                     // more than two so we have to do more analysis
-                    var a = 1;
                     Console.WriteLine("FindHQPMatches:");
                     break;
             }
@@ -356,7 +355,6 @@ namespace W6OP.ContestLogAnalyzer
                     matches[1].IsDuplicateMatch = true;
                     return;
                 default:
-                    var b = 1;
                     Console.WriteLine("FindHQPMatches:");
                     break;
             }
@@ -751,7 +749,7 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // don't ToList() unless something returned
-            if (qsosFlattened.Any())
+            if (enumerable.Any())
             {
                 matches = enumerable.ToList();
                 Console.WriteLine("Matches: " + qsos.ToList().Count.ToString());
@@ -791,8 +789,10 @@ namespace W6OP.ContestLogAnalyzer
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches = new List<QSO>();
+            int timeInterval = 10; // because everything else must match
+            int searchLevel = 1;
 
-            enumerable = RefineCWOpenMatch(qsos, qso, 5, 1).ToList();
+            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel).ToList();
 
             // don't ToList() unless something returned
             if (enumerable.Any())
@@ -846,8 +846,10 @@ namespace W6OP.ContestLogAnalyzer
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches = new List<QSO>();
+            int timeInterval = 10;
+            int searchLevel = 2;
 
-            enumerable = RefineCWOpenMatch(qsos, qso, 5, 2);//.ToList();
+            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
 
             if (enumerable.Any())
             {
@@ -858,7 +860,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 case 0:
                     // search without name
-                    matches = SearchWithoutNames(qsos, qso); //.ToList();
+                    matches = SearchWithoutNames(qsos, qso); 
                     return matches;
                 case 1:
                     qso.MatchingQSO = matches[0];
@@ -937,8 +939,10 @@ namespace W6OP.ContestLogAnalyzer
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches = new List<QSO>();
+            int timeInterval = 5;
+            int searchLevel = 3;
 
-            enumerable = RefineCWOpenMatch(qsos, qso, 5, 3); //.ToList();
+            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel); //.ToList();
 
             if (enumerable.Any())
             {
@@ -1001,10 +1005,12 @@ namespace W6OP.ContestLogAnalyzer
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches = new List<QSO>();
+            int timeInterval = 5;
+            int searchLevel = 5;
             double qsoPoints;
             double matchQsoPoints;
 
-            enumerable = RefineCWOpenMatch(qsos, qso, 5, 4); //.ToList();
+            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel); 
 
             // don't ToList() unless something returned
             if (enumerable.Any())
@@ -1142,8 +1148,8 @@ namespace W6OP.ContestLogAnalyzer
         private double DetermineBandFault(QSO qso)
         {
             ContestLog contestLog = qso.ParentLog;
-            QSO previousQSO;
-            QSO nextQSO;
+            QSO previousQSO = null;
+            QSO nextQSO = null;
             string frequency = qso.Frequency;
             double qsoPoints = 0;
             double counter = 0;
@@ -1157,8 +1163,13 @@ namespace W6OP.ContestLogAnalyzer
             while (counter < 10)
             {
                 counter += 1;
-                previousQSO = GetPrevious(contestLog.QSOCollection, qso);
 
+                int index = contestLog.QSOCollection.IndexOf(qso);
+                if (index > 0)
+                {
+                    previousQSO = GetPrevious(contestLog.QSOCollection, qso);
+                }
+                
                 if (previousQSO != null)
                 {
                     frequency = previousQSO.Frequency;
@@ -1190,7 +1201,12 @@ namespace W6OP.ContestLogAnalyzer
             while (counter < 10)
             {
                 counter += 1;
-                nextQSO = GetNext(contestLog.QSOCollection, qso);
+
+                int index = contestLog.QSOCollection.IndexOf(qso);
+                if (index <= contestLog.QSOCollection.Count)
+                {
+                    nextQSO = GetNext(contestLog.QSOCollection, qso);
+                }
 
                 if (nextQSO != null)
                 {
