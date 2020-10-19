@@ -115,7 +115,7 @@ namespace W6OP.ContestLogAnalyzer
                                 if (ActiveContest == ContestName.HQP)
                                 {
                                     SearchForIncorrectEntity(qso);
-                                    FindHQPMatches(qso);
+                                    FindHQPMatchingQsos(qso);
 
                                 }
                                 else
@@ -134,12 +134,6 @@ namespace W6OP.ContestLogAnalyzer
                                 }
                             }
                         }
-
-                        // did busted call signs take care of this?
-                        //MatchQSOs(qsoList, contestLogList, call);
-
-                        // need to account for some already being marked
-                        //MarkDuplicateQSOs(qsoList);
 
                         validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
 
@@ -220,11 +214,13 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="contestLog"></param>
         /// <param name="qso"></param>
-        private void FindHQPMatches(QSO qso)
+        private void FindHQPMatchingQsos(QSO qso)
         {
             List<QSO> matches;
             List<ContestLog> contestLogs;
             List<KeyValuePair<string, List<QSO>>> qsos;
+            int timeInterval = 5;
+            int queryLevel = 1;
 
             if (qso.Status != QSOStatus.ValidQSO)
             {
@@ -282,13 +278,15 @@ namespace W6OP.ContestLogAnalyzer
             // List of List<QSO> from the list of contest logs that match this operator call sign
             qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall).ToList();
 
+            // full search
             if (EnumHelper.GetDescription(qso.Mode) != "RY")
             {
-                matches = RefineHQPMatch(qsos, qso, 2, 1);
+                matches = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
             }
             else
             {
-                matches = RefineHQPMatch(qsos, qso, 15, 1);
+                timeInterval = 15;
+                matches = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
             }
 
             switch (matches.Count)
@@ -330,7 +328,42 @@ namespace W6OP.ContestLogAnalyzer
             {
                 case 0:
                     // match not found so lets widen the search
-                    matches = RefineHQPMatch(qsos, qso, 5, 2);
+                    queryLevel = 2;
+                    matches = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+                    break;
+                case 1:
+                    // found one match so we mark both as matches and add matching QSO
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+                    return;
+                case 2:
+                    // two matches so these are probably dupes
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+                    qso.QSOHasDupes = true;
+
+                    matches[0].HasBeenMatched = true;
+                    matches[0].MatchingQSO = qso;
+
+                    matches[1].HasBeenMatched = true;
+                    matches[1].MatchingQSO = qso;
+                    matches[1].FirstMatchingQSO = matches[0];
+                    matches[1].IsDuplicateMatch = true;
+                    return;
+                default:
+                    Console.WriteLine("FindHQPMatches:");
+                    break;
+            }
+
+            // this is hit only if previous switch hit case 0: so we up the time interval
+            switch (matches.Count)
+            {
+                case 0:
+                    // match not found so lets widen the search
+                    matches = RefineHQPMatch(qsos, qso, 5, 3);
                     break;
                 case 1:
                     // found one match so we mark both as matches and add matching QSO
@@ -415,18 +448,31 @@ namespace W6OP.ContestLogAnalyzer
             switch (queryLevel)
             {
                 case 1:
+                    // full search - QSO: 14038 CW 2020-08-22 0430 KH6EU 599 KON KH6TU 599 MAU
+                    //               QSO: 14038 CW 2020-08-22 0430 KH6TU 599 MAU KH6EU 599 KON 
                     matches = qsos.SelectMany(x => x.Value)
                     .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band &&
                     y.Mode == qso.Mode && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
                     .ToList();
                     break;
                 case 2:
+                    // without y.ContactCall == qso.OperatorCall - QSO: 14034 CW 2020-08-22 1732 KH6TU 599 MAU W7JMM 599 OR  
+                    //                                             QSO: 21000 CW 2020-08-22 1732 W7JMM 599 OR WH6TU 599 MAU
                     qsos.SelectMany(x => x.Value)
                     .Where(y => y.OperatorCall == qso.ContactCall && y.Band == qso.Band && y.Mode == qso.Mode &&
                      Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
                     .ToList();
                     break;
                 case 3:
+                    // without y.OperatorCall == qso.ContactCall - QSO: 14034 CW 2020-08-22 1732 KH6TU 599 MAU W7JMM 599 OR  
+                    //                                             QSO: 21000 CW 2020-08-22 1732 W7JMM 599 OR WH6TU 599 MAU
+                    qsos.SelectMany(x => x.Value)
+                    .Where(y => y.ContactCall == qso.OperatorCall && y.Band == qso.Band && y.Mode == qso.Mode &&
+                     Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
+                    .ToList();
+                    break;
+                case 4:
+                    // general search
                     matches = qsos.SelectMany(x => x.Value)
                     .Where(y => y.Band == qso.Band && y.Mode == qso.Mode && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
                     .ToList();
