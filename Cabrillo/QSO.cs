@@ -111,7 +111,26 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-       
+        public bool IncompleteQSO
+        {
+            set
+            {
+                if (value == true)
+                {
+                    ReasonRejected = RejectReason.MissingColumn;
+                    Status = QSOStatus.IncompleteQSO;
+                }
+                else
+                {
+                    if (ReasonRejected == RejectReason.MissingColumn)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
+                }
+            }
+        }
+
 
         /// <summary>
         ///Marks this qso as a duplicate QSO.
@@ -132,14 +151,15 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    qsoIsDupe = false;
-                    Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.DuplicateQSO)
+                    {
+                        qsoIsDupe = false;
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
         }
-
-       
 
         /// <summary>
         /// The operators call sign is invalid for this QSO
@@ -155,8 +175,11 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.InvalidCall)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
         }
@@ -176,8 +199,11 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.BustedCallSign)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
         }
@@ -266,8 +292,11 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.InvalidTime)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
         }
@@ -283,8 +312,11 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.Band)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
         }
@@ -304,8 +336,11 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.OperatorName)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
         }
@@ -321,8 +356,11 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.ContactName)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
         }
@@ -360,8 +398,11 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.SerialNumber)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
         }
@@ -383,8 +424,11 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.InvalidSession)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
         }
@@ -415,39 +459,14 @@ namespace W6OP.ContestLogAnalyzer
         /// Lists the incorrect entity if available.
         /// </summary>
         public string IncorrectDXEntity { get; set; }
-        
+
         /// <summary>
-        /// CHECK ON THIS
-        /// The contact entity in the log before any lookups
+        /// Actual country of the operator.
         /// </summary>
-       
-        //public string OriginalContactEntity
-        //{
-        //    get { return originalContactEntity; }
-        //    set
-        //    {
-        //        originalContactEntity = value;
-        //        ContactEntity = value;
-        //    }
-        //}
-
+        public string OperatorCountry { get; set; }
 
         /// <summary>
-        /// The operator entity in the log before any lookups
-        /// </summary>
-
-        //public string OriginalOperatorEntity
-        //{
-        //    get { return originalOperatorEntity; }
-        //    set
-        //    {
-        //        originalOperatorEntity = value;
-        //        OperatorEntity = value;
-        //    }
-        //}
-
-        /// <summary>
-        /// Operator country as defined by HQP
+        /// Operator entity as defined by HQP
         /// Length is 2 characters for US and Canada
         /// or 3 characters if it is a HQP entity
         /// This is equivalent to the Operator Name for the CWOpen
@@ -459,8 +478,6 @@ namespace W6OP.ContestLogAnalyzer
         /// This is the long name. Cannot be null!
         /// </summary>
         public string ContactCountry { get; set; }
-
-        public string OperatorCountry { get; set; }
 
         /// <summary>
         /// HQP only.
@@ -479,8 +496,11 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.InvalidEntity)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
             get
@@ -505,8 +525,11 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.InvalidSentEntity)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
             get

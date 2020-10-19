@@ -10,10 +10,10 @@ namespace W6OP.ContestLogAnalyzer
         public delegate void ProgressUpdate(string value, string qsoCount, string validQsoCount, Int32 progress);
         public event ProgressUpdate OnProgressUpdate;
 
-        private const string HQPHawaiiLiteral = "HAWAII";
-        private const string HQPUSALiteral = "UNITED STATES OF AMERICA";
-        private const string HQPAlaskaLiteral = "ALASKA";
-        private const string HQPCanadaLiteral = "CANADA";
+        //private const string HQPHawaiiLiteral = "HAWAII";
+        //private const string HQPUSALiteral = "UNITED STATES OF AMERICA";
+        //private const string HQPAlaskaLiteral = "ALASKA";
+        //private const string HQPCanadaLiteral = "CANADA";
 
         readonly string[] States = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", };
         readonly string[] Provinces = { "NL", "NS", "PE", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU" };
@@ -216,11 +216,10 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qso"></param>
         private void FindHQPMatchingQsos(QSO qso)
         {
-            List<QSO> matches;
-            List<ContestLog> contestLogs;
-            List<KeyValuePair<string, List<QSO>>> qsos;
-            int timeInterval = 5;
-            int queryLevel = 1;
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches = new List<QSO>();
+            IEnumerable<ContestLog> contestLogs;
+            IEnumerable<KeyValuePair<string, List<QSO>>> qsos;
 
             if (qso.Status != QSOStatus.ValidQSO)
             {
@@ -238,14 +237,30 @@ namespace W6OP.ContestLogAnalyzer
                 // pointing at JF2IWL. However none of the 3 sent in a log so JF2IWL 
                 // does not appear in the CallDictionary as there are no logs that
                 // have a QSO for him so consider his valid
-
+                switch (CheckBadCallList(qso))
+                {
+                    case false:
+                        qso.IsUniqueCall = true;
+                        break;
+                    default:
+                        qso.CallIsBusted = true;
+                        break;
+                }
                 return;
             }
 
             // if there is only one log this call is in then it is unique
             if (CallDictionary[qso.ContactCall].Count == 1)
             {
-                qso.IsUniqueCall = true;
+                switch (CheckBadCallList(qso))
+                {
+                    case false:
+                        qso.IsUniqueCall = true;
+                        break;
+                    default:
+                        qso.CallIsBusted = true;
+                        break;
+                }
                 return;
             }
 
@@ -253,18 +268,8 @@ namespace W6OP.ContestLogAnalyzer
             // maybe should see if anyone else worked him?
             if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() == 0)
             {
-                //qsos = ContestLogList.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.ContactCall).ToList();
-
-                //foreach (KeyValuePair<string, List<QSO>> item in qsos)
-                //{
-                //    foreach (QSO qItem in item.Value)
-                //    {
-                //        qso.AdditionalQSOs.Add(qItem);
-                //    }
-                //}
 
                 qso.NoMatchingLog = true;
-
                 return;
             }
 
@@ -274,164 +279,250 @@ namespace W6OP.ContestLogAnalyzer
                 return;
             }
 
-
             // List of List<QSO> from the list of contest logs that match this operator call sign
-            qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall).ToList();
+            qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall);
 
-            // full search
-            if (EnumHelper.GetDescription(qso.Mode) != "RY")
+            // this gets all the QSOs in a flattened list
+            // do these parameters up front and I don't have to do them for every subsequent query
+            IEnumerable<QSO> qsosFlattened = qsos.SelectMany(x => x.Value).Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall);
+
+            enumerable = HQPFullParameterSearch(qsosFlattened, qso);
+
+            // if the qso has been matched at any level we don't need to continue
+            if (qso.HasBeenMatched)
             {
-                matches = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
-            }
-            else
-            {
-                timeInterval = 15;
-                matches = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
-            }
-
-            switch (matches.Count)
-            {
-                case 0:
-                    // match not found so lets widen the search
-                    matches = RefineHQPMatch(qsos, qso, 5, 1);
-                    break;
-                case 1:
-                    // found one match so we mark both as matches and add matching QSO
-                    qso.MatchingQSO = matches[0];
-                    matches[0].MatchingQSO = qso;
-
-                    qso.HasBeenMatched = true;
-                    matches[0].HasBeenMatched = true;
-                    return;
-                case 2:
-                    // two matches so these are probably dupes
-                    qso.HasBeenMatched = true;
-                    qso.MatchingQSO = matches[0];
-                    qso.QSOHasDupes = true;
-
-                    matches[0].HasBeenMatched = true;
-                    matches[0].MatchingQSO = qso;
-
-                    matches[1].HasBeenMatched = true;
-                    matches[1].MatchingQSO = qso;
-                    matches[1].FirstMatchingQSO = matches[0];
-                    matches[1].IsDuplicateMatch = true;
-                    return;
-                default:
-                    // more than two so we have to do more analysis
-                    Console.WriteLine("FindHQPMatches:");
-                    break;
+                return;
             }
 
-            // this is hit only if previous switch hit case 0: so we up the time interval
-            switch (matches.Count)
+            // don't ToList() unless something returned
+            if (enumerable.Any())
             {
-                case 0:
-                    // match not found so lets widen the search
-                    queryLevel = 2;
-                    matches = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
-                    break;
-                case 1:
-                    // found one match so we mark both as matches and add matching QSO
-                    qso.MatchingQSO = matches[0];
-                    matches[0].MatchingQSO = qso;
-
-                    qso.HasBeenMatched = true;
-                    matches[0].HasBeenMatched = true;
-                    return;
-                case 2:
-                    // two matches so these are probably dupes
-                    qso.HasBeenMatched = true;
-                    qso.MatchingQSO = matches[0];
-                    qso.QSOHasDupes = true;
-
-                    matches[0].HasBeenMatched = true;
-                    matches[0].MatchingQSO = qso;
-
-                    matches[1].HasBeenMatched = true;
-                    matches[1].MatchingQSO = qso;
-                    matches[1].FirstMatchingQSO = matches[0];
-                    matches[1].IsDuplicateMatch = true;
-                    return;
-                default:
-                    Console.WriteLine("FindHQPMatches:");
-                    break;
-            }
-
-            // this is hit only if previous switch hit case 0: so we up the time interval
-            switch (matches.Count)
-            {
-                case 0:
-                    // match not found so lets widen the search
-                    matches = RefineHQPMatch(qsos, qso, 5, 3);
-                    break;
-                case 1:
-                    // found one match so we mark both as matches and add matching QSO
-                    qso.MatchingQSO = matches[0];
-                    matches[0].MatchingQSO = qso;
-
-                    qso.HasBeenMatched = true;
-                    matches[0].HasBeenMatched = true;
-                    return;
-                case 2:
-                    // two matches so these are probably dupes
-                    qso.HasBeenMatched = true;
-                    qso.MatchingQSO = matches[0];
-                    qso.QSOHasDupes = true;
-
-                    matches[0].HasBeenMatched = true;
-                    matches[0].MatchingQSO = qso;
-
-                    matches[1].HasBeenMatched = true;
-                    matches[1].MatchingQSO = qso;
-                    matches[1].FirstMatchingQSO = matches[0];
-                    matches[1].IsDuplicateMatch = true;
-                    return;
-                default:
-                    Console.WriteLine("FindHQPMatches:");
-                    break;
+                matches = enumerable.ToList();
+                Console.WriteLine("Matches: " + qsos.ToList().Count.ToString());
             }
 
             // ok, no hits yet so lets do some more checking and see if we find something with a different call
             switch (matches.Count)
             {
                 case 0:
-                    // match not found so lets widen the search
-                    matches = RefineHQPMatch(qsos, qso, 5, 3);
-                    break;
-                default:
-                    if (matches.Count > 0)
-                    {
-                        foreach (QSO near in matches)
-                        {
-                            qso.NearestMatches.Add(near);
-                        }
-                    }
-
                     qso.CallIsBusted = true;
                     return;
+                case 1:
+                    // for now don't penalize for time mismatch since everything else is correct
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+
+                    //qso.IncorrectQSODateTime = true;
+                    //qso.IncorrectValue = $"{qso.QSODateTime} --> {matches[0].QSODateTime}";
+                    return;
+                default:
+                    // duplicate incorrect QSOs - could this ever happen this deeply into the search?
+                    Console.WriteLine("FindHQPMatchingQsos: 6");
+                    break;
+            }
+
+        }
+
+        /// <summary>
+        /// Search using all parameters. A hit here is exact, though there
+        /// could be dupes.
+        /// </summary>
+        /// <param name="qsos"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private List<QSO> HQPFullParameterSearch(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches = new List<QSO>();
+            int timeInterval = 10; // because everything else must match
+            int queryLevel = 1;
+
+            // full search
+            if (EnumHelper.GetDescription(qso.Mode) != "RY")
+            {
+                enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+            }
+            else
+            {
+                timeInterval = 15;
+                enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+            }
+
+            if (enumerable.Any())
+            {
+                matches = enumerable.ToList();
             }
 
             switch (matches.Count)
             {
                 case 0:
-                    // match not found because he is not in that log
-                    // that log does not show up in the CallDictionary for that contact call
-                    qso.CallIsBusted = true;
-                    return;
-                default:
-                    if (matches.Count > 0)
-                    {
-                        foreach (QSO near in matches)
-                        {
-                            qso.NearestMatches.Add(near);
-                        }
-                    }
+                    // match not found so lets widen the search
+                    matches = SearchWithoutContactEntity(qsos, qso);
+                    return matches;
+                case 1:
+                    // found one match so we mark both as matches and add matching QSO
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
 
-                    qso.CallIsBusted = true;
-                    return;
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+                    return matches;
+                case 2:
+                    // two matches so these are probably dupes
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+                    qso.QSOHasDupes = true;
+
+                    matches[0].HasBeenMatched = true;
+                    matches[0].MatchingQSO = qso;
+
+                    matches[1].HasBeenMatched = true;
+                    matches[1].MatchingQSO = qso;
+                    matches[1].FirstMatchingQSO = matches[0];
+                    matches[1].IsDuplicateMatch = true;
+                    return matches;
+                default:
+                    // more than two so we have to do more analysis
+                    Console.WriteLine("FindHQPMatches: 1");
+                    return matches;
+            }
+        }
+
+        /// <summary>
+        /// Check to see if the Contact Entity is incorrect.
+        /// </summary>
+        /// <param name="qsos"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private List<QSO> SearchWithoutContactEntity(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches = new List<QSO>();
+            int timeInterval = 10;
+            int queryLevel = 2;
+
+            enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+
+            // don't ToList() unless something returned
+            if (enumerable.Any())
+            {
+                matches = enumerable.ToList();
             }
 
+            // this is hit only if previous switch hit case 0: so we up the time interval
+            switch (matches.Count)
+            {
+                case 0:
+                    //matches = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+                    matches = SearchWithoutOperatorEntity(qsos, qso);
+                    return matches;
+                case 1:
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+                    
+                    if (matches[0].Status == QSOStatus.ValidQSO)
+                    {
+                        matches[0].MatchingQSO = qso;
+                        matches[0].HasBeenMatched = true;
+                        matches[0].IncorrectDXEntity = $"{matches[0].ContactEntity} --> {qso.OperatorEntity}";
+                        matches[0].EntityIsInValid = true;
+                    }
+                    return matches;
+                case 2:
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+
+                    if (matches[0].Status == QSOStatus.ValidQSO)
+                    {
+                        matches[0].MatchingQSO = qso;
+                        matches[0].HasBeenMatched = true;
+                        matches[0].IncorrectDXEntity = $"{matches[0].ContactEntity} --> {qso.OperatorEntity}";
+                        matches[0].EntityIsInValid = true;
+                    }
+
+                    if (matches[1].Status == QSOStatus.ValidQSO)
+                    {
+                        matches[1].MatchingQSO = qso;
+                        matches[1].HasBeenMatched = true;
+                        matches[1].IncorrectDXEntity = $"{matches[1].ContactEntity} --> {qso.OperatorEntity}";
+                        matches[1].EntityIsInValid = true;
+                    }
+                    return matches;
+                default:
+                    Console.WriteLine("FindHQPMatches: 2");
+                    return matches;
+            }
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="qsos"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private List<QSO> SearchWithoutOperatorEntity(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches = new List<QSO>();
+            int timeInterval = 10;
+            int queryLevel = 3;
+
+            enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+
+            // don't ToList() unless something returned
+            if (enumerable.Any())
+            {
+                matches = enumerable.ToList();
+            }
+
+            // this is hit only if previous switch hit case 0: so we up the time interval
+            switch (matches.Count)
+            {
+                case 0:
+                    // match not found so lets widen the search
+                    //matches = RefineHQPMatch(qsos, qso, 5, 3);
+                    return matches;
+                case 1:
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+
+                    if (matches[0].Status == QSOStatus.ValidQSO)
+                    {
+                        matches[0].MatchingQSO = qso;
+                        matches[0].HasBeenMatched = true;
+                        matches[0].IncorrectDXEntity = $"{matches[0].OperatorEntity} --> {qso.ContactEntity}";
+                        matches[0].EntityIsInValid = true;
+                    }
+                    return matches;
+                case 2:
+                    // two matches so these are probably dupes
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+
+                    if (matches[0].Status == QSOStatus.ValidQSO)
+                    {
+                        matches[0].HasBeenMatched = true;
+                        matches[0].MatchingQSO = qso;
+                        matches[0].IncorrectDXEntity = $"{matches[0].OperatorEntity} --> {qso.ContactEntity}";
+                        matches[0].EntityIsInValid = true;
+                    }
+
+                    if (matches[1].Status == QSOStatus.ValidQSO)
+                    {
+                        matches[1].HasBeenMatched = true;
+                        matches[1].MatchingQSO = qso;
+                        matches[1].IncorrectDXEntity = $"{matches[1].OperatorEntity} --> {qso.ContactEntity}";
+                        matches[1].EntityIsInValid = true;
+                    }
+                    return matches;
+                default:
+                    Console.WriteLine("FindHQPMatches: 3");
+                    return matches;
+            }
         }
 
         /// <summary>
@@ -441,51 +532,59 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qso"></param>
         /// <param name="timeInterval"></param>
         /// <returns></returns>
-        private List<QSO> RefineHQPMatch(List<KeyValuePair<string, List<QSO>>> qsos, QSO qso, int timeInterval, int queryLevel)
+        private IEnumerable<QSO> RefineHQPMatch(IEnumerable<QSO> qsos, QSO qso, int timeInterval, int queryLevel)
         {
-            List<QSO> matches = new List<QSO>();
+            IEnumerable<QSO> matches;
 
             switch (queryLevel)
             {
                 case 1:
                     // full search - QSO: 14038 CW 2020-08-22 0430 KH6EU 599 KON KH6TU 599 MAU
                     //               QSO: 14038 CW 2020-08-22 0430 KH6TU 599 MAU KH6EU 599 KON 
-                    matches = qsos.SelectMany(x => x.Value)
-                    .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band &&
-                    y.Mode == qso.Mode && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
-                    .ToList();
-                    break;
+                    matches = qsos
+                    .Where(y => y.Band == qso.Band
+                                && y.Mode == qso.Mode
+                                && y.ContactEntity == qso.OperatorEntity
+                                && y.OperatorEntity == qso.ContactEntity
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
                 case 2:
-                    // without y.ContactCall == qso.OperatorCall - QSO: 14034 CW 2020-08-22 1732 KH6TU 599 MAU W7JMM 599 OR  
-                    //                                             QSO: 21000 CW 2020-08-22 1732 W7JMM 599 OR WH6TU 599 MAU
-                    qsos.SelectMany(x => x.Value)
-                    .Where(y => y.OperatorCall == qso.ContactCall && y.Band == qso.Band && y.Mode == qso.Mode &&
-                     Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
-                    .ToList();
-                    break;
+                    // without y.ContactEntity == qso.OperatorEntity - 
+                    // QSO: 14034 CW 2020-08-22 1732 KH6TU 599 MAU W7JMM 599 OR  
+                    // QSO: 21000 CW 2020-08-22 1732 W7JMM 599 OR WH6TU 599 MAU
+                    matches = qsos
+                    .Where(y => y.Band == qso.Band
+                                && y.Mode == qso.Mode
+                                && y.OperatorEntity == qso.ContactEntity
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
                 case 3:
-                    // without y.OperatorCall == qso.ContactCall - QSO: 14034 CW 2020-08-22 1732 KH6TU 599 MAU W7JMM 599 OR  
-                    //                                             QSO: 21000 CW 2020-08-22 1732 W7JMM 599 OR WH6TU 599 MAU
-                    qsos.SelectMany(x => x.Value)
-                    .Where(y => y.ContactCall == qso.OperatorCall && y.Band == qso.Band && y.Mode == qso.Mode &&
-                     Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
-                    .ToList();
-                    break;
+                    // without y.OperatorCall == qso.ContactCall -
+                    //  QSO: 14034 CW 2020-08-22 1732 KH6TU 599 MAU W7JMM 599 OR  
+                    //  QSO: 21000 CW 2020-08-22 1732 W7JMM 599 OR WH6TU 599 MAU
+                    matches = qsos
+                    .Where(y => y.Band == qso.Band
+                                && y.Mode == qso.Mode
+                                && y.ContactEntity == qso.OperatorEntity
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
                 case 4:
                     // general search
-                    matches = qsos.SelectMany(x => x.Value)
-                    .Where(y => y.Band == qso.Band && y.Mode == qso.Mode && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval)
-                    .ToList();
-                    break;
+                    matches = qsos
+                    .Where(y => y.Band == qso.Band
+                                && y.Mode == qso.Mode
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                default:
+                    Console.WriteLine("Failed search: " + qso.RawQSO);
+                    return new List<QSO>();
             }
-
-            return matches;
         }
 
         /// <summary>
         /// HQP only
-        /// Is this a Hawaiin station then, state, province, DX
-        /// Non Hawaiin ststion then
+        /// Is this a Hawaiin station then, state, province or DX are valid.
+        /// Non Hawaiin station then
         /// if US or Canadian - Hawwaiin entity
         /// DX then Hawaiin entity
         /// </summary>
@@ -619,7 +718,8 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Mark all QSOs that don't have the correct operator on one or more QSOs entity set as invalid.
+        /// Mark all QSOs that don't have the correct operator entity on one or more of their QSOs 
+        /// entity set as invalid.
         /// This rarely finds that the operator made a mistake
         /// Finds where the entity is not consistent among all the QSOs made with that operator.
         /// </summary>
@@ -627,16 +727,6 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="entity"></param>
         private void MarkIncorrectSentEntity(List<QSO> qsoList)
         {
-
-            // find the operator entity used on the majority of qsos
-            var mostUsedOperatorEntity = qsoList
-                .GroupBy(q => q.OperatorEntity)
-                .OrderByDescending(gp => gp.Count())
-                .Take(5)
-                .Select(g => g.Key).ToList();
-
-            List<QSO> qsos = qsoList.Where(q => q.OperatorEntity != mostUsedOperatorEntity[0] && q.Status == QSOStatus.ValidQSO).ToList();
-
             // if there is only one then check it is valid
             if (qsoList.Count == 1)
             {
@@ -652,15 +742,26 @@ namespace W6OP.ContestLogAnalyzer
                         return;
                     default:
                         qsoList[0].SentEntityIsInValid = true;
-                        break;
+                        return;
                 }
-
             }
+
+            // find the operator entity used on the majority of qsos
+            var mostUsedOperatorEntity = qsoList
+                .GroupBy(q => q.OperatorEntity)
+                .OrderByDescending(gp => gp.Count())
+                .Take(5)
+                .Select(g => g.Key).ToList();
+
+            List<QSO> qsos = qsoList.Where(q => q.OperatorEntity != mostUsedOperatorEntity[0] && q.Status == QSOStatus.ValidQSO).ToList();
 
             if (qsos.Any())
             {
                 _ = qsos.Select(c => { c.SentEntityIsInValid = true; return c; })
                         .ToList();
+            } else
+            {
+                // need to check every entry?
             }
         }
 
@@ -786,7 +887,7 @@ namespace W6OP.ContestLogAnalyzer
             // do these parameters up front and I don't have to do them for every subsequent query
             IEnumerable<QSO> qsosFlattened = qsos.SelectMany(x => x.Value).Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall);
 
-            enumerable = FullParameterSearch(qsosFlattened, qso);
+            enumerable = CWOpenFullParameterSearch(qsosFlattened, qso);
 
             // if the qso has been matched at any level we don't need to continue
             if (qso.HasBeenMatched)
@@ -831,14 +932,14 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qsos"></param>
         /// <param name="qso"></param>
         /// <returns></returns>
-        private List<QSO> FullParameterSearch(IEnumerable<QSO> qsos, QSO qso)
+        private List<QSO> CWOpenFullParameterSearch(IEnumerable<QSO> qsos, QSO qso)
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches = new List<QSO>();
             int timeInterval = 10; // because everything else must match
             int searchLevel = 1;
 
-            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel).ToList();
+            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
 
             // don't ToList() unless something returned
             if (enumerable.Any())
@@ -906,7 +1007,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 case 0:
                     // search without name
-                    matches = SearchWithoutNames(qsos, qso); 
+                    matches = SearchWithoutNames(qsos, qso);
                     return matches;
                 case 1:
                     qso.MatchingQSO = matches[0];
@@ -1056,7 +1157,7 @@ namespace W6OP.ContestLogAnalyzer
             double qsoPoints;
             double matchQsoPoints;
 
-            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel); 
+            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
 
             // don't ToList() unless something returned
             if (enumerable.Any())
@@ -1215,7 +1316,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     previousQSO = GetPrevious(contestLog.QSOCollection, qso);
                 }
-                
+
                 if (previousQSO != null)
                 {
                     frequency = previousQSO.Frequency;

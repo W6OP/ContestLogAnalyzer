@@ -156,7 +156,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
 
                     // check for valid QSOs
-                    CheckQSOCollection(fileInfo, contestLog);
+                    CheckQSOCollection(fileName, contestLog);
 
                     // complete information for printing pdf file - must be before CheckHeader()
                     AddPrintInformation(contestLog);
@@ -166,7 +166,9 @@ namespace W6OP.ContestLogAnalyzer
                     // now add the DXCC information some contests need for multipliers
                     if (ActiveContest == ContestName.HQP)
                     {
-                        SetHQPDXCCInformation(contestLog.QSOCollection, contestLog);
+                        bool isHQPEntity = Enum.IsDefined(typeof(HQPMults), contestLog.QSOCollection[0].OperatorEntity);
+                        contestLog.IsHQPEntity = isHQPEntity;
+                        SetHQPDXCCInformation(contestLog.QSOCollection, isHQPEntity);
                     }
 
                     // -----------------Performance upgrade---------------------------------------------------------------
@@ -391,9 +393,11 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="fileInfo"></param>
         /// <param name="contestLog"></param>
-        private void CheckQSOCollection(FileInfo fileInfo, ContestLog contestLog)
+        private void CheckQSOCollection(string fileName, ContestLog contestLog)
         {
-            //  it will never be null because line we will have an exception first
+            List<QSO> invalidQsos;
+
+            //  it will never be null because we will have an exception first
             switch (contestLog.QSOCollection.Count)
             {
                 case 0:
@@ -404,18 +408,54 @@ namespace W6OP.ContestLogAnalyzer
                         FailReason += Environment.NewLine + FailingLine;
                     }
                     contestLog.IsValidLog = false;
-                    throw new Exception(fileInfo.Name); // don't want this added to collection
+                    throw new Exception(fileName); // don't want this added to collection
                 default:
                     {
-                        // this catches QSOs (or entire log) that do not belong to this session
-                        contestLog.QSOCollection = contestLog.QSOCollection.Where(q => q.SessionIsValid == true).ToList();
-
-                        if (contestLog.QSOCollection.Count == 0)
+                        switch (ActiveContest)
                         {
-                            // may want to expand on this for a future report
-                            FailReason = "QSO collection is empty - Invalid session"; // create enum
-                            contestLog.IsValidLog = false;
-                            throw new Exception(fileInfo.Name); // don't want this added to collection
+                            case ContestName.Select:
+                                break;
+                            case ContestName.CW_OPEN:
+                                // this catches QSOs (or entire log) that do not belong to this session
+                                contestLog.QSOCollection = contestLog.QSOCollection.Where(q => q.SessionIsValid == true).ToList();
+
+                                if (contestLog.QSOCollection.Count == 0)
+                                {
+                                    // may want to expand on this for a future report
+                                    FailReason = "QSO collection is empty - Invalid session"; // create enum
+                                    contestLog.IsValidLog = false;
+                                    throw new Exception(fileName); // don't want this added to collection
+                                }
+
+                                invalidQsos = contestLog.QSOCollection.Where(q => q.Status != QSOStatus.ValidQSO).ToList();
+
+                                if (invalidQsos.Count != 0)
+                                {
+                                    // may want to expand on this for a future report
+                                    FailReason = "There are " + invalidQsos.Count.ToString() + " invalid QSOs" + Environment.NewLine;
+                                    foreach (QSO qso in invalidQsos)
+                                    {
+                                        FailReason += qso.Status.ToString() + " : " + qso.RawQSO + Environment.NewLine;
+                                    }
+                                    contestLog.IsValidLog = false;
+                                    throw new Exception(fileName); // don't want this added to collection
+                                }
+                                break;
+                            case ContestName.HQP:
+                                invalidQsos = contestLog.QSOCollection.Where(q => q.Status != QSOStatus.ValidQSO).ToList();
+
+                                if (invalidQsos.Count != 0)
+                                {
+                                    // may want to expand on this for a future report
+                                    FailReason = "There are " + invalidQsos.Count.ToString() + " invalid QSOs" + Environment.NewLine;
+                                    foreach (QSO qso in invalidQsos)
+                                    {
+                                        FailReason += qso.Status.ToString() + " : " + qso.RawQSO + Environment.NewLine;
+                                    }
+                                    contestLog.IsValidLog = false;
+                                    throw new Exception(fileName); // don't want this added to collection
+                                }
+                                break;
                         }
                         break;
                     }
@@ -428,17 +468,17 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="contestLog"></param>
         private void AddPrintInformation(ContestLog contestLog)
         {
-            if (String.IsNullOrEmpty(contestLog.Operator))
+            if (string.IsNullOrEmpty(contestLog.Operator))
             {
                 contestLog.Operator = contestLog.QSOCollection[0].OperatorCall;
             }
 
-            if (String.IsNullOrEmpty(contestLog.Station))
+            if (string.IsNullOrEmpty(contestLog.Station))
             {
                 contestLog.Station = contestLog.QSOCollection[0].OperatorCall;
             }
 
-            if (String.IsNullOrEmpty(contestLog.OperatorName))
+            if (string.IsNullOrEmpty(contestLog.OperatorName))
             {
                 contestLog.OperatorName = contestLog.QSOCollection[0].OperatorName;
             }
@@ -509,12 +549,12 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="qsoCollection"></param>
         /// <param name="contestLog"></param>
-        private void SetHQPDXCCInformation(List<QSO> qsoCollection, ContestLog contestLog)
+        private void SetHQPDXCCInformation(List<QSO> qsoCollection, bool isHQPEntity)
         {
             // set the entity of the log owner
-            contestLog.IsHQPEntity = Enum.IsDefined(typeof(HQPMults), contestLog.QSOCollection[0].OperatorEntity);
+           // contestLog.IsHQPEntity = Enum.IsDefined(typeof(HQPMults), contestLog.QSOCollection[0].OperatorEntity);
 
-            if (contestLog.IsHQPEntity)
+            if (isHQPEntity)
             {
                 ProcessHawaiiOperators(qsoCollection);
             }
@@ -735,7 +775,6 @@ namespace W6OP.ContestLogAnalyzer
                         if (hitList.Count != 0)
                         {
                             qso.OperatorCountry = hitList[0].Country;
-                            // qso.OperatorEntity = hitList[0].Country;
 
                             if (qso.ContactEntity == HQPCanadaLiteral || qso.ContactEntity == HQPUSALiteral)
                             {
@@ -757,6 +796,13 @@ namespace W6OP.ContestLogAnalyzer
                     case string _ when Enum.IsDefined(typeof(HQPMults), qso.OperatorEntity):
                         qso.OperatorCountry = HQPHawaiiLiteral;
                         return;
+                    default:
+                        // need to check county files and XX?
+                        qso.SentEntityIsInValid = true;
+                        FailReason = "The operator entity is invalid: " + Environment.NewLine + qso.RawQSO + Environment.NewLine; // create enum
+                        qso.ParentLog.IsValidLog = false;
+                        throw new Exception(qso.OperatorCall + ".log"); // don't want this added to collection
+                        //break;
                 }
             }
         }
@@ -1098,7 +1144,7 @@ namespace W6OP.ContestLogAnalyzer
                          ReceivedReport = split[9],
                          ContactName = CheckActiveContest(split[10], "ContactName").ToUpper(),
                          ContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
-                         IncorrectOperatorCall = false,
+                         //IncorrectOperatorCall = false,
                          SessionIsValid = CheckForValidSession(session, split[4])
                      };
                 qsoList = qso.ToList();
@@ -1126,6 +1172,7 @@ namespace W6OP.ContestLogAnalyzer
                         FailingLine += Environment.NewLine + WorkingLine + " --- " + ex.Message;
                     }
                 }
+                throw;
             }
 
             return qsoList;
@@ -1339,9 +1386,10 @@ namespace W6OP.ContestLogAnalyzer
 
             if (split[10] == "MISSING_COLUMN")
             {
-                status = QSOStatus.InvalidQSO;
+                status = QSOStatus.IncompleteQSO;
                 FailingLine += Environment.NewLine + "One or more columns are missing.";
                 FailingLine += Environment.NewLine + line;
+                //throw new System.FormatException("One or more columns are missing.");
             }
 
             return status;

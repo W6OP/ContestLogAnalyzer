@@ -51,6 +51,7 @@ namespace W6OP.ContestLogAnalyzer
     public enum QSOStatus
     {
         ValidQSO,
+        IncompleteQSO,
         InvalidQSO,
         ReviewQSO
     }
