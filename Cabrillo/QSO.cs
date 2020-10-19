@@ -111,25 +111,25 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        public bool IncompleteQSO
-        {
-            set
-            {
-                if (value == true)
-                {
-                    ReasonRejected = RejectReason.MissingColumn;
-                    Status = QSOStatus.IncompleteQSO;
-                }
-                else
-                {
-                    if (ReasonRejected == RejectReason.MissingColumn)
-                    {
-                        ReasonRejected = RejectReason.None;
-                        Status = QSOStatus.ValidQSO;
-                    }
-                }
-            }
-        }
+        //public bool IncompleteQSO
+        //{
+        //    set
+        //    {
+        //        if (value == true)
+        //        {
+        //            ReasonRejected = RejectReason.MissingColumn;
+        //            Status = QSOStatus.IncompleteQSO;
+        //        }
+        //        else
+        //        {
+        //            if (ReasonRejected == RejectReason.MissingColumn)
+        //            {
+        //                ReasonRejected = RejectReason.None;
+        //                Status = QSOStatus.ValidQSO;
+        //            }
+        //        }
+        //    }
+        //}
 
 
         /// <summary>

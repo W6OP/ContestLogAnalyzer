@@ -137,14 +137,14 @@ namespace W6OP.ContestLogAnalyzer
 
                     // collect regular QSOs
                     contestLog.QSOCollection = CollectQSOs(lineList, session);
-                    // add a reference to the parent log to each QSO
-                    if (contestLog.QSOCollection != null)
-                    {
-                        contestLog.QSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
-                    }
+                   
+                    //// add a reference to the parent log to each QSO
+                    //if (contestLog.QSOCollection != null)
+                    //{
+                    //    contestLog.QSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
+                    //}
 
-                    // collect all the X-QSOs so we can mark them as IsXQSO - this log won't count them 
-                    // but others can get credit for them
+                    // collect all the X-QSOs so we can mark them as IsXQSO - this log won't count them but others can get credit for them
                     xQSOCollection = CollectQSOs(lineListX, session);
                     xQSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
                     xQSOCollection.Select(c => { c.IsXQSO = true; return c; }).ToList();
@@ -153,15 +153,16 @@ namespace W6OP.ContestLogAnalyzer
                     if (contestLog.QSOCollection != null)
                     {
                         contestLog.QSOCollection = contestLog.QSOCollection.Union(xQSOCollection).ToList();
+                        // add a reference to the parent log to each QSO
+                        contestLog.QSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
                     }
-
-                    // check for valid QSOs
-                    CheckQSOCollection(fileName, contestLog);
 
                     // complete information for printing pdf file - must be before CheckHeader()
                     AddPrintInformation(contestLog);
-
                     CheckHeader(fileInfo, contestLog);
+
+                    // check for valid QSOs
+                    CheckQSOCollection(fileName, contestLog);
 
                     // now add the DXCC information some contests need for multipliers
                     if (ActiveContest == ContestName.HQP)
@@ -381,7 +382,7 @@ namespace W6OP.ContestLogAnalyzer
             if (contestLog.OperatorName.ToUpper() == "NAME")
             {
                 // may want to expand on this for a future report
-                FailReason = "Name sent is 'NAME' - Invalid name."; // create enum
+                FailReason = "Name sent is 'NAME' - Invalid name."; 
                 contestLog.IsValidLog = false;
                 throw new Exception(fileInfo.Name); // don't want this added to collection
             }
@@ -413,8 +414,6 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         switch (ActiveContest)
                         {
-                            case ContestName.Select:
-                                break;
                             case ContestName.CW_OPEN:
                                 // this catches QSOs (or entire log) that do not belong to this session
                                 contestLog.QSOCollection = contestLog.QSOCollection.Where(q => q.SessionIsValid == true).ToList();
@@ -422,7 +421,7 @@ namespace W6OP.ContestLogAnalyzer
                                 if (contestLog.QSOCollection.Count == 0)
                                 {
                                     // may want to expand on this for a future report
-                                    FailReason = "QSO collection is empty - Invalid session"; // create enum
+                                    FailReason = "QSO collection is empty" + Environment.NewLine + "Invalid session" + Environment.NewLine;
                                     contestLog.IsValidLog = false;
                                     throw new Exception(fileName); // don't want this added to collection
                                 }
@@ -431,7 +430,6 @@ namespace W6OP.ContestLogAnalyzer
 
                                 if (invalidQsos.Count != 0)
                                 {
-                                    // may want to expand on this for a future report
                                     FailReason = "There are " + invalidQsos.Count.ToString() + " invalid QSOs" + Environment.NewLine;
                                     foreach (QSO qso in invalidQsos)
                                     {
@@ -446,7 +444,6 @@ namespace W6OP.ContestLogAnalyzer
 
                                 if (invalidQsos.Count != 0)
                                 {
-                                    // may want to expand on this for a future report
                                     FailReason = "There are " + invalidQsos.Count.ToString() + " invalid QSOs" + Environment.NewLine;
                                     foreach (QSO qso in invalidQsos)
                                     {
@@ -496,7 +493,7 @@ namespace W6OP.ContestLogAnalyzer
             string fullName = fileInfo.FullName;
             string fileName = fileInfo.Name;
             string version = null;
-            string reason = "Unable to build valid header. Check the Inspect folder for details.";
+            string reason = "Unable to build valid header. Check the Inspect folder for details." + Environment.NewLine;
 
             FailReason = reason;
 
@@ -526,7 +523,7 @@ namespace W6OP.ContestLogAnalyzer
             if (contestLog.LogHeader != null && AnalyzeHeader(contestLog, out reason) == true)
             {
                 contestLog.LogHeader.HeaderIsValid = true;
-                FailReason = "Check the Inspect folder for details.";
+                FailReason = "Check the Inspect folder for details." + Environment.NewLine;
             }
             else
             {
@@ -608,6 +605,11 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
 
+            // happens if operator entity is invalid
+            if (qsoCollection[0].ParentLog.IsValidLog == false)
+            {
+                throw new Exception(qsoCollection[0].OperatorCall + ".log");
+            }
         }
 
         /// <summary>
@@ -797,12 +799,13 @@ namespace W6OP.ContestLogAnalyzer
                         qso.OperatorCountry = HQPHawaiiLiteral;
                         return;
                     default:
-                        // need to check county files and XX?
-                        qso.SentEntityIsInValid = true;
-                        FailReason = "The operator entity is invalid: " + Environment.NewLine + qso.RawQSO + Environment.NewLine; // create enum
-                        qso.ParentLog.IsValidLog = false;
-                        throw new Exception(qso.OperatorCall + ".log"); // don't want this added to collection
-                        //break;
+                        if (CheckCountyFiles(qso.OperatorEntity) == null)
+                        {
+                            qso.SentEntityIsInValid = true;
+                            FailReason += "The operator entity is invalid: " + Environment.NewLine + qso.RawQSO + Environment.NewLine;
+                            qso.ParentLog.IsValidLog = false;
+                        }
+                        break;
                 }
             }
         }
@@ -1144,7 +1147,6 @@ namespace W6OP.ContestLogAnalyzer
                          ReceivedReport = split[9],
                          ContactName = CheckActiveContest(split[10], "ContactName").ToUpper(),
                          ContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
-                         //IncorrectOperatorCall = false,
                          SessionIsValid = CheckForValidSession(session, split[4])
                      };
                 qsoList = qso.ToList();
@@ -1160,7 +1162,6 @@ namespace W6OP.ContestLogAnalyzer
                     else
                     {
                         FailingLine += Environment.NewLine + WorkingLine + " --- " + Environment.NewLine + ex.Message;
-                        //ex.Message == "There is an unspecified error.";
                         FailingLine += Environment.NewLine;
                         Console.WriteLine("CollectQSOS()");
                     }
@@ -1373,7 +1374,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Check and see if every field is in the line
+        /// Check and see if every field is in the line.
         /// </summary>
         /// <param name="split"></param>
         /// <param name="line"></param>
@@ -1389,12 +1390,19 @@ namespace W6OP.ContestLogAnalyzer
                 status = QSOStatus.IncompleteQSO;
                 FailingLine += Environment.NewLine + "One or more columns are missing.";
                 FailingLine += Environment.NewLine + line;
-                //throw new System.FormatException("One or more columns are missing.");
             }
 
             return status;
         }
 
+        /// <summary>
+        /// Check if the frequency field is formatted correctly.
+        /// The 999999 means I was unabble to parse the field
+        /// to a valid frequency.
+        /// </summary>
+        /// <param name="frequency"></param>
+        /// <param name="line"></param>
+        /// <returns></returns>
         private string CheckFrequency(string frequency, string line)
         {
             WorkingLine = line;
@@ -1408,6 +1416,14 @@ namespace W6OP.ContestLogAnalyzer
             return frequency;
         }
 
+        /// <summary>
+        /// Check if the time field is formatted correctly.
+        /// The 999999 means I was unabble to parse the field
+        /// to a valid time.
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="line"></param>
+        /// <returns></returns>
         private string CheckTime(string time, string line)
         {
             WorkingLine = line;
