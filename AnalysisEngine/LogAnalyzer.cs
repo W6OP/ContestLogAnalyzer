@@ -792,7 +792,7 @@ namespace W6OP.ContestLogAnalyzer
         private void FindCWOpenMatchingQsos(QSO qso)
         {
             IEnumerable<QSO> enumerable;
-            List<QSO> matches = new List<QSO>();
+            List<QSO> matches;
             IEnumerable<ContestLog> contestLogs;
             IEnumerable<KeyValuePair<string, List<QSO>>> qsos;
 
@@ -873,18 +873,18 @@ namespace W6OP.ContestLogAnalyzer
 
             enumerable = CWOpenFullParameterSearch(qsosFlattened, qso);
 
-            // if the qso has been matched at any level we don't need to continue
+            // if the qso has been matched at any previous level we don't need to continue
             if (qso.HasBeenMatched)
             {
                 return;
             }
 
             // don't ToList() unless something returned
-            if (enumerable.Any())
-            {
+            //if (enumerable.Any())
+            //{
                 matches = enumerable.ToList();
-                Console.WriteLine("Matches: " + qsos.ToList().Count.ToString());
-            }
+                //Console.WriteLine("Excess Matches: " + matches.ToList().Count.ToString());
+            //}
 
             switch (matches.Count)
             {
@@ -976,16 +976,16 @@ namespace W6OP.ContestLogAnalyzer
         private List<QSO> SearchWithoutSerialNumber(IEnumerable<QSO> qsos, QSO qso)
         {
             IEnumerable<QSO> enumerable;
-            List<QSO> matches = new List<QSO>();
+            List<QSO> matches;
             int timeInterval = 10;
             int searchLevel = 2;
 
             enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
 
-            if (enumerable.Any())
-            {
+            //if (enumerable.Any())
+            //{
                 matches = enumerable.ToList();
-            }
+            //}
 
             switch (matches.Count)
             {
@@ -1069,16 +1069,16 @@ namespace W6OP.ContestLogAnalyzer
         private List<QSO> SearchWithoutNames(IEnumerable<QSO> qsos, QSO qso)
         {
             IEnumerable<QSO> enumerable;
-            List<QSO> matches = new List<QSO>();
+            List<QSO> matches;
             int timeInterval = 5;
             int searchLevel = 3;
 
             enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel); //.ToList();
 
-            if (enumerable.Any())
-            {
+            //if (enumerable.Any())
+            //{
                 matches = enumerable.ToList();
-            }
+            //}
 
             switch (matches.Count)
             {
@@ -1135,7 +1135,7 @@ namespace W6OP.ContestLogAnalyzer
         private List<QSO> SearchWithoutBand(IEnumerable<QSO> qsos, QSO qso)
         {
             IEnumerable<QSO> enumerable;
-            List<QSO> matches = new List<QSO>();
+            List<QSO> matches;
             int timeInterval = 5;
             int searchLevel = 5;
             double qsoPoints;
@@ -1144,10 +1144,10 @@ namespace W6OP.ContestLogAnalyzer
             enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
 
             // don't ToList() unless something returned
-            if (enumerable.Any())
-            {
+            //if (enumerable.Any())
+            //{
                 matches = enumerable.ToList();
-            }
+            //}
 
             // band mismatch
             switch (matches.Count)
