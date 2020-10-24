@@ -231,8 +231,6 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         private void SelectLogFileSourceFolder()
         {
-           // LogFolderBrowserDialog.ShowDialog();
-
             if (LogFolderBrowserDialog.ShowDialog() != DialogResult.Cancel)
             {
                 if (!string.IsNullOrEmpty(LogFolderBrowserDialog.SelectedPath))
@@ -307,11 +305,6 @@ namespace W6OP.ContestLogAnalyzer
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    //if (initial)
-                    //{
-                    //    //ComboBoxSelectSession.SelectedIndex = 1;
-                    //}
-
                     if (CWOpen == null)
                     {
                         CWOpen = new ScoreCWOpen();
@@ -380,6 +373,8 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         private void LoadLogFiles()
         {
+            ContestLogs = new List<ContestLog>();
+
             try
             {
                 ProgressBarLoad.Visible = true;
@@ -389,8 +384,6 @@ namespace W6OP.ContestLogAnalyzer
                 UpdateListViewAnalysis("", "", "", true);
                 UpdateListViewScore(new ContestLog(), true);
                 ButtonStartAnalysis.Enabled = false;
-
-                ContestLogs = new List<ContestLog>();
 
                 CreateFolders();
 
@@ -518,6 +511,10 @@ namespace W6OP.ContestLogAnalyzer
 
             UpdateListViewAnalysis("", "", "", true);
 
+            // cleanup for next run
+            LogProcessor.CallDictionary = new Dictionary<string, List<ContestLog>>();
+            LogProcessor.NameDictionary = new Dictionary<string, List<Tuple<string, int>>>();
+
             foreach (FileInfo fileInfo in ContestLogFileList)
             {
                 fileName = LogProcessor.BuildContestLog(fileInfo, ContestLogs, Session);
@@ -611,9 +608,6 @@ namespace W6OP.ContestLogAnalyzer
 
             UpdateListViewAnalysis("Analysis completed", "----------", "----------", false);
             ResetProgressBar(true);
-
-            //Don't think this is necessary
-            //_LogAnalyser.PreAnalyzeContestLogsReverse(_ContestLogs);
         }
 
         /// <summary>
@@ -1294,7 +1288,7 @@ namespace W6OP.ContestLogAnalyzer
                 return;
             }
 
-            if (String.IsNullOrEmpty(TextBoxLog1.Text) || String.IsNullOrEmpty(TextBoxLog2.Text))
+            if (string.IsNullOrEmpty(TextBoxLog1.Text) || string.IsNullOrEmpty(TextBoxLog2.Text))
             {
                 MessageBox.Show("You must enter both call signs before you can compare.", "Missing Call Sign", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -1313,7 +1307,7 @@ namespace W6OP.ContestLogAnalyzer
             ContestLog log1 = null;
             ContestLog log2 = null;
             int group = 0;
-            string message = String.Format("The log for {0} could not be found.", call1);
+            string message = string.Format("The log for {0} could not be found.", call1);
 
             ListViewCompare.Items.Clear();
             ListViewCompare.Groups.Clear();
@@ -1359,7 +1353,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                message = String.Format("The log for {0} could not be found.", call2);
+                message = string.Format("The log for {0} could not be found.", call2);
                 MessageBox.Show(message, "Unable to find log", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }

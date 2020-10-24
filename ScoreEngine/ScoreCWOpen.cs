@@ -9,7 +9,7 @@ namespace W6OP.ContestLogAnalyzer
 {
     public class ScoreCWOpen
     {
-        public delegate void ProgressUpdate(ContestLog contestLog, Int32 progress);
+        public delegate void ProgressUpdate(ContestLog contestLog, int progress);
         public event ProgressUpdate OnProgressUpdate;
 
         public ScoreCWOpen()
@@ -19,7 +19,7 @@ namespace W6OP.ContestLogAnalyzer
 
         public void ScoreContestLogs(List<ContestLog> logList)
         {
-            Int32 progress = 0;
+            int progress = 0;
 
             List<ContestLog> contestLogList = logList.OrderByDescending(o => o.LogOwner).ToList();
 
@@ -29,7 +29,8 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
-                    ValidateDuplicates(contestLog);
+                   // deprecated
+                   // ValidateDuplicates(contestLog);
 
                     MarkMultipliers(contestLog);
 
@@ -49,15 +50,15 @@ namespace W6OP.ContestLogAnalyzer
         /// QSO: 	14033	CW	2015-09-05	1313	AA3B	145	BUD	I5EFO	15	EMIL	This is a duplicate QSO
         /// QSO: 	14000	CW	2015-09-05	1313	I5EFO	15	EMIL AA3B	88	BUD
         /// 
-        /// MOVE THIS - should be right after we check for dupes in loganalyser.cs
+        /// Deprecated
         /// </summary>
         /// <param name="contestLog"></param>
         private void ValidateDuplicates(ContestLog contestLog)
         {
-            List<QSO> invalidQSOs = null;
-            List<QSO> dupeQSOs = null;
-            QSO qso = null;
-            string call = null;
+            List<QSO> invalidQSOs;
+            List<QSO> dupeQSOs;
+            QSO qso;
+            string call;
 
             invalidQSOs = contestLog.QSOCollection.Where(q => q.MatchingQSO != null &&
                                                         q.Band == q.MatchingQSO.Band &&
@@ -79,7 +80,6 @@ namespace W6OP.ContestLogAnalyzer
                         if (qso != null)
                         {
                             qso.IncorrectOperatorCall = false;
-                            //qso.GetRejectReasons().Clear();
                             qso.ReasonRejected = RejectReason.None;
                             qso.Status = QSOStatus.ValidQSO;
                         }

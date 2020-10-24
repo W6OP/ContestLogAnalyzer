@@ -115,8 +115,8 @@ namespace W6OP.ContestLogAnalyzer
         //    set { _Overlay = value; }
         //}
 
-        private Int32 _ClaimedScore;
-        public Int32 ClaimedScore
+        private int _ClaimedScore;
+        public int ClaimedScore
         {
             get { return _ClaimedScore; }
             set { _ClaimedScore = value; }

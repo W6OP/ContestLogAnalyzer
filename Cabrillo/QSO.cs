@@ -436,10 +436,7 @@ namespace W6OP.ContestLogAnalyzer
 
         #region HQP Fields
 
-        //private string originalContactEntity;
-        //private string originalOperatorEntity;
         private bool invalidEntity = false;
-        private bool invalidSentEntity = false;
 
         #endregion
 

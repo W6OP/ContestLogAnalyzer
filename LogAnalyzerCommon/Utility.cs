@@ -128,7 +128,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
             //throw new ArgumentException("Not found.", description);
-            return default(T); // this returns the first or "=0" enum
+            return default; // this returns the first or "=0" enum
         }
 
         /// <summary>
@@ -136,9 +136,9 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="frequency"></param>
         /// <returns></returns>
-        public static Int32 ConvertFrequencyToBand(double frequency)
+        public static int ConvertFrequencyToBand(double frequency)
         {
-            Int32 band = 0;
+            int band = 0;
 
             if (frequency >= 50000.0 && frequency <= 54000.0)
             {

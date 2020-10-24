@@ -7,7 +7,7 @@ namespace W6OP.ContestLogAnalyzer
 {
     public class LogAnalyzer
     {
-        public delegate void ProgressUpdate(string value, string qsoCount, string validQsoCount, Int32 progress);
+        public delegate void ProgressUpdate(string value, string qsoCount, string validQsoCount, int progress);
         public event ProgressUpdate OnProgressUpdate;
 
         //private const string HQPHawaiiLiteral = "HAWAII";
@@ -85,6 +85,7 @@ namespace W6OP.ContestLogAnalyzer
 
             try
             {
+                Console.WriteLine("Contest Log Count: " + contestLogList.Count.ToString());
                 foreach (ContestLog contestLog in contestLogList)
                 {
                     call = contestLog.LogOwner;

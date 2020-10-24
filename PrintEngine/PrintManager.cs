@@ -25,7 +25,7 @@ namespace W6OP.PrintEngine
         private string ContestDescription { get; set; }
         private ContestName ActiveContest { get; set; }
 
-        private List<Tuple<string, int, string, int>> _CallNameCountList;
+        private List<Tuple<string, int, string, int>> CallNameCountList;
 
         /// <summary>
         /// Constructor
@@ -496,7 +496,7 @@ namespace W6OP.PrintEngine
                     AddFooter(contestLog, sw);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -519,28 +519,6 @@ namespace W6OP.PrintEngine
             }
 
             sw.WriteLine(message);
-
-            //if (qso.NearestMatches.Count > 0)
-            //{
-            //    sw.WriteLine("Nearest matches found:");
-            //    foreach (QSO item in qso.NearestMatches)
-            //    {
-            //        qso = item;
-            //        switch (ActiveContest)
-            //        {
-            //            case ContestName.CW_OPEN:
-            //                message = "QSO: " + "\t" + qso.MatchingQSO.Frequency + "\t" + qso.MatchingQSO.Mode + "\t" + qso.MatchingQSO.QsoDate + "\t" + qso.MatchingQSO.QsoTime + "\t" + qso.MatchingQSO.OperatorCall + "\t" + qso.MatchingQSO.SentSerialNumber.ToString() + "\t" +
-            //              qso.MatchingQSO.OperatorName + "\t" + qso.MatchingQSO.ContactCall + "\t" + qso.MatchingQSO.ReceivedSerialNumber.ToString() + "\t" + qso.MatchingQSO.ContactName;
-            //                break;
-            //            case ContestName.HQP:
-            //                message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentReport.ToString() + "\t" +
-            //           qso.OperatorEntity + "\t" + qso.ContactCall + "\t" + qso.ReceivedReport.ToString() + "\t" + qso.ContactEntity;
-            //                break;
-            //        }
-
-            //        sw.WriteLine(message);
-            //    }
-            //}
         }
 
         /// <summary>
@@ -974,7 +952,7 @@ namespace W6OP.PrintEngine
                     break;
             }
 
-            _CallNameCountList = CollectCallNameHitData(distinctCallNamePairs, contestLogs);
+            CallNameCountList = CollectCallNameHitData(distinctCallNamePairs, contestLogs);
 
             using (document)
             {
@@ -986,7 +964,7 @@ namespace W6OP.PrintEngine
 
                 SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
 
-                for (int i = 0; i < _CallNameCountList.Count; i++)
+                for (int i = 0; i < CallNameCountList.Count; i++)
                 {
                     // Add a row to the cell table.
                     Row row;
@@ -1038,7 +1016,7 @@ namespace W6OP.PrintEngine
                     else
                     {
                         // Set the cell value
-                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item1);
+                        newCell.CellValue = new CellValue(CallNameCountList[i].Item1);
                         newCell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         // Add the cell to the cell table at A2.
@@ -1046,9 +1024,9 @@ namespace W6OP.PrintEngine
                         row.InsertBefore(newCell, refCell);
 
                         // Set the cell value to be a numeric value.
-                        if (_CallNameCountList[i].Item2 != 0)
+                        if (CallNameCountList[i].Item2 != 0)
                         {
-                            newCell.CellValue = new CellValue(_CallNameCountList[i].Item2.ToString());
+                            newCell.CellValue = new CellValue(CallNameCountList[i].Item2.ToString());
                         }
                         newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
 
@@ -1056,14 +1034,14 @@ namespace W6OP.PrintEngine
                         newCell = new Cell() { CellReference = "C" + row.RowIndex.ToString() };
                         row.InsertBefore(newCell, refCell);
 
-                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item3);
+                        newCell.CellValue = new CellValue(CallNameCountList[i].Item3);
                         newCell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         // Add the cell to the cell table at A4.
                         newCell = new Cell() { CellReference = "D" + row.RowIndex.ToString() };
                         row.InsertBefore(newCell, refCell);
 
-                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item4.ToString());
+                        newCell.CellValue = new CellValue(CallNameCountList[i].Item4.ToString());
                         newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
                     }
                 }
@@ -1162,7 +1140,7 @@ namespace W6OP.PrintEngine
             string previousCall = "";
             int count = 0;
 
-            _CallNameCountList = new List<Tuple<string, int, string, int>>();
+            CallNameCountList = new List<Tuple<string, int, string, int>>();
 
             List<Tuple<string, string>> allCallNamePairs = contestLogList.SelectMany(z => z.QSOCollection)
                 .Select(r => new Tuple<string, string>(r.ContactCall, r.ContactName))
@@ -1187,10 +1165,10 @@ namespace W6OP.PrintEngine
 
                 Tuple<string, int, string, int> tuple = new Tuple<string, int, string, int>(currentCall, count, distinctCallNamePairs[i].Item2, nameCount.Count());
 
-                _CallNameCountList.Add(tuple);
+                CallNameCountList.Add(tuple);
             }
 
-            return _CallNameCountList;
+            return CallNameCountList;
         }
 
     } // end class

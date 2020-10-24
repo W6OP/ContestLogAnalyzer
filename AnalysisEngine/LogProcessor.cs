@@ -44,7 +44,6 @@ namespace W6OP.ContestLogAnalyzer
         /// the values are a list of all logs those calls are in
         /// </summary>
         public Dictionary<string, List<ContestLog>> CallDictionary;
-        public Dictionary<int, List<ContestLog>> BandDictionary;
         public Dictionary<string, List<Tuple<string, int>>> NameDictionary;
 
         /// <summary>
@@ -53,7 +52,6 @@ namespace W6OP.ContestLogAnalyzer
         public LogProcessor()
         {
             CallDictionary = new Dictionary<string, List<ContestLog>>();
-            BandDictionary = new Dictionary<int, List<ContestLog>>();
             NameDictionary = new Dictionary<string, List<Tuple<string, int>>>();
 
             FailingLine = "";
@@ -1313,7 +1311,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (temp1 > temp2)
                 {
-                    result = new String(call1.Where(x => Char.IsDigit(x)).ToArray());
+                    result = new string(call1.Where(x => Char.IsDigit(x)).ToArray());
 
                     if (!string.IsNullOrEmpty(result))
                     {
@@ -1324,7 +1322,7 @@ namespace W6OP.ContestLogAnalyzer
                         // if so then make it the prefix
                         if (suffix.Length > 1)
                         {
-                            result = new String(suffix.Where(x => Char.IsDigit(x)).ToArray());
+                            result = new string(suffix.Where(x => Char.IsDigit(x)).ToArray());
                             if (!string.IsNullOrEmpty(result))
                             {
                                 prefix = suffix;
@@ -1342,7 +1340,7 @@ namespace W6OP.ContestLogAnalyzer
                 else if (temp1 == temp2)
                 {
                     containsInt = call1.Any(char.IsDigit);
-                    //result = new String(call1.Where(x => Char.IsDigit(x)).ToArray());
+                    //result = new string(call1.Where(x => Char.IsDigit(x)).ToArray());
                     if (containsInt)
                     {
                         callSign = call1;
@@ -1356,7 +1354,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    result = new String(call2.Where(x => Char.IsDigit(x)).ToArray());
+                    result = new string(call2.Where(x => Char.IsDigit(x)).ToArray());
                     if (!string.IsNullOrEmpty(result))
                     {
                         callSign = call2.Substring(call2.IndexOf("/") + 1);
