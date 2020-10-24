@@ -207,7 +207,7 @@ namespace W6OP.ContestLogAnalyzer
         private void FindHQPMatchingQsos(QSO qso)
         {
             IEnumerable<QSO> enumerable;
-            List<QSO> matches = new List<QSO>();
+            List<QSO> matches;
             IEnumerable<ContestLog> contestLogs;
             IEnumerable<KeyValuePair<string, List<QSO>>> qsos;
 
@@ -278,18 +278,18 @@ namespace W6OP.ContestLogAnalyzer
 
             enumerable = HQPFullParameterSearch(qsosFlattened, qso);
 
-            // if the qso has been matched at any level we don't need to continue
+            // if the qso has been matched at any previous level we don't need to continue
             if (qso.HasBeenMatched)
             {
                 return;
             }
 
             // don't ToList() unless something returned
-            if (enumerable.Any())
-            {
+           // if (enumerable.Any())
+           // {
                 matches = enumerable.ToList();
-                Console.WriteLine("Matches: " + qsos.ToList().Count.ToString());
-            }
+                //Console.WriteLine("Matches: " + matches.ToList().Count.ToString());
+            //}
 
             // ok, no hits yet so lets do some more checking and see if we find something with a different call
             switch (matches.Count)
@@ -323,7 +323,7 @@ namespace W6OP.ContestLogAnalyzer
         private List<QSO> HQPFullParameterSearch(IEnumerable<QSO> qsos, QSO qso)
         {
             IEnumerable<QSO> enumerable;
-            List<QSO> matches = new List<QSO>();
+            List<QSO> matches;
             int timeInterval = 10; // because everything else must match
             int queryLevel = 1;
 
@@ -338,10 +338,10 @@ namespace W6OP.ContestLogAnalyzer
                 enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
             }
 
-            if (enumerable.Any())
-            {
+            //if (enumerable.Any())
+            //{
                 matches = enumerable.ToList();
-            }
+            //}
 
             switch (matches.Count)
             {
@@ -387,23 +387,22 @@ namespace W6OP.ContestLogAnalyzer
         private List<QSO> SearchWithoutContactEntity(IEnumerable<QSO> qsos, QSO qso)
         {
             IEnumerable<QSO> enumerable;
-            List<QSO> matches = new List<QSO>();
+            List<QSO> matches;
             int timeInterval = 10;
             int queryLevel = 2;
 
             enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
 
             // don't ToList() unless something returned
-            if (enumerable.Any())
-            {
+            //if (enumerable.Any())
+            //{
                 matches = enumerable.ToList();
-            }
+            //}
 
             // this is hit only if previous switch hit case 0: so we up the time interval
             switch (matches.Count)
             {
                 case 0:
-                    //matches = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
                     matches = SearchWithoutOperatorEntity(qsos, qso);
                     return matches;
                 case 1:
@@ -454,24 +453,19 @@ namespace W6OP.ContestLogAnalyzer
         private List<QSO> SearchWithoutOperatorEntity(IEnumerable<QSO> qsos, QSO qso)
         {
             IEnumerable<QSO> enumerable;
-            List<QSO> matches = new List<QSO>();
+            List<QSO> matches;
             int timeInterval = 10;
             int queryLevel = 3;
 
             enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
 
             // don't ToList() unless something returned
-            if (enumerable.Any())
-            {
-                matches = enumerable.ToList();
-            }
+            matches = enumerable.ToList();
 
             // this is hit only if previous switch hit case 0: so we up the time interval
             switch (matches.Count)
             {
                 case 0:
-                    // match not found so lets widen the search
-                    //matches = RefineHQPMatch(qsos, qso, 5, 3);
                     return matches;
                 case 1:
                     qso.HasBeenMatched = true;
