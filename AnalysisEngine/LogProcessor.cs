@@ -589,7 +589,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        qso.EntityIsInValid = true;
+                        qso.InvalidEntity = true;
                         qso.IncorrectDXEntity = $"{qso.ContactEntity} --> should be a Hawai’i district )";
                     }
 
@@ -670,7 +670,7 @@ namespace W6OP.ContestLogAnalyzer
                         }
                         else
                         {
-                            qso.EntityIsInValid = true;
+                            qso.InvalidEntity = true;
                             qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX or State or Province";
                         }
                     }
@@ -686,7 +686,7 @@ namespace W6OP.ContestLogAnalyzer
                         }
                         else
                         {
-                            qso.EntityIsInValid = true;
+                            qso.InvalidEntity = true;
 
                             hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
                             hitList = hitCollection.ToList();
@@ -724,14 +724,14 @@ namespace W6OP.ContestLogAnalyzer
                         }
                         else
                         {
-                            qso.EntityIsInValid = true;
+                            qso.InvalidEntity = true;
                             qso.IncorrectDXEntity = $"{qso.ContactEntity} is not valid for this contest";
                         }
                     }
 
                     break;
                 default:
-                    qso.EntityIsInValid = true;
+                    qso.InvalidEntity = true;
                     if (qso.ContactEntity == "MISSING_COLUMN")
                     {
                         qso.IncorrectDXEntity = "The contact entity column is missing";
@@ -801,7 +801,7 @@ namespace W6OP.ContestLogAnalyzer
                     default:
                         if (CheckCountyFiles(qso.OperatorEntity) == null)
                         {
-                            qso.SentEntityIsInValid = true;
+                            qso.InvalidSentEntity = true;
                             FailReason += "The operator entity is invalid: " + Environment.NewLine + qso.RawQSO + Environment.NewLine;
                             qso.ParentLog.IsValidLog = false;
                         }

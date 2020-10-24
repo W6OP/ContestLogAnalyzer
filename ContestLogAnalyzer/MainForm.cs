@@ -231,12 +231,15 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         private void SelectLogFileSourceFolder()
         {
-            LogFolderBrowserDialog.ShowDialog();
+           // LogFolderBrowserDialog.ShowDialog();
 
-            if (!string.IsNullOrEmpty(LogFolderBrowserDialog.SelectedPath))
+            if (LogFolderBrowserDialog.ShowDialog() != DialogResult.Cancel)
             {
-                LogSourceFolder = LogFolderBrowserDialog.SelectedPath;
-                TextBoxLogFolder.Text = LogSourceFolder;
+                if (!string.IsNullOrEmpty(LogFolderBrowserDialog.SelectedPath))
+                {
+                    LogSourceFolder = LogFolderBrowserDialog.SelectedPath;
+                    TextBoxLogFolder.Text = LogSourceFolder;
+                }
             }
         }
 
@@ -391,12 +394,18 @@ namespace W6OP.ContestLogAnalyzer
 
                 CreateFolders();
 
-                if (String.IsNullOrEmpty(LogSourceFolder))
+                if (string.IsNullOrEmpty(LogSourceFolder))
                 {
                     ButtonSelectFolder.PerformClick();
                 }
 
-                // initialize other modules
+                // because PerformClick may be cancelled
+                if (string.IsNullOrEmpty(LogSourceFolder))
+                {
+                    return;
+                }
+
+                    // initialize other modules
                 if (LogSourceFolder != WorkingFolder)
                 {
                     LogProcessor.LogSourceFolder = LogSourceFolder;

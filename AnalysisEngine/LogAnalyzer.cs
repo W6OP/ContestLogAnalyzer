@@ -114,23 +114,13 @@ namespace W6OP.ContestLogAnalyzer
                             {
                                 if (ActiveContest == ContestName.HQP)
                                 {
-                                    SearchForIncorrectEntity(qso);
+                                    MarkIncorrectContactEntities(qso);
                                     FindHQPMatchingQsos(qso);
-
                                 }
                                 else
                                 {
-                                    SearchForIncorrectName(qso);
-                                    try
-                                    {
-                                        FindCWOpenMatchingQsos(qso);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        var a = ex.Message;
-                                    }
-
-
+                                    MarkIncorrectContactNames(qso);
+                                    FindCWOpenMatchingQsos(qso);
                                 }
                             }
                         }
@@ -314,9 +304,6 @@ namespace W6OP.ContestLogAnalyzer
 
                     qso.HasBeenMatched = true;
                     matches[0].HasBeenMatched = true;
-
-                    //qso.IncorrectQSODateTime = true;
-                    //qso.IncorrectValue = $"{qso.QSODateTime} --> {matches[0].QSODateTime}";
                     return;
                 default:
                     // duplicate incorrect QSOs - could this ever happen this deeply into the search?
@@ -428,7 +415,7 @@ namespace W6OP.ContestLogAnalyzer
                         matches[0].MatchingQSO = qso;
                         matches[0].HasBeenMatched = true;
                         matches[0].IncorrectDXEntity = $"{matches[0].ContactEntity} --> {qso.OperatorEntity}";
-                        matches[0].EntityIsInValid = true;
+                        matches[0].InvalidEntity = true;
                     }
                     return matches;
                 case 2:
@@ -440,7 +427,7 @@ namespace W6OP.ContestLogAnalyzer
                         matches[0].MatchingQSO = qso;
                         matches[0].HasBeenMatched = true;
                         matches[0].IncorrectDXEntity = $"{matches[0].ContactEntity} --> {qso.OperatorEntity}";
-                        matches[0].EntityIsInValid = true;
+                        matches[0].InvalidEntity = true;
                     }
 
                     if (matches[1].Status == QSOStatus.ValidQSO)
@@ -448,7 +435,7 @@ namespace W6OP.ContestLogAnalyzer
                         matches[1].MatchingQSO = qso;
                         matches[1].HasBeenMatched = true;
                         matches[1].IncorrectDXEntity = $"{matches[1].ContactEntity} --> {qso.OperatorEntity}";
-                        matches[1].EntityIsInValid = true;
+                        matches[1].InvalidEntity = true;
                     }
                     return matches;
                 default:
@@ -495,7 +482,7 @@ namespace W6OP.ContestLogAnalyzer
                         matches[0].MatchingQSO = qso;
                         matches[0].HasBeenMatched = true;
                         matches[0].IncorrectDXEntity = $"{matches[0].OperatorEntity} --> {qso.ContactEntity}";
-                        matches[0].EntityIsInValid = true;
+                        matches[0].InvalidEntity = true;
                     }
                     return matches;
                 case 2:
@@ -508,7 +495,7 @@ namespace W6OP.ContestLogAnalyzer
                         matches[0].HasBeenMatched = true;
                         matches[0].MatchingQSO = qso;
                         matches[0].IncorrectDXEntity = $"{matches[0].OperatorEntity} --> {qso.ContactEntity}";
-                        matches[0].EntityIsInValid = true;
+                        matches[0].InvalidEntity = true;
                     }
 
                     if (matches[1].Status == QSOStatus.ValidQSO)
@@ -516,7 +503,7 @@ namespace W6OP.ContestLogAnalyzer
                         matches[1].HasBeenMatched = true;
                         matches[1].MatchingQSO = qso;
                         matches[1].IncorrectDXEntity = $"{matches[1].OperatorEntity} --> {qso.ContactEntity}";
-                        matches[1].EntityIsInValid = true;
+                        matches[1].InvalidEntity = true;
                     }
                     return matches;
                 default:
@@ -583,15 +570,15 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// HQP only
-        /// Is this a Hawaiin station then, state, province or DX are valid.
+        /// Is this a Hawai'in station then, state, province or DX are valid.
         /// Non Hawaiin station then
-        /// if US or Canadian - Hawwaiin entity
-        /// DX then Hawaiin entity
+        /// if US or Canadian - Hawwai'in entity
+        /// DX then Hawai'in entity
         /// </summary>
         /// <param name="qso"></param>
         /// <param name="contestLogList"></param>
         /// <returns></returns>
-        private void SearchForIncorrectEntity(QSO qso)
+        private void MarkIncorrectContactEntities(QSO qso)
         {
             int matchCount = 0;
             List<QSO> matchingQSOSpecific = null;
@@ -628,9 +615,6 @@ namespace W6OP.ContestLogAnalyzer
                                                        where matches.Any()
                                                        select firstQSO;
 
-            // need to account for one Hawaii entry in the future
-            //difference = majorityContactEntities.Count();
-
             if (majorityContactEntities.Count() > 1)
             {
                 QSO firstMatch = majorityContactEntities.FirstOrDefault();
@@ -641,18 +625,16 @@ namespace W6OP.ContestLogAnalyzer
                 // these must be Lists, not IEnumerable so .Except works - only look at QSOs with valid entities
                 List<QSO> listWithMostEntries = (new List<List<QSO>> { matchingQSOSpecific, matchingQSOsGeneral })
                    .OrderByDescending(x => x.Count())
-                   .Take(1).FirstOrDefault().Where(q => q.EntityIsInValid == false).ToList();
+                   .Take(1).FirstOrDefault().Where(q => q.InvalidEntity == false).ToList();
 
                 List<QSO> listWithLeastEntries = (new List<List<QSO>> { matchingQSOSpecific, matchingQSOsGeneral })
                    .OrderBy(x => x.Count())
-                   .Take(1).FirstOrDefault().Where(q => q.EntityIsInValid == false).ToList();
+                   .Take(1).FirstOrDefault().Where(q => q.InvalidEntity == false).ToList();
 
                 // we have enough to vote
                 if (listWithMostEntries.Count() > 2)
                 {
                     // we want to take the list with the most entries and remove the entries in the least entries list
-                    //var merged = listWithMostEntries.Except(listWithLeastEntries);
-
                     QSO firstMatch = listWithMostEntries.Except(listWithLeastEntries).FirstOrDefault();
                     entity = firstMatch.ContactEntity;
                 }
@@ -669,11 +651,11 @@ namespace W6OP.ContestLogAnalyzer
                             case "United States of America":
                                 if (qso.ContactEntity.Length > 2)
                                 {
-                                    entity = hitList[0].Province; // this gives State, need state code
+                                    entity = hitList[0].Province;
                                 }
                                 else if (Provinces.Contains(qso.ContactEntity))
                                 {
-                                    entity = hitList[0].Province; // this gives State, need state code
+                                    entity = hitList[0].Province; 
                                 }
                                 else
                                 {
@@ -713,7 +695,7 @@ namespace W6OP.ContestLogAnalyzer
             if (!entity.Contains(qso.ContactEntity))
             {
                 qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {entity}";
-                qso.EntityIsInValid = true;
+                qso.InvalidEntity = true;
             }
         }
 
@@ -741,7 +723,7 @@ namespace W6OP.ContestLogAnalyzer
                     case string _ when Enum.IsDefined(typeof(HQPMults), qsoList[0].OperatorEntity):
                         return;
                     default:
-                        qsoList[0].SentEntityIsInValid = true;
+                        qsoList[0].InvalidSentEntity = true;
                         return;
                 }
             }
@@ -757,7 +739,7 @@ namespace W6OP.ContestLogAnalyzer
 
             if (qsos.Any())
             {
-                _ = qsos.Select(c => { c.SentEntityIsInValid = true; return c; })
+                _ = qsos.Select(c => { c.InvalidSentEntity = true; return c; })
                         .ToList();
             } else
             {
@@ -771,10 +753,12 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// CWOpen
-        /// Now see if the name is incorrect and that is why we can't find the QSO
+        /// See if the contact name is incorrect. Sometimes a person
+        /// will send different names on different QSOS. Find out what
+        /// the predominate name they used is.
         /// </summary>
         /// <param name="qso"></param>
-        private void SearchForIncorrectName(QSO qso)
+        private void MarkIncorrectContactNames(QSO qso)
         {
             Tuple<string, int> majorityName = new Tuple<string, int>("", 1);
 
@@ -935,17 +919,17 @@ namespace W6OP.ContestLogAnalyzer
         private List<QSO> CWOpenFullParameterSearch(IEnumerable<QSO> qsos, QSO qso)
         {
             IEnumerable<QSO> enumerable;
-            List<QSO> matches = new List<QSO>();
+            List<QSO> matches;
             int timeInterval = 10; // because everything else must match
             int searchLevel = 1;
 
             enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
 
-            // don't ToList() unless something returned
-            if (enumerable.Any())
-            {
+            // don't ToList() unless something returned - slower
+            //if (enumerable.Any())
+            //{
                 matches = enumerable.ToList();
-            }
+            //}
 
             switch (matches.Count)
             {
@@ -1394,7 +1378,6 @@ namespace W6OP.ContestLogAnalyzer
 
             if (qsos.Any())
             {
-                //Console.WriteLine("MarkIncorrectSentName: ");
                 qsos.Select(c => { c.IncorrectOperatorName = false; return c; }).ToList();
             }
         }

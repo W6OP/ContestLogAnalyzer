@@ -438,8 +438,8 @@ namespace W6OP.ContestLogAnalyzer
 
         //private string originalContactEntity;
         //private string originalOperatorEntity;
-        private bool entityIsInValid = false;
-        private bool sentEntityIsInValid = false;
+        private bool invalidEntity = false;
+        private bool invalidSentEntity = false;
 
         #endregion
 
@@ -484,11 +484,11 @@ namespace W6OP.ContestLogAnalyzer
         /// The entity does not match this QSO.
         /// </summary>
 
-        public bool EntityIsInValid
+        public bool InvalidEntity
         {
             set
             {
-                entityIsInValid = value;
+                invalidEntity = value;
                 if (value == true)
                 {
                     ReasonRejected = RejectReason.InvalidEntity;
@@ -505,7 +505,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             get
             {
-                return entityIsInValid;
+                return invalidEntity;
             }
         }
 
@@ -513,11 +513,11 @@ namespace W6OP.ContestLogAnalyzer
         /// HQP only.
         /// The entity does not match this QSO.
         /// </summary>
-        public bool SentEntityIsInValid
+        public bool InvalidSentEntity
         {
             set
             {
-                sentEntityIsInValid = value;
+                //invalidSentEntity = value;
                 if (value == true)
                 {
                     ReasonRejected = RejectReason.InvalidSentEntity;
@@ -532,10 +532,10 @@ namespace W6OP.ContestLogAnalyzer
                     }
                 }
             }
-            get
-            {
-                return sentEntityIsInValid;
-            }
+            //get
+            //{
+            //    return invalidSentEntity;
+            //}
         }
 
         /// <summary>
