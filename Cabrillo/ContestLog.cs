@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Dynamic;
 
 namespace W6OP.ContestLogAnalyzer
 {
@@ -65,6 +67,9 @@ namespace W6OP.ContestLogAnalyzer
         public int Session { get; set; }
 
         public bool SO2R { get; set; }
+
+        // used for scoring HQP band faults
+        public bool IsSingleBand { get; set; }
 
         /// <summary>
         /// List of all the QSOs in this log.

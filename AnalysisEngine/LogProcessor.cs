@@ -23,7 +23,6 @@ namespace W6OP.ContestLogAnalyzer
         private const string HQPCanadaLiteral = "CANADA";
 
         public PrintManager _PrintManager = null;
-
         public Lookup<string, string> CountryPrefixes { get; set; }
         public Lookup<string, string> Kansas { get; set; }
         public Lookup<string, string> Ohio { get; set; }
@@ -34,9 +33,7 @@ namespace W6OP.ContestLogAnalyzer
         public string InspectionFolder { get; set; }
         public string WorkingFolder { get; set; }
         public ContestName ActiveContest { get; set; }
-
         private string WorkingLine = null;
-
         public CallLookUp CallLookUp;
 
         /// <summary>
@@ -153,6 +150,9 @@ namespace W6OP.ContestLogAnalyzer
                         contestLog.QSOCollection = contestLog.QSOCollection.Union(xQSOCollection).ToList();
                         // add a reference to the parent log to each QSO
                         contestLog.QSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
+
+                        // if all QSOs are on one band mark log as IsSingleBand = true - used in DetermineBandFault()
+                        contestLog.IsSingleBand = contestLog.QSOCollection.All(j => j.Band == contestLog.QSOCollection[0].Band);
                     }
 
                     // complete information for printing pdf file - must be before CheckHeader()

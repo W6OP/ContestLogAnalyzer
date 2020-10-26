@@ -603,6 +603,8 @@ namespace W6OP.ContestLogAnalyzer
         {
             UpdateLabel("");
 
+            ContestLogs = ContestLogs.OrderBy(x => x.LogOwner).ToList();
+
             LogAnalyser.ActiveContest = ActiveContest;
             LogAnalyser.PreAnalyzeContestLogs(ContestLogs, LogProcessor.CallDictionary, LogProcessor.NameDictionary);
 

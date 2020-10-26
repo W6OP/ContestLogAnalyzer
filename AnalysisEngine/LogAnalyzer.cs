@@ -10,20 +10,12 @@ namespace W6OP.ContestLogAnalyzer
         public delegate void ProgressUpdate(string value, string qsoCount, string validQsoCount, int progress);
         public event ProgressUpdate OnProgressUpdate;
 
-        //private const string HQPHawaiiLiteral = "HAWAII";
-        //private const string HQPUSALiteral = "UNITED STATES OF AMERICA";
-        //private const string HQPAlaskaLiteral = "ALASKA";
-        //private const string HQPCanadaLiteral = "CANADA";
-
         readonly string[] States = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", };
         readonly string[] Provinces = { "NL", "NS", "PE", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU" };
 
         public ContestName ActiveContest;
-
         private ILookup<string, string> _BadCallList;
-
         public ILookup<string, string> BadCallList { set => _BadCallList = value; }
-
         public CallLookUp CallLookUp;
 
         /// <summary>
@@ -467,6 +459,7 @@ namespace W6OP.ContestLogAnalyzer
             switch (matches.Count)
             {
                 case 0:
+                    matches = SearchWithoutBandHQP(qsos, qso);
                     return matches;
                 case 1:
                     qso.HasBeenMatched = true;
@@ -503,6 +496,91 @@ namespace W6OP.ContestLogAnalyzer
                     return matches;
                 default:
                     Console.WriteLine("FindHQPMatches: 3");
+                    return matches;
+            }
+        }
+
+        private List<QSO> SearchWithoutBandHQP(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches;
+            int timeInterval = 5;
+            int queryLevel = 4;
+            double qsoPoints;
+            double matchQsoPoints;
+
+            enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+
+            matches = enumerable.ToList();
+
+            // band mismatch
+            switch (matches.Count)
+            {
+                case 0:
+                    return matches;
+                case 1:
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+
+                    // whos at fault? need to get qsos around contact for each guy
+                    qsoPoints = DetermineBandFault(qso);
+                    matchQsoPoints = DetermineBandFault(matches[0]);
+
+                    if (qsoPoints.Equals(matchQsoPoints))
+                    {
+                        // can't tell who's at fault so let them both have point
+                        return matches;
+                    }
+
+                    if (qsoPoints > matchQsoPoints)
+                    {
+                        matches[0].IncorrectBand = true;
+                        matches[0].IncorrectValue = $"{matches[0].Band} --> {qso.Band}";
+                    }
+                    else
+                    {
+                        qso.IncorrectBand = true;
+                        qso.IncorrectValue = $"{qso} --> {matches[0].Band}";
+                    }
+                    return matches;
+                default:
+                    // duplicate incorrect QSOs
+                    foreach (QSO matchQSO in matches)
+                    {
+                        if (qso.HasBeenMatched == false)
+                        {
+                            qso.MatchingQSO = matchQSO;
+                            qso.HasBeenMatched = true;
+                        }
+
+                        if (matchQSO.HasBeenMatched == false)
+                        {
+                            // whos at fault? need to get qsos around contact for each guy
+                            qsoPoints = DetermineBandFault(qso);
+                            matchQsoPoints = DetermineBandFault(matchQSO);
+
+                            if (qsoPoints.Equals(matchQsoPoints))
+                            {
+                                // can't tell who's at fault so let them both have point
+                                return matches;
+                            }
+
+                            if (qsoPoints > matchQsoPoints)
+                            {
+                                matchQSO.IncorrectBand = true;
+                                matchQSO.IncorrectValue = $"{matchQSO.Band} --> {qso.Band}";
+                            }
+                            else
+                            {
+                                qso.IncorrectBand = true;
+                                qso.IncorrectValue = $"{qso.Band} --> {matchQSO.Band}";
+                            }
+                        }
+                    }
+                    Console.WriteLine("SearchWithoutBandHQP");
                     return matches;
             }
         }
@@ -551,6 +629,16 @@ namespace W6OP.ContestLogAnalyzer
                                 && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
                     return matches;
                 case 4:
+                    // without y.Band == qso.Band -
+                    //  QSO: 14034 CW 2020-08-22 1732 KH6TU 599 MAU W7JMM 599 OR  
+                    //  QSO: 21000 CW 2020-08-22 1732 W7JMM 599 OR WH6TU 599 MAU
+                    matches = qsos
+                    .Where(y => y.Mode == qso.Mode
+                                && y.ContactEntity == qso.OperatorEntity
+                                && y.OperatorEntity == qso.ContactEntity
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                case 5:
                     // general search
                     matches = qsos
                     .Where(y => y.Band == qso.Band
@@ -580,7 +668,7 @@ namespace W6OP.ContestLogAnalyzer
             List<QSO> matchingQSOsGeneral = null;
             string entity = null;
 
-            // speeds up from 28 sec to 12 sec on first pass
+            // using a CallDictionary speeds up from 28 sec to 12 sec
             List<ContestLog> tempLog = CallDictionary[qso.ContactCall];
 
             // get a list of all QSOs with the same contact callsign and same entity
@@ -874,13 +962,8 @@ namespace W6OP.ContestLogAnalyzer
                 return;
             }
 
-            // don't ToList() unless something returned
-            //if (enumerable.Any())
-            //{
-                matches = enumerable.ToList();
-                //Console.WriteLine("Excess Matches: " + matches.ToList().Count.ToString());
-            //}
-
+            matches = enumerable.ToList();
+              
             switch (matches.Count)
             {
                 case 0:
@@ -920,11 +1003,7 @@ namespace W6OP.ContestLogAnalyzer
 
             enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
 
-            // don't ToList() unless something returned - slower
-            //if (enumerable.Any())
-            //{
-                matches = enumerable.ToList();
-            //}
+            matches = enumerable.ToList();
 
             switch (matches.Count)
             {
@@ -977,10 +1056,7 @@ namespace W6OP.ContestLogAnalyzer
 
             enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
 
-            //if (enumerable.Any())
-            //{
-                matches = enumerable.ToList();
-            //}
+            matches = enumerable.ToList();
 
             switch (matches.Count)
             {
@@ -1070,16 +1146,13 @@ namespace W6OP.ContestLogAnalyzer
 
             enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel); //.ToList();
 
-            //if (enumerable.Any())
-            //{
-                matches = enumerable.ToList();
-            //}
+            matches = enumerable.ToList();
 
             switch (matches.Count)
             {
                 case 0:
                     // search without band
-                    matches = SearchWithoutBand(qsos, qso);
+                    matches = SearchWithoutBandCWOpen(qsos, qso);
                     return matches;
                 case 1:
                     qso.MatchingQSO = matches[0];
@@ -1127,7 +1200,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qsos"></param>
         /// <param name="qso"></param>
         /// <returns></returns>
-        private List<QSO> SearchWithoutBand(IEnumerable<QSO> qsos, QSO qso)
+        private List<QSO> SearchWithoutBandCWOpen(IEnumerable<QSO> qsos, QSO qso)
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches;
@@ -1138,11 +1211,7 @@ namespace W6OP.ContestLogAnalyzer
 
             enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
 
-            // don't ToList() unless something returned
-            //if (enumerable.Any())
-            //{
-                matches = enumerable.ToList();
-            //}
+            matches = enumerable.ToList();
 
             // band mismatch
             switch (matches.Count)
@@ -1181,25 +1250,38 @@ namespace W6OP.ContestLogAnalyzer
                     return matches;
                 default:
                     // duplicate incorrect QSOs
-                    if (qso.HasBeenMatched == false)
-                    {
-                        qso.MatchingQSO = matches[0];
-                        qso.HasBeenMatched = true;
-                        Console.WriteLine("FindCWOpenMatches: 5.a");
-                    }
-
                     foreach (QSO matchQSO in matches)
                     {
+                        if (qso.HasBeenMatched == false)
+                        {
+                            qso.MatchingQSO = matchQSO;
+                            qso.HasBeenMatched = true;
+                        }
+
                         if (matchQSO.HasBeenMatched == false)
                         {
-                            Console.WriteLine("FindCWOpenMatches: 5.b");
-                            matchQSO.MatchingQSO = qso;
-                            matchQSO.HasBeenMatched = true;
+                            // whos at fault? need to get qsos around contact for each guy
+                            qsoPoints = DetermineBandFault(qso);
+                            matchQsoPoints = DetermineBandFault(matchQSO);
 
-                            matchQSO.IsDuplicateMatch = true;
+                            if (qsoPoints.Equals(matchQsoPoints))
+                            {
+                                // can't tell who's at fault so let them both have point
+                                return matches;
+                            }
+
+                            if (qsoPoints > matchQsoPoints)
+                            {
+                                matchQSO.IncorrectBand = true;
+                                matchQSO.IncorrectValue = $"{matchQSO.Band} --> {qso.Band}";
+                            }
+                            else
+                            {
+                                qso.IncorrectBand = true;
+                                qso.IncorrectValue = $"{qso} --> {matchQSO.Band}";
+                            }
                         }
                     }
-                    Console.WriteLine("FindCWOpenMatches: 5");
                     return matches;
             }
         }
@@ -1284,6 +1366,12 @@ namespace W6OP.ContestLogAnalyzer
             if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
             {
                 qsoPoints += 1;
+            }
+
+            // if the log shows he was only on one band he wins
+            if (contestLog.IsSingleBand)
+            {
+                return 99.0;
             }
 
             while (counter < 10)

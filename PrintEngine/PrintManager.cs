@@ -460,8 +460,6 @@ namespace W6OP.PrintEngine
                                     break;
                             }
 
-
-
                             if (message != null)
                             {
                                 sw.WriteLine(value.ToString());
@@ -526,7 +524,7 @@ namespace W6OP.PrintEngine
         /// </summary>
         /// <param name="dupeListLocation"></param>
         /// <param name="sw"></param>
-        private void PrintDuplicates(QSO qso, StreamWriter sw) // dupeListLocation
+        private void PrintDuplicates(QSO qso, StreamWriter sw) 
         {
             string message = "";
 
