@@ -543,21 +543,22 @@ namespace W6OP.ContestLogAnalyzer
                     else
                     {
                         qso.IncorrectBand = true;
-                        qso.IncorrectValue = $"{qso} --> {matches[0].Band}";
+                        qso.IncorrectValue = $"{qso.Band} --> {matches[0].Band}";
                     }
                     return matches;
                 default:
-                    // duplicate incorrect QSOs
+                    // duplicate incorrect band QSOs
                     foreach (QSO matchQSO in matches)
                     {
-                        if (qso.HasBeenMatched == false)
-                        {
-                            qso.MatchingQSO = matchQSO;
-                            qso.HasBeenMatched = true;
-                        }
-
                         if (matchQSO.HasBeenMatched == false)
                         {
+                            // should this be a collection?
+                            qso.MatchingQSO = matchQSO;
+                            qso.HasBeenMatched = true;
+
+                            matchQSO.MatchingQSO = qso;
+                            matchQSO.HasBeenMatched = true;
+
                             // whos at fault? need to get qsos around contact for each guy
                             qsoPoints = DetermineBandFault(qso);
                             matchQsoPoints = DetermineBandFault(matchQSO);
@@ -572,6 +573,7 @@ namespace W6OP.ContestLogAnalyzer
                             {
                                 matchQSO.IncorrectBand = true;
                                 matchQSO.IncorrectValue = $"{matchQSO.Band} --> {qso.Band}";
+                                
                             }
                             else
                             {
@@ -1366,12 +1368,15 @@ namespace W6OP.ContestLogAnalyzer
             if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
             {
                 qsoPoints += 1;
-            }
-
-            // if the log shows he was only on one band he wins
-            if (contestLog.IsSingleBand)
+                // if the log shows he was only on one band & rig control he wins
+                if (contestLog.IsSingleBand)
+                {
+                    return 99.0;
+                }
+            } 
+            else
             {
-                return 99.0;
+                qsoPoints -= 1;
             }
 
             while (counter < 10)
@@ -1379,6 +1384,7 @@ namespace W6OP.ContestLogAnalyzer
                 counter += 1;
 
                 int index = contestLog.QSOCollection.IndexOf(qso);
+
                 if (index > 0)
                 {
                     previousQSO = GetPrevious(contestLog.QSOCollection, qso);
@@ -1386,10 +1392,20 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (previousQSO != null)
                 {
+                    if (previousQSO.IncorrectBand == true)
+                    {
+                        qsoPoints -= 1;
+                    }
+
                     frequency = previousQSO.Frequency;
+
                     if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
                     {
                         qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
                     }
 
                     if (previousQSO.Band == qso.Band)
@@ -1405,8 +1421,8 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    // extra .1 point because he just started and more likely to be correct
-                    qsoPoints += 1.1;
+                    // extra half point because he just ended and more likely to be correct
+                    qsoPoints += 1.5;
                 }
             }
 
@@ -1424,11 +1440,22 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (nextQSO != null)
                 {
+                    if (nextQSO.IncorrectBand == true)
+                    {
+                        qsoPoints -= 1;
+                    }
+
                     frequency = nextQSO.Frequency;
+
                     if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
                     {
                         qsoPoints += 1;
                     }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
                     if (nextQSO.Band == qso.Band)
                     {
                         qsoPoints += 1;
@@ -1437,12 +1464,13 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         qsoPoints -= 1;
                     }
+
                     qso = nextQSO;
                 }
                 else
                 {
                     // extra half point because he just ended and more likely to be correct
-                    qsoPoints += 1.1;
+                    qsoPoints += 1.5;
                 }
             }
 

@@ -547,8 +547,6 @@ namespace W6OP.ContestLogAnalyzer
         private void SetHQPDXCCInformation(List<QSO> qsoCollection, bool isHQPEntity)
         {
             // set the entity of the log owner
-           // contestLog.IsHQPEntity = Enum.IsDefined(typeof(HQPMults), contestLog.QSOCollection[0].OperatorEntity);
-
             if (isHQPEntity)
             {
                 ProcessHawaiiOperators(qsoCollection);
@@ -653,6 +651,17 @@ namespace W6OP.ContestLogAnalyzer
             IEnumerable<CallSignInfo> hitCollection; // = CallLookUp.LookUpCall(operatorCall);
             List<CallSignInfo> hitList; // = hitCollection.ToList();
             string contactEntity = qso.ContactEntity;
+            string contactFullCall = qso.ContactCall;
+
+            if (!string.IsNullOrEmpty(qso.ContactPrefix)) {
+                contactFullCall = qso.ContactPrefix + "/" + qso.ContactCall;
+            }
+
+            if (!string.IsNullOrEmpty(qso.ContactSuffix))
+            {
+                contactFullCall = qso.ContactCall + "/" + qso.ContactSuffix;
+            }
+
 
             switch (contactEntity.Length)
             {
@@ -660,7 +669,7 @@ namespace W6OP.ContestLogAnalyzer
                     if (qso.ContactEntity == "DX")
                     {
                         // need to look it up
-                        hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
+                        hitCollection = CallLookUp.LookUpCall(contactFullCall);
                         hitList = hitCollection.ToList();
                         if (hitList.Count != 0)
                         {
@@ -1120,7 +1129,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 lineList = tempList;
 
-                IEnumerable<QSO> qso =
+                IEnumerable<QSO> qsos =
                      from line in lineList
                      let split = CheckQSOLength(line.Split(' '))
                      select new QSO()
@@ -1147,7 +1156,7 @@ namespace W6OP.ContestLogAnalyzer
                          ContactEntity = CheckActiveContest(split[10], "ContactEntity").ToUpper(),
                          SessionIsValid = CheckForValidSession(session, split[4])
                      };
-                qsoList = qso.ToList();
+                qsoList = qsos.ToList();
             }
             catch (Exception ex)
             {
@@ -1354,7 +1363,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    result = new string(call2.Where(x => Char.IsDigit(x)).ToArray());
+                    result = new string(call2.Where(x => char.IsDigit(x)).ToArray());
                     if (!string.IsNullOrEmpty(result))
                     {
                         callSign = call2.Substring(call2.IndexOf("/") + 1);

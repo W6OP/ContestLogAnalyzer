@@ -303,9 +303,11 @@ namespace W6OP.ContestLogAnalyzer
 
         public bool IncorrectBand
         {
+            get { return incorrectBand; }
             set
             {
-                if (value == true)
+                incorrectBand = value;
+                if (incorrectBand == true)
                 {
                     ReasonRejected = RejectReason.Band;
                     Status = QSOStatus.InvalidQSO;
@@ -437,7 +439,7 @@ namespace W6OP.ContestLogAnalyzer
         #region HQP Fields
 
         private bool invalidEntity = false;
-
+        private bool incorrectBand = false;
         #endregion
 
         #region HQP Properties
@@ -557,6 +559,7 @@ namespace W6OP.ContestLogAnalyzer
         /// For HQP Contest
         /// </summary>
         public bool IsHQPEntity { get; set; }
+        public string OperatorOriginalCall { get; set; }
 
         #endregion
 
