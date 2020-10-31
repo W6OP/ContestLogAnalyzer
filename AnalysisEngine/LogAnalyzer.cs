@@ -643,6 +643,8 @@ namespace W6OP.ContestLogAnalyzer
             List<QSO> matches;
             int timeInterval = 5;
             int queryLevel = 5;
+            double qsoPoints;
+            double matchQsoPoints;
 
             enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
 
@@ -655,133 +657,71 @@ namespace W6OP.ContestLogAnalyzer
                 case 0:
                     return matches;
                 case 1:
-                    qso.HasBeenMatched = true;
                     qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
 
-                    if (matches[0].Status == QSOStatus.ValidQSO)
-                    {
-                        matches[0].MatchingQSO = qso;
-                        matches[0].HasBeenMatched = true;
-                        matches[0].IncorrectDXEntity = $"{matches[0].OperatorEntity} --> {qso.ContactEntity}";
-                        matches[0].InvalidEntity = true;
-                    }
-                    return matches;
-                case 2:
-                    // two matches so these are probably dupes
                     qso.HasBeenMatched = true;
-                    qso.MatchingQSO = matches[0];
+                    matches[0].HasBeenMatched = true;
 
-                    if (matches[0].Status == QSOStatus.ValidQSO)
+                    // whos at fault? need to get qsos around contact for each guy
+                    qsoPoints = DetermineModeFault(qso);
+                    matchQsoPoints = DetermineModeFault(matches[0]);
+
+                    if (qsoPoints.Equals(matchQsoPoints))
                     {
-                        matches[0].HasBeenMatched = true;
-                        matches[0].MatchingQSO = qso;
-                        matches[0].IncorrectDXEntity = $"{matches[0].OperatorEntity} --> {qso.ContactEntity}";
-                        matches[0].InvalidEntity = true;
+                        // can't tell who's at fault so let them both have point
+                        return matches;
                     }
 
-                    if (matches[1].Status == QSOStatus.ValidQSO)
+                    if (qsoPoints > matchQsoPoints)
                     {
-                        matches[1].HasBeenMatched = true;
-                        matches[1].MatchingQSO = qso;
-                        matches[1].IncorrectDXEntity = $"{matches[1].OperatorEntity} --> {qso.ContactEntity}";
-                        matches[1].InvalidEntity = true;
+                        matches[0].IncorrectMode = true;
+                        matches[0].IncorrectValue = $"{matches[0].Mode} --> {qso.Mode}";
+                    }
+                    else
+                    {
+                        qso.IncorrectMode = true;
+                        qso.IncorrectValue = $"{qso.Mode} --> {matches[0].Mode}";
                     }
                     return matches;
                 default:
-                    Console.WriteLine("FindHQPMatches: 3");
+                    // duplicate incorrect mode QSOs
+                    foreach (QSO matchQSO in matches)
+                    {
+                        if (matchQSO.HasBeenMatched == false)
+                        {
+                            // should this be a collection?
+                            qso.MatchingQSO = matchQSO;
+                            qso.HasBeenMatched = true;
+
+                            matchQSO.MatchingQSO = qso;
+                            matchQSO.HasBeenMatched = true;
+
+                            // whos at fault? need to get qsos around contact for each guy
+                            qsoPoints = DetermineModeFault(qso);
+                            matchQsoPoints = DetermineModeFault(matchQSO);
+
+                            if (qsoPoints.Equals(matchQsoPoints))
+                            {
+                                // can't tell who's at fault so let them both have point
+                                return matches;
+                            }
+
+                            if (qsoPoints > matchQsoPoints)
+                            {
+                                matchQSO.IncorrectMode = true;
+                                matchQSO.IncorrectValue = $"{matchQSO.Mode} --> {qso.Mode}";
+
+                            }
+                            else
+                            {
+                                qso.IncorrectMode = true;
+                                qso.IncorrectValue = $"{qso.Mode} --> {matchQSO.Mode}";
+                            }
+                        }
+                    }
                     return matches;
             }
-        }
-
-        /// <summary>
-        /// Have a call that may be busted but is it really the other guy that made the mistake.
-        /// </summary>
-        /// <param name="qsos"></param>
-        /// <param name="qso"></param>
-        /// <returns></returns>
-        private List<QSO> SearchForBustedCall(IEnumerable<QSO> qsos, QSO qso)
-        {
-            IEnumerable<QSO> enumerable;
-            List<QSO> matches;
-            int timeInterval = 5;
-            int queryLevel = 6;
-
-            enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
-
-            matches = enumerable.ToList();
-
-            return matches;
-
-            //switch (matches.Count)
-            //{
-            //    case 0:
-            //        return matches;
-            //    case 1:
-            //        //qso.MatchingQSO = matches[0];
-            //        //matches[0].MatchingQSO = qso;
-
-            //        //qso.HasBeenMatched = true;
-            //        //matches[0].HasBeenMatched = true;
-
-            //        // whos at fault? need to get qsos around contact for each guy
-            //        //qsoPoints = DetermineBandFault(qso);
-            //        //matchQsoPoints = DetermineBandFault(matches[0]);
-
-            //        //if (qsoPoints.Equals(matchQsoPoints))
-            //        //{
-            //        //    // can't tell who's at fault so let them both have point
-            //        //    return matches;
-            //        //}
-
-            //        //if (qsoPoints > matchQsoPoints)
-            //        //{
-            //        //    matches[0].IncorrectBand = true;
-            //        //    matches[0].IncorrectValue = $"{matches[0].Band} --> {qso.Band}";
-            //        //}
-            //        //else
-            //        //{
-            //        //    qso.IncorrectBand = true;
-            //        //    qso.IncorrectValue = $"{qso.Band} --> {matches[0].Band}";
-            //        //}
-            //        return matches;
-            //    default:
-            //        // duplicate incorrect band QSOs
-            //        foreach (QSO matchQSO in matches)
-            //        {
-            //            if (matchQSO.HasBeenMatched == false)
-            //            {
-            //                // should this be a collection?
-            //                qso.MatchingQSO = matchQSO;
-            //                qso.HasBeenMatched = true;
-
-            //                matchQSO.MatchingQSO = qso;
-            //                matchQSO.HasBeenMatched = true;
-
-            //                // whos at fault? need to get qsos around contact for each guy
-            //                qsoPoints = DetermineBandFault(qso);
-            //                matchQsoPoints = DetermineBandFault(matchQSO);
-
-            //                if (qsoPoints.Equals(matchQsoPoints))
-            //                {
-            //                    // can't tell who's at fault so let them both have point
-            //                    return matches;
-            //                }
-
-            //                if (qsoPoints > matchQsoPoints)
-            //                {
-            //                    matchQSO.IncorrectBand = true;
-            //                    matchQSO.IncorrectValue = $"{matchQSO.Band} --> {qso.Band}";
-
-            //                }
-            //                else
-            //                {
-            //                    qso.IncorrectBand = true;
-            //                    qso.IncorrectValue = $"{qso.Band} --> {matchQSO.Band}";
-            //                }
-            //            }
-            //        }
-            //        return matches;
-            //}
         }
 
         /// <summary>
@@ -1063,6 +1003,129 @@ namespace W6OP.ContestLogAnalyzer
                 // need to check every entry?
             }
         }
+
+        private double DetermineModeFault(QSO qso)
+        {
+            ContestLog contestLog = qso.ParentLog;
+            QSO previousQSO = null;
+            QSO nextQSO = null;
+            string frequency = qso.Frequency;
+            double qsoPoints = 0;
+            double counter = 0;
+
+            // bonus point for having rig control frequency
+            if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+            {
+                qsoPoints += 1;
+                // if the log shows he was only on one band & rig control he wins
+                if (contestLog.IsSingleMode)
+                {
+                    return 99.0;
+                }
+            }
+            else
+            {
+                qsoPoints -= 1;
+            }
+
+            while (counter < 10)
+            {
+                counter += 1;
+
+                int index = contestLog.QSOCollection.IndexOf(qso);
+
+                if (index > 0)
+                {
+                    previousQSO = GetPrevious(contestLog.QSOCollection, qso);
+                }
+
+                if (previousQSO != null)
+                {
+                    if (previousQSO.IncorrectMode == true)
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    frequency = previousQSO.Frequency;
+
+                    if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+                    {
+                        qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    if (previousQSO.Mode == qso.Mode)
+                    {
+                        qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    qso = previousQSO;
+                }
+                else
+                {
+                    // extra half point because he just ended and more likely to be correct
+                    qsoPoints += 1.5;
+                }
+            }
+
+            counter = 0;
+
+            while (counter < 10)
+            {
+                counter += 1;
+
+                int index = contestLog.QSOCollection.IndexOf(qso);
+                if (index <= contestLog.QSOCollection.Count)
+                {
+                    nextQSO = GetNext(contestLog.QSOCollection, qso);
+                }
+
+                if (nextQSO != null)
+                {
+                    if (nextQSO.IncorrectBand == true)
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    frequency = nextQSO.Frequency;
+
+                    if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+                    {
+                        qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    if (nextQSO.Mode == qso.Mode)
+                    {
+                        qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    qso = nextQSO;
+                }
+                else
+                {
+                    // extra half point because he just ended and more likely to be correct
+                    qsoPoints += 1.5;
+                }
+            }
+
+            return qsoPoints;
+        }
+
 
         #endregion
 
@@ -1713,6 +1776,8 @@ namespace W6OP.ContestLogAnalyzer
 
             return qsoPoints;
         }
+
+
 
         /// <summary>
         /// Mark all QSOs that don't have the correct name sent as invalid.

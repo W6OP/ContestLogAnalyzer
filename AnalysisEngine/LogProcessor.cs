@@ -153,6 +153,8 @@ namespace W6OP.ContestLogAnalyzer
 
                         // if all QSOs are on one band mark log as IsSingleBand = true - used in DetermineBandFault()
                         contestLog.IsSingleBand = contestLog.QSOCollection.All(j => j.Band == contestLog.QSOCollection[0].Band);
+                        // if all QSOs are on one mode mark log as IsSingleMode = true - used in DetermineModeFault()
+                        contestLog.IsSingleMode = contestLog.QSOCollection.All(j => j.Mode == contestLog.QSOCollection[0].Mode);
                     }
 
                     // complete information for printing pdf file - must be before CheckHeader()

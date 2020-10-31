@@ -355,7 +355,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.OperatorName:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue; // + " --> " + qso.MatchingQSO.OperatorName;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue; 
                                     }
                                     else
                                     {
@@ -363,10 +363,24 @@ namespace W6OP.PrintEngine
                                     }
                                     break;
                                 case RejectReason.Band:
-                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue;
+                                    }
+                                    else
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue;
+                                    }
                                     break;
                                 case RejectReason.Mode:
-                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue; 
+                                    }
+                                    else
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue;
+                                    }
                                     break;
                                 case RejectReason.NoQSOMatch:
                                     value = EnumHelper.GetDescription(qso.ReasonRejected);

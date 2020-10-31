@@ -68,8 +68,11 @@ namespace W6OP.ContestLogAnalyzer
 
         public bool SO2R { get; set; }
 
-        // used for scoring HQP band faults
+        // used for scoring HQP and CWOpen band faults
         public bool IsSingleBand { get; set; }
+
+        // used for scoring HQP mode faults
+        public bool IsSingleMode { get; set; }
 
         /// <summary>
         /// List of all the QSOs in this log.

@@ -111,27 +111,6 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        //public bool IncompleteQSO
-        //{
-        //    set
-        //    {
-        //        if (value == true)
-        //        {
-        //            ReasonRejected = RejectReason.MissingColumn;
-        //            Status = QSOStatus.IncompleteQSO;
-        //        }
-        //        else
-        //        {
-        //            if (ReasonRejected == RejectReason.MissingColumn)
-        //            {
-        //                ReasonRejected = RejectReason.None;
-        //                Status = QSOStatus.ValidQSO;
-        //            }
-        //        }
-        //    }
-        //}
-
-
         /// <summary>
         ///Marks this qso as a duplicate QSO.
         /// </summary>
@@ -323,6 +302,29 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        public bool IncorrectMode
+        {
+            get { return incorrectMode; }
+            set
+            {
+                incorrectMode = value;
+                if (value == true)
+                {
+                    ReasonRejected = RejectReason.Mode;
+                    Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    if (ReasonRejected == RejectReason.Mode)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
+                }
+            }
+        }
+
+
         /// <summary>
         /// CWOpen only?
         /// The operators name does not match for this QSO.
@@ -440,6 +442,7 @@ namespace W6OP.ContestLogAnalyzer
 
         private bool invalidEntity = false;
         private bool incorrectBand = false;
+        private bool incorrectMode = false;
         #endregion
 
         #region HQP Properties
