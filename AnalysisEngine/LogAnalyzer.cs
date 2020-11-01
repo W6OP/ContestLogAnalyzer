@@ -255,12 +255,10 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             // there is no matching log for this call so we give him the qso
-            // maybe should see if anyone else worked him?
             if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() == 0)
             {
                 qso.NoMatchingLog = true;
                 qso.HasBeenMatched = true;
-                //Console.WriteLine("FindHQPMatchingQsos - 3 : " + qso.ContactCall);
                 return;
             }
 
@@ -292,7 +290,7 @@ namespace W6OP.ContestLogAnalyzer
             switch (matches.Count) // && qso.ContactCall == "AH6SZ"
             {
                 case 0:
-                    LastChanceMatch(qso);
+                    HQPLastChanceMatch(qso);
                     return;
                 case 1:
                     // for now don't penalize for time mismatch since everything else is correct
@@ -314,7 +312,7 @@ namespace W6OP.ContestLogAnalyzer
         /// 
         /// </summary>
         /// <param name="qso"></param>
-        private void LastChanceMatch(QSO qso)
+        private void HQPLastChanceMatch(QSO qso)
         {
             List<QSO> matches = new List<QSO>();
             IEnumerable<ContestLog> contestLogs;
@@ -1244,11 +1242,11 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     case false:
                         qso.IsUniqueCall = true;
-                        Console.WriteLine("FindCWOpenMatchingQsos - 2 : " + qso.OperatorCall);
+                        qso.HasBeenMatched = true;
                         break;
                     default:
                         qso.CallIsBusted = true;
-                        Console.WriteLine("FindCWOpenMatchingQsos - 3 : " + qso.OperatorCall);
+                        qso.HasBeenMatched = true;
                         break;
                 }
                 return;
@@ -1258,14 +1256,15 @@ namespace W6OP.ContestLogAnalyzer
             // if there is only one log this call is in then it is unique
             if (CallDictionary[qso.ContactCall].Count == 1)
             {
-                Console.WriteLine("FindCWOpenMatchingQsos - 4 : " + qso.ContactCall);
                 switch (CheckBadCallList(qso))
                 {
                     case false:
                         qso.IsUniqueCall = true;
+                        qso.HasBeenMatched = true;
                         break;
                     default:
                         qso.CallIsBusted = true;
+                        qso.HasBeenMatched = true;
                         break;
                 }
                 return;
@@ -1275,16 +1274,18 @@ namespace W6OP.ContestLogAnalyzer
             // maybe should see if anyone else worked him?
             if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() == 0)
             {
-                Console.WriteLine("FindCWOpenMatchingQsos - 5 : " + qso.ContactCall);
                 switch (CheckBadCallList(qso))
                 {
                     case false:
                         qso.IsUniqueCall = true;
+                        qso.HasBeenMatched = true;
                         break;
                     default:
                         qso.CallIsBusted = true;
+                        qso.HasBeenMatched = true;
                         break;
                 }
+
                 qso.NoMatchingLog = true;
                 return;
             }
@@ -1315,8 +1316,9 @@ namespace W6OP.ContestLogAnalyzer
             switch (matches.Count)
             {
                 case 0:
-                    Console.WriteLine("FindCWOpenMatchingQsos - 6 : " + qso.ContactCall);
-                    qso.CallIsBusted = true;
+                    CWOpenLastChanceMatch(qso);
+                    //qso.HasBeenMatched = true;
+                    //qso.CallIsBusted = true;
                     return;
                 case 1:
                     // for now don't penalize for time mismatch since everything else is correct
@@ -1325,13 +1327,68 @@ namespace W6OP.ContestLogAnalyzer
 
                     qso.HasBeenMatched = true;
                     matches[0].HasBeenMatched = true;
-
-                    //qso.IncorrectQSODateTime = true;
-                    //qso.IncorrectValue = $"{qso.QSODateTime} --> {matches[0].QSODateTime}";
                     return;
                 default:
                     // duplicate incorrect QSOs - could this ever happen this deeply into the search?
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Try to find busted calls.
+        /// </summary>
+        /// <param name="qso"></param>
+        private void CWOpenLastChanceMatch(QSO qso)
+        {
+            List<QSO> matches = new List<QSO>();
+            IEnumerable<ContestLog> contestLogs;
+            IEnumerable<KeyValuePair<string, List<QSO>>> qsos;
+            IEnumerable<QSO> qsosFlattened = null;
+            int timeInterval = 5;
+            int queryLevel = 6;
+
+            if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() != 0)
+            {
+                contestLogs = ContestLogList.Where(b => b.LogOwner == qso.ContactCall);
+
+                if (contestLogs.Count() > 0)
+                {
+                    qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key != qso.ContactCall);
+                    qsosFlattened = qsos.SelectMany(x => x.Value);
+                    matches = RefineCWOpenMatch(qsosFlattened, qso, timeInterval, queryLevel).ToList(); 
+
+                    if (matches.Count == 1)
+                    {
+                        if (matches[0].HasBeenMatched)
+                        {
+                            DetermineBustedCallFault(qso, matches);
+                            return;
+                        }
+                        // see if the contact call is unique, if so it's the busted call
+                        if (!CallDictionary.ContainsKey(matches[0].ContactCall))
+                        {
+                            DetermineBustedCallFault(qso, matches);
+                        }
+                        else
+                        {
+                            DetermineBustedCallFault(qso, matches);
+                        }
+                    }
+                    else
+                    {
+                        if (matches.Count > 1)
+                        {
+                            // this sometimes marks the wrong person - if busted call and busted entity
+                            // for each contact call see if the first letter matches, then the second etc
+                            // until letters don't match
+                            DetermineBustedCallFault(qso, matches);
+                        }
+                        else
+                        {
+                            var q = 1;
+                        }
+                    }
+                }
             }
         }
 
@@ -1522,21 +1579,18 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         qso.MatchingQSO = matches[0];
                         qso.HasBeenMatched = true;
-                        Console.WriteLine("FindCWOpenMatches: 4.a");
                     }
 
                     foreach (QSO matchQSO in matches)
                     {
                         if (qso.HasBeenMatched == false)
                         {
-                            Console.WriteLine("FindCWOpenMatches: 4.b");
                             matchQSO.MatchingQSO = qso;
                             matchQSO.HasBeenMatched = true;
 
                             matchQSO.IsDuplicateMatch = true;
                         }
                     }
-                    Console.WriteLine("FindCWOpenMatches: 4");
                     return matches;
             }
         }
@@ -1634,8 +1688,6 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-
-
         /// <summary>
         /// Do a search through the qsos collection depending on the parameters sent in.
         /// We already know the operator and contact calls match.
@@ -1688,6 +1740,14 @@ namespace W6OP.ContestLogAnalyzer
                     y.SentSerialNumber == qso.ReceivedSerialNumber &&
                     y.ReceivedSerialNumber == qso.SentSerialNumber &&
                     y.Band == qso.Band);
+                    return matches;
+                case 6:
+                    matches = qsos
+                    .Where(y => y.OperatorName == qso.ContactName &&
+                    y.SentSerialNumber == qso.ReceivedSerialNumber &&
+                    y.ReceivedSerialNumber == qso.SentSerialNumber &&
+                    y.Band == qso.Band &&
+                    Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval); 
                     return matches;
                 default:
                     Console.WriteLine("Failed search: " + qso.RawQSO);
