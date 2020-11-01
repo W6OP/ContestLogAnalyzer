@@ -223,9 +223,11 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     case false:
                         qso.IsUniqueCall = true;
+                        qso.HasBeenMatched = true;
                         break;
                     default:
                         qso.CallIsBusted = true;
+                        qso.HasBeenMatched = true;
                         break;
                 }
                 //Console.WriteLine("FindHQPMatchingQsos - 1 : " + qso.OperatorCall);
@@ -241,8 +243,10 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     case false:
                         qso.IsUniqueCall = true;
+                        qso.HasBeenMatched = true;
                         break;
                     default:
+                        qso.HasBeenMatched = true;
                         qso.CallIsBusted = true;
                         break;
                 }
@@ -255,6 +259,7 @@ namespace W6OP.ContestLogAnalyzer
             if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() == 0)
             {
                 qso.NoMatchingLog = true;
+                qso.HasBeenMatched = true;
                 //Console.WriteLine("FindHQPMatchingQsos - 3 : " + qso.ContactCall);
                 return;
             }
@@ -288,7 +293,6 @@ namespace W6OP.ContestLogAnalyzer
             {
                 case 0:
                     LastChanceMatch(qso);
-                    Console.WriteLine("FindHQPMatchingQsos - 4 : " + qso.OperatorCall);
                     return;
                 case 1:
                     // for now don't penalize for time mismatch since everything else is correct
@@ -333,23 +337,17 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         if (matches[0].HasBeenMatched)
                         {
-                            qso.CallIsBusted = true;
+                            DetermineBustedCallFault(qso, matches);
                             return;
                         }
                         // see if the contact call is unique, if so it's the busted call
                         if (!CallDictionary.ContainsKey(matches[0].ContactCall))
                         {
-                            qso.CallIsBusted = true;
-                            //qqq[0].IsUniqueCall = true;
-                            qso.HasBeenMatched = true;
-                            qso.MatchingQSO = matches[0];
-
+                            DetermineBustedCallFault(qso, matches);
                         }
                         else
                         {
-                            matches[0].CallIsBusted = true;
-                            qso.HasBeenMatched = true;
-                            qso.MatchingQSO = matches[0];
+                            DetermineBustedCallFault(qso, matches);
                         }
                     }
                     else
@@ -360,8 +358,6 @@ namespace W6OP.ContestLogAnalyzer
                             // for each contact call see if the first letter matches, then the second etc
                             // until letters don't match
                             DetermineBustedCallFault(qso, matches);
-                            // qso.CallIsBusted = true;
-                            //qso.HasBeenMatched = true;
                         } else {
                             var q = 1;
                         }
@@ -381,23 +377,23 @@ namespace W6OP.ContestLogAnalyzer
             string operatorCall = qso.OperatorCall;
             bool matched = false;
 
-            foreach (QSO q in matches)
+            foreach (QSO matchQSO in matches)
             {
-                int score = LevenshteinDistance.Compute(operatorCall, q.ContactCall);
+                int score = LevenshteinDistance.Compute(operatorCall, matchQSO.ContactCall);
                 if (score == 1)
                 {
                     matched = true;
                    
-                    qso.MatchingQSO = q;
-                    q.MatchingQSO = qso;
+                    qso.MatchingQSO = matchQSO;
+                    matchQSO.MatchingQSO = qso;
 
                     qso.HasBeenMatched = true;
-                    q.HasBeenMatched = true;
+                    matchQSO.HasBeenMatched = true;
 
-                    q.CallIsBusted = true;
+                    matchQSO.CallIsBusted = true;
+                    matchQSO.IncorrectValue = $"{matchQSO.ContactCall} --> {operatorCall}";
                     break;
                 }
-               // Console.WriteLine(operatorCall + ":" + q.ContactCall + ":" + score.ToString());
             }
 
             if (matched == false)
@@ -839,16 +835,18 @@ namespace W6OP.ContestLogAnalyzer
                                && y.OperatorEntity == qso.ContactEntity
                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
 
-                    if (matches.ToList().Count == 0)
+                    switch(matches.ToList().Count)
                     {
-                        matches = RefineHQPMatch(qsos, qso, timeInterval, 7);
+                        case 0:
+                            matches = RefineHQPMatch(qsos, qso, timeInterval, 7);
+                            break;
+                        case 1:
+                            return matches;
+                        default:
+                            matches = RefineHQPMatch(qsos, qso, timeInterval, 8);
+                            break;
                     }
-
-                    if (matches.ToList().Count > 1)
-                    {
-                        matches = RefineHQPMatch(qsos, qso, timeInterval, 8);
-                    }
-
+                   
                     return matches;
                 case 7:
                     // this is a full search only with mismatching contact and operator calls

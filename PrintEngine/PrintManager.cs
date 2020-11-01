@@ -391,7 +391,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.BustedCallSign:
                                     if (qso.HasBeenPrinted == false)
                                     {
-                                        message = "This QSO is not in the other operators log or the call may be busted:";
+                                        message = "This QSO is not in the other operators log or the call may be busted: " + qso.IncorrectValue;
                                         sw.WriteLine(message);
 
                                         PrintNearestMatches(qso, sw);

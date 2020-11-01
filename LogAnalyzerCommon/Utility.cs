@@ -220,6 +220,9 @@ namespace W6OP.ContestLogAnalyzer
 
     /// <summary>
     /// Contains approximate string matching
+    /// The lower the score the closer the match is. I only
+    /// use a score of 1 to be as accurate as possible.
+    /// https://stackoverflow.com/questions/2344320/comparing-strings-with-tolerance
     /// </summary>
     public static class LevenshteinDistance
     {
