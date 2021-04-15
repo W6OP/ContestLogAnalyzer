@@ -11,13 +11,10 @@ namespace W6OP.ContestLogAnalyzer
     public class QSO
     {
         /// <summary>
-        /// Constructor. Initialize properties.
+        /// Constructor.
         /// </summary>
         public QSO()
         {
-            //QSOIsDupe = false;
-            //CallIsInValid = false;
-            //SessionIsValid = true;
         }
 
         #region Common Fields
@@ -34,72 +31,45 @@ namespace W6OP.ContestLogAnalyzer
         // Indicates a log for this call does not exist
         public bool NoMatchingLog { get; set; }
 
-        // additional qsos found when no matching log exists - just for reference right now
-        public List<QSO> AdditionalQSOs { get; set; } = new List<QSO>();
-
         public bool IsUniqueCall { get; set; }
 
-        /// <summary>
-        /// Indicates a QSO this operator does not get credit for
-        /// but others do.
-        /// </summary>
+        // Indicates a QSO this operator does not get credit for but others do.
         public bool IsXQSO { get; set; }
 
-        /// <summary>
-        /// The log reference for a particuler QSO.
-        /// </summary>
+        // The log reference for a particuler QSO.
         public ContestLog ParentLog { get; set; }
 
-        /// <summary>
-        /// The reason a qso was rejected.
-        /// </summary>
+        // The reason a qso was rejected.
         public RejectReason ReasonRejected { get; set; }
 
-        /// <summary>
-        /// The status of the QSO.
-        /// </summary>
+        // The status of the QSO.
         public QSOStatus Status { get; set; }
 
-        /// <summary>
-        /// The QSO in another log that matches this QSO.
-        /// </summary>
+        // The QSO in another log that matches this QSO.
         public QSO MatchingQSO { get; set; }
 
         public QSO FirstMatchingQSO { get; set; }
 
         public List<QSO> NearestMatches { get; set; } = new List<QSO>();
 
-        /// <summary>
-        /// This means an earlier QSO matched this one.
-        /// </summary>
+        // This means an earlier QSO matched this one.
         public bool HasBeenMatched { get; set; }
 
-        /// <summary>
-        /// This property allows the rejected qso report to know there are duplicates of this call
-        /// It will only be true if it is the qso counted as the valid qso not the dupe
-        /// </summary>
+        // This property allows the rejected qso report to know there are duplicates of this call
+        // It will only be true if it is the qso counted as the valid qso not the dupe
         public bool QSOHasDupes { get; set; }
 
-        /// <summary>
-        /// Indicates this has been printed.
-        /// </summary>
+        // Indicates this has been printed.
         public bool HasBeenPrinted { get; set; }
 
-        /// <summary>
-        /// This incorporates two fields, QSO Date and QSO Time
-        /// 
-        /// CHANGE TO DATE AND TIME LATER
-        /// ARE THES REALLY NEEDED SINCE WE HAVE COMBINDED DATE/TIME
-        /// </summary>
+        // This incorporates two fields, QSO Date and QSO Time
+        // CHANGE TO DATE AND TIME LATER
+        // ARE THES REALLY NEEDED SINCE WE HAVE COMBINDED DATE/TIME
+        // </summary>
         public string QsoDate { get; set; }
-
         public string QsoTime { get; set; }
 
-
-        /// <summary>
-        /// Date/Time of the QSO.
-        /// Could this be a window?
-        /// </summary>
+        // Date/Time of the QSO.
         public DateTime QSODateTime
         {
             get
@@ -111,9 +81,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        /// <summary>
-        ///Marks this qso as a duplicate QSO.
-        /// </summary>
+        // Marks this qso as a duplicate QSO.
         public bool IsDuplicateMatch
         {
             get
@@ -140,9 +108,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        /// <summary>
-        /// The operators call sign is invalid for this QSO
-        /// </summary>
+        // The operators call sign is invalid for this QSO
         public bool IncorrectOperatorCall
         {
             set
@@ -163,10 +129,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        /// <summary>
-        /// The call is busted - do I want a sub reason, is it call or serial number?
-        /// The calsign does not match the call sign in the other log
-        /// </summary>
+        // The calsign does not match the call sign in the other log
         public bool CallIsBusted
         {
             set
@@ -187,34 +150,21 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        /// <summary>
-        /// Call sign of the operator.
-        /// </summary>
+        // Call sign of the operator.
         public string OperatorCall { get; set; }
 
-
-        /// <summary>
-        /// Name of the operator.
-        /// </summary>
+        // Name of the operator.
         public string OperatorName { get; set; }
         
-
-        /// <summary>
-        /// Call sign of the contact.
-        /// </summary>
+        // Call sign of the contact.
         public string ContactCall { get; set; }
-
-
-        /// <summary>
-        /// This is the call that he should have copied.
-        /// </summary>
-        public string BustedCallGuess { get; set; }
 
         public string ContactName { get; set; }
 
-        /// <summary>
-        /// Frequency of the exchange - may only need band.
-        /// </summary>
+        // This is the call that he should have copied.
+        public string BustedCallGuess { get; set; }
+
+        // Frequency of the exchange - may only need band.
         public string Frequency
         {
             get { return frequency; }
@@ -225,21 +175,13 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        /// <summary>
-        /// Indicates this QSO is the first one worked in this session and therefore a multiplier.
-        /// </summary>
+        // Indicates this QSO is the first one worked in this session and therefore a multiplier.
         public bool IsMultiplier { get; set; }
 
-        /// <summary>
-        /// Band the QSO was on.
-        /// </summary>
+        // Band the QSO was on.
         public int Band { get; set; }
 
-        /// <summary>
-        /// Mode used for the QSO.
-        /// this should be an enum
-        /// Later change this to use CategoryMode Enum
-        /// </summary>
+        // Mode used for the QSO.
         public QSOMode Mode
         {
             get { return mode; }
@@ -260,33 +202,13 @@ namespace W6OP.ContestLogAnalyzer
 
         #region CWOpen Properties
 
-        public bool IncorrectQSODateTime
-        {
-            set
-            {
-                if (value == true)
-                {
-                    ReasonRejected = RejectReason.InvalidTime;
-                    Status = QSOStatus.InvalidQSO;
-                }
-                else
-                {
-                    if (ReasonRejected == RejectReason.InvalidTime)
-                    {
-                        ReasonRejected = RejectReason.None;
-                        Status = QSOStatus.ValidQSO;
-                    }
-                }
-            }
-        }
-
         public bool IncorrectBand
         {
-            get { return incorrectBand; }
+            get { return incorrectBandHQP; }
             set
             {
-                incorrectBand = value;
-                if (incorrectBand == true)
+                incorrectBandHQP = value;
+                if (incorrectBandHQP == true)
                 {
                     ReasonRejected = RejectReason.Band;
                     Status = QSOStatus.InvalidQSO;
@@ -304,10 +226,10 @@ namespace W6OP.ContestLogAnalyzer
 
         public bool IncorrectMode
         {
-            get { return incorrectMode; }
+            get { return incorrectModeHQP; }
             set
             {
-                incorrectMode = value;
+                incorrectModeHQP = value;
                 if (value == true)
                 {
                     ReasonRejected = RejectReason.Mode;
@@ -324,11 +246,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-
-        /// <summary>
-        /// CWOpen only?
-        /// The operators name does not match for this QSO.
-        /// </summary>
+        // The operators name does not match for this QSO.
         public bool IncorrectOperatorName
         {
             set
@@ -369,28 +287,15 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        /// <summary>
-        /// CWOpen only.
-        /// Lists the incorrect name if available.
-        /// THIS NEEDS CHECKING
-        /// </summary>
+        // Lists the incorrect name if available.
         public string IncorrectValue { get; set; }
-       
-        /// <summary>
-        /// CWOpen only.
-        /// The sent serial number.
-        /// </summary>
+
+        // The sent serial number.
         public int SentSerialNumber { get; set; }
 
-        /// <summary>
-        /// Not used for HQP
-        /// </summary>
         public int ReceivedSerialNumber { get; set; }
 
-        /// <summary>
-        /// CWOpen only.
-        /// The serial number does not match the other log.
-        /// </summary>
+        // The serial number does not match the other log.
         public bool IncorrectSerialNumber
         {
             set
@@ -411,10 +316,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        /// <summary>
-        /// CWOpen only.
-        /// This QSO belongs to the current session.
-        /// </summary>
+        // This QSO belongs to the current session.
         public bool SessionIsValid
         {
             get { return sessionIsValid; }
@@ -440,9 +342,9 @@ namespace W6OP.ContestLogAnalyzer
 
         #region HQP Fields
 
-        private bool invalidEntity = false;
-        private bool incorrectBand = false;
-        private bool incorrectMode = false;
+        private bool invalidEntityHQP = false;
+        private bool incorrectBandHQP = false;
+        private bool incorrectModeHQP = false;
         #endregion
 
         #region HQP Properties
@@ -456,41 +358,28 @@ namespace W6OP.ContestLogAnalyzer
         public string SentReport { get; set; }
         public string ReceivedReport { get; set; }
 
-        /// <summary>
-        /// HQP only.
-        /// Lists the incorrect entity if available.
-        /// </summary>
+        // Lists the incorrect entity if available.
         public string IncorrectDXEntity { get; set; }
 
-        /// <summary>
-        /// Actual country of the operator.
-        /// </summary>
+        // Actual country of the operator.
         public string OperatorCountry { get; set; }
 
-        /// <summary>
-        /// Operator entity as defined by HQP
-        /// Length is 2 characters for US and Canada
-        /// or 3 characters if it is a HQP entity
-        /// This is equivalent to the Operator Name for the CWOpen
-        /// </summary>
+        // Operator entity as defined by HQP
+        // Length is 2 characters for US and Canada
+        // or 3 characters if it is a HQP entity
+        // This is equivalent to the Operator Name for the CWOpen
         public string OperatorEntity { get; set; }
 
-        /// <summary>
-        /// The real or top level country of the  contact or DX station
-        /// This is the long name. Cannot be null!
-        /// </summary>
+        // The real or top level country of the  contact or DX station
+        // This is the long name. Cannot be null!
         public string ContactCountry { get; set; }
 
-        /// <summary>
-        /// HQP only.
-        /// The entity does not match this QSO.
-        /// </summary>
-
+        // The entity does not match this QSO.
         public bool InvalidEntity
         {
             set
             {
-                invalidEntity = value;
+                invalidEntityHQP = value;
                 if (value == true)
                 {
                     ReasonRejected = RejectReason.InvalidEntity;
@@ -507,14 +396,11 @@ namespace W6OP.ContestLogAnalyzer
             }
             get
             {
-                return invalidEntity;
+                return invalidEntityHQP;
             }
         }
 
-        /// <summary>
-        /// HQP only.
-        /// The entity does not match this QSO.
-        /// </summary>
+        // The entity does not match this QSO.
         public bool InvalidSentEntity
         {
             set
@@ -534,33 +420,17 @@ namespace W6OP.ContestLogAnalyzer
                     }
                 }
             }
-            //get
-            //{
-            //    return invalidSentEntity;
-            //}
         }
 
-        /// <summary>
-        /// Contact country - HQP - This can be state or Canadian province 2 letter code
-        /// or 3 letter HQP entity code
-        /// This is equivalent to the Contact Name for the CWOpen
-        /// </summary>
-        //public string DXEntity { get; set; }
+        // Contact country - HQP - This can be state or Canadian province 2 letter code
+        // or 3 letter HQP entity code
+        // This is equivalent to the Contact Name for the CWOpen
         public string ContactEntity { get; set; }
 
-        /// <summary>
-        /// For HQP contest
-        /// </summary>
         public int HQPPoints { get; set; }
 
-        /// <summary>
-        /// For HQP Contest
-        /// </summary>
         public string HQPEntity { get; set; }
 
-        /// <summary>
-        /// For HQP Contest
-        /// </summary>
         public bool IsHQPEntity { get; set; }
         public string OperatorOriginalCall { get; set; }
 
@@ -573,8 +443,6 @@ namespace W6OP.ContestLogAnalyzer
         {
             try
             {
-                //CategoryMode catMode = mode;
-
                 HQPPoints = mode switch
                 {
                     QSOMode.CW => 3,
