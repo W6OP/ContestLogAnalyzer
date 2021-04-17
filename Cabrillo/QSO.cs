@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,141 +11,125 @@ namespace W6OP.ContestLogAnalyzer
     public class QSO
     {
         /// <summary>
-        /// Constructor. Initialize properties.
+        /// Constructor.
         /// </summary>
         public QSO()
         {
-            QSOIsDupe = false;
-            CallIsInValid = false;
-            SessionIsValid = true;
         }
 
-        #region Common
+        #region Common Fields
 
-        /// <summary>
-        /// Indicates a QSO this operator does not get credit for
-        /// but others do.
-        /// </summary>
-        private bool _IsXQSO;
-        public bool IsXQSO { 
-            get
-            {
-                //Console.WriteLine("xqso get");
-                return _IsXQSO;
-            }
-            set {
-                _IsXQSO = value;
-                Console.WriteLine("xqso set: " + value);
-            }
-        }
+        private bool qsoIsDupe = false;
+        private DateTime qsoDateTime;
+        private string frequency;
+        private QSOMode mode;
 
-        /// <summary>
-        /// The log reference for a particuler QSO.
-        /// </summary>
+        #endregion
+
+        #region Common Properties
+
+        // Indicates a log for this call does not exist
+        public bool NoMatchingLog { get; set; }
+
+        public bool IsUniqueCall { get; set; }
+
+        // Indicates a QSO this operator does not get credit for but others do.
+        public bool IsXQSO { get; set; }
+
+        // The log reference for a particuler QSO.
         public ContestLog ParentLog { get; set; }
 
-        /// <summary>
-        /// A collection of reasons a log was rejected.
-        /// Only one reason is ever used so this can be changed to a single item.
-        /// </summary>
-       // private Dictionary<RejectReason, string> rejectReasons = new Dictionary<RejectReason, string>();
-        //public Dictionary<RejectReason, string> GetRejectReasons()
-        //{ return rejectReasons; }
-
+        // The reason a qso was rejected.
         public RejectReason ReasonRejected { get; set; }
 
-        /// <summary>
-        /// The status of the QSO.
-        /// </summary>
-        private QSOStatus _Status = QSOStatus.ValidQSO;
-        public QSOStatus Status
-        {
-            get => _Status;
-            set => _Status = value;
-        }
+        // The status of the QSO.
+        public QSOStatus Status { get; set; }
 
-        /// <summary>
-        /// The QSO in another log that matches this QSO.
-        /// </summary>
-        private QSO _MatchingQSO;
-        public QSO MatchingQSO
-        {
-            get => _MatchingQSO;
-            set => _MatchingQSO = value;
-        }
+        // The QSO in another log that matches this QSO.
+        public QSO MatchingQSO { get; set; }
 
-        /// <summary>
-        /// Location of duplicate QSOs.
-        /// </summary>
-        public QSO DupeListLocation { get; set; } = null;
+        public QSO FirstMatchingQSO { get; set; }
 
-        /// <summary>
-        /// List of duplicates of this QSO.
-        /// </summary>
-        public List<QSO> DuplicateQsoList { get; set; } = new List<QSO>();
+        public List<QSO> NearestMatches { get; set; } = new List<QSO>();
 
-        /// <summary>
-        /// Indicates this has been printed.
-        /// </summary>
-        public bool HasBeenPrinted { get; set; } = false;
+        // This means an earlier QSO matched this one.
+        public bool HasBeenMatched { get; set; }
 
-        /// <summary>
-        ///This is a duplicate QSO.
-        /// </summary>
-        private bool _QSOIsDupe = false;
-        public bool QSOIsDupe
+        // This property allows the rejected qso report to know there are duplicates of this call
+        // It will only be true if it is the qso counted as the valid qso not the dupe
+        public bool QSOHasDupes { get; set; }
+
+        // Indicates this has been printed.
+        public bool HasBeenPrinted { get; set; }
+
+        // This incorporates two fields, QSO Date and QSO Time
+        // CHANGE TO DATE AND TIME LATER
+        // ARE THES REALLY NEEDED SINCE WE HAVE COMBINDED DATE/TIME
+        // </summary>
+        public string QsoDate { get; set; }
+        public string QsoTime { get; set; }
+
+        // Date/Time of the QSO.
+        public DateTime QSODateTime
         {
             get
             {
-                return _QSOIsDupe;
+                string qtime = QsoTime.Insert(2, ":");
+
+                DateTime.TryParse(QsoDate + " " + qtime, out qsoDateTime);
+                return qsoDateTime;
+            }
+        }
+
+        // Marks this qso as a duplicate QSO.
+        public bool IsDuplicateMatch
+        {
+            get
+            {
+                return qsoIsDupe;
             }
             set
             {
                 if (value == true)
                 {
-                    _QSOIsDupe = true;
+                    qsoIsDupe = true;
                     ReasonRejected = RejectReason.DuplicateQSO;
-                    _Status = QSOStatus.InvalidQSO;     
+                    Status = QSOStatus.InvalidQSO;     
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    _QSOIsDupe = false;
-                    _Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.DuplicateQSO)
+                    {
+                        qsoIsDupe = false;
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
         }
 
-        /// <summary>
-        /// This property allows the rejected qso report to know there are duplicates of this call
-        /// It will only be true if it is the qso counted as the valid qso not the dupe
-        /// </summary>
-        public bool QSOHasDupes { get; set; }
-
-        /// <summary>
-        /// The operators call sign is invalid for this QSO
-        /// </summary>
-        public bool CallIsInValid
+        // The operators call sign is invalid for this QSO
+        public bool IncorrectOperatorCall
         {
             set
             {
                 if (value == true)
                 {
                     ReasonRejected = RejectReason.InvalidCall;
-                    _Status = QSOStatus.InvalidQSO;
+                    Status = QSOStatus.InvalidQSO;
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    _Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.InvalidCall)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
         }
 
-        /// <summary>
-        /// The call is busted - do I want a sub reason, is it call or serial number?
-        /// The calsign does not match the call sign in the other log
-        /// </summary>
+        // The calsign does not match the call sign in the other log
         public bool CallIsBusted
         {
             set
@@ -152,152 +137,52 @@ namespace W6OP.ContestLogAnalyzer
                 if (value == true)
                 {
                     ReasonRejected = RejectReason.BustedCallSign;
-                    _Status = QSOStatus.InvalidQSO;
+                    Status = QSOStatus.InvalidQSO;
                 }
                 else
                 {
-                    ReasonRejected = RejectReason.None;
-                    _Status = QSOStatus.ValidQSO;
+                    if (ReasonRejected == RejectReason.BustedCallSign)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
                 }
             }
         }
 
-        /// <summary>
-        /// Call sign of the operator.
-        /// </summary>
-        private string _OperatorCall;
-        public string OperatorCall
-        {
-            get { return _OperatorCall; }
-            set { _OperatorCall = value;}
-        }
+        // Call sign of the operator.
+        public string OperatorCall { get; set; }
 
-        /// <summary>
-        /// Name of the operator.
-        /// </summary>
-        private string _OperatorName;
-        public string OperatorName
-        {
-            get { return _OperatorName; }
-            set { _OperatorName = value; }
-        }
+        // Name of the operator.
+        public string OperatorName { get; set; }
+        
+        // Call sign of the contact.
+        public string ContactCall { get; set; }
 
-        /// <summary>
-        /// Call sign of the contact.
-        /// </summary>
-        private string _ContactCall;
-        public string ContactCall
-        {
-            get { return _ContactCall; }
-            set { _ContactCall = value;}
-        }
+        public string ContactName { get; set; }
 
-        /// <summary>
-        /// This is the call that he should have copied.
-        /// </summary>
+        // This is the call that he should have copied.
         public string BustedCallGuess { get; set; }
 
-        private string _ContactName;
-        public string ContactName
-        {
-            get { return _ContactName; }
-            set
-            {
-                _ContactName = value;
-            }
-        }
-
-        /// <summary>
-        /// This means an earlier QSO matched this one but this can't find the match because
-        /// the call is busted and appears unique. I should probably analyse the list of calls 
-        /// twice, ascending and descending to get all of these - 2 passes
-        /// </summary>
-        public bool HasMatchingQso { get; set; }
-
-        #endregion
-
-        #region CWOpen
-
-        /// <summary>
-        /// CWOpen only?
-        /// The operators name does not match for this QSO.
-        /// </summary>
-        public bool OpNameIsInValid
-        {
-            set
-            {
-                if (value == true)
-                {
-                    ReasonRejected = RejectReason.OperatorName;
-                    _Status = QSOStatus.InvalidQSO;
-                }
-                else
-                {
-                    ReasonRejected = RejectReason.None;
-                    _Status = QSOStatus.ValidQSO;
-                }
-            }
-        }
-
-        public bool ContactNameIsInValid
-        {
-            set
-            {
-                if (value == true)
-                {
-                    ReasonRejected = RejectReason.ContactName;
-                    _Status = QSOStatus.InvalidQSO;
-                }
-                else
-                {
-                    ReasonRejected = RejectReason.None;
-                    _Status = QSOStatus.ValidQSO;
-                }
-            }
-        }
-
-        /// <summary>
-        /// CWOpen only.
-        /// Lists the incorrect name if available.
-        /// </summary>
-        private string _IncorrectName = null;
-        public string IncorrectName
-        {
-            get => _IncorrectName;
-            set => _IncorrectName = value;
-        }
-
-        /// <summary>
-        /// Frequency of the exchange - may only need band.
-        /// </summary>
-        private string _Frequency;
+        // Frequency of the exchange - may only need band.
         public string Frequency
         {
-            get { return _Frequency; }
+            get { return frequency; }
             set
             {
-                _Frequency = value;
-                Band = Utility.ConvertFrequencyToBand(Convert.ToDouble(_Frequency));
+                frequency = value;
+                Band = Utility.ConvertFrequencyToBand(Convert.ToDouble(frequency));
             }
         }
 
-        /// <summary>
-        /// Indicates this QSO is the first one worked in this session and therefore a multiplier.
-        /// </summary>
-        public bool IsMultiplier { get; set; } = false;
+        // Indicates this QSO is the first one worked in this session and therefore a multiplier.
+        public bool IsMultiplier { get; set; }
 
-        /// <summary>
-        /// Band the QSO was on.
-        /// </summary>
+        // Band the QSO was on.
         public int Band { get; set; }
 
-        /// <summary>
-        /// Mode used for the QSO.
-        /// this should be an enum
-        /// Later change this to use CategoryMode Enum
-        /// </summary>
-        private string mode;
-        public string Mode
+        // Mode used for the QSO.
+        public QSOMode Mode
         {
             get { return mode; }
             set
@@ -307,34 +192,266 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        #endregion
+
+        #region CWOpen Fields
+
+        private bool sessionIsValid = true;
+
+        #endregion
+
+        #region CWOpen Properties
+
+        public bool IncorrectBand
+        {
+            get { return incorrectBandHQP; }
+            set
+            {
+                incorrectBandHQP = value;
+                if (incorrectBandHQP == true)
+                {
+                    ReasonRejected = RejectReason.Band;
+                    Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    if (ReasonRejected == RejectReason.Band)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
+                }
+            }
+        }
+
+        public bool IncorrectMode
+        {
+            get { return incorrectModeHQP; }
+            set
+            {
+                incorrectModeHQP = value;
+                if (value == true)
+                {
+                    ReasonRejected = RejectReason.Mode;
+                    Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    if (ReasonRejected == RejectReason.Mode)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
+                }
+            }
+        }
+
+        // The operators name does not match for this QSO.
+        public bool IncorrectOperatorName
+        {
+            set
+            {
+                if (value == true)
+                {
+                    ReasonRejected = RejectReason.OperatorName;
+                    Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    if (ReasonRejected == RejectReason.OperatorName)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
+                }
+            }
+        }
+
+        public bool IncorrectContactName
+        {
+            set
+            {
+                if (value == true)
+                {
+                    ReasonRejected = RejectReason.ContactName;
+                    Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    if (ReasonRejected == RejectReason.ContactName)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
+                }
+            }
+        }
+
+        // Lists the incorrect name if available.
+        public string IncorrectValue { get; set; }
+
+        // The sent serial number.
+        public int SentSerialNumber { get; set; }
+
+        public int ReceivedSerialNumber { get; set; }
+
+        // The serial number does not match the other log.
+        public bool IncorrectSerialNumber
+        {
+            set
+            {
+                if (value == true)
+                {
+                    ReasonRejected = RejectReason.SerialNumber;
+                    Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    if (ReasonRejected == RejectReason.SerialNumber)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
+                }
+            }
+        }
+
+        // This QSO belongs to the current session.
+        public bool SessionIsValid
+        {
+            get { return sessionIsValid; }
+            set
+            {
+                sessionIsValid = value;
+                if (value == false)
+                {
+                    ReasonRejected = RejectReason.InvalidSession;
+                    Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    if (ReasonRejected == RejectReason.InvalidSession)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region HQP Fields
+
+        private bool invalidEntityHQP = false;
+        private bool incorrectBandHQP = false;
+        private bool incorrectModeHQP = false;
+        #endregion
+
+        #region HQP Properties
+
+        // the raw text of the qso line
+        public string RawQSO { get; set; }
+        public string OperatorPrefix { get; set; }
+        public string OperatorSuffix { get; set; }
+        public string ContactPrefix { get; set; }
+        public string ContactSuffix { get; set; }
+        public string SentReport { get; set; }
+        public string ReceivedReport { get; set; }
+
+        // Lists the incorrect entity if available.
+        public string IncorrectDXEntity { get; set; }
+
+        // Actual country of the operator.
+        public string OperatorCountry { get; set; }
+
+        // Operator entity as defined by HQP
+        // Length is 2 characters for US and Canada
+        // or 3 characters if it is a HQP entity
+        // This is equivalent to the Operator Name for the CWOpen
+        public string OperatorEntity { get; set; }
+
+        // The real or top level country of the  contact or DX station
+        // This is the long name. Cannot be null!
+        public string ContactCountry { get; set; }
+
+        // The entity does not match this QSO.
+        public bool InvalidEntity
+        {
+            set
+            {
+                invalidEntityHQP = value;
+                if (value == true)
+                {
+                    ReasonRejected = RejectReason.InvalidEntity;
+                    Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    if (ReasonRejected == RejectReason.InvalidEntity)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
+                }
+            }
+            get
+            {
+                return invalidEntityHQP;
+            }
+        }
+
+        // The entity does not match this QSO.
+        public bool InvalidSentEntity
+        {
+            set
+            {
+                //invalidSentEntity = value;
+                if (value == true)
+                {
+                    ReasonRejected = RejectReason.InvalidSentEntity;
+                    Status = QSOStatus.InvalidQSO;
+                }
+                else
+                {
+                    if (ReasonRejected == RejectReason.InvalidSentEntity)
+                    {
+                        ReasonRejected = RejectReason.None;
+                        Status = QSOStatus.ValidQSO;
+                    }
+                }
+            }
+        }
+
+        // Contact country - HQP - This can be state or Canadian province 2 letter code
+        // or 3 letter HQP entity code
+        // This is equivalent to the Contact Name for the CWOpen
+        public string ContactEntity { get; set; }
+
+        public int HQPPoints { get; set; }
+
+        public string HQPEntity { get; set; }
+
+        public bool IsHQPEntity { get; set; }
+        public string OperatorOriginalCall { get; set; }
+
+        #endregion
+
+        #region Methods
+
         // determine points by mode for the HQP
         private void SetHQPPoints()
         {
             try
             {
-                CategoryMode catMode = (CategoryMode)Enum.Parse(typeof(CategoryMode), Mode);
-
-                switch (catMode)
+                HQPPoints = mode switch
                 {
-                    case CategoryMode.CW:
-                        HQPPoints = 3;
-                        break;
-                    case CategoryMode.RTTY:
-                        HQPPoints = 3;
-                        break;
-                    case CategoryMode.RY:
-                        HQPPoints = 3;
-                        break;
-                    case CategoryMode.PH:
-                        HQPPoints = 2;
-                        break;
-                    case CategoryMode.SSB:
-                        HQPPoints = 2;
-                        break;
-                    default:
-                        HQPPoints = 0;
-                        break;
-                }
+                    QSOMode.CW => 3,
+                    QSOMode.RTTY => 3,
+                    QSOMode.RY => 3,
+                    QSOMode.PH => 2,
+                    QSOMode.SSB => 2,
+                    _ => 0,
+                };
             }
             catch (Exception)
             {
@@ -342,253 +459,6 @@ namespace W6OP.ContestLogAnalyzer
             };
         }
 
-
-        /// <summary>
-        /// Date/Time of the QSO.
-        /// Could this be a window?
-        /// </summary>
-        private DateTime _QSODateTime;
-        public DateTime QSODateTime
-        {
-            get
-            {
-                string qtime = QsoTime.Insert(2, ":");
-
-                DateTime.TryParse(QsoDate + " " + qtime, out _QSODateTime);
-                return _QSODateTime;
-            }
-        }
-
-        /// <summary>
-        /// The amount of time a QSO is off by.
-        /// </summary>
-        public Int32 ExcessTimeSpan { get; set; }
-
-        /// <summary>
-        /// This incorporates two fields, QSO Date and QSO Time
-        /// 
-        /// CHANGE TO DATE AND TIME LATER
-        /// </summary>
-        public string QsoDate { get; set; }
-
-        public string QsoTime { get; set; }
-
-        /// <summary>
-        /// CWOpen only.
-        /// The sent serial number.
-        /// </summary>
-        public Int32 SentSerialNumber { get; set; }
-
-        /// <summary>
-        /// Not used for HQP
-        /// </summary>
-        public Int32 ReceivedSerialNumber { get; set; }
-
-        /// <summary>
-        /// CWOpen only.
-        /// The serial number does not match the other log.
-        /// </summary>
-        public bool SerialNumberIsIncorrect
-        {
-            set
-            {
-                if (value == true)
-                {
-                    ReasonRejected = RejectReason.SerialNumber;
-                    _Status = QSOStatus.InvalidQSO;
-                }
-                else
-                {
-                    ReasonRejected = RejectReason.None;
-                    _Status = QSOStatus.ValidQSO;
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// CWOpen only.
-        /// This QSO belongs to the current session.
-        /// </summary>
-        private bool _SessionIsValid = true;
-        public bool SessionIsValid
-        {
-            get { return _SessionIsValid; }
-            set
-            {
-                _SessionIsValid = value;
-                if (value == false)
-                {
-                    ReasonRejected = RejectReason.InvalidSession;
-                    _Status = QSOStatus.InvalidQSO;
-                }
-                else
-                {
-                    ReasonRejected = RejectReason.None;
-                    _Status = QSOStatus.ValidQSO;
-                }
-            }
-        }
         #endregion
-
-        #region HQP (Hawaiin QSO Party)
-
-        // the raw text of the qso line
-        public string RawQSO { get; set; }
-
-        public string OperatorPrefix { get; set; }
-        public string OperatorSuffix { get; set; }
-        public string ContactPrefix { get; set; }
-        public string ContactSuffix { get; set; }
-
-        /// <summary>
-        /// HQP only.
-        /// Lists the incorrect entity if available.
-        /// </summary>
-        private string _IncorrectDXEntity = null;
-        public string IncorrectDXEntity
-        {
-            get => _IncorrectDXEntity;
-            set => _IncorrectDXEntity = value;
-        }
-
-        /// <summary>
-        /// The contact entity in the log before any lookups
-        /// </summary>
-        private string _OriginalContactEntity;
-        public string OriginalContactEntity
-        {
-            get { return _OriginalContactEntity; }
-            set
-            {
-                _OriginalContactEntity = value;
-                ContactEntity = value;
-            }
-        }
-
-
-        /// <summary>
-        /// The operator entity in the log before any lookups
-        /// </summary>
-        private string _OriginalOperatorEntity;
-        public string OriginalOperatorEntity
-        {
-            get { return _OriginalOperatorEntity; }
-            set
-            {
-                _OriginalOperatorEntity = value;
-                OperatorEntity = value;
-            }
-        }
-
-        /// <summary>
-        /// Operator country as defined by HQP
-        /// Length is 2 characters for US and Canada
-        /// or 3 characters if it is a HQP entity
-        /// This is equivalent to the Operator Name for the CWOpen
-        /// </summary>
-        private string _OperatorEntity;
-        public string OperatorEntity
-        {
-            get { return _OperatorEntity; }
-            set { _OperatorEntity = value; }
-        }
-
-        /// <summary>
-        /// The real or top level country of the  contact or DX station
-        /// This is the long name. Cannot be null!
-        /// </summary>
-        private string _ContactCountry = "Unknown";
-        public string ContactCountry
-        {
-            get => _ContactCountry;
-            set {_ContactCountry = value;}
-        }
-
-        /// <summary>
-        /// HQP only.
-        /// The entity does not match this QSO.
-        /// </summary>
-        private bool _EntityIsInValid = false;
-        public bool EntityIsInValid
-        {
-            set
-            {
-                _EntityIsInValid = value;
-                if (value == true)
-                {
-                    ReasonRejected = RejectReason.InvalidEntity;
-                    _Status = QSOStatus.InvalidQSO;
-                }
-                else
-                {
-                    ReasonRejected = RejectReason.None;
-                    _Status = QSOStatus.ValidQSO;
-                }
-            }
-            get
-            {
-                return _EntityIsInValid;
-            }
-        }
-
-        /// <summary>
-        /// HQP only.
-        /// The entity does not match this QSO.
-        /// </summary>
-        private bool _SentEntityIsInValid = false;
-        public bool SentEntityIsInValid
-        {
-            set
-            {
-                _SentEntityIsInValid = value;
-                if (value == true)
-                {
-                    ReasonRejected = RejectReason.InvalidSentEntity;
-                    _Status = QSOStatus.InvalidQSO;
-                }
-                else
-                {
-                    ReasonRejected = RejectReason.None;
-                    _Status = QSOStatus.ValidQSO;
-                }
-            }
-            get
-            {
-                return _SentEntityIsInValid;
-            }
-        }
-
-        /// <summary>
-        /// Contact country - HQP - This can be state or Canadian province 2 letter code
-        /// or 3 letter HQP entity code
-        /// This is equivalent to the Contact Name for the CWOpen
-        /// </summary>
-        //public string DXEntity { get; set; }
-        private string _ContactEntity;
-        public string ContactEntity
-        {
-            get
-            { return _ContactEntity; }
-            set{_ContactEntity = value;}
-        }
-        /// <summary>
-        /// For HQP contest
-        /// </summary>
-        public int HQPPoints { get; set; }
-
-        /// <summary>
-        /// For HQP Contest
-        /// </summary>
-        public string HQPEntity { get; set; }
-
-        /// <summary>
-        /// For HQP Contest
-        /// </summary>
-        public bool IsHQPEntity { get; set; }
-
-
-        #endregion
-
     } // end class
 }

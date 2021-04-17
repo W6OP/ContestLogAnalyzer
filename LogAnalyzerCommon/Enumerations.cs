@@ -1,12 +1,12 @@
 ﻿
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 
 namespace W6OP.ContestLogAnalyzer
 {
-    
-    public enum RejectReason
+        public enum RejectReason
     {
         [Description("The band does not match")]
         Band,
@@ -51,6 +51,7 @@ namespace W6OP.ContestLogAnalyzer
     public enum QSOStatus
     {
         ValidQSO,
+        IncompleteQSO,
         InvalidQSO,
         ReviewQSO
     }
@@ -68,7 +69,7 @@ namespace W6OP.ContestLogAnalyzer
     /// <summary>
     /// http://stackoverflow.com/questions/3916914/c-sharp-using-numbers-in-an-enum
     /// </summary>
-    public enum CategoryBand
+    public enum QSOBand
     {
         [Description("ALL")]
         ALL,
@@ -127,17 +128,27 @@ namespace W6OP.ContestLogAnalyzer
     }
 
 
-    public enum CategoryMode
+    public enum QSOMode
     {
+        [Description("PH")]
         SSB,
+        [Description("PH")]
         USB,
+        [Description("CW")]
         CW,
+        [Description("RY")]
         DIGI,
+        [Description("RY")]
         DG,
+        [Description("PH")]
         PH,
+        [Description("RY")]
         RTTY,
+        [Description("RY")]
         RY,
+        [Description("RY")]
         FT8,
+        [Description("MIXED")]
         MIXED
     }
 
@@ -270,6 +281,10 @@ namespace W6OP.ContestLogAnalyzer
         VOL,
         [Description("WHN")]
         WHN,
+    }
+
+    public enum ALTHQPMults
+    {
         // Non Standard HQPMults
         [Description("HIL")]
         HILO,
@@ -280,11 +295,11 @@ namespace W6OP.ContestLogAnalyzer
         [Description("MOL")]
         MOLOKAI,
         [Description("MOL")]
-        MOLO,
+        MOLOL,
         [Description("VOL")]
         VOLCANO,
         [Description("VOL")]
-        VOLC,
+        VOLCL,
         [Description("HON")]
         HNL,
         [Description("HON")]
@@ -299,15 +314,15 @@ namespace W6OP.ContestLogAnalyzer
         KALAWAO,
         [Description("KAU")]
         KAUI,
-        [Description("LAN")]
+        [Description("LNI")]
         LAN,
-        [Description("LAN")]
+        [Description("LNI")]
         LANI,
         [Description("MAU")]
         MAUI,
         [Description("PRL")]
         PERL,
-        [Description("PRL")] 
+        [Description("PRL")]
         PEARL
     }
 
@@ -377,4 +392,5 @@ namespace W6OP.ContestLogAnalyzer
         }
 
     } // end class
+
 }
