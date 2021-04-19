@@ -228,6 +228,89 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+         /// <summary>
+        /// Use the .dat files initially to build the .txt files.
+        /// The .dat files are too large to push to GitHub plus the smaller
+        /// .txt files will load faster.
+        /// Embed the .dat files and build the .txt files then remove the .dat
+        /// and embed the .txt files.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BackgroundWorkerLoadULSResourceFiles_DoWork(object sender, DoWorkEventArgs e)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            string line;
+
+                // only for initial file build
+                string resourceName = assembly.GetManifestResourceNames()
+                 .Single(str => str.EndsWith("EmbedULS_HD.dat"));
+
+                string[] ulsData = new string[50];
+                Dictionary<string, string> ulsHD = new Dictionary<string, string>(900000);
+
+                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        ulsData = line.Split('|');
+                        if (ulsData[5] == "A")
+                        {
+                            if (!ulsHD.ContainsKey(ulsData[4]))
+                            {
+                                ulsHD.Add(ulsData[4], ulsData[1]);
+                            }
+                        }
+                    }
+                }
+
+                List<string[]> temp = new List<string[]>(900000);
+
+                resourceName = assembly.GetManifestResourceNames()
+                  .Single(str => str.EndsWith("EmbedULSCallData.dat"));
+
+                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        ulsData = line.Split('|');
+                        temp.Add(ulsData);
+                        if (ulsData[6] != "")
+                        {
+                            if (!ULSStateData.ContainsKey(ulsData[4]))
+                            {
+                                // if the USI matches the USI in the ulsHD dictionary then add it
+                                if (!ULSStateData.ContainsKey(ulsData[4]) && ulsHD.ContainsKey(ulsData[4]))
+                                {
+                                    if (ulsHD[ulsData[4]] == ulsData[1])
+                                    {
+                                    ULSStateData.Add(ulsData[4], ulsData[17]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                BuildDataFiles(ULSStateData, "EmbedULSCallData.txt");
+            Console.WriteLine("ULS Resource files loaded.");
+        }
+
+        private void BuildDataFiles(Dictionary<string, string> ulsHD, string fileName)
+        {
+            Console.WriteLine("Building data files.");
+            string line;
+            using StreamWriter outputFile = new StreamWriter(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), fileName));
+            ulsHD.ToList().ForEach(kv =>
+            {
+                line = kv.Key + "|" + kv.Value;
+                outputFile.WriteLine(line);
+            });
+        } 
+
+
         #endregion
 
         #region Select Log folder
