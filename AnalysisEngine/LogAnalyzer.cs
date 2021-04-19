@@ -7,23 +7,15 @@ namespace W6OP.ContestLogAnalyzer
 {
     public class LogAnalyzer
     {
-        public delegate void ProgressUpdate(string value, string qsoCount, string validQsoCount, Int32 progress);
+        public delegate void ProgressUpdate(string value, string qsoCount, string validQsoCount, int progress);
         public event ProgressUpdate OnProgressUpdate;
-
-        private const string HQPHawaiiLiteral = "HAWAII";
-        private const string HQPUSALiteral = "UNITED STATES OF AMERICA";
-        private const string HQPAlaskaLiteral = "ALASKA";
-        private const string HQPCanadaLiteral = "CANADA";
 
         readonly string[] States = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", };
         readonly string[] Provinces = { "NL", "NS", "PE", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU" };
 
         public ContestName ActiveContest;
-
         private ILookup<string, string> _BadCallList;
-
         public ILookup<string, string> BadCallList { set => _BadCallList = value; }
-
         public CallLookUp CallLookUp;
 
         /// <summary>
@@ -32,8 +24,8 @@ namespace W6OP.ContestLogAnalyzer
         /// this almost quadruples lookup performance
         /// </summary>
         public Dictionary<string, List<ContestLog>> CallDictionary;
-        public Dictionary<int, List<ContestLog>> BandDictionary;
-        public Dictionary<string, List<ContestLog>> ModeDictionary;
+        public Dictionary<string, List<Tuple<string, int>>> NameDictionary;
+        private List<ContestLog> ContestLogList;
 
         /// <summary>
         /// Default constructor.
@@ -42,6 +34,8 @@ namespace W6OP.ContestLogAnalyzer
         {
 
         }
+
+        #region Common Code
 
         /// <summary>
         /// Start processing individual logs.
@@ -63,101 +57,14 @@ namespace W6OP.ContestLogAnalyzer
         /// Does it show up in any other logs? Good check to see if it is a valid callsign
         /// Build a collection of totaly unique calls
         /// </summary>
-        public void PreAnalyzeContestLogsOld(List<ContestLog> contestLogList, Dictionary<string, List<ContestLog>> callDictionary, Dictionary<int, List<ContestLog>> bandlDictionary, Dictionary<string, List<ContestLog>> modeDictionary)
-        {
-            CallDictionary = callDictionary;
-            BandDictionary = bandlDictionary;
-            ModeDictionary = modeDictionary;
-
-            List<QSO> qsoList = new List<QSO>();
-            string call = null;
-            string name = null;
-            int progress = 0;
-            int validQsos;
-
-            // Display the label
-            OnProgressUpdate?.Invoke("1", "", "", 0);
-
-            try
-            {
-                foreach (ContestLog contestLog in contestLogList)
-                {
-                    call = contestLog.LogOwner;
-
-                    progress++;
-
-                    if (!contestLog.IsCheckLog && contestLog.IsValidLog)
-                    {
-                        qsoList = contestLog.QSOCollection;
-
-                        MarkIncorrectCallSigns(qsoList, call);
-
-                        switch (ActiveContest)
-                        {
-                            case ContestName.CW_OPEN:
-                                name = contestLog.LogHeader.NameSent;
-                                MarkIncorrectSentName(qsoList, name);
-                                break;
-                            case ContestName.HQP:
-                                // find the operator entity used on the majority of qsos
-                                // this may be useful other places too
-                                // maybe call all QSOs for an individual for their entity
-                                var mostUsedOperatorEntity = qsoList
-                                    .GroupBy(q => q.OriginalOperatorEntity)
-                                    .OrderByDescending(gp => gp.Count())
-                                    .Take(5)
-                                    .Select(g => g.Key).ToList();
-
-                                MarkIncorrectSentEntity(qsoList, mostUsedOperatorEntity[0]);
-                                break;
-                        }
-
-                        /*
-                         if (ActiveContest == ContestName.HQP)
-                {
-                    found = SearchForIncorrectEntity(qso, contestLogList);
-                }
-                else
-                {
-                    found = SearchForIncorrectName(qso, contestLogList);
-                } 
-                         */
-
-
-
-                        MatchQSOs(qsoList, contestLogList, call);
-
-
-
-
-                        MarkDuplicateQSOs(qsoList);
-
-                        validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
-
-                        // ReportProgress with Callsign
-                        OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                OnProgressUpdate?.Invoke("Error" + ex.Message, "", "", 0);
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="contestLogList"></param>
         /// <param name="callDictionary"></param>
         /// <param name="bandlDictionary"></param>
-        /// <param name="modeDictionary"></param>
-        public void PreAnalyzeContestLogs(List<ContestLog> contestLogList, Dictionary<string, List<ContestLog>> callDictionary, Dictionary<int, List<ContestLog>> bandlDictionary, Dictionary<string, List<ContestLog>> modeDictionary)
+        public void PreAnalyzeContestLogs(List<ContestLog> contestLogList, Dictionary<string, List<ContestLog>> callDictionary, Dictionary<string, List<Tuple<string, int>>> nameDictionary)
         {
             CallDictionary = callDictionary;
-            BandDictionary = bandlDictionary;
-            ModeDictionary = modeDictionary;
+            NameDictionary = nameDictionary;
+            ContestLogList = contestLogList;
 
             List<QSO> qsoList = new List<QSO>();
             string call = null;
@@ -180,7 +87,7 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         qsoList = contestLog.QSOCollection;
 
-                        MarkIncorrectCallSigns(qsoList, call);
+                        MarkIncorrectOperatorCallSigns(qsoList, call);
 
                         switch (ActiveContest)
                         {
@@ -189,16 +96,7 @@ namespace W6OP.ContestLogAnalyzer
                                 MarkIncorrectSentName(qsoList, name);
                                 break;
                             case ContestName.HQP:
-                                // find the operator entity used on the majority of qsos
-                                // this may be useful other places too
-                                // maybe call all QSOs for an individual for their entity
-                                var mostUsedOperatorEntity = qsoList
-                                    .GroupBy(q => q.OriginalOperatorEntity)
-                                    .OrderByDescending(gp => gp.Count())
-                                    .Take(5)
-                                    .Select(g => g.Key).ToList();
-
-                                MarkIncorrectSentEntity(qsoList, mostUsedOperatorEntity[0]);
+                                MarkIncorrectSentEntity(qsoList);
                                 break;
                         }
 
@@ -208,29 +106,19 @@ namespace W6OP.ContestLogAnalyzer
                             {
                                 if (ActiveContest == ContestName.HQP)
                                 {
-                                    SearchForIncorrectEntity(qso);
-                                    // probably should only look at valid QSOS
-                                    // may combine this withMatchQSOs()
-                                    if (qso.Status != QSOStatus.InvalidQSO)
-                                    {
-                                        //SearchHQPBustedCallSigns(qso);
-                                    }
+                                    MarkIncorrectContactEntities(qso);
+                                    FindHQPMatchingQsos(qso);
                                 }
                                 else
                                 {
-                                    SearchForIncorrectName(qso);
+                                    MarkIncorrectContactNames(qso);
+                                    FindCWOpenMatchingQsos(qso);
                                 }
                             }
                         }
 
-                        // did busted call signs take care of this?
-                        MatchQSOs(qsoList, contestLogList, call);
-
-                        // need to account for some already being marked
-                        MarkDuplicateQSOs(qsoList);
-
                         validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
-                     
+
                         // ReportProgress with Callsign
                         OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
                     }
@@ -244,470 +132,8 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// All we want to do here is look for matching QSOs
-        /// I wonder if I still need this?
-        /// </summary>
-        /// <param name="contestLogList"></param>
-        public void PreAnalyzeContestLogsReverse(List<ContestLog> contestLogList)
-        {
-            List<QSO> qsoList = new List<QSO>();
-            string call = null;
-            string name = null;
-            int progress = 0;
-            int validQsos;
-
-            OnProgressUpdate?.Invoke("2", "", "", 0);
-            contestLogList.Reverse();
-
-            foreach (ContestLog contestLog in contestLogList)
-            {
-                call = contestLog.LogOwner;
-                name = contestLog.LogHeader.NameSent;
-               
-                progress++;
-
-                if (!contestLog.IsCheckLog && contestLog.IsValidLog)
-                {
-                    // only use valid QSOs in reverse
-                    qsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).ToList();
-
-                    MatchQSOs(qsoList, contestLogList, call);
-
-                    validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
-
-                    Console.WriteLine("Pre - reverse: " + contestLog.LogOwner + " : " + validQsos.ToString());
-
-                    OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
-                }
-            }
-        }
-
-        /// <summary>
-        /// http://stackoverflow.com/questions/16197290/checking-for-duplicates-in-a-list-of-objects-c-sharp
-        /// Find duplicate QSOs in a log and mark the as dupes. Be sure
-        /// to allow the first QSO to be marked as valid, though.
-        /// </summary>
-        /// <param name="qsoList"></param>
-        private void MarkDuplicateQSOs(List<QSO> qsoList)
-        {
-            List<QSO> dupeList = new List<QSO>();
-
-            var query = qsoList.GroupBy(x => new { x.ContactCall, x.Band, x.Mode })
-             .Where(g => g.Count() > 1)
-             .Select(y => y.Key)
-             .ToList();
-
-            // only check valid QSOs
-            foreach (var qso in query)
-            {
-                switch (ActiveContest)
-                {
-                    case ContestName.CW_OPEN:
-                        dupeList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Band == qso.Band && item.Status == QSOStatus.ValidQSO).OrderBy(o => o.QSODateTime).ToList();
-                        break;
-                    case ContestName.HQP:
-                        dupeList = qsoList.Where(item => item.ContactCall == qso.ContactCall && item.Band == qso.Band && qso.Mode == item.Mode && item.Status == QSOStatus.ValidQSO).OrderBy(o => o.QSODateTime).ToList();
-                        break;
-                }
-
-                if (dupeList.Any())
-                {
-                    // set all as dupes
-                    dupeList.Select(c => { c.QSOIsDupe = true && c.Status == QSOStatus.ValidQSO; return c; }).ToList();
-                    // now reset the first one as not a dupe
-                    dupeList.First().QSOIsDupe = false;
-                    // let me know it has dupes for the rejected qso report
-                    dupeList.First().QSOHasDupes = true;
-                    // add all the dupes to the QSO
-                    foreach (var item in dupeList.Skip(1))
-                    {
-                        dupeList.First().DuplicateQsoList.Add(item);
-                        item.DupeListLocation = dupeList.First();
-                    }
-                    //dupeList[0].DuplicateQsoList = (List<QSO>)dupeList.Skip(1);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Mark all QSOs where the operator call sign doesn't match the log call sign as invalid.
-        /// </summary>
-        /// <param name="qsoList"></param>
-        /// <param name="call"></param>
-        private void MarkIncorrectCallSigns(List<QSO> qsoList, string call)
-        {
-            List<QSO> qsos = qsoList.Where(q => q.OperatorCall != call && q.Status == QSOStatus.ValidQSO).ToList();
-
-            if (qsos.Any())
-            {
-                qsos.Select(c => { c.CallIsInValid = false; return c; }).ToList();
-            }
-        }
-
-        /// <summary>
-        /// Need to search the other log that matches this QSO
-        /// Check the serial number and the callsign, if either do not match then the call is busted
-        /// 
-        /// 1. Get the contact call - does a log exist? if not then not busted (for now) - could search through other logs to see if dx was worked by anyone else
-        /// Could also search all other logs using date/time and serial number and name to be more thorough
-        /// 
-        /// 2. Log exists, search for op callsign, if not found search for serial number and compare band, mode, date/time
-        ///
-        /// First: See if the other call is in the 
-        /// </summary>
-        /// <param name="qsoList"></param>
-        private void MatchQSOs(List<QSO> qsoList, List<ContestLog> contestLogList, string operatorCall)
-        {
-            ContestLog matchLog = null;
-            RejectReason reason = RejectReason.None;
-            List<ContestLog> tempLog = null; // new List<ContestLog>();
-            QSO matchQSO = null;
-            QSO matchQSO_X = null;
-
-            DateTime qsoDateTime = DateTime.Now;
-            int band = 0;
-            string mode = null;
-            string contactName = null;
-            string contactCall = null;
-            string dxEntity = null;
-            int receivedSerialNumber = 0;
-
-            foreach (QSO qso in qsoList)
-            {
-                qsoDateTime = qso.QSODateTime;
-                band = qso.Band;
-                mode = qso.Mode;
-                contactName = qso.ContactName;
-                contactCall = qso.ContactCall;
-                dxEntity = qso.OriginalOperatorEntity;   //qso.OperatorEntity; NEED TO MAKE EVERYTHING CONSISTANT
-                receivedSerialNumber = qso.ReceivedSerialNumber;
-                tempLog = null;
-                matchLog = null;
-
-              
-                // if its invalid we don't care about matches
-                if (qso.Status == QSOStatus.InvalidQSO) // && qso.ReasonRejected != RejectReason.None)
-                {
-                    //if (qso.ReasonRejected == RejectReason.InvalidCall)
-                    //{
-                        continue;
-                    //}
-                }
-
-                if (ActiveContest == ContestName.HQP)
-                {
-                    if (!qso.IsHQPEntity && qso.ContactCountry != HQPHawaiiLiteral)
-                    {
-                        // this is a non Hawaiian station that has a non Hawaiian contact - maybe another QSO party
-                        qso.Status = QSOStatus.InvalidQSO;
-                        qso.ReasonRejected = RejectReason.NotCounted;
-                        continue;
-                    }
-                }
-
-                // if this QSO is and X-QSO it does not get counted for this operator
-                if (qso.IsXQSO)
-                {
-                    qso.Status = QSOStatus.InvalidQSO;
-                    qso.ReasonRejected = RejectReason.Marked_XQSO;
-                    continue;
-                }
-
-               
-                // get the other log that matches this QSO contact call
-                matchLog = contestLogList.FirstOrDefault(q => q.LogOwner == qso.ContactCall);
-               
-                if (qso.ContactCall.IndexOf(@"/") != -1)             //                                |
-                {                           //                                |
-                    continue;   // Skip the remainder of this iteration. -----+
-                }
-
-                if (matchLog != null)
-                {
-                    switch (ActiveContest)
-                    {
-                        case ContestName.CW_OPEN:
-                            // now see if a QSO matches this QSO
-                            matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.OperatorName == contactName && q.OperatorCall == contactCall &&
-                                                  q.ContactCall == qso.OperatorCall && Math.Abs(q.SentSerialNumber - receivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).Minutes) <= 5);
-                            break;
-                        case ContestName.HQP:
-                            // now see if a QSO matches this QSO
-
-                            if ((CategoryMode)Enum.Parse(typeof(CategoryMode), mode) == CategoryMode.RY)
-                            {
-                                // don't check the time on digi contacts per Alan 09/25,2020
-                                matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.OriginalContactEntity == dxEntity && q.OperatorCall == contactCall &&
-                                                      q.ContactCall == operatorCall && q.Mode == mode);
-                            } else
-                            {
-                                matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == band && q.OriginalContactEntity == dxEntity && q.OperatorCall == contactCall &&
-                                                     q.ContactCall == operatorCall && q.Mode == mode && Math.Abs(q.QSODateTime.Subtract(qsoDateTime).TotalMinutes) <= 5);
-                            }
-
-                            break;
-                    }
-
-                    if (matchQSO != null) // found it
-                    {
-                        // store the matching QSO
-                        qso.HasMatchingQso = true;
-                        qso.MatchingQSO = matchQSO;
-                    }
-                    else if (matchQSO_X != null) // found it
-                    {
-                        // store the matching QSO
-                        qso.MatchingQSO = matchQSO_X;
-                    }
-                    else
-                    {
-                        // narrow down search
-                        reason = FindRejectReason(matchLog, qso);
-
-                        // test for NONE because S/N can be off by one
-                        if (reason != RejectReason.InvalidTime && reason != RejectReason.None)
-                        {
-                            qso.Status = QSOStatus.InvalidQSO;
-                            //qso.GetRejectReasons().Clear();
-                            //qso.GetRejectReasons().Add(reason, EnumHelper.GetDescription(reason));
-                            qso.ReasonRejected = reason;
-                        }
-                    }
-                }
-                else
-                {
-                    // can't find a matching log
-                    // find all the logs this operator is in so we can try to get a match without call signs
-                    // don't want to exclude invalid QSOs as we are checking all logs and all QSOs
-                    //tempLog = contestLogList.Where(q => q.QSOCollection.Any(p => p.ContactCall == qso.ContactCall)).ToList();
-
-                    // speeds up from 44 sec to 28 sec on first pass
-                    tempLog = CallDictionary[qso.ContactCall];
-
-                    if (tempLog.Count <= 1) // 1 would mean this call sign only in this log
-                    {
-                        // the call is not in any other log
-                        if (!qso.HasMatchingQso)
-                        {
-                            qso.Status = QSOStatus.ReviewQSO;
-                            //qso.GetRejectReasons().Clear();
-                            if (ActiveContest == ContestName.CW_OPEN)
-                            {
-                                // give them the point anyway
-                                qso.IsMultiplier = true;
-                                //qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
-                                qso.ReasonRejected = RejectReason.NoQSO;
-                            }
-
-                            if (ActiveContest == ContestName.HQP)
-                            {
-                                if (qso.ContactCountry != HQPUSALiteral && qso.ContactCountry != HQPCanadaLiteral && qso.ContactCountry != HQPHawaiiLiteral && qso.ContactCountry != HQPAlaskaLiteral)
-                                {
-                                    //qso.GetRejectReasons().Clear();
-                                    qso.ReasonRejected = RejectReason.None;
-                                    qso.Status = QSOStatus.ValidQSO;
-                                }
-                                else
-                                {
-                                    // THIS NEEDS FIXING - should always be the same
-                                    if (qso.ContactEntity != qso.ContactEntity)
-                                    {
-                                        qso.Status = QSOStatus.InvalidQSO;
-                                        qso.EntityIsInValid = true;
-                                        qso.IncorrectDXEntity = qso.ContactEntity + " --> " + qso.ContactEntity;
-                                    }
-                                    else
-                                    {
-                                        qso.ReasonRejected = RejectReason.NoQSO;
-                                        //qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.NoQSO));
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (ActiveContest == ContestName.HQP)
-                            {
-                                // if only in one log give it to them per Alan 09/25/2020
-                                qso.Status = QSOStatus.ValidQSO;
-                            }
-                            else 
-                            { 
-                                qso.Status = QSOStatus.InvalidQSO;
-                                //qso.GetRejectReasons().Clear();
-                                //qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
-                                qso.ReasonRejected = RejectReason.BustedCallSign;
-                            }
-                        }
-                    }
-                    else
-                    { // ok call is in 2 or more logs, is it busted
-                        switch (CheckBadCallList(qso))
-                        {
-                            case false:
-                                //  not used right now
-                                //if (SearchForBustedCall(qso, contestLogList) == false) // did not find it so is name incorrect
-                                //{
-                                //    qso.Status = QSOStatus.ValidQSO;
-                                //}
-
-                                break;
-                            default:
-                                qso.Status = QSOStatus.InvalidQSO;
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-
-        private void SearchCWOpenBustedCallSigns(QSO qso)
-        {
-
-        }
-
-        /// <summary>
-        /// Need to look through every log and find the match for this QSO.
-        /// If there are no matches either the call is busted or it is a unique
-        /// call. If the QSO has a time match but the calls don't match we need
-        /// to do some work to see if the call is busted.
-        /// 
-        /// Get a list of all logs from the CallDictionary that have this call sign in it
-        /// Now we can query the QSODictionary for each QSO that may match
-        /// 
-        /// We can also flag some duplicates here
-        /// </summary>
-        /// <param name="contestLog"></param>
-        /// <param name="qso"></param>
-        private void SearchHQPBustedCallSigns(QSO qso)
-        {
-            List<QSO> matches;
-            List<KeyValuePair<string, List<QSO>>> qsos;
-
-            // all logs with this operator call sign
-            List<ContestLog> contestLogs = CallDictionary[qso.OperatorCall];
-
-            // List of List<QSO> from the list of contest logs that match this operator call sign
-            qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall).ToList();
-            
-            // this can have more entries than qsos because the list is flattened
-            matches = qsos.SelectMany(x => x.Value)
-                .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band && y.Mode == qso.Mode && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= 2)
-                .ToList();
-
-            // found a match so we mark both as matches and add matching QSO
-            if (matches.Count == 1)
-            {
-                qso.MatchingQSO = matches[0];
-                matches[0].MatchingQSO = qso;
-                return;
-            }
- 
-            // match not found so lets widen the search
-            if (matches.Count == 0)
-            {
-               matches = qsos.SelectMany(x => x.Value)
-                    .Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall && y.Band == qso.Band && y.Mode == qso.Mode &&  Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= 5)
-                    .ToList();
-            }
-
-            // found a single match so we mark both as matches and add matching QSO
-            if (matches.Count == 1)
-            {
-                qso.MatchingQSO = matches[0];
-                matches[0].MatchingQSO = qso;
-                return;
-            }
-
-            // multiple matches found so need to narrow the search
-            // these are probably dupes
-            if (matches.Count > 1)
-            {
-                qso.MatchingQSO = matches[0];
-                matches[0].MatchingQSO = qso;
-                matches[1].QSOIsDupe = true;
-
-                // have QSO class handle this
-                qso.DuplicateQsoList.Add(matches[1]);
-
-            }
-
-            foreach (QSO o in matches)
-            {
-                Console.WriteLine(qso.ContactCall + ":" + o.OperatorCall + ":" + o.QSODateTime);
-            }
-        }
-
-        /// <summary>
-        /// Search every log for a match to this QSO without the call sign
-        /// </summary>
-        /// <param name="qso"></param>
-        private bool SearchForBustedCall(QSO qso, List<ContestLog> contestLogList)
-        {
-            bool found = false;
-            //List<QSO> matchingQSOs = new List<QSO>();
-
-            // speeds up from 22 sec to 18 sec on first pass on CWOpen
-            //List<ContestLog> tempLog = BandDictionary[qso.Band];
-
-            // THIS NEVER FINDS ANYTHING - WHAT AM I TRYING TO DO ???
-            // look for a log without a call sign parameter
-            //switch (ActiveContest)
-            //{
-            //    case ContestName.CW_OPEN:
-            //        // was contestLogList - also no need to do band compare
-            //        // this never finds anything
-            //        matchingQSOs = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.OperatorCall == qso.ContactCall &&
-            //                          Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 2).ToList();
-                    
-            //        //matchingQSOs = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorCall == qso.ContactCall &&
-            //        //                  Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 2).ToList();
-            //        break;
-            //    case ContestName.HQP:
-            //        // this never finds anything
-            //        // was contestLogList
-            //        matchingQSOs = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.OperatorCall == qso.ContactCall &&
-            //                    q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 2).ToList();
-            //        //matchingQSOs = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.Band == qso.Band && q.OperatorCall == qso.ContactCall &&
-            //        //            q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).Minutes) <= 2).ToList();
-
-            //        //if (matchingQSOs.Count > 0)
-            //        //{
-            //        //    Console.WriteLine("Count:" + matchingQSOs.Count);
-            //        //}
-            //        break;
-            //}
-
-            /*
-                QSO: 14039 CW 2020-08-22 2226 AH6KO 599 HIL NS6T 599 AL
-                QSO: 14039 CW 2020-08-22 2226 NH6T 599 AL AH6KO 599 HIL
-             */
-            //if (matchingQSOs != null && matchingQSOs.Count > 0)
-            //{
-            //    if (matchingQSOs.Count == 1)
-            //    {    // found it so call is busted
-            //        found = true;
-            //        qso.CallIsBusted = true;
-            //         qso.MatchingQSO = matchingQSOs[0];
-            //    }
-            //}
-            //else// did not find it
-            //{
-                //if (ActiveContest == ContestName.HQP)
-                //{
-                //    SearchForIncorrectEntity(qso, contestLogList);
-                //}
-                //else
-                //{
-                //    found = SearchForIncorrectName(qso, contestLogList);
-                //}
-            //}
-
-            return found;
-        }
-
-        /// <summary>
-        /// See if the call is in the Good/Bad call list
+        /// See if the call is in the Good/Bad call list.
+        /// These are calls known by experience to get busted.
         /// </summary>
         /// <param name="qso"></param>
         /// <returns></returns>
@@ -727,8 +153,6 @@ namespace W6OP.ContestLogAnalyzer
                     qso.Status = QSOStatus.InvalidQSO;
                     qso.CallIsBusted = true;
                     qso.BustedCallGuess = uniqueResults[0];
-                    //qso.GetRejectReasons().Clear();
-                    //qso.GetRejectReasons().Add(RejectReason.NoQSO, EnumHelper.GetDescription(RejectReason.BustedCallSign));
                     qso.ReasonRejected = RejectReason.BustedCallSign;
 
                     return true;
@@ -739,107 +163,734 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// CWOpen
-        /// Now see if the name is incorrect and that is why we can't find the QSO
-        /// This is only when the call sign did not submit a log
+        /// Mark all QSOs where the operator call sign doesn't match the log call sign as invalid.
+        /// This is very rare.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        /// <param name="call"></param>
+        private void MarkIncorrectOperatorCallSigns(List<QSO> qsoList, string call)
+        {
+            List<QSO> qsos = qsoList.Where(q => q.OperatorCall != call && q.Status == QSOStatus.ValidQSO).ToList();
+
+            if (qsos.Any())
+            {
+                Console.WriteLine("Incorrect operator call found:");
+                qsos.Select(c => { c.IncorrectOperatorCall = false; return c; }).ToList();
+            }
+        }
+
+        #endregion
+
+        #region HQP Only Code
+
+        /// <summary>
+        /// Need to look through every log and find the match for this QSO.
+        /// If there are no matches either the call is busted or it is a unique
+        /// call. If the QSO has a time match but the calls don't match we need
+        /// to do some work to see if the call is busted.
+        /// 
+        /// Get a list of all logs from the CallDictionary that have this call sign in it
+        /// Now we can query the QSODictionary for each QSO that may match
+        /// 
+        /// We can also flag some duplicates here
+        /// </summary>
+        /// <param name="contestLog"></param>
+        /// <param name="qso"></param>
+        private void FindHQPMatchingQsos(QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches;
+            IEnumerable<ContestLog> contestLogs;
+            IEnumerable<KeyValuePair<string, List<QSO>>> qsos;
+
+            if (qso.Status != QSOStatus.ValidQSO)
+            {
+                return;
+            }
+
+            // all logs with this operator call sign
+            if (CallDictionary.ContainsKey(qso.OperatorCall))
+            {
+                contestLogs = CallDictionary[qso.OperatorCall];
+            }
+            else
+            {
+                // i.e. JF2IWL made 3 qsos and those three got in the CallDictionary
+                // pointing at JF2IWL. However none of the 3 sent in a log so JF2IWL 
+                // does not appear in the CallDictionary as there are no logs that
+                // have a QSO for him so consider his valid
+                switch (CheckBadCallList(qso))
+                {
+                    case false:
+                        qso.IsUniqueCall = true;
+                        qso.HasBeenMatched = true;
+                        break;
+                    default:
+                        qso.CallIsBusted = true;
+                        qso.HasBeenMatched = true;
+                        break;
+                }
+                //Console.WriteLine("FindHQPMatchingQsos - 1 : " + qso.OperatorCall);
+                return;
+            }
+
+            // if there is only one log this call is in then it is unique
+            // look for partial match
+            // get 
+            if (CallDictionary[qso.ContactCall].Count == 1)
+            {
+                switch (CheckBadCallList(qso))
+                {
+                    case false:
+                        qso.IsUniqueCall = true;
+                        qso.HasBeenMatched = true;
+                        break;
+                    default:
+                        qso.HasBeenMatched = true;
+                        qso.CallIsBusted = true;
+                        break;
+                }
+                //Console.WriteLine("FindHQPMatchingQsos - 2 : " + qso.ContactCall);
+                return;
+            }
+
+            // there is no matching log for this call so we give him the qso
+            if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() == 0)
+            {
+                qso.NoMatchingLog = true;
+                qso.HasBeenMatched = true;
+                return;
+            }
+
+            // no reason to process if it already has a match
+            if (qso.HasBeenMatched)
+            {
+                return;
+            }
+
+            // List of List<QSO> from the list of contest logs that match this operator call sign
+            qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall);
+
+            // this gets all the QSOs in a flattened list
+            // do these parameters up front and I don't have to do them for every subsequent query
+            IEnumerable<QSO> qsosFlattened = qsos.SelectMany(x => x.Value).Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall);
+
+            // Start the search process
+            enumerable = HQPFullParameterSearch(qsosFlattened, qso);
+
+            // if the qso has been matched at any previous level we don't need to continue
+            if (qso.HasBeenMatched)
+            {
+                return;
+            }
+
+            matches = enumerable.ToList();
+
+            // ok, no hits yet so lets do some more checking and see if we find something with a different call
+            switch (matches.Count) // && qso.ContactCall == "AH6SZ"
+            {
+                case 0:
+                    HQPLastChanceMatch(qso);
+                    return;
+                case 1:
+                    // for now don't penalize for time mismatch since everything else is correct
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+                    return;
+                default:
+                    // duplicate incorrect QSOs - could this ever happen this deeply into the search?
+                    Console.WriteLine("FindHQPMatchingQsos: 7 " + matches.Count.ToString());
+                    break;
+            }
+
+        }
+
+        /// <summary>
+        /// 
         /// </summary>
         /// <param name="qso"></param>
-        /// <param name="contestLogList"></param>
-        /// <returns></returns>
-        private void SearchForIncorrectName(QSO qso)
+        private void HQPLastChanceMatch(QSO qso)
         {
-            int matchCount = 0;
-            List<QSO> matchingQSOs = null;
-            List<string> matchNames = new List<string>();
-
-            // speeds up from 34 sec to 22 sec on first pass
-            List<ContestLog> tempLog = CallDictionary[qso.ContactCall];
-            
-            // now look for a match without the operator name
-            matchingQSOs = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
-
-            if (matchingQSOs.Count >= 1)
+            List<QSO> matches = new List<QSO>();
+            IEnumerable<ContestLog> contestLogs;
+            IEnumerable<KeyValuePair<string, List<QSO>>> qsos;
+            IEnumerable<QSO> qsosFlattened = null;
+            int timeInterval = 5;
+            int queryLevel = 6;
+           
+            if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() != 0)
             {
-                // loop through and see if first few names match
-                for (int i = 0; i < matchingQSOs.Count; i++)
+                contestLogs = ContestLogList.Where(b => b.LogOwner == qso.ContactCall);
+
+                if (contestLogs.Count() > 0)
                 {
-                    if (qso.ContactName != matchingQSOs[i].ContactName)
+                    qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key != qso.ContactCall);
+                    qsosFlattened = qsos.SelectMany(x => x.Value);
+                    matches = RefineHQPMatch(qsosFlattened, qso, timeInterval, queryLevel).ToList(); //SearchForBustedCall(qsosFlattened, qso).ToList();
+
+                    if (matches.Count == 1)
                     {
-                        matchNames.Add(matchingQSOs[i].ContactName);
-                    }
-                }
-
-                switch (matchNames.Count)
-                {
-                    case 0:
-                        // unique call
-                        return;
-                    case 1:
-                        // only one so we give it to him
-                        return;
-                    default:
-                        var mostUsed = (from i in matchNames
-                                    group i by i into grp
-                                    orderby grp.Count() descending
-                                    select grp.Key).First();
-                        
-                        if (qso.ContactName != mostUsed)
+                        if (matches[0].HasBeenMatched)
                         {
-                            qso.IncorrectName = qso.ContactName + " --> " + mostUsed;
-                            qso.ContactNameIsInValid = true;
+                            DetermineBustedCallFault(qso, matches);
+                            return;
                         }
-
-                        break;
+                        // see if the contact call is unique, if so it's the busted call
+                        if (!CallDictionary.ContainsKey(matches[0].ContactCall))
+                        {
+                            DetermineBustedCallFault(qso, matches);
+                        }
+                        else
+                        {
+                            DetermineBustedCallFault(qso, matches);
+                        }
+                    }
+                    else
+                    {
+                        if (matches.Count > 1)
+                        {
+                            // this sometimes marks the wrong person - if busted call and busted entity
+                            // for each contact call see if the first letter matches, then the second etc
+                            // until letters don't match
+                            DetermineBustedCallFault(qso, matches);
+                        } else {
+                            var q = 1;
+                        }
+                    }
                 }
             }
         }
 
-
-        /*
-         Busted call requires a matching QSO
-         Unique call give to it to him
-
-         */
-
         /// <summary>
-        /// If the operator is a Hawaii entity:
-        /// The entity should be two characters either a US state, Canadian
-        /// province or "DX".
-        /// If the operator is not Hawaii the entity should be 3 characters
-        /// and match the Hawaii entity list.
+        /// for each contact call see if the first letter matches, then the second etc.
+        /// until letters don't match
         /// </summary>
         /// <param name="qso"></param>
-        private void MarkIncorrectEntities(QSO qso)
+        /// <param name="matches"></param>
+        private void DetermineBustedCallFault(QSO qso, List<QSO> matches)
         {
+            string operatorCall = qso.OperatorCall;
+            bool matched = false;
+
+            foreach (QSO matchQSO in matches)
+            {
+                int score = LevenshteinDistance.Compute(operatorCall, matchQSO.ContactCall);
+                if (score == 1)
+                {
+                    matched = true;
+                   
+                    qso.MatchingQSO = matchQSO;
+                    matchQSO.MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matchQSO.HasBeenMatched = true;
+
+                    matchQSO.CallIsBusted = true;
+                    matchQSO.IncorrectValue = $"{matchQSO.ContactCall} --> {operatorCall}";
+                    break;
+                }
+            }
+
+            if (matched == false)
+            {
+                qso.HasBeenMatched = true;
+                qso.CallIsBusted = true;
+            }
+            
+        }
+
+        /// <summary>
+        /// Search using all parameters. A hit here is exact, though there
+        /// could be dupes.
+        /// </summary>
+        /// <param name="qsos"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private List<QSO> HQPFullParameterSearch(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches;
+            int timeInterval = 10; // because everything else must match
+            int queryLevel = 1;
+
+            // full search
+            if (EnumHelper.GetDescription(qso.Mode) != "RY")
+            {
+                enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+            }
+            else
+            {
+                timeInterval = 15;
+                enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+            }
+
+            matches = enumerable.ToList();
+
+            switch (matches.Count)
+            {
+                case 0:
+                    // match not found so lets widen the search
+                    matches = SearchWithoutContactEntity(qsos, qso);
+                    return matches;
+                case 1:
+                    // found one match so we mark both as matches and add matching QSO
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+                    return matches;
+                case 2:
+                    // two matches so these are probably dupes
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+                    qso.QSOHasDupes = true;
+
+                    matches[0].HasBeenMatched = true;
+                    matches[0].MatchingQSO = qso;
+
+                    matches[1].HasBeenMatched = true;
+                    matches[1].MatchingQSO = qso;
+                    matches[1].FirstMatchingQSO = matches[0];
+                    matches[1].IsDuplicateMatch = true;
+                    return matches;
+                default:
+                    // more than two so we have to do more analysis
+                    Console.WriteLine("FindHQPMatches: 1");
+                    return matches;
+            }
+        }
+
+        /// <summary>
+        /// Check to see if the Contact Entity is incorrect.
+        /// </summary>
+        /// <param name="qsos"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private List<QSO> SearchWithoutContactEntity(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches;
+            int timeInterval = 10;
+            int queryLevel = 2;
+
+            enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+
+            matches = enumerable.ToList();
+
+            // this is hit only if previous switch hit case 0: so we up the time interval
+            switch (matches.Count)
+            {
+                case 0:
+                    matches = SearchWithoutOperatorEntity(qsos, qso);
+                    return matches;
+                case 1:
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+
+                    if (matches[0].Status == QSOStatus.ValidQSO)
+                    {
+                        matches[0].MatchingQSO = qso;
+                        matches[0].HasBeenMatched = true;
+                        matches[0].IncorrectDXEntity = $"{matches[0].ContactEntity} --> {qso.OperatorEntity}";
+                        matches[0].InvalidEntity = true;
+                    }
+                    return matches;
+                case 2:
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+
+                    if (matches[0].Status == QSOStatus.ValidQSO)
+                    {
+                        matches[0].MatchingQSO = qso;
+                        matches[0].HasBeenMatched = true;
+                        matches[0].IncorrectDXEntity = $"{matches[0].ContactEntity} --> {qso.OperatorEntity}";
+                        matches[0].InvalidEntity = true;
+                    }
+
+                    if (matches[1].Status == QSOStatus.ValidQSO)
+                    {
+                        matches[1].MatchingQSO = qso;
+                        matches[1].HasBeenMatched = true;
+                        matches[1].IncorrectDXEntity = $"{matches[1].ContactEntity} --> {qso.OperatorEntity}";
+                        matches[1].InvalidEntity = true;
+                    }
+                    return matches;
+                default:
+                    Console.WriteLine("FindHQPMatches: 2");
+                    return matches;
+            }
 
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="qsos"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private List<QSO> SearchWithoutOperatorEntity(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches;
+            int timeInterval = 10;
+            int queryLevel = 3;
+
+            enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+
+            // don't ToList() unless something returned
+            matches = enumerable.ToList();
+
+            // this is hit only if previous switch hit case 0: so we up the time interval
+            switch (matches.Count)
+            {
+                case 0:
+                    matches = SearchWithoutBandHQP(qsos, qso);
+                    return matches;
+                case 1:
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+
+                    if (matches[0].Status == QSOStatus.ValidQSO)
+                    {
+                        matches[0].MatchingQSO = qso;
+                        matches[0].HasBeenMatched = true;
+                        matches[0].IncorrectDXEntity = $"{matches[0].OperatorEntity} --> {qso.ContactEntity}";
+                        matches[0].InvalidEntity = true;
+                    }
+                    return matches;
+                case 2:
+                    // two matches so these are probably dupes
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+
+                    if (matches[0].Status == QSOStatus.ValidQSO)
+                    {
+                        matches[0].HasBeenMatched = true;
+                        matches[0].MatchingQSO = qso;
+                        matches[0].IncorrectDXEntity = $"{matches[0].OperatorEntity} --> {qso.ContactEntity}";
+                        matches[0].InvalidEntity = true;
+                    }
+
+                    if (matches[1].Status == QSOStatus.ValidQSO)
+                    {
+                        matches[1].HasBeenMatched = true;
+                        matches[1].MatchingQSO = qso;
+                        matches[1].IncorrectDXEntity = $"{matches[1].OperatorEntity} --> {qso.ContactEntity}";
+                        matches[1].InvalidEntity = true;
+                    }
+                    return matches;
+                default:
+                    Console.WriteLine("FindHQPMatches: 3");
+                    return matches;
+            }
+        }
+
+        private List<QSO> SearchWithoutBandHQP(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches;
+            int timeInterval = 5;
+            int queryLevel = 4;
+            double qsoPoints;
+            double matchQsoPoints;
+
+            enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+
+            matches = enumerable.ToList();
+
+            // band mismatch
+            switch (matches.Count)
+            {
+                case 0:
+                    matches = SearchWithoutModeHQP(qsos, qso);
+                    return matches;
+                case 1:
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+
+                    // whos at fault? need to get qsos around contact for each guy
+                    qsoPoints = DetermineBandFault(qso);
+                    matchQsoPoints = DetermineBandFault(matches[0]);
+
+                    if (qsoPoints.Equals(matchQsoPoints))
+                    {
+                        // can't tell who's at fault so let them both have point
+                        return matches;
+                    }
+
+                    if (qsoPoints > matchQsoPoints)
+                    {
+                        matches[0].IncorrectBand = true;
+                        matches[0].IncorrectValue = $"{matches[0].Band} --> {qso.Band}";
+                    }
+                    else
+                    {
+                        qso.IncorrectBand = true;
+                        qso.IncorrectValue = $"{qso.Band} --> {matches[0].Band}";
+                    }
+                    return matches;
+                default:
+                    // duplicate incorrect band QSOs
+                    foreach (QSO matchQSO in matches)
+                    {
+                        if (matchQSO.HasBeenMatched == false)
+                        {
+                            // should this be a collection?
+                            qso.MatchingQSO = matchQSO;
+                            qso.HasBeenMatched = true;
+
+                            matchQSO.MatchingQSO = qso;
+                            matchQSO.HasBeenMatched = true;
+
+                            // whos at fault? need to get qsos around contact for each guy
+                            qsoPoints = DetermineBandFault(qso);
+                            matchQsoPoints = DetermineBandFault(matchQSO);
+
+                            if (qsoPoints.Equals(matchQsoPoints))
+                            {
+                                // can't tell who's at fault so let them both have point
+                                return matches;
+                            }
+
+                            if (qsoPoints > matchQsoPoints)
+                            {
+                                matchQSO.IncorrectBand = true;
+                                matchQSO.IncorrectValue = $"{matchQSO.Band} --> {qso.Band}";
+
+                            }
+                            else
+                            {
+                                qso.IncorrectBand = true;
+                                qso.IncorrectValue = $"{qso.Band} --> {matchQSO.Band}";
+                            }
+                        }
+                    }
+                    return matches;
+            }
+        }
+
+        private List<QSO> SearchWithoutModeHQP(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches;
+            int timeInterval = 5;
+            int queryLevel = 5;
+            double qsoPoints;
+            double matchQsoPoints;
+
+            enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+
+            // don't ToList() unless something returned
+            matches = enumerable.ToList();
+
+            // this is hit only if previous switch hit case 0: so we up the time interval
+            switch (matches.Count)
+            {
+                case 0:
+                    return matches;
+                case 1:
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+
+                    // whos at fault? need to get qsos around contact for each guy
+                    qsoPoints = DetermineModeFault(qso);
+                    matchQsoPoints = DetermineModeFault(matches[0]);
+
+                    if (qsoPoints.Equals(matchQsoPoints))
+                    {
+                        // can't tell who's at fault so let them both have point
+                        return matches;
+                    }
+
+                    if (qsoPoints > matchQsoPoints)
+                    {
+                        matches[0].IncorrectMode = true;
+                        matches[0].IncorrectValue = $"{matches[0].Mode} --> {qso.Mode}";
+                    }
+                    else
+                    {
+                        qso.IncorrectMode = true;
+                        qso.IncorrectValue = $"{qso.Mode} --> {matches[0].Mode}";
+                    }
+                    return matches;
+                default:
+                    // duplicate incorrect mode QSOs
+                    foreach (QSO matchQSO in matches)
+                    {
+                        if (matchQSO.HasBeenMatched == false)
+                        {
+                            // should this be a collection?
+                            qso.MatchingQSO = matchQSO;
+                            qso.HasBeenMatched = true;
+
+                            matchQSO.MatchingQSO = qso;
+                            matchQSO.HasBeenMatched = true;
+
+                            // whos at fault? need to get qsos around contact for each guy
+                            qsoPoints = DetermineModeFault(qso);
+                            matchQsoPoints = DetermineModeFault(matchQSO);
+
+                            if (qsoPoints.Equals(matchQsoPoints))
+                            {
+                                // can't tell who's at fault so let them both have point
+                                return matches;
+                            }
+
+                            if (qsoPoints > matchQsoPoints)
+                            {
+                                matchQSO.IncorrectMode = true;
+                                matchQSO.IncorrectValue = $"{matchQSO.Mode} --> {qso.Mode}";
+
+                            }
+                            else
+                            {
+                                qso.IncorrectMode = true;
+                                qso.IncorrectValue = $"{qso.Mode} --> {matchQSO.Mode}";
+                            }
+                        }
+                    }
+                    return matches;
+            }
+        }
+
+        /// <summary>
+        /// // this can have more entries than qsos because the list is flattened
+        /// </summary>
+        /// <param name="contestLogs"></param>
+        /// <param name="qso"></param>
+        /// <param name="timeInterval"></param>
+        /// <returns></returns>
+        private IEnumerable<QSO> RefineHQPMatch(IEnumerable<QSO> qsos, QSO qso, int timeInterval, int queryLevel)
+        {
+            IEnumerable<QSO> matches;
+
+            switch (queryLevel)
+            {
+                case 1:
+                    // full search - QSO: 14038 CW 2020-08-22 0430 KH6EU 599 KON KH6TU 599 MAU
+                    //               QSO: 14038 CW 2020-08-22 0430 KH6TU 599 MAU KH6EU 599 KON 
+                    matches = qsos
+                    .Where(y => y.Band == qso.Band
+                                && y.Mode == qso.Mode
+                                && y.ContactEntity == qso.OperatorEntity
+                                && y.OperatorEntity == qso.ContactEntity
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                case 2:
+                    // without y.ContactEntity == qso.OperatorEntity - 
+                    // QSO: 14034 CW 2020-08-22 1732 KH6TU 599 MAU W7JMM 599 OR  
+                    // QSO: 21000 CW 2020-08-22 1732 W7JMM 599 OR WH6TU 599 MAU
+                    matches = qsos
+                    .Where(y => y.Band == qso.Band
+                                && y.Mode == qso.Mode
+                                && y.OperatorEntity == qso.ContactEntity
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                case 3:
+                    // without y.OperatorCall == qso.ContactCall -
+                    //  QSO: 14034 CW 2020-08-22 1732 KH6TU 599 MAU W7JMM 599 OR  
+                    //  QSO: 21000 CW 2020-08-22 1732 W7JMM 599 OR WH6TU 599 MAU
+                    matches = qsos
+                    .Where(y => y.Band == qso.Band
+                                && y.Mode == qso.Mode
+                                && y.ContactEntity == qso.OperatorEntity
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                case 4:
+                    // without y.Band == qso.Band -
+                    //  QSO: 14034 CW 2020-08-22 1732 KH6TU 599 MAU W7JMM 599 OR  
+                    //  QSO: 21000 CW 2020-08-22 1732 W7JMM 599 OR WH6TU 599 MAU
+                    matches = qsos
+                    .Where(y => y.Mode == qso.Mode
+                                && y.ContactEntity == qso.OperatorEntity
+                                && y.OperatorEntity == qso.ContactEntity
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                case 5:
+                    // general search
+                    matches = qsos
+                    .Where(y => y.Band == qso.Band
+                                && y.ContactEntity == qso.OperatorEntity
+                                && y.OperatorEntity == qso.ContactEntity
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                case 6:
+                    // this is a full search only with mismatching contact and operator calls
+                    matches = qsos
+                   .Where(y => y.Band == qso.Band
+                               && y.Mode == qso.Mode
+                               && y.ContactEntity == qso.OperatorEntity
+                               && y.OperatorEntity == qso.ContactEntity
+                               && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+
+                    switch(matches.ToList().Count)
+                    {
+                        case 0:
+                            matches = RefineHQPMatch(qsos, qso, timeInterval, 7);
+                            break;
+                        case 1:
+                            return matches;
+                        default:
+                            matches = RefineHQPMatch(qsos, qso, timeInterval, 8);
+                            break;
+                    }
+                   
+                    return matches;
+                case 7:
+                    // this is a full search only with mismatching contact and operator calls
+                    matches = qsos
+                   .Where(y => y.Band == qso.Band
+                               && y.Mode == qso.Mode
+                               && (y.ContactEntity == qso.OperatorEntity
+                               || y.OperatorEntity == qso.ContactEntity)
+                               && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                case 8:
+                    // this is a full search only with mismatching entities
+                    matches = qsos
+                   .Where(y => y.Band == qso.Band
+                               && y.Mode == qso.Mode
+                               && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                default:
+                    Console.WriteLine("Failed search: " + qso.RawQSO);
+                    return new List<QSO>();
+            }
+        }
+
+        /// <summary>
         /// HQP only
-        /// Is this a Hawaiin station then, state, province, DX
-        /// Non Hawaiin ststion then
-        /// if US or Canadian - Hawwaiin entity
-        /// DX then Hawaiin entity
+        /// Is this a Hawai'in station then, state, province or DX are valid.
+        /// Non Hawaiin station then
+        /// if US or Canadian - Hawwai'in entity
+        /// DX then Hawai'in entity
         /// </summary>
         /// <param name="qso"></param>
         /// <param name="contestLogList"></param>
         /// <returns></returns>
-        private void SearchForIncorrectEntity(QSO qso)
+        private void MarkIncorrectContactEntities(QSO qso)
         {
             int matchCount = 0;
             List<QSO> matchingQSOSpecific = null;
             List<QSO> matchingQSOsGeneral = null;
             string entity = null;
-            string[] info = new string[2] { "0", "0" };
-            int count = 0;
 
-
-            // speeds up from 28 sec to 12 sec on first pass
-           List<ContestLog> tempLog = CallDictionary[qso.ContactCall];
+            // using a CallDictionary speeds up from 28 sec to 12 sec
+            List<ContestLog> tempLog = CallDictionary[qso.ContactCall];
 
             // get a list of all QSOs with the same contact callsign and same entity
             matchingQSOSpecific = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactEntity == qso.ContactEntity).ToList();
-            
+
             // get a list of all QSOs with the same contact callsign but may have different entity
             matchingQSOsGeneral = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
 
@@ -864,10 +915,7 @@ namespace W6OP.ContestLogAnalyzer
                                                        where matches.Any()
                                                        select firstQSO;
 
-            // need to account for one Hawaii entry in the future
-            count = majorityContactEntities.Count();
-
-            if (count > 1)
+            if (majorityContactEntities.Count() > 1)
             {
                 QSO firstMatch = majorityContactEntities.FirstOrDefault();
                 entity = firstMatch.ContactEntity;
@@ -877,19 +925,17 @@ namespace W6OP.ContestLogAnalyzer
                 // these must be Lists, not IEnumerable so .Except works - only look at QSOs with valid entities
                 List<QSO> listWithMostEntries = (new List<List<QSO>> { matchingQSOSpecific, matchingQSOsGeneral })
                    .OrderByDescending(x => x.Count())
-                   .Take(1).FirstOrDefault().Where(q => q.EntityIsInValid == false).ToList();
+                   .Take(1).FirstOrDefault().Where(q => q.InvalidEntity == false).ToList();
 
                 List<QSO> listWithLeastEntries = (new List<List<QSO>> { matchingQSOSpecific, matchingQSOsGeneral })
                    .OrderBy(x => x.Count())
-                   .Take(1).FirstOrDefault().Where(q => q.EntityIsInValid == false).ToList();
+                   .Take(1).FirstOrDefault().Where(q => q.InvalidEntity == false).ToList();
 
                 // we have enough to vote
                 if (listWithMostEntries.Count() > 2)
                 {
                     // we want to take the list with the most entries and remove the entries in the least entries list
-                    var difference = listWithMostEntries.Except(listWithLeastEntries);
-
-                    QSO firstMatch = difference.FirstOrDefault();
+                    QSO firstMatch = listWithMostEntries.Except(listWithLeastEntries).FirstOrDefault();
                     entity = firstMatch.ContactEntity;
                 }
                 else
@@ -905,11 +951,11 @@ namespace W6OP.ContestLogAnalyzer
                             case "United States of America":
                                 if (qso.ContactEntity.Length > 2)
                                 {
-                                    entity = hitList[0].Province; // this gives State, need state code
+                                    entity = hitList[0].Province;
                                 }
                                 else if (Provinces.Contains(qso.ContactEntity))
                                 {
-                                    entity = hitList[0].Province; // this gives State, need state code
+                                    entity = hitList[0].Province;
                                 }
                                 else
                                 {
@@ -938,7 +984,7 @@ namespace W6OP.ContestLogAnalyzer
                                 if (qso.IsHQPEntity)
                                 {
                                     entity = "DX";
-                                } 
+                                }
                                 break;
                         }
                     }
@@ -948,589 +994,900 @@ namespace W6OP.ContestLogAnalyzer
             // if entity is different
             if (!entity.Contains(qso.ContactEntity))
             {
-                qso.IncorrectDXEntity = $"{qso.OriginalContactEntity} --> {entity}";
-                qso.EntityIsInValid = true;
+                qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {entity}";
+                qso.InvalidEntity = true;
             }
         }
 
         /// <summary>
-        /// Determine the reason to reject the QSO
-        /// 
-        /// This needs to be refactored
+        /// Mark all QSOs that don't have the correct operator entity on one or more of their QSOs 
+        /// entity set as invalid.
+        /// This rarely finds that the operator made a mistake
+        /// Finds where the entity is not consistent among all the QSOs made with that operator.
         /// </summary>
-        /// <param name="matchLog"></param>
-        /// <param name="qso"></param>
-        /// <returns></returns>
-        private RejectReason FindRejectReason(ContestLog matchLog, QSO qso)
+        /// <param name="qsoList"></param>
+        /// <param name="entity"></param>
+        private void MarkIncorrectSentEntity(List<QSO> qsoList)
         {
-            RejectReason reason = RejectReason.None;
-
-            if (reason == RejectReason.None)
+            // if there is only one then check it is valid
+            if (qsoList.Count == 1)
             {
-                // query for incorrect serial number
-                if (ActiveContest == ContestName.CW_OPEN)
+                switch (qsoList[0].OperatorEntity)
                 {
-                    reason = CheckForSerialNumberMismatch(matchLog, qso);
+                    case "DX":
+                        return;
+                    case string _ when States.Contains(qsoList[0].OperatorEntity):
+                        return;
+                    case string _ when Provinces.Contains(qsoList[0].OperatorEntity):
+                        return;
+                    case string _ when Enum.IsDefined(typeof(HQPMults), qsoList[0].OperatorEntity):
+                        return;
+                    default:
+                        qsoList[0].InvalidSentEntity = true;
+                        return;
                 }
             }
 
-            if (reason == RejectReason.None)
+            // find the operator entity used on the majority of qsos
+            var mostUsedOperatorEntity = qsoList
+                .GroupBy(q => q.OperatorEntity)
+                .OrderByDescending(gp => gp.Count())
+                .Take(5)
+                .Select(g => g.Key).ToList();
+
+            List<QSO> qsos = qsoList.Where(q => q.OperatorEntity != mostUsedOperatorEntity[0] && q.Status == QSOStatus.ValidQSO).ToList();
+
+            if (qsos.Any())
             {
-                // query for incorrect band
-                reason = CheckForBandMismatch(matchLog, qso);
+                _ = qsos.Select(c => { c.InvalidSentEntity = true; return c; })
+                        .ToList();
+            }
+            else
+            {
+                // need to check every entry?
+            }
+        }
+
+        private double DetermineModeFault(QSO qso)
+        {
+            ContestLog contestLog = qso.ParentLog;
+            QSO previousQSO = null;
+            QSO nextQSO = null;
+            string frequency = qso.Frequency;
+            double qsoPoints = 0;
+            double counter = 0;
+
+            // bonus point for having rig control frequency
+            if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+            {
+                qsoPoints += 1;
+                // if the log shows he was only on one band & rig control he wins
+                if (contestLog.IsSingleMode)
+                {
+                    return 99.0;
+                }
+            }
+            else
+            {
+                qsoPoints -= 1;
             }
 
-            if (reason == RejectReason.None)
+            while (counter < 10)
             {
-                // query for incorrect mode
-                if (ActiveContest == ContestName.HQP)
+                counter += 1;
+
+                int index = contestLog.QSOCollection.IndexOf(qso);
+
+                if (index > 0)
                 {
-                    reason = CheckForModeMismatch(matchLog, qso);
+                    previousQSO = GetPrevious(contestLog.QSOCollection, qso);
+                }
+
+                if (previousQSO != null)
+                {
+                    if (previousQSO.IncorrectMode == true)
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    frequency = previousQSO.Frequency;
+
+                    if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+                    {
+                        qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    if (previousQSO.Mode == qso.Mode)
+                    {
+                        qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    qso = previousQSO;
+                }
+                else
+                {
+                    // extra half point because he just ended and more likely to be correct
+                    qsoPoints += 1.5;
                 }
             }
 
-            if (reason == RejectReason.None)
+            counter = 0;
+
+            while (counter < 10)
             {
-                // query for incorrect name or entity (HQP)
-                reason = CheckForNameOrEntityMismatch(matchLog, qso);
+                counter += 1;
+
+                int index = contestLog.QSOCollection.IndexOf(qso);
+                if (index <= contestLog.QSOCollection.Count)
+                {
+                    nextQSO = GetNext(contestLog.QSOCollection, qso);
+                }
+
+                if (nextQSO != null)
+                {
+                    if (nextQSO.IncorrectBand == true)
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    frequency = nextQSO.Frequency;
+
+                    if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+                    {
+                        qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    if (nextQSO.Mode == qso.Mode)
+                    {
+                        qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    qso = nextQSO;
+                }
+                else
+                {
+                    // extra half point because he just ended and more likely to be correct
+                    qsoPoints += 1.5;
+                }
             }
 
-            if (reason == RejectReason.None)
-            {
-                // query for incorrect call
-                reason = CheckForCallMismatch(matchLog, qso);
-            }
-
-            if (reason == RejectReason.None)
-            {
-                // check times
-                reason = CheckForTimeMismatch(matchLog, qso);
-            }
-
-            return reason;
+            return qsoPoints;
         }
 
 
-       
-        // test without checking for time
-        // maybe check to be sure it in contest time
+        #endregion
+
+        #region CWOpen Only Code
+
+        /// <summary>
+        /// CWOpen
+        /// See if the contact name is incorrect. Sometimes a person
+        /// will send different names on different QSOS. Find out what
+        /// the predominate name they used is.
+        /// </summary>
+        /// <param name="qso"></param>
+        private void MarkIncorrectContactNames(QSO qso)
+        {
+            Tuple<string, int> majorityName = new Tuple<string, int>("", 1);
+
+            // get list of name tuples
+            var names = NameDictionary[qso.ContactCall];
+
+            if (names.Count <= 1)
+            { return; }
+            else
+            {
+                majorityName = names.Aggregate((i1, i2) => i1.Item2 > i2.Item2 ? i1 : i2);
+            }
+
+            if (qso.ContactName == majorityName.Item1)
+            {
+                return;
+            }
+
+            qso.IncorrectValue = qso.ContactName + " --> " + majorityName.Item1;
+            qso.IncorrectContactName = true;
+        }
+
+        /// <summary>
+        /// Start trying to match up QSOS. Start with a search for a matching qso
+        /// using all parameters. If that fails search by reducing parameters until 
+        /// a match is found or the call is determined to be busted. Use IEnumerable
+        /// for performance, .ToList() is expensive so don't use it unless something
+        /// has been returned.
+        /// </summary>
+        /// <param name="qso"></param>
+        private void FindCWOpenMatchingQsos(QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches;
+            IEnumerable<ContestLog> contestLogs;
+            IEnumerable<KeyValuePair<string, List<QSO>>> qsos;
+
+            // it's already been flagged - no reason to evaluate
+            if (qso.Status != QSOStatus.ValidQSO)
+            {
+                return;
+            }
+
+            // all logs with this operator call sign in them
+            if (CallDictionary.ContainsKey(qso.OperatorCall))
+            {
+                contestLogs = CallDictionary[qso.OperatorCall];
+            }
+            else
+            {
+                Console.WriteLine("FindCWOpenMatchingQsos - 1 : " + qso.OperatorCall);
+                // i.e. JF2IWL made 3 qsos and those three got in the CallDictionary
+                // pointing at JF2IWL. However none of the 3 sent in a log so JF2IWL 
+                // does not appear in the CallDictionary as there are no logs that
+                // have a QSO for him so check the bad call list
+                switch (CheckBadCallList(qso))
+                {
+                    case false:
+                        qso.IsUniqueCall = true;
+                        qso.HasBeenMatched = true;
+                        break;
+                    default:
+                        qso.CallIsBusted = true;
+                        qso.HasBeenMatched = true;
+                        break;
+                }
+                return;
+            }
+
+
+            // if there is only one log this call is in then it is unique
+            if (CallDictionary[qso.ContactCall].Count == 1)
+            {
+                switch (CheckBadCallList(qso))
+                {
+                    case false:
+                        qso.IsUniqueCall = true;
+                        qso.HasBeenMatched = true;
+                        break;
+                    default:
+                        qso.CallIsBusted = true;
+                        qso.HasBeenMatched = true;
+                        break;
+                }
+                return;
+            }
+
+            // there is no matching log for this call so we give him the qso
+            // maybe should see if anyone else worked him?
+            if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() == 0)
+            {
+                switch (CheckBadCallList(qso))
+                {
+                    case false:
+                        qso.IsUniqueCall = true;
+                        qso.HasBeenMatched = true;
+                        break;
+                    default:
+                        qso.CallIsBusted = true;
+                        qso.HasBeenMatched = true;
+                        break;
+                }
+
+                qso.NoMatchingLog = true;
+                return;
+            }
+
+            // no reason to process if it already has a match
+            if (qso.HasBeenMatched)
+            {
+                return;
+            }
+
+            // list of key/value pairs from the list of contest logs that match this operator call sign
+            qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key == qso.OperatorCall);
+
+            // this gets all the QSOs in a flattened list
+            // do these parameters up front and I don't have to do them for every subsequent query
+            IEnumerable<QSO> qsosFlattened = qsos.SelectMany(x => x.Value).Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall);
+
+            enumerable = CWOpenFullParameterSearch(qsosFlattened, qso);
+
+            // if the qso has been matched at any previous level we don't need to continue
+            if (qso.HasBeenMatched)
+            {
+                return;
+            }
+
+            matches = enumerable.ToList();
+
+            switch (matches.Count)
+            {
+                case 0:
+                    CWOpenLastChanceMatch(qso);
+                    //qso.HasBeenMatched = true;
+                    //qso.CallIsBusted = true;
+                    return;
+                case 1:
+                    // for now don't penalize for time mismatch since everything else is correct
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+                    return;
+                default:
+                    // duplicate incorrect QSOs - could this ever happen this deeply into the search?
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Try to find busted calls.
+        /// </summary>
+        /// <param name="qso"></param>
+        private void CWOpenLastChanceMatch(QSO qso)
+        {
+            List<QSO> matches = new List<QSO>();
+            IEnumerable<ContestLog> contestLogs;
+            IEnumerable<KeyValuePair<string, List<QSO>>> qsos;
+            IEnumerable<QSO> qsosFlattened = null;
+            int timeInterval = 5;
+            int queryLevel = 6;
+
+            if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() != 0)
+            {
+                contestLogs = ContestLogList.Where(b => b.LogOwner == qso.ContactCall);
+
+                if (contestLogs.Count() > 0)
+                {
+                    qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key != qso.ContactCall);
+                    qsosFlattened = qsos.SelectMany(x => x.Value);
+                    matches = RefineCWOpenMatch(qsosFlattened, qso, timeInterval, queryLevel).ToList(); 
+
+                    if (matches.Count == 1)
+                    {
+                        if (matches[0].HasBeenMatched)
+                        {
+                            DetermineBustedCallFault(qso, matches);
+                            return;
+                        }
+                        // see if the contact call is unique, if so it's the busted call
+                        if (!CallDictionary.ContainsKey(matches[0].ContactCall))
+                        {
+                            DetermineBustedCallFault(qso, matches);
+                        }
+                        else
+                        {
+                            DetermineBustedCallFault(qso, matches);
+                        }
+                    }
+                    else
+                    {
+                        if (matches.Count > 1)
+                        {
+                            // this sometimes marks the wrong person - if busted call and busted entity
+                            // for each contact call see if the first letter matches, then the second etc
+                            // until letters don't match
+                            DetermineBustedCallFault(qso, matches);
+                        }
+                        else
+                        {
+                            var q = 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Complete search looking for an exact match. If this is successful
+        /// both QSOs are good.
+        /// </summary>
+        /// <param name="qsos"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private List<QSO> CWOpenFullParameterSearch(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches;
+            int timeInterval = 10; // because everything else must match
+            int searchLevel = 1;
+
+            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
+
+            matches = enumerable.ToList();
+
+            switch (matches.Count)
+            {
+                case 0:
+                    // match not found so lets search without serial number
+                    matches = SearchWithoutSerialNumber(qsos, qso);
+                    return matches;
+                case 1:
+                    // found one match so we mark both as matches and add matching QSO
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+                    return matches;
+                case 2:
+                    // two matches so these are probably dupes
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+                    qso.QSOHasDupes = true;
+
+                    matches[0].HasBeenMatched = true;
+                    matches[0].MatchingQSO = qso;
+
+                    matches[1].HasBeenMatched = true;
+                    matches[1].MatchingQSO = qso;
+                    matches[1].FirstMatchingQSO = matches[0];
+                    matches[1].IsDuplicateMatch = true;
+                    return matches;
+                default:
+                    // more than two so we have to do more analysis
+                    Console.WriteLine("FindCWOpenMatches: 1");
+                    return matches;
+            }
+        }
+
+        /// <summary>
+        /// Remove the serial number check. If we get a hit then one or both
+        /// serial numbers are incorrect.
+        /// </summary>
+        /// <param name="qsos"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private List<QSO> SearchWithoutSerialNumber(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches;
+            int timeInterval = 10;
+            int searchLevel = 2;
+
+            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
+
+            matches = enumerable.ToList();
+
+            switch (matches.Count)
+            {
+                case 0:
+                    // search without name
+                    matches = SearchWithoutNames(qsos, qso);
+                    return matches;
+                case 1:
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+
+                    // determine which serial number(s) are incorrect
+                    // if already flagged for error don't change status
+                    if (matches[0].Status != QSOStatus.InvalidQSO && matches[0].ReceivedSerialNumber != qso.SentSerialNumber)
+                    {
+                        matches[0].IncorrectSerialNumber = true;
+                        matches[0].IncorrectValue = $"{matches[0].ReceivedSerialNumber} --> {qso.SentSerialNumber}";
+                    }
+
+                    if (qso.Status != QSOStatus.InvalidQSO && qso.ReceivedSerialNumber != matches[0].SentSerialNumber)
+                    {
+                        qso.IncorrectSerialNumber = true;
+                        qso.IncorrectValue = $"{qso.ReceivedSerialNumber} --> {matches[0].SentSerialNumber}";
+                    }
+                    return matches;
+                default:
+                    // duplicate incorrect serial number QSOs
+                    bool matchFound = false;
+
+                    qso.MatchingQSO = matches[0];
+                    qso.HasBeenMatched = true;
+
+                    // This QSO is not in the other operators log or the call may be busted:
+                    // QSO: 3533    CW  2016 - 09 - 03  0220    K3WA    111 BILL K3WJV   126 BILL
+                    // QSO: 3533 CW 2016-09-03 0220 K3WA 111 BILL K3WJV 126 BILL
+                    // QSO: 3533 CW 2016-09-03 0218 K3WJV 125 BILL K3WA 110 BILL
+                    // QSO: 3533 CW 2016-09-03 0219 K3WJV 126 BILL K3WA 110 BILL
+                    foreach (QSO matchQSO in matches)
+                    {
+                        matchQSO.MatchingQSO = qso;
+                        matchQSO.HasBeenMatched = true;
+
+                        // determine which serial number(s) are incorrect
+                        if (matchQSO.ReceivedSerialNumber != qso.SentSerialNumber)
+                        {
+                            matchQSO.IncorrectSerialNumber = true;
+                            matchQSO.IncorrectValue += $"{matchQSO.ReceivedSerialNumber} --> {qso.SentSerialNumber}";
+                        }
+
+                        // we don't know the order they are evaluated so a later bad QSO could invalidate a good QSO
+                        if (qso.Status != QSOStatus.InvalidQSO && qso.ReceivedSerialNumber != matchQSO.SentSerialNumber)
+                        {
+                            qso.IncorrectSerialNumber = true;
+                            qso.IncorrectValue = $"{qso.ReceivedSerialNumber} --> {matchQSO.SentSerialNumber}";
+                        }
+                        else
+                        {
+                            matchFound = true;
+                        }
+                    }
+
+                    if (matchFound == true)
+                    {
+                        qso.IncorrectSerialNumber = false;
+                        qso.IncorrectValue = "";
+                    }
+                    return matches;
+            }
+        }
+
+        /// <summary>
+        /// Search with the name component removed. Maybe one copied the name
+        /// incorrectly.
+        /// </summary>
+        /// <param name="qsos"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private List<QSO> SearchWithoutNames(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches;
+            int timeInterval = 5;
+            int searchLevel = 3;
+
+            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel); //.ToList();
+
+            matches = enumerable.ToList();
+
+            switch (matches.Count)
+            {
+                case 0:
+                    // search without band
+                    matches = SearchWithoutBandCWOpen(qsos, qso);
+                    return matches;
+                case 1:
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+
+                    if (qso.Status != QSOStatus.InvalidQSO)
+                    {
+                        qso.IncorrectContactName = true;
+                        qso.IncorrectValue = $"{qso.ContactName} --> {matches[0].OperatorName}";
+                    }
+                    return matches;
+                default:
+                    // duplicate QSOs
+
+                    if (qso.HasBeenMatched == false)
+                    {
+                        qso.MatchingQSO = matches[0];
+                        qso.HasBeenMatched = true;
+                    }
+
+                    foreach (QSO matchQSO in matches)
+                    {
+                        if (qso.HasBeenMatched == false)
+                        {
+                            matchQSO.MatchingQSO = qso;
+                            matchQSO.HasBeenMatched = true;
+
+                            matchQSO.IsDuplicateMatch = true;
+                        }
+                    }
+                    return matches;
+            }
+        }
+
+        /// <summary>
+        /// Remove the band component. Sometimes one of them changes band
+        /// but the band is recorded wrong. Especially if not using rig control.
+        /// </summary>
+        /// <param name="qsos"></param>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private List<QSO> SearchWithoutBandCWOpen(IEnumerable<QSO> qsos, QSO qso)
+        {
+            IEnumerable<QSO> enumerable;
+            List<QSO> matches;
+            int timeInterval = 5;
+            int searchLevel = 5;
+            double qsoPoints;
+            double matchQsoPoints;
+
+            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
+
+            matches = enumerable.ToList();
+
+            // band mismatch
+            switch (matches.Count)
+            {
+                case 0:
+                    // search without time
+                    matches = RefineCWOpenMatch(qsos, qso, 5, 5).ToList();
+                    return matches;
+                case 1:
+                    qso.MatchingQSO = matches[0];
+                    matches[0].MatchingQSO = qso;
+
+                    qso.HasBeenMatched = true;
+                    matches[0].HasBeenMatched = true;
+
+                    // whos at fault? need to get qsos around contact for each guy
+                    qsoPoints = DetermineBandFault(qso);
+                    matchQsoPoints = DetermineBandFault(matches[0]);
+
+                    if (qsoPoints.Equals(matchQsoPoints))
+                    {
+                        // can't tell who's at fault so let them both have point
+                        return matches;
+                    }
+
+                    if (qsoPoints > matchQsoPoints)
+                    {
+                        matches[0].IncorrectBand = true;
+                        matches[0].IncorrectValue = $"{matches[0].Band} --> {qso.Band}";
+                    }
+                    else
+                    {
+                        qso.IncorrectBand = true;
+                        qso.IncorrectValue = $"{qso} --> {matches[0].Band}";
+                    }
+                    return matches;
+                default:
+                    // duplicate incorrect QSOs
+                    foreach (QSO matchQSO in matches)
+                    {
+                        if (qso.HasBeenMatched == false)
+                        {
+                            qso.MatchingQSO = matchQSO;
+                            qso.HasBeenMatched = true;
+                        }
+
+                        if (matchQSO.HasBeenMatched == false)
+                        {
+                            // whos at fault? need to get qsos around contact for each guy
+                            qsoPoints = DetermineBandFault(qso);
+                            matchQsoPoints = DetermineBandFault(matchQSO);
+
+                            if (qsoPoints.Equals(matchQsoPoints))
+                            {
+                                // can't tell who's at fault so let them both have point
+                                return matches;
+                            }
+
+                            if (qsoPoints > matchQsoPoints)
+                            {
+                                matchQSO.IncorrectBand = true;
+                                matchQSO.IncorrectValue = $"{matchQSO.Band} --> {qso.Band}";
+                            }
+                            else
+                            {
+                                qso.IncorrectBand = true;
+                                qso.IncorrectValue = $"{qso} --> {matchQSO.Band}";
+                            }
+                        }
+                    }
+                    return matches;
+            }
+        }
+
+        /// <summary>
+        /// Do a search through the qsos collection depending on the parameters sent in.
+        /// We already know the operator and contact calls match.
+        /// </summary>
+        /// <param name="contestLogs"></param>
+        /// <param name="qso"></param>
+        /// <param name="timeInterval"></param>
+        /// <returns></returns>
+        private IEnumerable<QSO> RefineCWOpenMatch(IEnumerable<QSO> qsos, QSO qso, int timeInterval, int queryLevel)
+        {
+            IEnumerable<QSO> matches;
+
+            switch (queryLevel)
+            {
+                case 1: // exact match - does an entry in qsos match the qso 
+                    matches = qsos
+                   .Where(y => y.OperatorName == qso.ContactName &&
+                   y.SentSerialNumber == qso.ReceivedSerialNumber &&
+                   y.ReceivedSerialNumber == qso.SentSerialNumber &&
+                   y.Band == qso.Band &&
+                   Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                case 2:
+                    // catch incorrect serial number
+                    matches = qsos
+                    .Where(y => y.OperatorName == qso.ContactName &&
+                    y.Band == qso.Band &&
+                    Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                case 3:
+                    // incorrect name
+                    matches = qsos
+                    .Where(y => y.SentSerialNumber == qso.ReceivedSerialNumber &&
+                    y.ReceivedSerialNumber == qso.SentSerialNumber &&
+                    y.Band == qso.Band &&
+                    Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                case 4:
+                    // incorrect band
+                    matches = qsos
+                   .Where(y => y.OperatorName == qso.ContactName &&
+                   y.SentSerialNumber == qso.ReceivedSerialNumber &&
+                   y.ReceivedSerialNumber == qso.SentSerialNumber &&
+                   Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    return matches;
+                case 5:
+                    // incorrect time
+                    matches = qsos
+                    .Where(y => y.OperatorName == qso.ContactName &&
+                    y.SentSerialNumber == qso.ReceivedSerialNumber &&
+                    y.ReceivedSerialNumber == qso.SentSerialNumber &&
+                    y.Band == qso.Band);
+                    return matches;
+                case 6:
+                    matches = qsos
+                    .Where(y => y.OperatorName == qso.ContactName &&
+                    y.SentSerialNumber == qso.ReceivedSerialNumber &&
+                    y.ReceivedSerialNumber == qso.SentSerialNumber &&
+                    y.Band == qso.Band &&
+                    Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval); 
+                    return matches;
+                default:
+                    Console.WriteLine("Failed search: " + qso.RawQSO);
+                    return new List<QSO>();
+
+            }
+        }
 
         /*
-         I would simply accept ANY digital QSO where the software thinks there was a busted call. That may be the simplest solution. 
-        Allowing FTx in the contest brings new challenges and hassles. However, at least for HQP I think it's a good thing overall.
-         */
+       I would simply accept ANY digital QSO where the software thinks there was a busted call. That may be the simplest solution. 
+      Allowing FTx in the contest brings new challenges and hassles. However, at least for HQP I think it's a good thing overall.
+       */
 
-
-        /// <summary>
-        /// See if the qso was rejected because the time stamps don't match.
-        /// </summary>
-        /// <param name="matchLog"></param>
-        /// <param name="qso"></param>
-        /// <returns></returns>
-        private RejectReason CheckForTimeMismatch(ContestLog matchLog, QSO qso)
+        private double DetermineBandFault(QSO qso)
         {
-            QSO matchQSO = null;
-            RejectReason reason = RejectReason.None;
-            TimeSpan ts;
+            ContestLog contestLog = qso.ParentLog;
+            QSO previousQSO = null;
+            QSO nextQSO = null;
+            string frequency = qso.Frequency;
+            double qsoPoints = 0;
+            double counter = 0;
 
-            switch (ActiveContest)
+            // bonus point for having rig control frequency
+            if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
             {
-                case ContestName.CW_OPEN:
-                    matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
-                       q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) > 5);
-                    break;
-                case ContestName.HQP:
-                    // don't check the time on digi contacts per Alan 09/25,2020
-                    if ((CategoryMode)Enum.Parse(typeof(CategoryMode), qso.Mode) != CategoryMode.RY)
+                qsoPoints += 1;
+                // if the log shows he was only on one band & rig control he wins
+                if (contestLog.IsSingleBand)
+                {
+                    return 99.0;
+                }
+            }
+            else
+            {
+                qsoPoints -= 1;
+            }
+
+            while (counter < 10)
+            {
+                counter += 1;
+
+                int index = contestLog.QSOCollection.IndexOf(qso);
+
+                if (index > 0)
+                {
+                    previousQSO = GetPrevious(contestLog.QSOCollection, qso);
+                }
+
+                if (previousQSO != null)
+                {
+                    if (previousQSO.IncorrectBand == true)
                     {
-                        matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.Mode == qso.Mode &&
-                      q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) > 5); //  && q.ContactEntity == qso.ContactEntity 
-                    } else
-                    {
-                        return reason;
+                        qsoPoints -= 1;
                     }
-                    break;
+
+                    frequency = previousQSO.Frequency;
+
+                    if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+                    {
+                        qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    if (previousQSO.Band == qso.Band)
+                    {
+                        qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    qso = previousQSO;
+                }
+                else
+                {
+                    // extra half point because he just ended and more likely to be correct
+                    qsoPoints += 1.5;
+                }
             }
 
-            if (matchQSO != null)
+            counter = 0;
+
+            while (counter < 10)
             {
-                // store the matching QSO
-                qso.MatchingQSO = matchQSO;
-                ts = qso.QSODateTime.Subtract(matchQSO.QSODateTime);
-                qso.ExcessTimeSpan = Math.Abs(ts.Minutes);
+                counter += 1;
 
-                reason = RejectReason.InvalidTime;
+                int index = contestLog.QSOCollection.IndexOf(qso);
+                if (index <= contestLog.QSOCollection.Count)
+                {
+                    nextQSO = GetNext(contestLog.QSOCollection, qso);
+                }
+
+                if (nextQSO != null)
+                {
+                    if (nextQSO.IncorrectBand == true)
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    frequency = nextQSO.Frequency;
+
+                    if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+                    {
+                        qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    if (nextQSO.Band == qso.Band)
+                    {
+                        qsoPoints += 1;
+                    }
+                    else
+                    {
+                        qsoPoints -= 1;
+                    }
+
+                    qso = nextQSO;
+                }
+                else
+                {
+                    // extra half point because he just ended and more likely to be correct
+                    qsoPoints += 1.5;
+                }
             }
 
-            return reason;
+            return qsoPoints;
         }
 
-        /// <summary>
-        /// See if the qso was rejected because the serial numbers don't match.
-        /// This is for the CWOpen only
-        /// </summary>
-        /// <param name="matchLog"></param>
-        /// <param name="qso"></param>
-        /// <returns></returns>
-        private RejectReason CheckForSerialNumberMismatch(ContestLog matchLog, QSO qso)
-        {
-            QSO matchQSO = null;
-            RejectReason reason = RejectReason.None;
 
-            matchQSO = matchLog.QSOCollection.Where(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall == qso.OperatorCall &&
-                        Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) > 1).FirstOrDefault(); //
-
-            if (matchQSO != null)
-            {
-                qso.MatchingQSO = matchQSO;
-                reason = RejectReason.SerialNumber;
-            }
-            return reason;
-        }
-
-        /// <summary>
-        /// See if the qso was rejected because the band doesn't match.
-        /// </summary>
-        /// <param name="matchLog"></param>
-        /// <param name="qso"></param>
-        /// <returns></returns>
-        private RejectReason CheckForBandMismatch(ContestLog matchLog, QSO qso)
-        {
-            QSO matchQSO = null;
-            RejectReason reason = RejectReason.None;
-            bool isMatchQSO = false;
-
-            switch (ActiveContest)
-            {
-                case ContestName.CW_OPEN:
-                    matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 &&
-                         q.ContactCall == qso.OperatorCall);
-                    break;
-                case ContestName.HQP:
-                    matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band != qso.Band && q.ContactName == qso.OperatorName && q.Mode == qso.Mode &&
-                        q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
-                    break;
-            }
-
-            if (matchQSO != null)
-            {
-                try
-                {
-                    // determine who is at fault
-                    isMatchQSO = DetermineBandFault(matchLog, qso, matchQSO);
-                }
-                catch (Exception ex)
-                {
-                    string a = ex.Message;
-                }
-
-                qso.MatchingQSO = matchQSO;
-                qso.HasMatchingQso = true;
-
-                if (isMatchQSO)
-                {
-                    // matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
-                    //matchQSO.GetRejectReasons().Add(RejectReason.Band, EnumHelper.GetDescription(RejectReason.Band));
-                    matchQSO.ReasonRejected = RejectReason.Band;
-                }
-                else
-                {
-                    reason = RejectReason.Band;
-                }
-            }
-
-            return reason;
-        }
-
-        /// <summary>
-        /// See if the qso was rejected because the mode doesn't match.
-        /// </summary>
-        /// <param name="matchLog"></param>
-        /// <param name="qso"></param>
-        /// <returns></returns>
-        private RejectReason CheckForModeMismatch(ContestLog matchLog, QSO qso)
-        {
-            QSO matchQSO = null;
-            RejectReason reason = RejectReason.None;
-            bool isMatchQSO = false;
-
-            //switch (ActiveContest)
-            //{
-            //    case ContestName.HQP:
-                    matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.Mode != qso.Mode &&
-                        q.ContactCall == qso.OperatorCall && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
-                   // break;
-            //}
-
-            if (matchQSO != null)
-            {
-                // determine who is at fault
-                isMatchQSO = DetermineModeFault(matchLog, qso, matchQSO);
-
-                qso.MatchingQSO = matchQSO;
-
-                if (isMatchQSO)
-                {
-                    //matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
-                    //matchQSO.GetRejectReasons().Add(RejectReason.Mode, EnumHelper.GetDescription(RejectReason.Mode));
-                    matchQSO.ReasonRejected = RejectReason.Mode;
-                }
-                else
-                {
-                    reason = RejectReason.Mode;
-                }
-            }
-
-            return reason;
-        }
-
-        /// <summary>
-        /// See if the qso was rejected because the name or entity depending on contest don't match.
-        /// </summary>
-        /// <param name="matchLog"></param>
-        /// <param name="qso"></param>
-        /// <returns></returns>
-        private RejectReason CheckForNameOrEntityMismatch(ContestLog matchLog, QSO qso)
-        {
-            QSO matchQSO = null;
-            RejectReason reason = RejectReason.None;
-
-            switch (ActiveContest)
-            {
-                case ContestName.CW_OPEN:
-                    matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1 && q.ContactCall == qso.OperatorCall &&
-                       q.ContactName == qso.OperatorName && q.OperatorName != qso.ContactName); //
-                    break;
-                case ContestName.HQP:
-                    matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.Mode == qso.Mode && q.ContactCall == qso.OperatorCall &&
-                       q.ContactEntity == qso.OperatorEntity && q.OperatorEntity != qso.ContactEntity && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 5);
-                    break;
-            }
-
-            if (matchQSO != null)
-            {
-                qso.MatchingQSO = matchQSO;
-
-                switch (ActiveContest)
-                {
-                    case ContestName.CW_OPEN:
-                        qso.IncorrectName = qso.ContactName;
-                        reason = RejectReason.OperatorName;
-                        break;
-                    case ContestName.HQP:
-                        qso.IncorrectDXEntity = qso.ContactEntity;
-                        reason = RejectReason.EntityName;
-                        break;
-                }
-            }
-
-            return reason;
-        }
-
-        /// <summary>
-        /// See if the qso was rejected because the callsign doesn't match.
-        /// </summary>
-        /// <param name="matchLog"></param>
-        /// <param name="qso"></param>
-        /// <returns></returns>
-        private RejectReason CheckForCallMismatch(ContestLog matchLog, QSO qso)
-        {
-            QSO matchQSO = null;
-            RejectReason reason = RejectReason.None;
-
-            /* figure out how to catch this
-                QSO: 14039 CW 2020-08-22 2226 AH6KO 599 HIL NS6T 599 AL
-                QSO: 14039 CW 2020-08-22 2226 NH6T 599 AL AH6KO 599 HIL
-             */
-
-            switch (ActiveContest)
-            {
-                case ContestName.CW_OPEN:
-                    matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall != qso.OperatorCall &&
-                       Math.Abs(q.SentSerialNumber - qso.ReceivedSerialNumber) <= 1); // 
-                    break;
-                case ContestName.HQP:
-                    matchQSO = matchLog.QSOCollection.FirstOrDefault(q => q.Band == qso.Band && q.ContactName == qso.OperatorName && q.ContactCall != qso.OperatorCall &&
-                        q.Mode == qso.Mode && Math.Abs(q.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) < 1); // SHOULD I REDUCE THIS ??
-                    break;
-            }
-
-            if (matchQSO != null) // this QSO is not in the other log
-            {
-                /*
-                QSO: 14039 CW 2020-08-22 2226 AH6KO 599 HIL NS6T 599 AL
-                QSO: 14039 CW 2020-08-22 2226 NH6T 599 AL AH6KO 599 HIL
-             */
-                //determine which guy is at fault
-                if (qso.ContactCall != matchQSO.OperatorCall)
-                {
-                    qso.MatchingQSO = matchQSO;
-                    reason = RejectReason.BustedCallSign;
-                }
-                else
-                {
-                    matchQSO.HasMatchingQso = true;
-                    matchQSO.MatchingQSO = qso;
-                    //matchQSO.GetRejectReasons().Clear(); // should not be a collection ?? or lets actually look for multiple reasons
-                    //matchQSO.GetRejectReasons().Add(RejectReason.NoQSOMatch, EnumHelper.GetDescription(RejectReason.NoQSOMatch));
-                    matchQSO.ReasonRejected = RejectReason.NoQSOMatch;
-                }
-            }
-
-            return reason;
-        }
-
-        /// <summary>
-        /// Determine who is at fault when a band or mode mismatch occurs.
-        /// The first QSO gets preference over the match QSO.
-        /// http://www.herlitz.nu/2011/12/01/getting-the-previous-and-next-record-from-list-using-linq/
-        /// </summary>
-        /// <param name="qso"></param>
-        /// <param name="matchQSO"></param>
-        /// <param name="modeType"></param>
-        private bool DetermineModeFault(ContestLog matchLog, QSO qso, QSO matchQSO)
-        {
-            ContestLog contestLog = qso.ParentLog;
-            QSO previousQSO;
-            QSO nextQSO;
-            int qsoPoints = 1;
-            int matchQsoPoints = 1;
-            string frequency;
-            bool isMatchQSO = true;
-
-            // bonus point for having rig control frequency
-            frequency = qso.Frequency;
-            if (frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
-            {
-                qsoPoints += 1;
-            }
-
-            frequency = matchQSO.Frequency;
-            if (frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
-            {
-                matchQsoPoints += 1;
-            }
-
-            // get the previous and next qso for the qso
-            previousQSO = GetPrevious<QSO>(contestLog.QSOCollection, qso);
-            nextQSO = GetNext<QSO>(contestLog.QSOCollection, qso);
-
-            if (previousQSO != null)
-            {
-                if (previousQSO.Mode == qso.Mode)
-                {
-                    qsoPoints += 1;
-                }
-                else
-                {
-                    qsoPoints -= 1;
-                }
-            }
-            else
-            {
-                qsoPoints += 1;
-            }
-
-
-
-            if (nextQSO != null)
-            {
-                if (nextQSO.Mode == qso.Mode)
-                {
-                    qsoPoints += 1;
-                }
-                else
-                {
-                    qsoPoints -= 1;
-                }
-            }
-            else
-            {
-                //qsoPoints += 1;
-            }
-
-            // get the previous and next qso for the matchQso
-            previousQSO = GetPrevious<QSO>(matchLog.QSOCollection, matchQSO);
-            nextQSO = GetNext<QSO>(matchLog.QSOCollection, matchQSO);
-
-            if (previousQSO != null)
-            {
-                if (previousQSO.Mode == matchQSO.Mode)
-                {
-                    matchQsoPoints += 1;
-                }
-                else
-                {
-                    matchQsoPoints -= 1;
-                }
-            }
-            else
-            {
-                matchQsoPoints += 1;
-            }
-
-            if (nextQSO != null)
-            {
-                if (nextQSO.Mode == matchQSO.Mode)
-                {
-                    matchQsoPoints += 1;
-                }
-                else
-                {
-                    matchQsoPoints -= 1;
-                }
-            }
-            else
-            {
-                //matchQsoPoints += 1;
-            }
-
-
-            if (qsoPoints < matchQsoPoints)
-            {
-                isMatchQSO = false;
-            }
-
-            return isMatchQSO;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="matchLog"></param>
-        /// <param name="qso"></param>
-        /// <param name="matchQSO"></param>
-        /// <returns></returns>
-        private bool DetermineBandFault(ContestLog matchLog, QSO qso, QSO matchQSO)
-        {
-            ContestLog contestLog = qso.ParentLog;
-            QSO previousQSO;
-            QSO nextQSO;
-            int qsoPoints = 1;
-            int matchQsoPoints = 1;
-            string frequency = "";
-            bool isMatchQSO = true;
-
-            // bonus point for having rig control frequency
-            frequency = qso.Frequency;
-            if (frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
-            {
-                qsoPoints += 1;
-            }
-
-            frequency = matchQSO.Frequency;
-            if (frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
-            {
-                matchQsoPoints += 1;
-            }
-
-            // get the previous and next qso for the qso
-            previousQSO = GetPrevious<QSO>(contestLog.QSOCollection, qso);
-            nextQSO = GetNext<QSO>(contestLog.QSOCollection, qso);
-
-            if (previousQSO != null)
-            {
-                if (previousQSO.Band == qso.Band)
-                {
-                    qsoPoints += 1;
-                }
-                else
-                {
-                    qsoPoints -= 1;
-                }
-            }
-            else
-            {
-                qsoPoints += 1;
-            }
-
-            if (nextQSO != null)
-            {
-                if (nextQSO.Band == qso.Band)
-                {
-                    qsoPoints += 1;
-                }
-                else
-                {
-                    qsoPoints -= 1;
-                }
-            }
-            else
-            {
-                qsoPoints += 1;
-            }
-
-            // get the previous and next qso for the matchQso
-            previousQSO = GetPrevious<QSO>(matchLog.QSOCollection, matchQSO);
-            nextQSO = GetNext<QSO>(matchLog.QSOCollection, matchQSO);
-
-            if (previousQSO != null)
-            {
-                if (previousQSO.Band == matchQSO.Band)
-                {
-                    matchQsoPoints += 1;
-                }
-                else
-                {
-                    matchQsoPoints -= 1;
-                }
-            }
-            else
-            {
-                matchQsoPoints -= 1;
-            }
-
-            if (nextQSO != null)
-            {
-                if (nextQSO.Band == matchQSO.Band)
-                {
-                    matchQsoPoints += 1;
-                }
-                else
-                {
-                    matchQsoPoints -= 1;
-                }
-            }
-            else
-            {
-                matchQsoPoints -= 1;
-            }
-
-
-            if (qsoPoints < matchQsoPoints)
-            {
-                isMatchQSO = false;
-            }
-
-            return isMatchQSO;
-        }
-
-        private T GetNext<T>(IEnumerable<T> list, T current)
-        {
-            try
-            {
-                return list.SkipWhile(x => !x.Equals(current)).Skip(1).First();
-            }
-            catch
-            {
-                return default(T);
-            }
-        }
-
-        private T GetPrevious<T>(IEnumerable<T> list, T current)
-        {
-            try
-            {
-                return list.TakeWhile(x => !x.Equals(current)).Last();
-            }
-            catch
-            {
-                return default(T);
-            }
-        }
 
         /// <summary>
         /// Mark all QSOs that don't have the correct name sent as invalid.
+        /// This is very rare.
         /// </summary>
         /// <param name="qsoList"></param>
         /// <param name="name"></param>
@@ -1540,149 +1897,53 @@ namespace W6OP.ContestLogAnalyzer
 
             if (qsos.Any())
             {
-                qsos.Select(c => { c.OpNameIsInValid = false; return c; }).ToList();
+                qsos.Select(c => { c.IncorrectOperatorName = false; return c; }).ToList();
+            }
+        }
+
+        #endregion
+
+        #region Utility Code
+
+        /// <summary>
+        /// Get the next item in a collection.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <param name="current"></param>
+        /// <returns></returns>
+        private T GetNext<T>(IEnumerable<T> list, T current)
+        {
+            try
+            {
+                return list.SkipWhile(x => !x.Equals(current)).Skip(1).First();
+            }
+            catch
+            {
+                return default;
             }
         }
 
         /// <summary>
-        /// Mark all QSOs that don't have the correct operator on one or more QSOs entity set as invalid.
-        /// This rarely finds that the operator made a mistake
-        /// Finds where the entity is not consistent among all the QSOs made with that operator.
+        /// Get the previous item in a collection
         /// </summary>
-        /// <param name="qsoList"></param>
-        /// <param name="entity"></param>
-        private void MarkIncorrectSentEntity(List<QSO> qsoList, string entity)
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <param name="current"></param>
+        /// <returns></returns>
+        private T GetPrevious<T>(IEnumerable<T> list, T current)
         {
-            List<QSO> qsos = qsoList.Where(q => q.OriginalOperatorEntity != entity && q.Status == QSOStatus.ValidQSO).ToList();
-
-            //  case string _ when pattern.Last().ToString().Contains("/"):
-            //  if (Enum.IsDefined(typeof(HQPMults), qso.ContactEntity))
-            // if there is only one then check it is valid
-            if (qsoList.Count == 1)
+            try
             {
-                switch (qsoList[0].OriginalOperatorEntity)
-                {
-                    case "DX":
-                        return;
-                    case string _ when States.Contains(qsoList[0].OriginalOperatorEntity):
-                        return;
-                    case string _ when Provinces.Contains(qsoList[0].OriginalOperatorEntity):
-                        return;
-                    case string _ when Enum.IsDefined(typeof(HQPMults), qsoList[0].OriginalOperatorEntity):
-                        return;
-                    default:
-                        qsoList[0].SentEntityIsInValid = true;
-                        break;
-                }
-
+                return list.TakeWhile(x => !x.Equals(current)).Last();
             }
-
-            if (qsos.Any())
+            catch
             {
-                _ = qsos.Select(c => { c.SentEntityIsInValid = true; return c; })
-                        .ToList();
+                return default;
             }
         }
 
-        #region Soundex
-
-        //if (Soundex(qso.IncorrectName) == Soundex(qso.MatchingQSO.OperatorName))
-        //{
-        //    var a = 1;
-        //    //string zz = Soundex(qso.IncorrectName);
-        //    //string xx = Soundex(qso.ContactName);
-        //}
-
-        //private string Soundex(string data)
-        //{
-        //    StringBuilder result = new StringBuilder();
-        //    string previousCode = "";
-        //    string currentCode = "";
-        //    string currentLetter = "";
-
-        //    if (data != null && data.Length > 0)
-        //    {
-        //        previousCode = "";
-        //        currentCode = "";
-        //        currentLetter = "";
-
-        //        result.Append(data.Substring(0, 1));
-
-        //        for (int i = 1; i < data.Length; i++)
-        //        {
-        //            currentLetter = data.Substring(1, 1).ToLower();
-        //            currentCode = "";
-
-        //            if ("bfpv".IndexOf(currentLetter) > -1)
-        //            {
-        //                currentCode = "1";
-        //            }
-        //            else if ("cgjkqsxz".IndexOf(currentLetter) > -1)
-        //            {
-        //                currentCode = "2";
-        //            }
-        //            else if ("dt".IndexOf(currentLetter) > -1)
-        //            {
-        //                currentCode = "3";
-        //            }
-        //            else if (currentLetter == "1")
-        //            {
-        //                currentCode = "4";
-        //            }
-        //            else if ("mn".IndexOf(currentLetter) > -1)
-        //            {
-        //                currentCode = "5";
-        //            }
-        //            else if (currentLetter == "r")
-        //            {
-        //                currentCode = "6";
-        //            }
-
-        //            if (currentCode != previousCode)
-        //            {
-        //                result.Append(currentCode);
-        //            }
-
-        //            if (result.Length == 4)
-        //            {
-        //                break;
-        //            }
-
-        //            if (currentCode != previousCode)
-        //            {
-        //                previousCode = currentCode;
-        //            }
-        //        }
-        //    }
-
-        //    if (result.Length < 4)
-        //    {
-        //        result.Append(new String('0', 4 - result.Length));
-        //    }
-
-        //    return result.ToString().ToUpper();
-        //}
-
         #endregion
-
-
-        //    // http://stackoverflow.com/questions/3319016/convert-list-to-dictionary-using-linq-and-not-worrying-about-duplicates
-        //    // this gives me a dictionary with a unique log even if several QSOs
-        //    contestLog.MatchLogs = matchingLogs
-        //        .GroupBy(p => p.LogOwner, StringComparer.OrdinalIgnoreCase)
-        //            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-
-        //    // THIS DOES THE SAME AS ABOVE BUT THE KEY IS THE LOG INSTEAD OF LogOwner
-        //    //// http://social.msdn.microsoft.com/Forums/vstudio/en-US/c0f0141c-1f98-422e-89af-406638c4403f/how-to-write-linq-query-to-convert-to-dictionaryintlistint-in-c?forum=linqprojectgeneral
-        //    //// this converts the list to a dictionary and lists how many logs were matching
-        //    //var match = matchingLogs
-        //    //    .Select((n, i) => new { Value = n, Index = i })
-        //    //    .GroupBy(a => a.Value)
-        //    //    .ToDictionary(
-        //    //        g => g.Key,
-        //    //        g => g.Select(a => a.Index).ToList()
-        //    //     );
-
 
     } // end class
 }

@@ -11,6 +11,28 @@ namespace W6OP.ContestLogAnalyzer
 {
     public static class Utility
     {
+
+        public static T GetValueFromDescriptionEx<T>(string description) where T : Enum
+        {
+            foreach (var field in typeof(T).GetFields())
+            {
+                if (Attribute.GetCustomAttribute(field,
+                typeof(DescriptionAttribute)) is DescriptionAttribute attribute)
+                {
+                    if (attribute.Description == description)
+                        return (T)field.GetValue(null);
+                }
+                else
+                {
+                    if (field.Name == description)
+                        return (T)field.GetValue(null);
+                }
+            }
+
+            throw new ArgumentException("Not found.", nameof(description));
+            // Or return default(T);
+        }
+
         /// <summary>
         /// http://stackoverflow.com/questions/4367723/get-enum-from-description-attribute
         /// </summary>
@@ -106,7 +128,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
             //throw new ArgumentException("Not found.", description);
-            return default(T); // this returns the first or "=0" enum
+            return default; // this returns the first or "=0" enum
         }
 
         /// <summary>
@@ -114,9 +136,9 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="frequency"></param>
         /// <returns></returns>
-        public static Int32 ConvertFrequencyToBand(double frequency)
+        public static int ConvertFrequencyToBand(double frequency)
         {
-            Int32 band = 0;
+            int band = 0;
 
             if (frequency >= 50000.0 && frequency <= 54000.0)
             {
@@ -195,4 +217,62 @@ namespace W6OP.ContestLogAnalyzer
             return sb.ToString().Trim();
         }
     } // end class
+
+    /// <summary>
+    /// Contains approximate string matching
+    /// The lower the score the closer the match is. I only
+    /// use a score of 1 to be as accurate as possible.
+    /// https://stackoverflow.com/questions/2344320/comparing-strings-with-tolerance
+    /// </summary>
+    public static class LevenshteinDistance
+    {
+        /// <summary>
+        /// Compute the distance between two strings.
+        /// </summary>
+        public static int Compute(string s, string t)
+        {
+            int n = s.Length;
+            int m = t.Length;
+            int[,] d = new int[n + 1, m + 1];
+
+            // Step 1
+            if (n == 0)
+            {
+                return m;
+            }
+
+            if (m == 0)
+            {
+                return n;
+            }
+
+            // Step 2
+            for (int i = 0; i <= n; d[i, 0] = i++)
+            {
+            }
+
+            for (int j = 0; j <= m; d[0, j] = j++)
+            {
+            }
+
+            // Step 3
+            for (int i = 1; i <= n; i++)
+            {
+                //Step 4
+                for (int j = 1; j <= m; j++)
+                {
+                    // Step 5
+                    int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
+
+                    // Step 6
+                    d[i, j] = Math.Min(
+                        Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                        d[i - 1, j - 1] + cost);
+                }
+            }
+            // Step 7
+            return d[n, m];
+        }
+    } // end class
+
 }

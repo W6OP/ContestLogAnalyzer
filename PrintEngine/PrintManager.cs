@@ -25,7 +25,7 @@ namespace W6OP.PrintEngine
         private string ContestDescription { get; set; }
         private ContestName ActiveContest { get; set; }
 
-        private List<Tuple<string, int, string, int>> _CallNameCountList;
+        private List<Tuple<string, int, string, int>> CallNameCountList;
 
         /// <summary>
         /// Constructor
@@ -151,14 +151,6 @@ namespace W6OP.PrintEngine
             for (int i = 0; i < contestLogs.Count; i++)
             {
                 contestlog = contestLogs[i];
-
-                //if (contestlog.LogHeader.QTH != "")
-                //{
-                //    qth = contestlog.LogHeader.QTH;
-                //} else
-                //{
-                //    qth = contestlog.LogHeader.Country;
-                //}
 
                 if (contestlog.IsHQPEntity)
                 {
@@ -333,8 +325,8 @@ namespace W6OP.PrintEngine
                                 continue;
                             }
 
-                            if (qso.QSOHasDupes == false && qso.QSOIsDupe == false)
-                            {
+                            if (qso.IsDuplicateMatch == false)
+                                {
                                 switch (ActiveContest)
                                 {
                                     case ContestName.CW_OPEN:
@@ -350,21 +342,45 @@ namespace W6OP.PrintEngine
 
                             switch (qso.ReasonRejected)
                             {
-                                case RejectReason.OperatorName:
+                                case RejectReason.ContactName:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectName + " --> " + qso.MatchingQSO.OperatorName;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue; // + " --> " + qso.MatchingQSO.ContactName;
                                     }
                                     else
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectName;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue;
+                                    }
+                                    break;
+                                case RejectReason.OperatorName:
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue; 
+                                    }
+                                    else
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue;
                                     }
                                     break;
                                 case RejectReason.Band:
-                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue;
+                                    }
+                                    else
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue;
+                                    }
                                     break;
                                 case RejectReason.Mode:
-                                    value = EnumHelper.GetDescription(qso.ReasonRejected);
+                                    if (qso.MatchingQSO != null)
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue; 
+                                    }
+                                    else
+                                    {
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue;
+                                    }
                                     break;
                                 case RejectReason.NoQSOMatch:
                                     value = EnumHelper.GetDescription(qso.ReasonRejected);
@@ -373,20 +389,21 @@ namespace W6OP.PrintEngine
                                     value = EnumHelper.GetDescription(qso.ReasonRejected);
                                     break;
                                 case RejectReason.BustedCallSign:
-                                    if (qso.MatchingQSO != null)
+                                    if (qso.HasBeenPrinted == false)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.ContactCall + " --> " + qso.MatchingQSO.OperatorCall;
+                                        message = "This QSO is not in the other operators log or the call may be busted: " + qso.IncorrectValue;
+                                        sw.WriteLine(message);
+
+                                        PrintNearestMatches(qso, sw);
+                                        sw.WriteLine("");
                                     }
-                                    else
-                                    {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.ContactCall + " --> " + qso.BustedCallGuess;
-                                        //value = qso.RejectReasons[key];
-                                    }
+
+                                    message = null;
                                     break;
                                 case RejectReason.SerialNumber:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValue; //+ " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
                                     }
                                     else
                                     {
@@ -396,7 +413,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.EntityName:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntity; // + " --> " + qso.MatchingQSO.OperatorEntity;
                                     }
                                     else
                                     {
@@ -409,7 +426,10 @@ namespace W6OP.PrintEngine
                                         message = "Duplicates ignored for scoring purposes:";
                                         sw.WriteLine(message);
 
-                                        PrintDuplicates(qso.DupeListLocation, sw);
+                                        if (qso.HasBeenMatched)
+                                        {
+                                            PrintDuplicates(qso, sw); 
+                                        }
                                         sw.WriteLine("");
                                     }
 
@@ -427,7 +447,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.InvalidEntity:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntity + " --> " + qso.MatchingQSO.OperatorEntity;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntity; // + " --> " + qso.MatchingQSO.OperatorEntity;
                                     }
                                     else
                                     {
@@ -453,8 +473,6 @@ namespace W6OP.PrintEngine
                                     }
                                     break;
                             }
-
-
 
                             if (message != null)
                             {
@@ -496,21 +514,69 @@ namespace W6OP.PrintEngine
             }
         }
 
+        private void PrintNearestMatches(QSO qso, StreamWriter sw)
+        {
+            string message = "";
+
+            switch (ActiveContest)
+            {
+                case ContestName.CW_OPEN:
+                    message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentSerialNumber.ToString() + "\t" +
+                  qso.OperatorName + "\t" + qso.ContactCall + "\t" + qso.ReceivedSerialNumber.ToString() + "\t" + qso.ContactName;
+                    break;
+                case ContestName.HQP:
+                    message = "QSO: " + "\t" + qso.Frequency + "\t" + qso.Mode + "\t" + qso.QsoDate + "\t" + qso.QsoTime + "\t" + qso.OperatorCall + "\t" + qso.SentReport.ToString() + "\t" +
+                  qso.OperatorEntity + "\t" + qso.ContactCall + "\t" + qso.ReceivedReport.ToString() + "\t" + qso.ContactEntity;
+                    break;
+            }
+
+            sw.WriteLine(message);
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="dupeListLocation"></param>
         /// <param name="sw"></param>
-        private void PrintDuplicates(QSO dupeListLocation, StreamWriter sw)
+        private void PrintDuplicates(QSO qso, StreamWriter sw) 
         {
-            string message = null;
+            string message = "";
 
-            foreach (QSO item in dupeListLocation.DuplicateQsoList)
+            QSO item = qso.MatchingQSO;
+
+            switch (ActiveContest)
             {
+                case ContestName.CW_OPEN:
+                    message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                   item.OperatorName + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactName;
+                    break;
+                case ContestName.HQP:
+                    message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                    item.OperatorEntity + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactEntity;
+                    break;
+            }
 
-                item.HasBeenPrinted = true;
+            sw.WriteLine(message);
 
-                switch (ActiveContest)
+            item = qso.FirstMatchingQSO;
+            sw.WriteLine("First match:");
+            switch (ActiveContest)
+            {
+                case ContestName.CW_OPEN:
+                    message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                   item.OperatorName + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactName;
+                    break;
+                case ContestName.HQP:
+                    message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                    item.OperatorEntity + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactEntity;
+                    break;
+            }
+
+            sw.WriteLine(message);
+
+            item = qso;
+            sw.WriteLine("Duplicate match:");
+            switch (ActiveContest)
                 {
                     case ContestName.CW_OPEN:
                         message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
@@ -523,7 +589,9 @@ namespace W6OP.PrintEngine
                 }
 
                 sw.WriteLine(message);
-            }
+
+            item.HasBeenPrinted = true;
+            //}
         }
 
 
@@ -648,13 +716,13 @@ namespace W6OP.PrintEngine
             totalValidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList().Count();
             totalInvalidQSOs = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList().Count();
 
-            totalPhoneQSOS = contestLog.QSOCollection.Where(q => q.Mode == "PH").ToList().Count();
-            totalCWQSOs = contestLog.QSOCollection.Where(q => q.Mode == "CW").ToList().Count();
-            totalDigiQSOS = contestLog.QSOCollection.Where(q => q.Mode == "RY").ToList().Count();
+            totalPhoneQSOS = contestLog.QSOCollection.Where(q => EnumHelper.GetDescription(q.Mode) == "PH").ToList().Count();
+            totalCWQSOs = contestLog.QSOCollection.Where(q => EnumHelper.GetDescription(q.Mode) == "CW").ToList().Count();
+            totalDigiQSOS = contestLog.QSOCollection.Where(q => EnumHelper.GetDescription(q.Mode) == "RY").ToList().Count();
 
-            totalValidPhoneQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "PH").ToList().Count();
-            totalValidCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "CW").ToList().Count();
-            totalValidDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && q.Mode == "RY").ToList().Count();
+            totalValidPhoneQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && EnumHelper.GetDescription(q.Mode) == "PH").ToList().Count();
+            totalValidCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && EnumHelper.GetDescription(q.Mode) == "CW").ToList().Count();
+            totalValidDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && EnumHelper.GetDescription(q.Mode) == "RY").ToList().Count();
 
             multiplierCount = contestLog.Multipliers;
             totalPoints = contestLog.TotalPoints;
@@ -896,7 +964,7 @@ namespace W6OP.PrintEngine
                     break;
             }
 
-            _CallNameCountList = CollectCallNameHitData(distinctCallNamePairs, contestLogs);
+            CallNameCountList = CollectCallNameHitData(distinctCallNamePairs, contestLogs);
 
             using (document)
             {
@@ -908,7 +976,7 @@ namespace W6OP.PrintEngine
 
                 SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
 
-                for (int i = 0; i < _CallNameCountList.Count; i++)
+                for (int i = 0; i < CallNameCountList.Count; i++)
                 {
                     // Add a row to the cell table.
                     Row row;
@@ -960,7 +1028,7 @@ namespace W6OP.PrintEngine
                     else
                     {
                         // Set the cell value
-                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item1);
+                        newCell.CellValue = new CellValue(CallNameCountList[i].Item1);
                         newCell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         // Add the cell to the cell table at A2.
@@ -968,9 +1036,9 @@ namespace W6OP.PrintEngine
                         row.InsertBefore(newCell, refCell);
 
                         // Set the cell value to be a numeric value.
-                        if (_CallNameCountList[i].Item2 != 0)
+                        if (CallNameCountList[i].Item2 != 0)
                         {
-                            newCell.CellValue = new CellValue(_CallNameCountList[i].Item2.ToString());
+                            newCell.CellValue = new CellValue(CallNameCountList[i].Item2.ToString());
                         }
                         newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
 
@@ -978,14 +1046,14 @@ namespace W6OP.PrintEngine
                         newCell = new Cell() { CellReference = "C" + row.RowIndex.ToString() };
                         row.InsertBefore(newCell, refCell);
 
-                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item3);
+                        newCell.CellValue = new CellValue(CallNameCountList[i].Item3);
                         newCell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         // Add the cell to the cell table at A4.
                         newCell = new Cell() { CellReference = "D" + row.RowIndex.ToString() };
                         row.InsertBefore(newCell, refCell);
 
-                        newCell.CellValue = new CellValue(_CallNameCountList[i].Item4.ToString());
+                        newCell.CellValue = new CellValue(CallNameCountList[i].Item4.ToString());
                         newCell.DataType = new EnumValue<CellValues>(CellValues.Number);
                     }
                 }
@@ -1084,7 +1152,7 @@ namespace W6OP.PrintEngine
             string previousCall = "";
             int count = 0;
 
-            _CallNameCountList = new List<Tuple<string, int, string, int>>();
+            CallNameCountList = new List<Tuple<string, int, string, int>>();
 
             List<Tuple<string, string>> allCallNamePairs = contestLogList.SelectMany(z => z.QSOCollection)
                 .Select(r => new Tuple<string, string>(r.ContactCall, r.ContactName))
@@ -1109,10 +1177,10 @@ namespace W6OP.PrintEngine
 
                 Tuple<string, int, string, int> tuple = new Tuple<string, int, string, int>(currentCall, count, distinctCallNamePairs[i].Item2, nameCount.Count());
 
-                _CallNameCountList.Add(tuple);
+                CallNameCountList.Add(tuple);
             }
 
-            return _CallNameCountList;
+            return CallNameCountList;
         }
 
     } // end class

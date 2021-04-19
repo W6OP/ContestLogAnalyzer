@@ -58,15 +58,15 @@ namespace W6OP.ContestLogAnalyzer
             set { _Assisted = value; }
         }
 
-        private CategoryBand _Band;
-        public CategoryBand Band
+        private QSOBand _Band;
+        public QSOBand Band
         {
             get { return _Band; }
             set { _Band = value; }
         }
 
-        private CategoryMode _Mode;
-        public CategoryMode Mode
+        private QSOMode _Mode;
+        public QSOMode Mode
         {
             get { return _Mode; }
             set { _Mode = value; }
@@ -115,8 +115,8 @@ namespace W6OP.ContestLogAnalyzer
         //    set { _Overlay = value; }
         //}
 
-        private Int32 _ClaimedScore;
-        public Int32 ClaimedScore
+        private int _ClaimedScore;
+        public int ClaimedScore
         {
             get { return _ClaimedScore; }
             set { _ClaimedScore = value; }
