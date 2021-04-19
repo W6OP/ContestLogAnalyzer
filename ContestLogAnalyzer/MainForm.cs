@@ -66,6 +66,8 @@ namespace W6OP.ContestLogAnalyzer
         private PrefixFileParser PrefixFileParser;
         private CallLookUp CallLookUp;
 
+        private Dictionary<string, string> ULSStateData = new Dictionary<string, string>();
+
         #region Load and Initialize
 
         /// <summary>
@@ -74,8 +76,6 @@ namespace W6OP.ContestLogAnalyzer
         public MainForm()
         {
             InitializeComponent();
-
-            //_QRZ = new QRZ();
         }
 
         /// <summary>
@@ -209,6 +209,22 @@ namespace W6OP.ContestLogAnalyzer
                 result = result.Replace("\r\n", "|");
 
                 _LogProcessor.CountryPrefixes = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
+            }
+
+            string[] ulsData = new string[2];
+            string line;
+
+            resourceName = assembly.GetManifestResourceNames()
+              .Single(str => str.EndsWith("EmbedULSCallData.txt"));
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                while ((line = reader.ReadLine()) != null)
+                {
+                    ulsData = line.Split('|');
+                    ULSStateData.Add(ulsData[0], ulsData[1]);
+                }
             }
         }
 
@@ -751,18 +767,6 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         #endregion
-
-        /// <summary>
-        /// http://stackoverflow.com/questions/721395/linq-question-querying-nested-collections
-        /// http://stackoverflow.com/questions/15996168/linq-query-to-filter-items-by-criteria-from-multiple-lists
-
-
-        /*
-         * http://stackoverflow.com/questions/14893924/for-vs-linq-performance-vs-future
-            int matchIndex = array.Select((r, i) => new { value = r, index = i })
-                         .Where(t => t.value == matchString)
-                         .Select(s => s.index).First();
-         */
 
         #region Update Labels and ListViews
 

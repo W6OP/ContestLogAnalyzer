@@ -175,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="EmbedStatePrefixes.txt" />
+    <EmbeddedResource Include="EmbedULSCallData.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
