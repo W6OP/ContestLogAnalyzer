@@ -126,6 +126,7 @@
     <EmbeddedResource Include="QSOForm.resx">
       <DependentUpon>QSOForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="EmbedHQPGrids.csv" />
     <None Include="License.rtf" />
     <None Include="packages.config" />
     <None Include="Properties\DataSources\QSO.datasource" />

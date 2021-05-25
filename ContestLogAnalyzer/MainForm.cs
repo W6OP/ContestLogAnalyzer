@@ -66,8 +66,6 @@ namespace W6OP.ContestLogAnalyzer
         private PrefixFileParser PrefixFileParser;
         private CallLookUp CallLookUp;
 
-        private Dictionary<string, string> ULSStateData = new Dictionary<string, string>();
-
         #region Load and Initialize
 
         /// <summary>
@@ -172,8 +170,14 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         private void LoadResourceFiles()
         {
+            Dictionary<string, List<string>> GridSquares = new Dictionary<string, List<string>>();
+            Dictionary<string, string> ULSStateData = new Dictionary<string, string>();
             string result = null;
+            string[] ulsData = new string[2];
+            string[] grids = new string[3];
+            string line;
             var assembly = Assembly.GetExecutingAssembly();
+
             string resourceName = assembly.GetManifestResourceNames()
                 .Single(str => str.EndsWith("EmbedCounties_Ohio.txt"));
 
@@ -211,8 +215,33 @@ namespace W6OP.ContestLogAnalyzer
                 LogProcessor.CountryPrefixes = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
             }
 
-            string[] ulsData = new string[2];
-            string line;
+            resourceName = assembly.GetManifestResourceNames()
+              .Single(str => str.EndsWith("EmbedHQPGrids.csv"));
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                List<string> lineList = new List<string>();
+                string key;
+
+                while ((line = reader.ReadLine()) != null)
+                {
+                    lineList = new List<string>();
+                    grids = line.Split(',');
+                    key = grids[0];
+
+                    grids = grids.Skip(1).ToArray();
+                    grids = grids.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                    lineList = grids.ToList();
+                    //lineList.Add(grids[1]);
+                    //lineList.Add(grids[2]);
+                    //lineList.Add(grids[3]);
+
+                    GridSquares.Add(key, lineList);
+                }
+
+                LogProcessor.GridSquares = GridSquares;
+            }
 
             resourceName = assembly.GetManifestResourceNames()
               .Single(str => str.EndsWith("EmbedULSCallData.txt"));
@@ -226,6 +255,7 @@ namespace W6OP.ContestLogAnalyzer
                     ULSStateData.Add(ulsData[0], ulsData[1]);
                 }
             }
+            LogProcessor.ULSStateData = ULSStateData;
         }
 
          /// <summary>
@@ -234,11 +264,13 @@ namespace W6OP.ContestLogAnalyzer
         /// .txt files will load faster.
         /// Embed the .dat files and build the .txt files then remove the .dat
         /// and embed the .txt files.
+        /// Only needed when a new ULS.dat is downloaded from the FCC.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void BackgroundWorkerLoadULSResourceFiles_DoWork(object sender, DoWorkEventArgs e)
         {
+            Dictionary<string, string> ULSStateData = new Dictionary<string, string>();
             var assembly = Assembly.GetExecutingAssembly();
             string line;
 
@@ -295,7 +327,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
 
                 BuildDataFiles(ULSStateData, "EmbedULSCallData.txt");
-            Console.WriteLine("ULS Resource files loaded.");
+                Console.WriteLine("ULS Resource files loaded.");
         }
 
         private void BuildDataFiles(Dictionary<string, string> ulsHD, string fileName)
@@ -1229,17 +1261,21 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        #endregion
+
+        #region Bad Call List
+
         private void ButtonLoadBadcalls_Click(object sender, EventArgs e)
         {
             TabControlMain.SelectTab(TabPageLogStatus);
-            LoadCSVFile();
+            LoadBadCallList();
         }
 
 
         /// <summary>
         /// Load a CSV file with a list of known bad calls.
         /// </summary>
-        private void LoadCSVFile()
+        private void LoadBadCallList()
         {
             ILookup<string, string> badCallList;
 
@@ -1252,10 +1288,6 @@ namespace W6OP.ContestLogAnalyzer
             catch (Exception ex)
             {
                 UpdateListViewLoad("Unable to load bad call file.", ex.Message, false);
-            }
-            finally
-            {
-
             }
         }
 

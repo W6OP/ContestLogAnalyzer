@@ -26,6 +26,8 @@ namespace W6OP.ContestLogAnalyzer
         public Lookup<string, string> CountryPrefixes { get; set; }
         public Lookup<string, string> Kansas { get; set; }
         public Lookup<string, string> Ohio { get; set; }
+        public Dictionary<string, List<string>> GridSquares = new Dictionary<string, List<string>>();
+        public Dictionary<string, string> ULSStateData = new Dictionary<string, string>();
 
         public string FailReason { get; set; }
         public string FailingLine { get; set; }
@@ -577,6 +579,8 @@ namespace W6OP.ContestLogAnalyzer
                     continue;
                 }
 
+                // THIS NEEDS TO BE REFACTORED FOR GRIDS
+                // maybe like SetContactCountry(qso);
                 if (qso.ContactEntity.Length != 3)
                 {
                     if (Enum.IsDefined(typeof(ALTHQPMults), qso.ContactEntity))
@@ -672,7 +676,10 @@ namespace W6OP.ContestLogAnalyzer
                     SetHawaiiContactEntity(qso, contactEntity);
                     break;
                 case 4:
-                    SetContactEntityFromGrid(qso, contactEntity);
+                    SetContactEntityFromGrid(qso, contactEntity.ToUpper(), contactFullCall);
+                    break;
+                case 6:
+                    SetContactEntityFromGrid(qso, contactEntity.Substring(0,4).ToUpper(), contactFullCall);
                     break;
                 default:
                     qso.InvalidEntity = true;
@@ -684,10 +691,23 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        private void SetContactEntityFromGrid(QSO qso, string contactEntity)
+        private void SetContactEntityFromGrid(QSO qso, string contactEntity, string contactFullCall)
         {
             if (ValidateGrid(contactEntity))
             {
+                if (GridSquares.ContainsKey(contactEntity)) {
+                    List<string> grids = GridSquares[contactEntity];
+                    if (grids.Count > 1)
+                    {  // use ULS Data
+                        if (ULSStateData.ContainsKey(contactFullCall))
+                        {
+                            SetDXorStateContactEntity(qso, ULSStateData[contactFullCall], contactFullCall);
+                        }
+                    } else
+                    {
+                        SetDXorStateContactEntity(qso, grids[0], contactFullCall);
+                    }
+                }
                 // if it is a grid, first see if it is in the grid collection and a grid that does not span states
                 // if it spans states use the ULS data
                // qso.ContactEntity = UL
