@@ -127,6 +127,7 @@ namespace W6OP.ContestLogAnalyzer
 
             TabControlMain.SelectTab(TabPageLogStatus);
 
+            // should this only be for HQP?
             LoadResourceFiles();
 
             Initialized = true;
@@ -166,85 +167,31 @@ namespace W6OP.ContestLogAnalyzer
         /// in the United States.
         /// Two letter suffixes KG4xx are issued for Guantanamo Bay.
         /// 
-        /// May need to use smething else for state prefixes - hashset can't have dupes
+        /// May need to use something else for state prefixes - hashset can't have dupes
         /// </summary>
         private void LoadResourceFiles()
         {
-            Dictionary<string, List<string>> GridSquares = new Dictionary<string, List<string>>();
-            Dictionary<string, string> ULSStateData = new Dictionary<string, string>();
-            string result = null;
-            string[] ulsData = new string[2];
-            string[] grids = new string[3];
-            string line;
             var assembly = Assembly.GetExecutingAssembly();
 
+            LoadOhioCounties(assembly);
+            LoadKansasCounties(assembly);
+            LoadCountryPrefixes(assembly);
+            LoadHQPGrids(assembly);
+            LoadULSData(assembly);
+        }
+
+        /// <summary>
+        /// Load the ULS downloaded data.
+        /// </summary>
+        /// <param name="assembly">Assembly</param>
+        private void LoadULSData(Assembly assembly)
+        {
+            Dictionary<string, string> ULSStateData = new Dictionary<string, string>();
+            string line;
+            string[] ulsData = new string[2];
+
             string resourceName = assembly.GetManifestResourceNames()
-                .Single(str => str.EndsWith("EmbedCounties_Ohio.txt"));
-
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                result = reader.ReadToEnd();
-                result = result.Replace("\r\n", "|");
-
-                LogProcessor.Ohio = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
-            }
-
-            resourceName = assembly.GetManifestResourceNames()
-               .Single(str => str.EndsWith("EmbedCounties_Kansas.txt"));
-
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                result = reader.ReadToEnd();
-                // now split it into a collecction
-                result = result.Replace("\r\n", "|");
-
-                LogProcessor.Kansas = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
-            }
-
-            resourceName = assembly.GetManifestResourceNames()
-              .Single(str => str.EndsWith("EmbedCountryPrefixes.txt"));
-
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                result = reader.ReadToEnd();
-                result = result.Replace("\r\n", "|");
-
-                LogProcessor.CountryPrefixes = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
-            }
-
-            resourceName = assembly.GetManifestResourceNames()
-              .Single(str => str.EndsWith("EmbedHQPGrids.csv"));
-
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                List<string> lineList = new List<string>();
-                string key;
-
-                while ((line = reader.ReadLine()) != null)
-                {
-                    lineList = new List<string>();
-                    grids = line.Split(',');
-                    key = grids[0];
-
-                    grids = grids.Skip(1).ToArray();
-                    grids = grids.Where(x => !string.IsNullOrEmpty(x)).ToArray();
-                    lineList = grids.ToList();
-                    //lineList.Add(grids[1]);
-                    //lineList.Add(grids[2]);
-                    //lineList.Add(grids[3]);
-
-                    GridSquares.Add(key, lineList);
-                }
-
-                LogProcessor.GridSquares = GridSquares;
-            }
-
-            resourceName = assembly.GetManifestResourceNames()
-              .Single(str => str.EndsWith("EmbedULSCallData.txt"));
+                          .Single(str => str.EndsWith("EmbedULSCallData.txt"));
 
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
             using (StreamReader reader = new StreamReader(stream))
@@ -258,7 +205,94 @@ namespace W6OP.ContestLogAnalyzer
             LogProcessor.ULSStateData = ULSStateData;
         }
 
-         /// <summary>
+        /// <summary>
+        /// Load the grid square to state file.
+        /// </summary>
+        /// <param name="assembly">Assembly</param>
+        private void LoadHQPGrids(Assembly assembly)
+        {
+            Dictionary<string, List<string>> GridSquares = new Dictionary<string, List<string>>();
+            string[] ulsData = new string[2];
+            string[] grids = new string[3];
+            string line;
+
+            string resourceName = assembly.GetManifestResourceNames()
+                          .Single(str => str.EndsWith("EmbedHQPGrids.csv"));
+
+            using Stream stream = assembly.GetManifestResourceStream(resourceName);
+            using StreamReader reader = new StreamReader(stream);
+            List<string> lineList = new List<string>();
+            string key;
+
+            while ((line = reader.ReadLine()) != null)
+            {
+                lineList = new List<string>();
+                grids = line.Split(',');
+                key = grids[0];
+
+                grids = grids.Skip(1).ToArray();
+                grids = grids.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                lineList = grids.ToList();
+
+                GridSquares.Add(key, lineList);
+            }
+
+            LogProcessor.GridSquares = GridSquares;
+        }
+
+        /// <summary>
+        /// Load the country prefixes.
+        /// </summary>
+        /// <param name="assembly">Assembly</param>
+        private void LoadCountryPrefixes(Assembly assembly)
+        {
+            string resourceName = assembly.GetManifestResourceNames()
+                          .Single(str => str.EndsWith("EmbedCountryPrefixes.txt"));
+
+            using Stream stream = assembly.GetManifestResourceStream(resourceName);
+            using StreamReader reader = new StreamReader(stream);
+            string result = reader.ReadToEnd();
+            result = result.Replace("\r\n", "|");
+
+            LogProcessor.CountryPrefixes = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
+        }
+
+        /// <summary>
+        /// Load the list of Kansas counties.
+        /// </summary>
+        /// <param name="assembly">Assembly</param>
+        private void LoadKansasCounties(Assembly assembly)
+        {
+            string resourceName = assembly.GetManifestResourceNames()
+                           .Single(str => str.EndsWith("EmbedCounties_Kansas.txt"));
+
+            using Stream stream = assembly.GetManifestResourceStream(resourceName);
+            using StreamReader reader = new StreamReader(stream);
+            string result = reader.ReadToEnd();
+            // now split it into a collecction
+            result = result.Replace("\r\n", "|");
+
+            LogProcessor.Kansas = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
+        }
+
+        /// <summary>
+        /// Load the list of Ohio counties.
+        /// </summary>
+        /// <param name="assembly">Assembly</param>
+        private void LoadOhioCounties(Assembly assembly)
+        {
+            string resourceName = assembly.GetManifestResourceNames()
+                            .Single(str => str.EndsWith("EmbedCounties_Ohio.txt"));
+
+            using Stream stream = assembly.GetManifestResourceStream(resourceName);
+            using StreamReader reader = new StreamReader(stream);
+            string result = reader.ReadToEnd();
+            result = result.Replace("\r\n", "|");
+
+            LogProcessor.Ohio = (Lookup<string, string>)result.Split('|').Select(x => x.Split(',')).ToLookup(x => x[0], x => x[1]);
+        }
+
+        /// <summary>
         /// Use the .dat files initially to build the .txt files.
         /// The .dat files are too large to push to GitHub plus the smaller
         /// .txt files will load faster.
@@ -274,60 +308,60 @@ namespace W6OP.ContestLogAnalyzer
             var assembly = Assembly.GetExecutingAssembly();
             string line;
 
-                // only for initial file build
-                string resourceName = assembly.GetManifestResourceNames()
-                 .Single(str => str.EndsWith("EmbedULS_HD.dat"));
+            // only for initial file build
+            string resourceName = assembly.GetManifestResourceNames()
+             .Single(str => str.EndsWith("EmbedULS_HD.dat"));
 
-                string[] ulsData = new string[50];
-                Dictionary<string, string> ulsHD = new Dictionary<string, string>(900000);
+            string[] ulsData = new string[50];
+            Dictionary<string, string> ulsHD = new Dictionary<string, string>(900000);
 
-                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                using (StreamReader reader = new StreamReader(stream))
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                while ((line = reader.ReadLine()) != null)
                 {
-                    while ((line = reader.ReadLine()) != null)
+                    ulsData = line.Split('|');
+                    if (ulsData[5] == "A")
                     {
-                        ulsData = line.Split('|');
-                        if (ulsData[5] == "A")
+                        if (!ulsHD.ContainsKey(ulsData[4]))
                         {
-                            if (!ulsHD.ContainsKey(ulsData[4]))
-                            {
-                                ulsHD.Add(ulsData[4], ulsData[1]);
-                            }
+                            ulsHD.Add(ulsData[4], ulsData[1]);
                         }
                     }
                 }
+            }
 
-                List<string[]> temp = new List<string[]>(900000);
+            List<string[]> temp = new List<string[]>(900000);
 
-                resourceName = assembly.GetManifestResourceNames()
-                  .Single(str => str.EndsWith("EmbedULSCallData.dat"));
+            resourceName = assembly.GetManifestResourceNames()
+              .Single(str => str.EndsWith("EmbedULSCallData.dat"));
 
-                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                using (StreamReader reader = new StreamReader(stream))
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                while ((line = reader.ReadLine()) != null)
                 {
-                    while ((line = reader.ReadLine()) != null)
+                    ulsData = line.Split('|');
+                    temp.Add(ulsData);
+                    if (ulsData[6] != "")
                     {
-                        ulsData = line.Split('|');
-                        temp.Add(ulsData);
-                        if (ulsData[6] != "")
+                        if (!ULSStateData.ContainsKey(ulsData[4]))
                         {
-                            if (!ULSStateData.ContainsKey(ulsData[4]))
+                            // if the USI matches the USI in the ulsHD dictionary then add it
+                            if (!ULSStateData.ContainsKey(ulsData[4]) && ulsHD.ContainsKey(ulsData[4]))
                             {
-                                // if the USI matches the USI in the ulsHD dictionary then add it
-                                if (!ULSStateData.ContainsKey(ulsData[4]) && ulsHD.ContainsKey(ulsData[4]))
+                                if (ulsHD[ulsData[4]] == ulsData[1])
                                 {
-                                    if (ulsHD[ulsData[4]] == ulsData[1])
-                                    {
                                     ULSStateData.Add(ulsData[4], ulsData[17]);
-                                    }
                                 }
                             }
                         }
                     }
                 }
+            }
 
-                BuildDataFiles(ULSStateData, "EmbedULSCallData.txt");
-                Console.WriteLine("ULS Resource files loaded.");
+            BuildDataFiles(ULSStateData, "EmbedULSCallData.txt");
+            Console.WriteLine("ULS Resource files loaded.");
         }
 
         private void BuildDataFiles(Dictionary<string, string> ulsHD, string fileName)
@@ -340,7 +374,7 @@ namespace W6OP.ContestLogAnalyzer
                 line = kv.Key + "|" + kv.Value;
                 outputFile.WriteLine(line);
             });
-        } 
+        }
 
 
         #endregion
@@ -529,7 +563,7 @@ namespace W6OP.ContestLogAnalyzer
                     return;
                 }
 
-                    // initialize other modules
+                // initialize other modules
                 if (LogSourceFolder != WorkingFolder)
                 {
                     LogProcessor.LogSourceFolder = LogSourceFolder;
@@ -1054,7 +1088,7 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                
+
                 ListViewItem item = new ListViewItem(qso.OperatorCall);
                 item.SubItems.Add(qso.ContactCall);
                 item.SubItems.Add(qso.Band.ToString());

@@ -134,7 +134,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     // collect regular QSOs
                     contestLog.QSOCollection = CollectQSOs(lineList, session);
-                   
+
                     //// add a reference to the parent log to each QSO
                     //if (contestLog.QSOCollection != null)
                     //{
@@ -170,6 +170,10 @@ namespace W6OP.ContestLogAnalyzer
                     if (ActiveContest == ContestName.HQP)
                     {
                         bool isHQPEntity = Enum.IsDefined(typeof(HQPMults), contestLog.QSOCollection[0].OperatorEntity);
+                        if (!isHQPEntity)
+                        {
+                            isHQPEntity = Enum.IsDefined(typeof(ALTHQPMults), contestLog.QSOCollection[0].OperatorEntity);
+                        }
                         contestLog.IsHQPEntity = isHQPEntity;
                         SetHQPDXCCInformation(contestLog.QSOCollection, isHQPEntity);
                     }
@@ -384,7 +388,7 @@ namespace W6OP.ContestLogAnalyzer
             if (contestLog.OperatorName.ToUpper() == "NAME")
             {
                 // may want to expand on this for a future report
-                FailReason = "Name sent is 'NAME' - Invalid name."; 
+                FailReason = "Name sent is 'NAME' - Invalid name.";
                 contestLog.IsValidLog = false;
                 throw new Exception(fileInfo.Name); // don't want this added to collection
             }
@@ -563,6 +567,36 @@ namespace W6OP.ContestLogAnalyzer
 
         /// <summary>
         /// HQP Only
+        /// </summary>
+        /// <param name="qsoCollection"></param>
+        private void ProcessHawaiiOperators(List<QSO> qsoCollection)
+        {
+            foreach (QSO qso in qsoCollection)
+            {
+                if (!CheckForValidCallsign(qso.ContactCall))
+                {
+                    qso.Status = QSOStatus.InvalidQSO;
+                    qso.ReasonRejected = RejectReason.InvalidCall;
+                    continue;
+                }
+
+                // at this point we have the country info
+                SetContactCountry(qso);
+
+                qso.OperatorCountry = HQPHawaiiLiteral;
+                qso.HQPEntity = qso.OperatorEntity;
+                qso.IsHQPEntity = true;
+
+                if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
+                {
+                    SetHQPEntityInfo(qso);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// HQP Only
         /// DX station contacting Hawaii station
         /// if DXEntity is not in enum list of Hawaii entities (HIL, MAU, etc.)
         /// this QSO is invalid
@@ -581,6 +615,8 @@ namespace W6OP.ContestLogAnalyzer
 
                 // THIS NEEDS TO BE REFACTORED FOR GRIDS
                 // maybe like SetContactCountry(qso);
+                // check if the contact entity is hawaiin as that is all allowed
+                // that means 3 or 4 characters
                 if (qso.ContactEntity.Length != 3)
                 {
                     if (Enum.IsDefined(typeof(ALTHQPMults), qso.ContactEntity))
@@ -615,41 +651,13 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// HQP Only
-        /// </summary>
-        /// <param name="qsoCollection"></param>
-        private void ProcessHawaiiOperators(List<QSO> qsoCollection)
-        {
-            foreach (QSO qso in qsoCollection)
-            {
-                if (!CheckForValidCallsign(qso.ContactCall))
-                {
-                    qso.Status = QSOStatus.InvalidQSO;
-                    qso.ReasonRejected = RejectReason.InvalidCall;
-                    continue;
-                }
-
-                // at this point we have the country info
-                SetContactCountry(qso);
-
-                qso.OperatorCountry = HQPHawaiiLiteral;
-                qso.HQPEntity = qso.OperatorEntity;
-                qso.IsHQPEntity = true;
-
-                if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
-                {
-                    SetHQPEntityInfo(qso);
-                }
-            }
-        }
-
-        /// <summary>
         /// HQP only
         /// This is an HQP entity so their contacts can be a: 
         /// US State (two chars)
         /// Canadian Province (two chars)
         /// another HQP Entity (three chars)
         /// another country ("DX")
+        /// a grid (4-6 chars)
         /// </summary>
         /// <param name="qso"></param>
         private void SetContactCountry(QSO qso)
@@ -657,7 +665,8 @@ namespace W6OP.ContestLogAnalyzer
             string contactEntity = qso.ContactEntity;
             string contactFullCall = qso.ContactCall;
 
-            if (!string.IsNullOrEmpty(qso.ContactPrefix)) {
+            if (!string.IsNullOrEmpty(qso.ContactPrefix))
+            {
                 contactFullCall = qso.ContactPrefix + "/" + qso.ContactCall;
             }
 
@@ -679,7 +688,7 @@ namespace W6OP.ContestLogAnalyzer
                     SetContactEntityFromGrid(qso, contactEntity.ToUpper(), contactFullCall);
                     break;
                 case 6:
-                    SetContactEntityFromGrid(qso, contactEntity.Substring(0,4).ToUpper(), contactFullCall);
+                    SetContactEntityFromGrid(qso, contactEntity.Substring(0, 4).ToUpper(), contactFullCall);
                     break;
                 default:
                     qso.InvalidEntity = true;
@@ -691,30 +700,58 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        private void SetContactEntityFromGrid(QSO qso, string contactEntity, string contactFullCall)
+        /// <summary>
+        /// Set the real contact entity using the grid square.
+        /// </summary>
+        /// <param name="qso">QSO</param>
+        /// <param name="contactGridSquare">String</param>
+        /// <param name="contactFullCall">String</param>
+        private void SetContactEntityFromGrid(QSO qso, string contactGridSquare, string contactFullCall)
         {
-            if (ValidateGrid(contactEntity))
+            IEnumerable<CallSignInfo> hitCollection;
+            List<CallSignInfo> hitList;
+
+            if (ValidateGrid(contactGridSquare))
             {
-                if (GridSquares.ContainsKey(contactEntity)) {
-                    List<string> grids = GridSquares[contactEntity];
+                qso.ContactGrid = contactGridSquare;
+
+                if (GridSquares.ContainsKey(contactGridSquare))
+                {
+                    List<string> grids = GridSquares[contactGridSquare];
                     if (grids.Count > 1)
                     {  // use ULS Data
                         if (ULSStateData.ContainsKey(contactFullCall))
                         {
-                            SetDXorStateContactEntity(qso, ULSStateData[contactFullCall], contactFullCall);
+                            qso.ContactEntity = ULSStateData[contactFullCall];
+                            SetDXorStateContactEntity(qso, qso.ContactEntity, contactFullCall);
                         }
-                    } else
+                    }
+                    else
                     {
-                        SetDXorStateContactEntity(qso, grids[0], contactFullCall);
+                        qso.ContactEntity = grids[0];
+                        SetDXorStateContactEntity(qso, qso.ContactEntity, contactFullCall);
+                    }
+                } else
+                {
+                    // it must be a DX grid
+                    hitCollection = CallLookUp.LookUpCall(contactFullCall);
+                    hitList = hitCollection.ToList();
+                    if (hitList.Count != 0)
+                    {
+                        qso.ContactEntity = "DX";
+                        qso.ContactCountry = hitList[0].Country;
+                    }
+                    else
+                    {
+                        qso.InvalidEntity = true;
+                        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX or State or Province";
                     }
                 }
-                // if it is a grid, first see if it is in the grid collection and a grid that does not span states
-                // if it spans states use the ULS data
-               // qso.ContactEntity = UL
-            } else
+            }
+            else
             {
                 qso.InvalidEntity = true;
-               // TODO: THIS NEEDS BETTER HANDLING
+                // TODO: THIS NEEDS BETTER HANDLING
                 qso.IncorrectDXEntity = "The contact entity column is missing";
             }
         }
@@ -726,7 +763,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private bool ValidateGrid(string contactEntity)
         {
-            Regex regex = new Regex("[A-Z{2}0-9{2}]/g", RegexOptions.IgnoreCase);
+            Regex regex = new Regex(@"^[A-Za-z]{2}[0-9]{2}\z", RegexOptions.IgnoreCase);
 
             if (regex.Match(contactEntity).Success)
             {
@@ -758,60 +795,66 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="qso"></param>
+        /// <param name="contactEntity"></param>
+        /// <param name="contactFullCall"></param>
         private void SetDXorStateContactEntity(QSO qso, string contactEntity, string contactFullCall)
         {
             IEnumerable<CallSignInfo> hitCollection;
             List<CallSignInfo> hitList;
 
-            if (qso.ContactEntity == "DX")
+            //if (qso.ContactEntity == "DX")
+            //{
+            //    // need to look it up
+            //    hitCollection = CallLookUp.LookUpCall(contactFullCall);
+            //    hitList = hitCollection.ToList();
+            //    if (hitList.Count != 0)
+            //    {
+            //        qso.ContactCountry = hitList[0].Country;
+            //    }
+            //    else
+            //    {
+            //        qso.InvalidEntity = true;
+            //        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX or State or Province";
+            //    }
+            //}
+            //else
+            //{
+            if (States.Contains(contactEntity))
             {
-                // need to look it up
-                hitCollection = CallLookUp.LookUpCall(contactFullCall);
-                hitList = hitCollection.ToList();
-                if (hitList.Count != 0)
-                {
-                    qso.ContactCountry = hitList[0].Country;
-                }
-                else
-                {
-                    qso.InvalidEntity = true;
-                    qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX or State or Province";
-                }
+                qso.ContactCountry = HQPUSALiteral;
+            }
+            else if (Provinces.Contains(contactEntity))
+            {
+                qso.ContactCountry = HQPCanadaLiteral;
             }
             else
             {
-                if (States.Contains(contactEntity))
-                {
-                    qso.ContactCountry = HQPUSALiteral;
-                }
-                else if (Provinces.Contains(contactEntity))
-                {
-                    qso.ContactCountry = HQPCanadaLiteral;
-                }
-                else
-                {
-                    qso.InvalidEntity = true;
+                qso.InvalidEntity = true;
 
-                    hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
-                    hitList = hitCollection.ToList();
-                    if (hitList.Count != 0)
+                hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
+                hitList = hitCollection.ToList();
+                if (hitList.Count != 0)
+                {
+                    qso.ContactCountry = hitList[0].Country.ToUpper();
+                    if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
                     {
-                        qso.ContactCountry = hitList[0].Country.ToUpper();
-                        if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
-                        {
-                            qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {hitList[0].Province}";
-                        }
-                        else
-                        {
-                            qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX ({qso.ContactCountry})";
-                        }
+                        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {hitList[0].Province}";
                     }
                     else
                     {
-                        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {qso.ContactCountry}";
+                        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX ({qso.ContactCountry})";
                     }
                 }
+                else
+                {
+                    qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {qso.ContactCountry}";
+                }
             }
+            //}
         }
 
 

@@ -357,7 +357,7 @@ namespace W6OP.ContestLogAnalyzer
                             // until letters don't match
                             DetermineBustedCallFault(qso, matches);
                         } else {
-                            var q = 1;
+                            //var q = 1;
                         }
                     }
                 }
@@ -1385,7 +1385,7 @@ namespace W6OP.ContestLogAnalyzer
                         }
                         else
                         {
-                            var q = 1;
+                            //var q = 1;
                         }
                     }
                 }

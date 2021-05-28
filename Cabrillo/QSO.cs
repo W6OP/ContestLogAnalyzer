@@ -161,6 +161,8 @@ namespace W6OP.ContestLogAnalyzer
 
         public string ContactName { get; set; }
 
+        public string ContactGrid { get; set; }
+
         // This is the call that he should have copied.
         public string BustedCallGuess { get; set; }
 
