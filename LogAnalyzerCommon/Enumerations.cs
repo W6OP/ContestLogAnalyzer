@@ -326,11 +326,42 @@ namespace W6OP.ContestLogAnalyzer
         PEARL
     }
 
-    //https://www.horizonmb.com/threads/137828-Storing-additional-data-in-enums
-    /// <summary>
-    /// Extension class to allow multiple desctription on enumerations.
-    /// </summary>
-    [AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
+    //public enum CanadianProvince
+    //{
+    //    [Description("Newfoundland and Labrador")]
+    //    NL,
+    //    [Description("Prince Edward Island")]
+    //    PE,
+    //    [Description("Nova Scotia")]
+    //    NS,
+    //    [Description("New Brunswick")]
+    //    NB,
+    //    [Description("Quebec")]
+    //    QC,
+    //    [Description("Ontario")]
+    //    ON,
+    //    [Description("Manitoba")]
+    //    MB,
+    //    [Description("Saskatchewan")]
+    //    SK,
+    //    [Description("Alberta")]
+    //    AB,
+    //    [Description("British Columbia")]
+    //    BC,
+    //    [Description("Yukon")]
+    //    YT,
+    //    [Description("Northwest Territories")]
+    //    NT,
+    //    [Description("Nunavut")]
+    //    NU
+    //}
+
+
+        //https://www.horizonmb.com/threads/137828-Storing-additional-data-in-enums
+        /// <summary>
+        /// Extension class to allow multiple desctription on enumerations.
+        /// </summary>
+        [AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
     public class CWOPENContestDescription : Attribute
     {
         //Some people prefer to have a privataly declared variable to return and set, but this works fine for demonstration purposes

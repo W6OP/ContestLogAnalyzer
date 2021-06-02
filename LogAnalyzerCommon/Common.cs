@@ -6,12 +6,33 @@ using System.Threading.Tasks;
 
 namespace W6OP.ContestLogAnalyzer
 {
+
+    /// <summary>
+    /// https://thomaslevesque.com/2019/11/18/using-foreach-with-index-in-c/
+    /// </summary>
+    public static class Extensions
+    {
+        public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> source)
+        {
+            return source.Select((item, index) => (item, index));
+        }
+
+        public static T MostCommon<T>(this IEnumerable<T> list)
+        {
+            return list.GroupBy(i => i)
+                .OrderByDescending(grp => grp.Count())
+                .Select(grp => grp.Key).First();
+        }
+    }
+
     public class Common
     {
         public Common()
         {
 
         }
+
+       
 
         /// <summary>
         /// Get a list of all distinct call/name pairs by grouped by call sign. This is used

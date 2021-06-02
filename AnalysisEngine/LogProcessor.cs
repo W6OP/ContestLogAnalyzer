@@ -43,6 +43,8 @@ namespace W6OP.ContestLogAnalyzer
         /// the values are a list of all logs those calls are in
         /// </summary>
         public Dictionary<string, List<ContestLog>> CallDictionary;
+        private Dictionary<string, string> SubmittedLogDictionary;
+        private Dictionary<string, List<string>> QSOContactDictionary;
         public Dictionary<string, List<Tuple<string, int>>> NameDictionary;
 
         /// <summary>
@@ -51,6 +53,8 @@ namespace W6OP.ContestLogAnalyzer
         public LogProcessor()
         {
             CallDictionary = new Dictionary<string, List<ContestLog>>();
+            SubmittedLogDictionary = new Dictionary<string, string>();
+            QSOContactDictionary = new Dictionary<string, List<string>>();
             NameDictionary = new Dictionary<string, List<Tuple<string, int>>>();
 
             FailingLine = "";
@@ -135,12 +139,6 @@ namespace W6OP.ContestLogAnalyzer
                     // collect regular QSOs
                     contestLog.QSOCollection = CollectQSOs(lineList, session);
 
-                    //// add a reference to the parent log to each QSO
-                    //if (contestLog.QSOCollection != null)
-                    //{
-                    //    contestLog.QSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
-                    //}
-
                     // collect all the X-QSOs so we can mark them as IsXQSO - this log won't count them but others can get credit for them
                     xQSOCollection = CollectQSOs(lineListX, session);
                     xQSOCollection.Select(c => { c.ParentLog = contestLog; return c; }).ToList();
@@ -179,9 +177,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
 
                     // -----------------Performance upgrade---------------------------------------------------------------
-
                     BuildDictionaries(contestLog);
-
                     // --------------------------------------------------------------------------------
 
                     contestLogs.Add(contestLog);
@@ -197,6 +193,41 @@ namespace W6OP.ContestLogAnalyzer
             return logFileName;
         }
 
+        public void RefineHQPEntities(ContestLog contestLog)
+        {
+            List<string> entities;
+
+            foreach (QSO qso in contestLog.QSOCollection)
+            {
+                if (qso.ContactEntity.Length > 3 && (qso.ContactEntity.StartsWith("BL") || qso.ContactEntity.StartsWith("BK")))
+                {
+                    if (SubmittedLogDictionary.ContainsKey(qso.ContactCall))
+                    {
+                        // a log was submitted
+                        qso.ContactEntity = SubmittedLogDictionary[qso.ContactCall];
+                        qso.InvalidEntity = false;
+                        qso.IncorrectDXEntity = "";
+                    } else
+                    {
+                        // lets see if he was worked multiple times
+                        if (contestLog.QSODictionary.ContainsKey(qso.ContactCall))
+                        {
+                            entities = QSOContactDictionary[qso.ContactCall];
+                            qso.ContactEntity = entities.MostCommon();
+                            qso.InvalidEntity = false;
+                            qso.IncorrectDXEntity = "";
+                            //Console.WriteLine(qso.ContactCall + " : " + entities.MostCommon());
+                        } else
+                        {
+                            qso.ContactEntity = "HI";
+                            Console.WriteLine(qso.ContactCall + " : " + "HI");
+                        }
+                    }
+                }
+            }
+            
+        }
+
         /// <summary>
         /// By building both dictionaries I save significant time in the
         /// LogAnalyzer() linq queries. I only have to query a subset
@@ -210,12 +241,13 @@ namespace W6OP.ContestLogAnalyzer
         {
             List<ContestLog> contestLogs;
             List<QSO> qsos;
+            List<string> entities;
             List<Tuple<string, int>> names = new List<Tuple<string, int>>();
-            string firstOperatorName;
 
             foreach (QSO qso in contestLog.QSOCollection)
             {
-                // QSODictionary
+                // The QSO Dictionary contains all QSOs in a log keyed by call sign
+                // this is internal to the ContestLog
                 if (contestLog.QSODictionary.ContainsKey(qso.ContactCall))
                 {
                     qsos = contestLog.QSODictionary[qso.ContactCall];
@@ -230,7 +262,7 @@ namespace W6OP.ContestLogAnalyzer
                     contestLog.QSODictionary.Add(qso.ContactCall, qsos);
                 }
 
-                // Call
+                // The CallDictionary contains every log that contains a specific call sign
                 if (CallDictionary.ContainsKey(qso.ContactCall))
                 {
                     contestLogs = CallDictionary[qso.ContactCall];
@@ -248,69 +280,93 @@ namespace W6OP.ContestLogAnalyzer
                     CallDictionary.Add(qso.ContactCall, contestLogs);
                 }
 
-
-                // names - first all who submitted logs
-                if (NameDictionary.ContainsKey(qso.OperatorCall))
+                if (ActiveContest == ContestName.HQP)
                 {
-                    firstOperatorName = qso.OperatorName;
-
-                    names = NameDictionary[qso.OperatorCall];
-                    var item = names.Where(x => x.Item1 == qso.OperatorName).ToList();
-
-                    if (item.Count == 1)
+                    // all who submitted a log
+                    if (!SubmittedLogDictionary.ContainsKey(qso.OperatorCall))
                     {
-                        int count = item[0].Item2;
-                        count += 1;
-                        names.Remove(item[0]);
+                        SubmittedLogDictionary.Add(qso.OperatorCall, qso.OperatorEntity);
+                    } 
+                   
+                    // all who are in any log and the listed entity - updated in ConvertGridToEntity)
+                    if (QSOContactDictionary.ContainsKey(qso.ContactCall))
+                    {
+                        entities = QSOContactDictionary[qso.ContactCall];
+                        entities.Add(qso.ContactEntity);
+                    }
+                    else
+                    {
+                        entities = new List<string>
+                    {
+                        qso.ContactEntity
+                    };
+                        QSOContactDictionary.Add(qso.ContactCall, entities);
+                    }
+                }
 
-                        var name = new Tuple<string, int>(qso.OperatorName, count);
-                        names.Add(name);
+                if (ActiveContest == ContestName.CW_OPEN)
+                {
+                    //names - first all who submitted logs
+                    if (NameDictionary.ContainsKey(qso.OperatorCall))
+                    {
+                        names = NameDictionary[qso.OperatorCall];
+                        var item = names.Where(x => x.Item1 == qso.OperatorName).ToList();
+
+                        if (item.Count == 1)
+                        {
+                            int count = item[0].Item2;
+                            count += 1;
+                            names.Remove(item[0]);
+
+                            var name = new Tuple<string, int>(qso.OperatorName, count);
+                            names.Add(name);
+                        }
+                        else
+                        {
+                            var name = new Tuple<string, int>(qso.OperatorName, 1);
+                            names.Add(name);
+                        }
                     }
                     else
                     {
                         var name = new Tuple<string, int>(qso.OperatorName, 1);
-                        names.Add(name);
-                    }
-                }
-                else
-                {
-                    var name = new Tuple<string, int>(qso.OperatorName, 1);
-                    names = new List<Tuple<string, int>>
+                        names = new List<Tuple<string, int>>
                             {
                                 name
                             };
-                    NameDictionary[qso.OperatorCall] = names;
-                }
+                        NameDictionary[qso.OperatorCall] = names;
+                    }
 
-                // names - may not have submitted logs
-                if (NameDictionary.ContainsKey(qso.ContactCall))
-                {
-                    names = NameDictionary[qso.ContactCall];
-                    var item = names.Where(x => x.Item1 == qso.ContactName).ToList();
-
-                    if (item.Count == 1)
+                    //names - may not have submitted logs
+                    if (NameDictionary.ContainsKey(qso.ContactCall))
                     {
-                        int count = item[0].Item2;
-                        count += 1;
-                        names.Remove(item[0]);
+                        names = NameDictionary[qso.ContactCall];
+                        var item = names.Where(x => x.Item1 == qso.ContactName).ToList();
 
-                        var name = new Tuple<string, int>(qso.ContactName, count);
-                        names.Add(name);
+                        if (item.Count == 1)
+                        {
+                            int count = item[0].Item2;
+                            count += 1;
+                            names.Remove(item[0]);
+
+                            var name = new Tuple<string, int>(qso.ContactName, count);
+                            names.Add(name);
+                        }
+                        else
+                        {
+                            var name = new Tuple<string, int>(qso.ContactName, 1);
+                            names.Add(name);
+                        }
                     }
                     else
                     {
                         var name = new Tuple<string, int>(qso.ContactName, 1);
-                        names.Add(name);
-                    }
-                }
-                else
-                {
-                    var name = new Tuple<string, int>(qso.ContactName, 1);
-                    names = new List<Tuple<string, int>>
+                        names = new List<Tuple<string, int>>
                             {
                                 name
                             };
-                    NameDictionary[qso.ContactCall] = names;
+                        NameDictionary[qso.ContactCall] = names;
+                    }
                 }
             }
         }
@@ -679,81 +735,135 @@ namespace W6OP.ContestLogAnalyzer
             switch (contactEntity.Length)
             {
                 case 2:
-                    SetDXorStateContactEntity(qso, contactEntity, contactFullCall);
+                    SetContactEntity(qso, contactEntity, contactFullCall);
                     break;
                 case 3:
                     SetHawaiiContactEntity(qso, contactEntity);
                     break;
                 case 4:
-                    SetContactEntityFromGrid(qso, contactEntity.ToUpper(), contactFullCall);
+                    if (ValidateGrid(contactEntity))
+                    {
+                        qso.ContactGrid = contactEntity;
+                        qso.ContactEntity = ConvertGridToEntity(contactEntity.Substring(0, 4).ToUpper(), contactFullCall);
+                        SetContactEntity(qso, qso.ContactEntity, contactFullCall);
+                    }
+                    else
+                    {
+                        qso.InvalidEntity = true;
+                        qso.IncorrectDXEntity = "The contact entity column is missing or incorrect";
+                    }
                     break;
                 case 6:
-                    SetContactEntityFromGrid(qso, contactEntity.Substring(0, 4).ToUpper(), contactFullCall);
+                    if (ValidateGrid(contactEntity.Substring(0, 4)))
+                    {
+                        qso.ContactGrid = contactEntity.Substring(0, 4);
+                        qso.ContactEntity = ConvertGridToEntity(contactEntity.Substring(0, 4).ToUpper(), contactFullCall);
+                        SetContactEntity(qso, qso.ContactEntity, contactFullCall);
+                    }
+                    else
+                    {
+                        qso.InvalidEntity = true;
+                        qso.IncorrectDXEntity = "The contact entity column is missing or incorrect";
+                    }
                     break;
                 default:
                     qso.InvalidEntity = true;
                     if (qso.ContactEntity == "MISSING_COLUMN")
                     {
-                        qso.IncorrectDXEntity = "The contact entity column is missing";
+                        qso.IncorrectDXEntity = "The contact entity column is missing or incorrect";
                     }
                     break;
             }
         }
 
         /// <summary>
-        /// Set the real contact entity using the grid square.
+        /// Convert the grid square to an entity we can use.
         /// </summary>
-        /// <param name="qso">QSO</param>
-        /// <param name="contactGridSquare">String</param>
-        /// <param name="contactFullCall">String</param>
-        private void SetContactEntityFromGrid(QSO qso, string contactGridSquare, string contactFullCall)
+        /// <param name="contactGridSquare">string</param>
+        /// <param name="contactFullCall">string</param>
+        /// <returns></returns>
+        private string ConvertGridToEntity(string contactGridSquare, string contactFullCall)
         {
             IEnumerable<CallSignInfo> hitCollection;
             List<CallSignInfo> hitList;
+            string entity = "DX";
 
-            if (ValidateGrid(contactGridSquare))
+            // Hawaii - check hawaii file
+            // did they submit a log
+            if (contactGridSquare.StartsWith("BL") || contactGridSquare.StartsWith("BK"))
             {
-                qso.ContactGrid = contactGridSquare;
+                return contactGridSquare;
+                //Console.WriteLine("I,m here");
+                //if (SubmittedLogDictionary.ContainsKey(contactFullCall))
+                //{
+                //    entity = SubmittedLogDictionary[contactFullCall];
+                //    return entity;
+                //}
+                //else
+                //{
+                //    // no log so look at the file
+                //    // maybe generate some kind of report
+                //    entity = "HI";
+                //    return entity;
+                //}
+            }
 
-                if (GridSquares.ContainsKey(contactGridSquare))
-                {
-                    List<string> grids = GridSquares[contactGridSquare];
-                    if (grids.Count > 1)
-                    {  // use ULS Data
-                        if (ULSStateData.ContainsKey(contactFullCall))
+            if (GridSquares.ContainsKey(contactGridSquare))
+            {
+                List<string> grids = GridSquares[contactGridSquare];
+                if (grids.Count > 1)
+                {  // use ULS Data
+                    if (ULSStateData.ContainsKey(contactFullCall))
+                    {
+                        entity = ULSStateData[contactFullCall];
+                    }
+                    else // may be Canada
+                    {
+                        hitCollection = CallLookUp.LookUpCall(callSign: contactFullCall);
+                        hitList = hitCollection.ToList();
+                        if (hitList.Count != 0)
                         {
-                            qso.ContactEntity = ULSStateData[contactFullCall];
-                            SetDXorStateContactEntity(qso, qso.ContactEntity, contactFullCall);
+                            if (hitList[0].Country.ToUpper() == HQPCanadaLiteral)
+                            {
+                                // get province ID
+                                entity = hitList[0].Admin1;
+                            }
                         }
                     }
-                    else
-                    {
-                        qso.ContactEntity = grids[0];
-                        SetDXorStateContactEntity(qso, qso.ContactEntity, contactFullCall);
-                    }
-                } else
+                }
+                else
                 {
-                    // it must be a DX grid
-                    hitCollection = CallLookUp.LookUpCall(contactFullCall);
-                    hitList = hitCollection.ToList();
-                    if (hitList.Count != 0)
+                    entity = grids[0].Trim();
+                }
+            }
+            else // could be Canadian
+            {
+                hitCollection = CallLookUp.LookUpCall(callSign: contactFullCall);
+                hitList = hitCollection.ToList();
+                if (hitList.Count != 0)
+                {
+                    if (hitList[0].Country.ToUpper() == HQPCanadaLiteral)
                     {
-                        qso.ContactEntity = "DX";
-                        qso.ContactCountry = hitList[0].Country;
-                    }
-                    else
-                    {
-                        qso.InvalidEntity = true;
-                        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX or State or Province";
+                        entity = hitList[0].Admin1;
                     }
                 }
             }
-            else
+
+            if (QSOContactDictionary.ContainsKey(contactFullCall))
             {
-                qso.InvalidEntity = true;
-                // TODO: THIS NEEDS BETTER HANDLING
-                qso.IncorrectDXEntity = "The contact entity column is missing";
+                List<string> entities = QSOContactDictionary[contactFullCall];
+                // find out if one is a grid?
+                foreach (var (item, index) in entities.WithIndex())
+                {
+                   if (item.Length > 3)
+                    {
+                        entities[index] = entity;
+                        break;
+                    }
+                }
             }
+
+            return entity;
         }
 
         /// <summary>
@@ -801,60 +911,60 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qso"></param>
         /// <param name="contactEntity"></param>
         /// <param name="contactFullCall"></param>
-        private void SetDXorStateContactEntity(QSO qso, string contactEntity, string contactFullCall)
+        private void SetContactEntity(QSO qso, string contactEntity, string contactFullCall)
         {
             IEnumerable<CallSignInfo> hitCollection;
             List<CallSignInfo> hitList;
 
-            //if (qso.ContactEntity == "DX")
-            //{
-            //    // need to look it up
-            //    hitCollection = CallLookUp.LookUpCall(contactFullCall);
-            //    hitList = hitCollection.ToList();
-            //    if (hitList.Count != 0)
-            //    {
-            //        qso.ContactCountry = hitList[0].Country;
-            //    }
-            //    else
-            //    {
-            //        qso.InvalidEntity = true;
-            //        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX or State or Province";
-            //    }
-            //}
-            //else
-            //{
-            if (States.Contains(contactEntity))
+            if (qso.ContactEntity == "DX")
             {
-                qso.ContactCountry = HQPUSALiteral;
-            }
-            else if (Provinces.Contains(contactEntity))
-            {
-                qso.ContactCountry = HQPCanadaLiteral;
-            }
-            else
-            {
-                qso.InvalidEntity = true;
-
-                hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
+                // need to look it up
+                hitCollection = CallLookUp.LookUpCall(contactFullCall);
                 hitList = hitCollection.ToList();
                 if (hitList.Count != 0)
                 {
-                    qso.ContactCountry = hitList[0].Country.ToUpper();
-                    if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
-                    {
-                        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {hitList[0].Province}";
-                    }
-                    else
-                    {
-                        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX ({qso.ContactCountry})";
-                    }
+                    qso.ContactCountry = hitList[0].Country;
                 }
                 else
                 {
-                    qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {qso.ContactCountry}";
+                    qso.InvalidEntity = true;
+                    qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX or State or Province";
                 }
             }
-            //}
+            else
+            {
+                if (States.Contains(contactEntity))
+                {
+                    qso.ContactCountry = HQPUSALiteral;
+                }
+                else if (Provinces.Contains(contactEntity))
+                {
+                    qso.ContactCountry = HQPCanadaLiteral;
+                }
+                else
+                {
+                    qso.InvalidEntity = true;
+
+                    hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
+                    hitList = hitCollection.ToList();
+                    if (hitList.Count != 0)
+                    {
+                        qso.ContactCountry = hitList[0].Country.ToUpper();
+                        if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
+                        {
+                            qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {hitList[0].Province}";
+                        }
+                        else
+                        {
+                            qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX ({qso.ContactCountry})";
+                        }
+                    }
+                    else
+                    {
+                        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {qso.ContactCountry}";
+                    }
+                }
+            }
         }
 
 

@@ -680,6 +680,8 @@ namespace W6OP.ContestLogAnalyzer
             LogProcessor.CallDictionary = new Dictionary<string, List<ContestLog>>();
             LogProcessor.NameDictionary = new Dictionary<string, List<Tuple<string, int>>>();
 
+            ContestLogFileList = ContestLogFileList.OrderBy(x => x.FullName.ToUpper());
+
             foreach (FileInfo fileInfo in ContestLogFileList)
             {
                 fileName = LogProcessor.BuildContestLog(fileInfo, ContestLogs, Session);
@@ -713,6 +715,11 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
+                foreach (ContestLog log in ContestLogs)
+                {
+                   LogProcessor.RefineHQPEntities(log);
+                }
+
                 UpdateListViewLoad(ContestLogs.Count.ToString() + " logs loaded.", "", false);
                 EnableControl(ButtonPreScoreReports, true);
                 Cursor = Cursors.Default;

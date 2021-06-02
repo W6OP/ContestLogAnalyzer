@@ -70,7 +70,7 @@ namespace W6OP.ContestLogAnalyzer
             string call = null;
             string name = null;
             int progress = 0;
-            int validQsos;
+            int validQsoCount;
 
             // Display the label
             OnProgressUpdate?.Invoke("1", "", "", 0);
@@ -117,10 +117,12 @@ namespace W6OP.ContestLogAnalyzer
                             }
                         }
 
-                        validQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
+                        validQsoCount = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
+
+                        //var list = contestLog.QSOCollection.Where(q => q.ContactCall == "AH6NF");
 
                         // ReportProgress with Callsign
-                        OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsos.ToString(), progress);
+                        OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsoCount.ToString(), progress);
                     }
                 }
 
