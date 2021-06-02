@@ -79,7 +79,7 @@ namespace W6OP.ContestLogAnalyzer
                         qso = invalidQSOs.FirstOrDefault(q => q.ContactCall == call);
                         if (qso != null)
                         {
-                            qso.IncorrectOperatorCall = false;
+                            qso.IsIncorrectOperatorCall = false;
                             qso.ReasonRejected = RejectReason.None;
                             qso.Status = QSOStatus.ValidQSO;
                         }

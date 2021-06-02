@@ -177,7 +177,7 @@ namespace W6OP.ContestLogAnalyzer
             if (qsos.Any())
             {
                 Console.WriteLine("Incorrect operator call found:");
-                qsos.Select(c => { c.IncorrectOperatorCall = false; return c; }).ToList();
+                qsos.Select(c => { c.IsIncorrectOperatorCall = false; return c; }).ToList();
             }
         }
 
@@ -391,7 +391,7 @@ namespace W6OP.ContestLogAnalyzer
                     matchQSO.HasBeenMatched = true;
 
                     matchQSO.CallIsBusted = true;
-                    matchQSO.IncorrectValue = $"{matchQSO.ContactCall} --> {operatorCall}";
+                    matchQSO.IsIncorrectValue = $"{matchQSO.ContactCall} --> {operatorCall}";
                     break;
                 }
             }
@@ -497,8 +497,8 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         matches[0].MatchingQSO = qso;
                         matches[0].HasBeenMatched = true;
-                        matches[0].IncorrectDXEntity = $"{matches[0].ContactEntity} --> {qso.OperatorEntity}";
-                        matches[0].InvalidEntity = true;
+                        matches[0].IsIncorrectDXEntity = $"{matches[0].ContactEntity} --> {qso.OperatorEntity}";
+                        matches[0].IsInvalidEntity = true;
                     }
                     return matches;
                 case 2:
@@ -509,16 +509,16 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         matches[0].MatchingQSO = qso;
                         matches[0].HasBeenMatched = true;
-                        matches[0].IncorrectDXEntity = $"{matches[0].ContactEntity} --> {qso.OperatorEntity}";
-                        matches[0].InvalidEntity = true;
+                        matches[0].IsIncorrectDXEntity = $"{matches[0].ContactEntity} --> {qso.OperatorEntity}";
+                        matches[0].IsInvalidEntity = true;
                     }
 
                     if (matches[1].Status == QSOStatus.ValidQSO)
                     {
                         matches[1].MatchingQSO = qso;
                         matches[1].HasBeenMatched = true;
-                        matches[1].IncorrectDXEntity = $"{matches[1].ContactEntity} --> {qso.OperatorEntity}";
-                        matches[1].InvalidEntity = true;
+                        matches[1].IsIncorrectDXEntity = $"{matches[1].ContactEntity} --> {qso.OperatorEntity}";
+                        matches[1].IsInvalidEntity = true;
                     }
                     return matches;
                 default:
@@ -560,8 +560,8 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         matches[0].MatchingQSO = qso;
                         matches[0].HasBeenMatched = true;
-                        matches[0].IncorrectDXEntity = $"{matches[0].OperatorEntity} --> {qso.ContactEntity}";
-                        matches[0].InvalidEntity = true;
+                        matches[0].IsIncorrectDXEntity = $"{matches[0].OperatorEntity} --> {qso.ContactEntity}";
+                        matches[0].IsInvalidEntity = true;
                     }
                     return matches;
                 case 2:
@@ -573,16 +573,16 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         matches[0].HasBeenMatched = true;
                         matches[0].MatchingQSO = qso;
-                        matches[0].IncorrectDXEntity = $"{matches[0].OperatorEntity} --> {qso.ContactEntity}";
-                        matches[0].InvalidEntity = true;
+                        matches[0].IsIncorrectDXEntity = $"{matches[0].OperatorEntity} --> {qso.ContactEntity}";
+                        matches[0].IsInvalidEntity = true;
                     }
 
                     if (matches[1].Status == QSOStatus.ValidQSO)
                     {
                         matches[1].HasBeenMatched = true;
                         matches[1].MatchingQSO = qso;
-                        matches[1].IncorrectDXEntity = $"{matches[1].OperatorEntity} --> {qso.ContactEntity}";
-                        matches[1].InvalidEntity = true;
+                        matches[1].IsIncorrectDXEntity = $"{matches[1].OperatorEntity} --> {qso.ContactEntity}";
+                        matches[1].IsInvalidEntity = true;
                     }
                     return matches;
                 default:
@@ -629,13 +629,13 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (qsoPoints > matchQsoPoints)
                     {
-                        matches[0].IncorrectBand = true;
-                        matches[0].IncorrectValue = $"{matches[0].Band} --> {qso.Band}";
+                        matches[0].IsIncorrectBand = true;
+                        matches[0].IsIncorrectValue = $"{matches[0].Band} --> {qso.Band}";
                     }
                     else
                     {
-                        qso.IncorrectBand = true;
-                        qso.IncorrectValue = $"{qso.Band} --> {matches[0].Band}";
+                        qso.IsIncorrectBand = true;
+                        qso.IsIncorrectValue = $"{qso.Band} --> {matches[0].Band}";
                     }
                     return matches;
                 default:
@@ -663,14 +663,14 @@ namespace W6OP.ContestLogAnalyzer
 
                             if (qsoPoints > matchQsoPoints)
                             {
-                                matchQSO.IncorrectBand = true;
-                                matchQSO.IncorrectValue = $"{matchQSO.Band} --> {qso.Band}";
+                                matchQSO.IsIncorrectBand = true;
+                                matchQSO.IsIncorrectValue = $"{matchQSO.Band} --> {qso.Band}";
 
                             }
                             else
                             {
-                                qso.IncorrectBand = true;
-                                qso.IncorrectValue = $"{qso.Band} --> {matchQSO.Band}";
+                                qso.IsIncorrectBand = true;
+                                qso.IsIncorrectValue = $"{qso.Band} --> {matchQSO.Band}";
                             }
                         }
                     }
@@ -716,13 +716,13 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (qsoPoints > matchQsoPoints)
                     {
-                        matches[0].IncorrectMode = true;
-                        matches[0].IncorrectValue = $"{matches[0].Mode} --> {qso.Mode}";
+                        matches[0].IsIncorrectMode = true;
+                        matches[0].IsIncorrectValue = $"{matches[0].Mode} --> {qso.Mode}";
                     }
                     else
                     {
-                        qso.IncorrectMode = true;
-                        qso.IncorrectValue = $"{qso.Mode} --> {matches[0].Mode}";
+                        qso.IsIncorrectMode = true;
+                        qso.IsIncorrectValue = $"{qso.Mode} --> {matches[0].Mode}";
                     }
                     return matches;
                 default:
@@ -750,14 +750,14 @@ namespace W6OP.ContestLogAnalyzer
 
                             if (qsoPoints > matchQsoPoints)
                             {
-                                matchQSO.IncorrectMode = true;
-                                matchQSO.IncorrectValue = $"{matchQSO.Mode} --> {qso.Mode}";
+                                matchQSO.IsIncorrectMode = true;
+                                matchQSO.IsIncorrectValue = $"{matchQSO.Mode} --> {qso.Mode}";
 
                             }
                             else
                             {
-                                qso.IncorrectMode = true;
-                                qso.IncorrectValue = $"{qso.Mode} --> {matchQSO.Mode}";
+                                qso.IsIncorrectMode = true;
+                                qso.IsIncorrectValue = $"{qso.Mode} --> {matchQSO.Mode}";
                             }
                         }
                     }
@@ -927,11 +927,11 @@ namespace W6OP.ContestLogAnalyzer
                 // these must be Lists, not IEnumerable so .Except works - only look at QSOs with valid entities
                 List<QSO> listWithMostEntries = (new List<List<QSO>> { matchingQSOSpecific, matchingQSOsGeneral })
                    .OrderByDescending(x => x.Count())
-                   .Take(1).FirstOrDefault().Where(q => q.InvalidEntity == false).ToList();
+                   .Take(1).FirstOrDefault().Where(q => q.IsInvalidEntity == false).ToList();
 
                 List<QSO> listWithLeastEntries = (new List<List<QSO>> { matchingQSOSpecific, matchingQSOsGeneral })
                    .OrderBy(x => x.Count())
-                   .Take(1).FirstOrDefault().Where(q => q.InvalidEntity == false).ToList();
+                   .Take(1).FirstOrDefault().Where(q => q.IsInvalidEntity == false).ToList();
 
                 // we have enough to vote
                 if (listWithMostEntries.Count() > 2)
@@ -983,7 +983,7 @@ namespace W6OP.ContestLogAnalyzer
                             case "Hawaii":
                                 return;
                             default:
-                                if (qso.IsHQPEntity)
+                                if (qso.OperatorIsHQPEntity)
                                 {
                                     entity = "DX";
                                 }
@@ -996,8 +996,8 @@ namespace W6OP.ContestLogAnalyzer
             // if entity is different
             if (!entity.Contains(qso.ContactEntity))
             {
-                qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {entity}";
-                qso.InvalidEntity = true;
+                qso.IsIncorrectDXEntity = $"{qso.ContactEntity} --> {entity}";
+                qso.IsInvalidEntity = true;
             }
         }
 
@@ -1025,7 +1025,7 @@ namespace W6OP.ContestLogAnalyzer
                     case string _ when Enum.IsDefined(typeof(HQPMults), qsoList[0].OperatorEntity):
                         return;
                     default:
-                        qsoList[0].InvalidSentEntity = true;
+                        qsoList[0].IsInvalidSentEntity = true;
                         return;
                 }
             }
@@ -1041,7 +1041,7 @@ namespace W6OP.ContestLogAnalyzer
 
             if (qsos.Any())
             {
-                _ = qsos.Select(c => { c.InvalidSentEntity = true; return c; })
+                _ = qsos.Select(c => { c.IsInvalidSentEntity = true; return c; })
                         .ToList();
             }
             else
@@ -1087,7 +1087,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (previousQSO != null)
                 {
-                    if (previousQSO.IncorrectMode == true)
+                    if (previousQSO.IsIncorrectMode == true)
                     {
                         qsoPoints -= 1;
                     }
@@ -1135,7 +1135,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (nextQSO != null)
                 {
-                    if (nextQSO.IncorrectBand == true)
+                    if (nextQSO.IsIncorrectBand == true)
                     {
                         qsoPoints -= 1;
                     }
@@ -1203,8 +1203,8 @@ namespace W6OP.ContestLogAnalyzer
                 return;
             }
 
-            qso.IncorrectValue = qso.ContactName + " --> " + majorityName.Item1;
-            qso.IncorrectContactName = true;
+            qso.IsIncorrectValue = qso.ContactName + " --> " + majorityName.Item1;
+            qso.IsIncorrectContactName = true;
         }
 
         /// <summary>
@@ -1482,14 +1482,14 @@ namespace W6OP.ContestLogAnalyzer
                     // if already flagged for error don't change status
                     if (matches[0].Status != QSOStatus.InvalidQSO && matches[0].ReceivedSerialNumber != qso.SentSerialNumber)
                     {
-                        matches[0].IncorrectSerialNumber = true;
-                        matches[0].IncorrectValue = $"{matches[0].ReceivedSerialNumber} --> {qso.SentSerialNumber}";
+                        matches[0].IsIncorrectSerialNumber = true;
+                        matches[0].IsIncorrectValue = $"{matches[0].ReceivedSerialNumber} --> {qso.SentSerialNumber}";
                     }
 
                     if (qso.Status != QSOStatus.InvalidQSO && qso.ReceivedSerialNumber != matches[0].SentSerialNumber)
                     {
-                        qso.IncorrectSerialNumber = true;
-                        qso.IncorrectValue = $"{qso.ReceivedSerialNumber} --> {matches[0].SentSerialNumber}";
+                        qso.IsIncorrectSerialNumber = true;
+                        qso.IsIncorrectValue = $"{qso.ReceivedSerialNumber} --> {matches[0].SentSerialNumber}";
                     }
                     return matches;
                 default:
@@ -1512,15 +1512,15 @@ namespace W6OP.ContestLogAnalyzer
                         // determine which serial number(s) are incorrect
                         if (matchQSO.ReceivedSerialNumber != qso.SentSerialNumber)
                         {
-                            matchQSO.IncorrectSerialNumber = true;
-                            matchQSO.IncorrectValue += $"{matchQSO.ReceivedSerialNumber} --> {qso.SentSerialNumber}";
+                            matchQSO.IsIncorrectSerialNumber = true;
+                            matchQSO.IsIncorrectValue += $"{matchQSO.ReceivedSerialNumber} --> {qso.SentSerialNumber}";
                         }
 
                         // we don't know the order they are evaluated so a later bad QSO could invalidate a good QSO
                         if (qso.Status != QSOStatus.InvalidQSO && qso.ReceivedSerialNumber != matchQSO.SentSerialNumber)
                         {
-                            qso.IncorrectSerialNumber = true;
-                            qso.IncorrectValue = $"{qso.ReceivedSerialNumber} --> {matchQSO.SentSerialNumber}";
+                            qso.IsIncorrectSerialNumber = true;
+                            qso.IsIncorrectValue = $"{qso.ReceivedSerialNumber} --> {matchQSO.SentSerialNumber}";
                         }
                         else
                         {
@@ -1530,8 +1530,8 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (matchFound == true)
                     {
-                        qso.IncorrectSerialNumber = false;
-                        qso.IncorrectValue = "";
+                        qso.IsIncorrectSerialNumber = false;
+                        qso.IsIncorrectValue = "";
                     }
                     return matches;
             }
@@ -1570,8 +1570,8 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (qso.Status != QSOStatus.InvalidQSO)
                     {
-                        qso.IncorrectContactName = true;
-                        qso.IncorrectValue = $"{qso.ContactName} --> {matches[0].OperatorName}";
+                        qso.IsIncorrectContactName = true;
+                        qso.IsIncorrectValue = $"{qso.ContactName} --> {matches[0].OperatorName}";
                     }
                     return matches;
                 default:
@@ -1643,13 +1643,13 @@ namespace W6OP.ContestLogAnalyzer
 
                     if (qsoPoints > matchQsoPoints)
                     {
-                        matches[0].IncorrectBand = true;
-                        matches[0].IncorrectValue = $"{matches[0].Band} --> {qso.Band}";
+                        matches[0].IsIncorrectBand = true;
+                        matches[0].IsIncorrectValue = $"{matches[0].Band} --> {qso.Band}";
                     }
                     else
                     {
-                        qso.IncorrectBand = true;
-                        qso.IncorrectValue = $"{qso} --> {matches[0].Band}";
+                        qso.IsIncorrectBand = true;
+                        qso.IsIncorrectValue = $"{qso} --> {matches[0].Band}";
                     }
                     return matches;
                 default:
@@ -1676,13 +1676,13 @@ namespace W6OP.ContestLogAnalyzer
 
                             if (qsoPoints > matchQsoPoints)
                             {
-                                matchQSO.IncorrectBand = true;
-                                matchQSO.IncorrectValue = $"{matchQSO.Band} --> {qso.Band}";
+                                matchQSO.IsIncorrectBand = true;
+                                matchQSO.IsIncorrectValue = $"{matchQSO.Band} --> {qso.Band}";
                             }
                             else
                             {
-                                qso.IncorrectBand = true;
-                                qso.IncorrectValue = $"{qso} --> {matchQSO.Band}";
+                                qso.IsIncorrectBand = true;
+                                qso.IsIncorrectValue = $"{qso} --> {matchQSO.Band}";
                             }
                         }
                     }
@@ -1800,7 +1800,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (previousQSO != null)
                 {
-                    if (previousQSO.IncorrectBand == true)
+                    if (previousQSO.IsIncorrectBand == true)
                     {
                         qsoPoints -= 1;
                     }
@@ -1848,7 +1848,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (nextQSO != null)
                 {
-                    if (nextQSO.IncorrectBand == true)
+                    if (nextQSO.IsIncorrectBand == true)
                     {
                         qsoPoints -= 1;
                     }
@@ -1899,7 +1899,7 @@ namespace W6OP.ContestLogAnalyzer
 
             if (qsos.Any())
             {
-                qsos.Select(c => { c.IncorrectOperatorName = false; return c; }).ToList();
+                qsos.Select(c => { c.IsIncorrectOperatorName = false; return c; }).ToList();
             }
         }
 

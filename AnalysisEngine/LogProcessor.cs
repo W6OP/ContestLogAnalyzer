@@ -205,8 +205,8 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         // a log was submitted
                         qso.ContactEntity = SubmittedLogDictionary[qso.ContactCall];
-                        qso.InvalidEntity = false;
-                        qso.IncorrectDXEntity = "";
+                        qso.IsInvalidEntity = false;
+                        qso.IsIncorrectDXEntity = "";
                     } else
                     {
                         // lets see if he was worked multiple times
@@ -214,8 +214,8 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             entities = QSOContactDictionary[qso.ContactCall];
                             qso.ContactEntity = entities.MostCommon();
-                            qso.InvalidEntity = false;
-                            qso.IncorrectDXEntity = "";
+                            qso.IsInvalidEntity = false;
+                            qso.IsIncorrectDXEntity = "";
                             //Console.WriteLine(qso.ContactCall + " : " + entities.MostCommon());
                         } else
                         {
@@ -641,7 +641,7 @@ namespace W6OP.ContestLogAnalyzer
 
                 qso.OperatorCountry = HQPHawaiiLiteral;
                 qso.HQPEntity = qso.OperatorEntity;
-                qso.IsHQPEntity = true;
+                qso.OperatorIsHQPEntity = true;
 
                 if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
                 {
@@ -683,8 +683,8 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        qso.InvalidEntity = true;
-                        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> should be a Hawai’i district )";
+                        qso.IsInvalidEntity = true;
+                        qso.IsIncorrectDXEntity = $"{qso.ContactEntity} --> should be a Hawai’i district )";
                     }
 
                     continue;
@@ -749,8 +749,8 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        qso.InvalidEntity = true;
-                        qso.IncorrectDXEntity = "The contact entity column is missing or incorrect";
+                        qso.IsInvalidEntity = true;
+                        qso.IsIncorrectDXEntity = "The contact entity column is missing or incorrect";
                     }
                     break;
                 case 6:
@@ -762,15 +762,15 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     else
                     {
-                        qso.InvalidEntity = true;
-                        qso.IncorrectDXEntity = "The contact entity column is missing or incorrect";
+                        qso.IsInvalidEntity = true;
+                        qso.IsIncorrectDXEntity = "The contact entity column is missing or incorrect";
                     }
                     break;
                 default:
-                    qso.InvalidEntity = true;
+                    qso.IsInvalidEntity = true;
                     if (qso.ContactEntity == "MISSING_COLUMN")
                     {
-                        qso.IncorrectDXEntity = "The contact entity column is missing or incorrect";
+                        qso.IsIncorrectDXEntity = "The contact entity column is missing or incorrect";
                     }
                     break;
             }
@@ -899,8 +899,8 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    qso.InvalidEntity = true;
-                    qso.IncorrectDXEntity = $"{qso.ContactEntity} is not valid for this contest";
+                    qso.IsInvalidEntity = true;
+                    qso.IsIncorrectDXEntity = $"{qso.ContactEntity} is not valid for this contest";
                 }
             }
         }
@@ -927,8 +927,8 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    qso.InvalidEntity = true;
-                    qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX or State or Province";
+                    qso.IsInvalidEntity = true;
+                    qso.IsIncorrectDXEntity = $"{qso.ContactEntity} --> DX or State or Province";
                 }
             }
             else
@@ -943,7 +943,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    qso.InvalidEntity = true;
+                    qso.IsInvalidEntity = true;
 
                     hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
                     hitList = hitCollection.ToList();
@@ -952,16 +952,16 @@ namespace W6OP.ContestLogAnalyzer
                         qso.ContactCountry = hitList[0].Country.ToUpper();
                         if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
                         {
-                            qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {hitList[0].Province}";
+                            qso.IsIncorrectDXEntity = $"{qso.ContactEntity} --> {hitList[0].Province}";
                         }
                         else
                         {
-                            qso.IncorrectDXEntity = $"{qso.ContactEntity} --> DX ({qso.ContactCountry})";
+                            qso.IsIncorrectDXEntity = $"{qso.ContactEntity} --> DX ({qso.ContactCountry})";
                         }
                     }
                     else
                     {
-                        qso.IncorrectDXEntity = $"{qso.ContactEntity} --> {qso.ContactCountry}";
+                        qso.IsIncorrectDXEntity = $"{qso.ContactEntity} --> {qso.ContactCountry}";
                     }
                 }
             }
@@ -1028,7 +1028,7 @@ namespace W6OP.ContestLogAnalyzer
                     default:
                         if (CheckCountyFiles(qso.OperatorEntity) == null)
                         {
-                            qso.InvalidSentEntity = true;
+                            qso.IsInvalidSentEntity = true;
                             FailReason += "The operator entity is invalid: " + Environment.NewLine + qso.RawQSO + Environment.NewLine;
                             qso.ParentLog.IsValidLog = false;
                         }

@@ -109,7 +109,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         // The operators call sign is invalid for this QSO
-        public bool IncorrectOperatorCall
+        public bool IsIncorrectOperatorCall
         {
             set
             {
@@ -204,13 +204,13 @@ namespace W6OP.ContestLogAnalyzer
 
         #region CWOpen Properties
 
-        public bool IncorrectBand
+        public bool IsIncorrectBand
         {
-            get { return incorrectBandHQP; }
+            get { return isIncorrectBandHQP; }
             set
             {
-                incorrectBandHQP = value;
-                if (incorrectBandHQP == true)
+                isIncorrectBandHQP = value;
+                if (isIncorrectBandHQP == true)
                 {
                     ReasonRejected = RejectReason.Band;
                     Status = QSOStatus.InvalidQSO;
@@ -226,12 +226,12 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        public bool IncorrectMode
+        public bool IsIncorrectMode
         {
-            get { return incorrectModeHQP; }
+            get { return isIncorrectModeHQP; }
             set
             {
-                incorrectModeHQP = value;
+                isIncorrectModeHQP = value;
                 if (value == true)
                 {
                     ReasonRejected = RejectReason.Mode;
@@ -249,7 +249,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         // The operators name does not match for this QSO.
-        public bool IncorrectOperatorName
+        public bool IsIncorrectOperatorName
         {
             set
             {
@@ -269,7 +269,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        public bool IncorrectContactName
+        public bool IsIncorrectContactName
         {
             set
             {
@@ -290,7 +290,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         // Lists the incorrect name if available.
-        public string IncorrectValue { get; set; }
+        public string IsIncorrectValue { get; set; }
 
         // The sent serial number.
         public int SentSerialNumber { get; set; }
@@ -298,7 +298,7 @@ namespace W6OP.ContestLogAnalyzer
         public int ReceivedSerialNumber { get; set; }
 
         // The serial number does not match the other log.
-        public bool IncorrectSerialNumber
+        public bool IsIncorrectSerialNumber
         {
             set
             {
@@ -344,9 +344,9 @@ namespace W6OP.ContestLogAnalyzer
 
         #region HQP Fields
 
-        private bool invalidEntityHQP = false;
-        private bool incorrectBandHQP = false;
-        private bool incorrectModeHQP = false;
+        private bool isInvalidEntityHQP = false;
+        private bool isIncorrectBandHQP = false;
+        private bool isIncorrectModeHQP = false;
         #endregion
 
         #region HQP Properties
@@ -361,7 +361,7 @@ namespace W6OP.ContestLogAnalyzer
         public string ReceivedReport { get; set; }
 
         // Lists the incorrect entity if available.
-        public string IncorrectDXEntity { get; set; }
+        public string IsIncorrectDXEntity { get; set; }
 
         // Actual country of the operator.
         public string OperatorCountry { get; set; }
@@ -377,11 +377,11 @@ namespace W6OP.ContestLogAnalyzer
         public string ContactCountry { get; set; }
 
         // The entity does not match this QSO.
-        public bool InvalidEntity
+        public bool IsInvalidEntity
         {
             set
             {
-                invalidEntityHQP = value;
+                isInvalidEntityHQP = value;
                 if (value == true)
                 {
                     ReasonRejected = RejectReason.InvalidEntity;
@@ -398,12 +398,12 @@ namespace W6OP.ContestLogAnalyzer
             }
             get
             {
-                return invalidEntityHQP;
+                return isInvalidEntityHQP;
             }
         }
 
         // The entity does not match this QSO.
-        public bool InvalidSentEntity
+        public bool IsInvalidSentEntity
         {
             set
             {
@@ -433,7 +433,7 @@ namespace W6OP.ContestLogAnalyzer
 
         public string HQPEntity { get; set; }
 
-        public bool IsHQPEntity { get; set; }
+        public bool OperatorIsHQPEntity { get; set; }
         public string OperatorOriginalCall { get; set; }
 
         #endregion
