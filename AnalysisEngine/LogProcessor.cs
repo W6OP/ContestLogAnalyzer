@@ -46,7 +46,7 @@ namespace W6OP.ContestLogAnalyzer
         private Dictionary<string, string> SubmittedLogDictionary;
         private Dictionary<string, List<string>> QSOContactDictionary;
         public Dictionary<string, List<Tuple<string, int>>> NameDictionary;
-
+        public List<string> QSOStoInspect;
         /// <summary>
         /// Default constructor.
         /// </summary>
@@ -56,7 +56,7 @@ namespace W6OP.ContestLogAnalyzer
             SubmittedLogDictionary = new Dictionary<string, string>();
             QSOContactDictionary = new Dictionary<string, List<string>>();
             NameDictionary = new Dictionary<string, List<Tuple<string, int>>>();
-
+            
             FailingLine = "";
             WorkingLine = "";
         }
@@ -94,6 +94,7 @@ namespace W6OP.ContestLogAnalyzer
         public string BuildContestLog(FileInfo fileInfo, List<ContestLog> contestLogs, Session session)
         {
             ContestLog contestLog = new ContestLog();
+            QSOStoInspect = new List<string>();
             List<string> lineList;
             List<string> lineListX;
             List<QSO> xQSOCollection; // X-QSOs
@@ -220,18 +221,28 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             entities = QSOContactDictionary[qso.ContactCall];
                             qso.ContactEntity = entities.MostCommon();
-                            qso.IsInvalidEntity = false;
-                            qso.IncorrectDXEntityMessage = "";
+                            if (qso.ContactEntity.StartsWith("BL") || qso.ContactEntity.StartsWith("BK"))
+                            {
+                                // no log and no non FT8 contacts
+                                QSOStoInspect.Add(qso.RawQSO);
+                                QSOStoInspect.Add("----------");
+                                Console.WriteLine(qso.ContactCall + " : " + "HI");
+
+                            } else
+                            {
+                                qso.IsInvalidEntity = false;
+                                qso.IncorrectDXEntityMessage = "";
+                            }
                             //Console.WriteLine(qso.ContactCall + " : " + entities.MostCommon());
                         } else
                         {
-                            qso.ContactEntity = "HI";
+                            QSOStoInspect.Add(qso.RawQSO);
+                            QSOStoInspect.Add("----------");
                             Console.WriteLine(qso.ContactCall + " : " + "HI");
                         }
                     }
                 }
             }
-            
         }
 
         /// <summary>

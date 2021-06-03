@@ -161,15 +161,15 @@ namespace W6OP.PrintEngine
                     if (contestlog.QSOCollection[0].OperatorEntity.Length > 2)
                     {
                         qth = "DX";
-                    } 
+                    }
                     else
                     {
                         qth = contestlog.QSOCollection[0].OperatorEntity;
                     }
-                    
+
                 }
 
-                    if (contestlog != null)
+                if (contestlog != null)
                 {
                     // only look at valid QSOs
                     validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
@@ -227,7 +227,7 @@ namespace W6OP.PrintEngine
         //        contestlog = contestLogs[i];
         //        if (contestlog != null)
         //        {
-                   
+
         //            // only look at valid QSOs
         //            validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
 
@@ -284,7 +284,7 @@ namespace W6OP.PrintEngine
 
             // only look at invalid QSOs
             List<QSO> inValidQsoList = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
-            
+
             try
             {
                 using (StreamWriter sw = File.CreateText(reportFileName))
@@ -326,7 +326,7 @@ namespace W6OP.PrintEngine
                             }
 
                             if (qso.IsDuplicateMatch == false)
-                                {
+                            {
                                 switch (ActiveContest)
                                 {
                                     case ContestName.CW_OPEN:
@@ -355,7 +355,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.OperatorName:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage; 
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage;
                                     }
                                     else
                                     {
@@ -375,7 +375,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.Mode:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage; 
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage;
                                     }
                                     else
                                     {
@@ -428,7 +428,7 @@ namespace W6OP.PrintEngine
 
                                         if (qso.HasBeenMatched)
                                         {
-                                            PrintDuplicates(qso, sw); 
+                                            PrintDuplicates(qso, sw);
                                         }
                                         sw.WriteLine("");
                                     }
@@ -538,7 +538,7 @@ namespace W6OP.PrintEngine
         /// </summary>
         /// <param name="dupeListLocation"></param>
         /// <param name="sw"></param>
-        private void PrintDuplicates(QSO qso, StreamWriter sw) 
+        private void PrintDuplicates(QSO qso, StreamWriter sw)
         {
             string message = "";
 
@@ -577,23 +577,48 @@ namespace W6OP.PrintEngine
             item = qso;
             sw.WriteLine("Duplicate match:");
             switch (ActiveContest)
-                {
-                    case ContestName.CW_OPEN:
-                        message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
-                       item.OperatorName + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactName;
-                        break;
-                    case ContestName.HQP:
-                        message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
-                        item.OperatorEntity + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactEntity;
-                        break;
-                }
+            {
+                case ContestName.CW_OPEN:
+                    message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                   item.OperatorName + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactName;
+                    break;
+                case ContestName.HQP:
+                    message = "QSO: " + "\t" + item.Frequency + "\t" + item.Mode + "\t" + item.QsoDate + "\t" + item.QsoTime + "\t" + item.OperatorCall + "\t" + item.SentSerialNumber.ToString() + "\t" +
+                    item.OperatorEntity + "\t" + item.ContactCall + "\t" + item.ReceivedSerialNumber.ToString() + "\t" + item.ContactEntity;
+                    break;
+            }
 
-                sw.WriteLine(message);
+            sw.WriteLine(message);
 
             item.HasBeenPrinted = true;
             //}
         }
 
+        /// <summary>
+        /// Write out a report with the raw qsos that are Hawaii stations
+        /// without a log and only worked FT8.
+        /// </summary>
+        /// <param name="rawQsos"></param>
+        public void PrintHHawaiiQSOStoInspect(List<string> rawQsos)
+        {
+            string reportFileName = Path.Combine(InspectionFolder, "HawaiiGrid.rpt");
+
+            try
+            {
+                using (StreamWriter sw = File.CreateText(reportFileName))
+                {
+                    foreach (string rawQso in rawQsos)
+                    {
+                        sw.WriteLine(rawQso);
+                    }
+                    sw.WriteLine("End of List");
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
         /// <summary>
         /// Print a report for each log listing the QSOs rejected and the reason for rejection.
@@ -646,7 +671,7 @@ namespace W6OP.PrintEngine
                                     sw.WriteLine("Log checking results for " + callsign);
                                     break;
                             }
-                            
+
                             sw.WriteLine("");
 
                             if (!string.IsNullOrEmpty(contestLog.LogHeader.SoapBox))
@@ -672,7 +697,7 @@ namespace W6OP.PrintEngine
                                 // should only be one reason so lets change the collection type
                                 //foreach (var key in qso.GetRejectReasons().Keys)
                                 //{
-                                 //   value = EnumHelper.GetDescription(qso.ReasonRejected);
+                                //   value = EnumHelper.GetDescription(qso.ReasonRejected);
                                 //}
 
                                 sw.WriteLine(message + "\t" + EnumHelper.GetDescription(qso.ReasonRejected));
@@ -1114,7 +1139,7 @@ namespace W6OP.PrintEngine
                 sheets = workbookPart.Workbook.AppendChild(new Sheets());
                 sheet = new Sheet() { Id = workbookPart.GetIdOfPart(worksheetPart), SheetId = sheetId, Name = sheetName };
             }
-         
+
             sheets.Append(sheet);
         }
 
