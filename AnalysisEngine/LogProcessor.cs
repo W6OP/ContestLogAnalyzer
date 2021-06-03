@@ -193,6 +193,12 @@ namespace W6OP.ContestLogAnalyzer
             return logFileName;
         }
 
+        /// <summary>
+        /// Hawaii resides in just two grids so I need to do extra work
+        /// to determine their actual Hawaiin entity. I need to wait for the 
+        /// Dictionaries to get fully built before I can do this.
+        /// </summary>
+        /// <param name="contestLog"></param>
         public void RefineHQPEntities(ContestLog contestLog)
         {
             List<string> entities;
@@ -206,7 +212,7 @@ namespace W6OP.ContestLogAnalyzer
                         // a log was submitted
                         qso.ContactEntity = SubmittedLogDictionary[qso.ContactCall];
                         qso.IsInvalidEntity = false;
-                        qso.IsIncorrectDXEntity = "";
+                        qso.IncorrectDXEntityMessage = "";
                     } else
                     {
                         // lets see if he was worked multiple times
@@ -215,7 +221,7 @@ namespace W6OP.ContestLogAnalyzer
                             entities = QSOContactDictionary[qso.ContactCall];
                             qso.ContactEntity = entities.MostCommon();
                             qso.IsInvalidEntity = false;
-                            qso.IsIncorrectDXEntity = "";
+                            qso.IncorrectDXEntityMessage = "";
                             //Console.WriteLine(qso.ContactCall + " : " + entities.MostCommon());
                         } else
                         {
@@ -684,7 +690,7 @@ namespace W6OP.ContestLogAnalyzer
                     else
                     {
                         qso.IsInvalidEntity = true;
-                        qso.IsIncorrectDXEntity = $"{qso.ContactEntity} --> should be a Hawai’i district )";
+                        qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> should be a Hawai’i district )";
                     }
 
                     continue;
@@ -750,7 +756,7 @@ namespace W6OP.ContestLogAnalyzer
                     else
                     {
                         qso.IsInvalidEntity = true;
-                        qso.IsIncorrectDXEntity = "The contact entity column is missing or incorrect";
+                        qso.IncorrectDXEntityMessage = "The contact entity column is missing or incorrect";
                     }
                     break;
                 case 6:
@@ -763,14 +769,14 @@ namespace W6OP.ContestLogAnalyzer
                     else
                     {
                         qso.IsInvalidEntity = true;
-                        qso.IsIncorrectDXEntity = "The contact entity column is missing or incorrect";
+                        qso.IncorrectDXEntityMessage = "The contact entity column is missing or incorrect";
                     }
                     break;
                 default:
                     qso.IsInvalidEntity = true;
                     if (qso.ContactEntity == "MISSING_COLUMN")
                     {
-                        qso.IsIncorrectDXEntity = "The contact entity column is missing or incorrect";
+                        qso.IncorrectDXEntityMessage = "The contact entity column is missing or incorrect";
                     }
                     break;
             }
@@ -788,24 +794,10 @@ namespace W6OP.ContestLogAnalyzer
             List<CallSignInfo> hitList;
             string entity = "DX";
 
-            // Hawaii - check hawaii file
-            // did they submit a log
+            // RefineHQPEntities() will fix this
             if (contactGridSquare.StartsWith("BL") || contactGridSquare.StartsWith("BK"))
             {
                 return contactGridSquare;
-                //Console.WriteLine("I,m here");
-                //if (SubmittedLogDictionary.ContainsKey(contactFullCall))
-                //{
-                //    entity = SubmittedLogDictionary[contactFullCall];
-                //    return entity;
-                //}
-                //else
-                //{
-                //    // no log so look at the file
-                //    // maybe generate some kind of report
-                //    entity = "HI";
-                //    return entity;
-                //}
             }
 
             if (GridSquares.ContainsKey(contactGridSquare))
@@ -825,7 +817,7 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             if (hitList[0].Country.ToUpper() == HQPCanadaLiteral)
                             {
-                                // get province ID
+                                // this is province ID
                                 entity = hitList[0].Admin1;
                             }
                         }
@@ -883,6 +875,11 @@ namespace W6OP.ContestLogAnalyzer
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="qso"></param>
+        /// <param name="contactEntity"></param>
         private static void SetHawaiiContactEntity(QSO qso, string contactEntity)
         {
             if (Enum.IsDefined(typeof(HQPMults), contactEntity))
@@ -900,7 +897,7 @@ namespace W6OP.ContestLogAnalyzer
                 else
                 {
                     qso.IsInvalidEntity = true;
-                    qso.IsIncorrectDXEntity = $"{qso.ContactEntity} is not valid for this contest";
+                    qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} is not valid for this contest";
                 }
             }
         }
@@ -928,7 +925,7 @@ namespace W6OP.ContestLogAnalyzer
                 else
                 {
                     qso.IsInvalidEntity = true;
-                    qso.IsIncorrectDXEntity = $"{qso.ContactEntity} --> DX or State or Province";
+                    qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> DX or State or Province";
                 }
             }
             else
@@ -952,16 +949,16 @@ namespace W6OP.ContestLogAnalyzer
                         qso.ContactCountry = hitList[0].Country.ToUpper();
                         if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
                         {
-                            qso.IsIncorrectDXEntity = $"{qso.ContactEntity} --> {hitList[0].Province}";
+                            qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> {hitList[0].Province}";
                         }
                         else
                         {
-                            qso.IsIncorrectDXEntity = $"{qso.ContactEntity} --> DX ({qso.ContactCountry})";
+                            qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> DX ({qso.ContactCountry})";
                         }
                     }
                     else
                     {
-                        qso.IsIncorrectDXEntity = $"{qso.ContactEntity} --> {qso.ContactCountry}";
+                        qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> {qso.ContactCountry}";
                     }
                 }
             }

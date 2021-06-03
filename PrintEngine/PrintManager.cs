@@ -345,41 +345,41 @@ namespace W6OP.PrintEngine
                                 case RejectReason.ContactName:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectValue; // + " --> " + qso.MatchingQSO.ContactName;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage; // + " --> " + qso.MatchingQSO.ContactName;
                                     }
                                     else
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectValue;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage;
                                     }
                                     break;
                                 case RejectReason.OperatorName:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectValue; 
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage; 
                                     }
                                     else
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectValue;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage;
                                     }
                                     break;
                                 case RejectReason.Band:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectValue;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage;
                                     }
                                     else
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectValue;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage;
                                     }
                                     break;
                                 case RejectReason.Mode:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectValue; 
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage; 
                                     }
                                     else
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectValue;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage;
                                     }
                                     break;
                                 case RejectReason.NoQSOMatch:
@@ -391,7 +391,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.BustedCallSign:
                                     if (qso.HasBeenPrinted == false)
                                     {
-                                        message = "This QSO is not in the other operators log or the call may be busted: " + qso.IsIncorrectValue;
+                                        message = "This QSO is not in the other operators log or the call may be busted: " + qso.IncorrectValueMessage;
                                         sw.WriteLine(message);
 
                                         PrintNearestMatches(qso, sw);
@@ -403,7 +403,7 @@ namespace W6OP.PrintEngine
                                 case RejectReason.SerialNumber:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectValue; //+ " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectValueMessage; //+ " - " + qso.ReceivedSerialNumber + " --> " + qso.MatchingQSO.SentSerialNumber;
                                     }
                                     else
                                     {
@@ -413,11 +413,11 @@ namespace W6OP.PrintEngine
                                 case RejectReason.EntityName:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectDXEntity; // + " --> " + qso.MatchingQSO.OperatorEntity;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntityMessage; // + " --> " + qso.MatchingQSO.OperatorEntity;
                                     }
                                     else
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectDXEntity;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntityMessage;
                                     }
                                     break;
                                 case RejectReason.DuplicateQSO:
@@ -447,11 +447,11 @@ namespace W6OP.PrintEngine
                                 case RejectReason.InvalidEntity:
                                     if (qso.MatchingQSO != null)
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectDXEntity; // + " --> " + qso.MatchingQSO.OperatorEntity;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntityMessage; // + " --> " + qso.MatchingQSO.OperatorEntity;
                                     }
                                     else
                                     {
-                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IsIncorrectDXEntity;
+                                        value = EnumHelper.GetDescription(qso.ReasonRejected) + " - " + qso.IncorrectDXEntityMessage;
                                     }
                                     break;
                                 case RejectReason.NotCounted:

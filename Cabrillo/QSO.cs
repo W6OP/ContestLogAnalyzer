@@ -290,7 +290,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         // Lists the incorrect name if available.
-        public string IsIncorrectValue { get; set; }
+        public string IncorrectValueMessage { get; set; }
 
         // The sent serial number.
         public int SentSerialNumber { get; set; }
@@ -361,7 +361,7 @@ namespace W6OP.ContestLogAnalyzer
         public string ReceivedReport { get; set; }
 
         // Lists the incorrect entity if available.
-        public string IsIncorrectDXEntity { get; set; }
+        public string IncorrectDXEntityMessage { get; set; }
 
         // Actual country of the operator.
         public string OperatorCountry { get; set; }
