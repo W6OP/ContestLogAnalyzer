@@ -1053,14 +1053,11 @@ namespace W6OP.ContestLogAnalyzer
         private double DetermineModeFault(QSO qso)
         {
             ContestLog contestLog = qso.ParentLog;
-            QSO previousQSO = null;
-            QSO nextQSO = null;
             string frequency = qso.Frequency;
             double qsoPoints = 0;
-            double counter = 0;
 
             // bonus point for having rig control frequency
-            if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+            if (UsesRigControl(frequency))
             {
                 qsoPoints += 1;
                 // if the log shows he was only on one band & rig control he wins
@@ -1074,6 +1071,26 @@ namespace W6OP.ContestLogAnalyzer
                 qsoPoints -= 1;
             }
 
+            qsoPoints += InspectPreviousQSOsForMode(qso, contestLog, frequency);
+
+            qsoPoints += InspectNextQSOsForMode(qso, contestLog, frequency);
+
+            return qsoPoints;
+        }
+
+        /// <summary>
+        /// Check the 10 previous QSOs
+        /// </summary>
+        /// <param name="qso">QSO</param>
+        /// <param name="contestLog">ContestLog</param>
+        /// <param name="frequency">string</param>
+        /// <returns>double</returns>
+        private double InspectPreviousQSOsForMode(QSO qso, ContestLog contestLog, string frequency)
+        {
+            double counter = 0;
+            double qsoPoints = 0;
+            QSO previousQSO = null;
+
             while (counter < 10)
             {
                 counter += 1;
@@ -1082,7 +1099,11 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (index > 0)
                 {
-                    previousQSO = GetPrevious(contestLog.QSOCollection, qso);
+                    // https://stackoverflow.com/questions/24799820/get-previous-next-item-of-a-given-item-in-a-list
+                    previousQSO = contestLog.QSOCollection.TakeWhile(x => x != qso)
+                                                          .DefaultIfEmpty(contestLog.QSOCollection[contestLog.QSOCollection.Count - 1])
+                                                          .LastOrDefault();
+                    // previousQSO = GetPrevious(contestLog.QSOCollection, qso);
                 }
 
                 if (previousQSO != null)
@@ -1094,7 +1115,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     frequency = previousQSO.Frequency;
 
-                    if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+                    if (UsesRigControl(frequency))
                     {
                         qsoPoints += 1;
                     }
@@ -1121,7 +1142,15 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
 
-            counter = 0;
+
+            return qsoPoints;
+        }
+
+        private double InspectNextQSOsForMode(QSO qso, ContestLog contestLog, string frequency)
+        {
+            double counter = 0;
+            double qsoPoints = 0;
+            QSO nextQSO = null;
 
             while (counter < 10)
             {
@@ -1130,7 +1159,13 @@ namespace W6OP.ContestLogAnalyzer
                 int index = contestLog.QSOCollection.IndexOf(qso);
                 if (index <= contestLog.QSOCollection.Count)
                 {
-                    nextQSO = GetNext(contestLog.QSOCollection, qso);
+                    // https://stackoverflow.com/questions/24799820/get-previous-next-item-of-a-given-item-in-a-list
+                    nextQSO = contestLog.QSOCollection.SkipWhile(x => x != qso)
+                        .Skip(1)
+                        .DefaultIfEmpty(defaultValue: null)
+                        .FirstOrDefault();
+
+                    //nextQSO = GetNext(contestLog.QSOCollection, qso);
                 }
 
                 if (nextQSO != null)
@@ -1142,7 +1177,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     frequency = nextQSO.Frequency;
 
-                    if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+                    if (UsesRigControl(frequency))
                     {
                         qsoPoints += 1;
                     }
@@ -1173,18 +1208,18 @@ namespace W6OP.ContestLogAnalyzer
         }
 
 
-        #endregion
+            #endregion
 
-        #region CWOpen Only Code
+            #region CWOpen Only Code
 
-        /// <summary>
-        /// CWOpen
-        /// See if the contact name is incorrect. Sometimes a person
-        /// will send different names on different QSOS. Find out what
-        /// the predominate name they used is.
-        /// </summary>
-        /// <param name="qso"></param>
-        private void MarkIncorrectContactNames(QSO qso)
+            /// <summary>
+            /// CWOpen
+            /// See if the contact name is incorrect. Sometimes a person
+            /// will send different names on different QSOS. Find out what
+            /// the predominate name they used is.
+            /// </summary>
+            /// <param name="qso"></param>
+            private void MarkIncorrectContactNames(QSO qso)
         {
             Tuple<string, int> majorityName = new Tuple<string, int>("", 1);
 
@@ -1766,14 +1801,11 @@ namespace W6OP.ContestLogAnalyzer
         private double DetermineBandFault(QSO qso)
         {
             ContestLog contestLog = qso.ParentLog;
-            QSO previousQSO = null;
-            QSO nextQSO = null;
             string frequency = qso.Frequency;
             double qsoPoints = 0;
-            double counter = 0;
 
             // bonus point for having rig control frequency
-            if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+            if (UsesRigControl(frequency))
             {
                 qsoPoints += 1;
                 // if the log shows he was only on one band & rig control he wins
@@ -1787,6 +1819,41 @@ namespace W6OP.ContestLogAnalyzer
                 qsoPoints -= 1;
             }
 
+            qsoPoints += InspectPreviousQSOsForFrequency(qso, contestLog, frequency);
+            qsoPoints += InspectNextQSOsForFrequency(qso, contestLog, frequency);
+
+            return qsoPoints;
+        }
+
+        /// <summary>
+        /// Determine if the operator used rig control.
+        /// </summary>
+        /// <param name="frequency">string</param>
+        /// <returns>bool</returns>
+        private bool UsesRigControl (string frequency)
+        {
+            string[] defaults = new string[] { "1800", "3500", "7000", "14000", "21000", "28000" };
+
+            if (defaults.Contains(frequency)) {
+                return false;
+            }
+           
+            return true;
+        }
+
+        /// <summary>
+        /// Check the 10 previous QSOs
+        /// </summary>
+        /// <param name="qso">QSO</param>
+        /// <param name="contestLog">ContestLog</param>
+        /// <param name="frequency">string</param>
+        /// <returns>double</returns>
+        private double InspectPreviousQSOsForFrequency(QSO qso, ContestLog contestLog, string frequency)
+        {
+            double counter = 0;
+            double qsoPoints = 0;
+            QSO previousQSO = null;
+
             while (counter < 10)
             {
                 counter += 1;
@@ -1795,7 +1862,11 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (index > 0)
                 {
-                    previousQSO = GetPrevious(contestLog.QSOCollection, qso);
+                    // https://stackoverflow.com/questions/24799820/get-previous-next-item-of-a-given-item-in-a-list
+                    previousQSO = contestLog.QSOCollection.TakeWhile(x => x != qso)
+                                                          .DefaultIfEmpty(contestLog.QSOCollection[contestLog.QSOCollection.Count - 1])
+                                                          .LastOrDefault();
+                    //previousQSO = GetPrevious(contestLog.QSOCollection, qso);
                 }
 
                 if (previousQSO != null)
@@ -1807,7 +1878,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     frequency = previousQSO.Frequency;
 
-                    if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+                    if (UsesRigControl(frequency))
                     {
                         qsoPoints += 1;
                     }
@@ -1834,7 +1905,21 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
 
-            counter = 0;
+            return qsoPoints;
+        }
+
+        /// <summary>
+        /// Check the 10 next QSOs
+        /// </summary>
+        /// <param name="qso">QSO</param>
+        /// <param name="contestLog">ContestLog</param>
+        /// <param name="frequency">string</param>
+        /// <returns>double</returns>
+        private double InspectNextQSOsForFrequency(QSO qso, ContestLog contestLog, string frequency)
+        {
+            double counter = 0;
+            double qsoPoints = 0;
+            QSO nextQSO = null;
 
             while (counter < 10)
             {
@@ -1843,7 +1928,13 @@ namespace W6OP.ContestLogAnalyzer
                 int index = contestLog.QSOCollection.IndexOf(qso);
                 if (index <= contestLog.QSOCollection.Count)
                 {
-                    nextQSO = GetNext(contestLog.QSOCollection, qso);
+                    // https://stackoverflow.com/questions/24799820/get-previous-next-item-of-a-given-item-in-a-list
+                    nextQSO = contestLog.QSOCollection.SkipWhile(x => x != qso)
+                       .Skip(1)
+                       .DefaultIfEmpty(defaultValue: null)
+                       .FirstOrDefault();
+
+                    //nextQSO = GetNext(contestLog.QSOCollection, qso);
                 }
 
                 if (nextQSO != null)
@@ -1855,7 +1946,7 @@ namespace W6OP.ContestLogAnalyzer
 
                     frequency = nextQSO.Frequency;
 
-                    if (frequency != "1800" && frequency != "3500" && frequency != "7000" && frequency != "14000" && frequency != "21000" && frequency != "28000")
+                    if (UsesRigControl(frequency))
                     {
                         qsoPoints += 1;
                     }
@@ -1887,13 +1978,13 @@ namespace W6OP.ContestLogAnalyzer
 
 
 
-        /// <summary>
-        /// Mark all QSOs that don't have the correct name sent as invalid.
-        /// This is very rare.
-        /// </summary>
-        /// <param name="qsoList"></param>
-        /// <param name="name"></param>
-        private void MarkIncorrectSentName(List<QSO> qsoList, string name)
+            /// <summary>
+            /// Mark all QSOs that don't have the correct name sent as invalid.
+            /// This is very rare.
+            /// </summary>
+            /// <param name="qsoList"></param>
+            /// <param name="name"></param>
+            private void MarkIncorrectSentName(List<QSO> qsoList, string name)
         {
             List<QSO> qsos = qsoList.Where(q => q.OperatorName != name && q.Status == QSOStatus.ValidQSO).ToList();
 

@@ -10,6 +10,19 @@ namespace W6OP.ContestLogAnalyzer
 {
     public delegate void ErrorRaised(string error);
 
+    [Serializable]
+    public class ContestLogException : Exception
+    {
+        public ContestLogException() : base() { }
+        public ContestLogException(string message) : base(message) { }
+        public ContestLogException(string message, Exception inner) : base(message, inner) { }
+
+        // A constructor is needed for serialization when an
+        // exception propagates from a remoting server to the client.
+        protected ContestLogException(System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
     public class LogProcessor
     {
         readonly string[] States = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", };
@@ -127,7 +140,7 @@ namespace W6OP.ContestLogAnalyzer
                     }
                     catch (Exception)
                     {
-                        throw new Exception(fullName);
+                        throw new ContestLogException(fullName);
                     }
 
                     // Find DUPES in list
@@ -445,7 +458,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 FailReason = "One or more columns are missing.";
                 contestLog.IsValidLog = false;
-                throw new Exception(fileInfo.Name); // don't want this added to collection
+                throw new ContestLogException(fileInfo.Name); // don't want this added to collection
             }
 
             if (contestLog.LogHeader.OperatorCategory == CategoryOperator.CheckLog)
@@ -463,7 +476,7 @@ namespace W6OP.ContestLogAnalyzer
                 // may want to expand on this for a future report
                 FailReason = "Name sent is 'NAME' - Invalid name.";
                 contestLog.IsValidLog = false;
-                throw new Exception(fileInfo.Name); // don't want this added to collection
+                throw new ContestLogException(fileInfo.Name); // don't want this added to collection
             }
         }
 
@@ -488,7 +501,7 @@ namespace W6OP.ContestLogAnalyzer
                         FailReason += Environment.NewLine + FailingLine;
                     }
                     contestLog.IsValidLog = false;
-                    throw new Exception(fileName); // don't want this added to collection
+                    throw new ContestLogException(fileName); // don't want this added to collection
                 default:
                     {
                         switch (ActiveContest)
@@ -502,7 +515,7 @@ namespace W6OP.ContestLogAnalyzer
                                     // may want to expand on this for a future report
                                     FailReason = "QSO collection is empty" + Environment.NewLine + "Invalid session" + Environment.NewLine;
                                     contestLog.IsValidLog = false;
-                                    throw new Exception(fileName); // don't want this added to collection
+                                    throw new ContestLogException(fileName); // don't want this added to collection
                                 }
 
                                 invalidQsos = contestLog.QSOCollection.Where(q => q.Status != QSOStatus.ValidQSO).ToList();
@@ -515,7 +528,7 @@ namespace W6OP.ContestLogAnalyzer
                                         FailReason += qso.Status.ToString() + " : " + qso.RawQSO + Environment.NewLine;
                                     }
                                     contestLog.IsValidLog = false;
-                                    throw new Exception(fileName); // don't want this added to collection
+                                    throw new ContestLogException(fileName); // don't want this added to collection
                                 }
                                 break;
                             case ContestName.HQP:
@@ -529,7 +542,7 @@ namespace W6OP.ContestLogAnalyzer
                                         FailReason += qso.Status.ToString() + " : " + qso.RawQSO + Environment.NewLine;
                                     }
                                     contestLog.IsValidLog = false;
-                                    throw new Exception(fileName); // don't want this added to collection
+                                    throw new ContestLogException(fileName); // don't want this added to collection
                                 }
                                 break;
                         }
@@ -609,7 +622,7 @@ namespace W6OP.ContestLogAnalyzer
                 FailReason = reason;
                 contestLog.IsValidLog = false;
 
-                throw new Exception(fullName); // don't want this added to collection
+                throw new ContestLogException(fullName); // don't want this added to collection
             }
 
             return contestLog;
@@ -719,7 +732,7 @@ namespace W6OP.ContestLogAnalyzer
             // happens if operator entity is invalid
             if (qsoCollection[0].ParentLog.IsValidLog == false)
             {
-                throw new Exception(qsoCollection[0].OperatorCall + ".log");
+                throw new ContestLogException(qsoCollection[0].OperatorCall + ".log");
             }
         }
 
