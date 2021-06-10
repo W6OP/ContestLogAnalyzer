@@ -1298,7 +1298,7 @@ namespace W6OP.ContestLogAnalyzer
                         pdfGenerator.PrintCWOpenPdfScoreSheet(ContestLogs);
                         break;
                     case ContestName.HQP:
-                        PrintManager.PrintHQPCsvFileEx(ContestLogs);
+                        PrintManager.PrintHQPCSVFileEx(ContestLogs);
                         pdfGenerator.PrintHQPPdfScoreSheet(ContestLogs);
                         break;
                 }

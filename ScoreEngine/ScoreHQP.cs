@@ -71,11 +71,18 @@ namespace W6OP.ContestLogAnalyzer
             List<QSO> qsoList = contestLog.QSOCollection;
             List<QSO> multiList;
             string entity;
+            string contactCallSign;
+            string band;
+            string mode;
 
             var query = qsoList.Where(item => item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO);
 
             foreach (var qso in query)
             {
+                contactCallSign = qso.ContactCall;
+                band = qso.Band.ToString();
+                mode = qso.OriginalMode;
+
                 if (qso.ContactEntity == "DX")
                 {
                     multiList = qsoList.Where(item => item.ContactCountry == qso.ContactCountry && (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO)).ToList();
@@ -89,36 +96,60 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (multiList.Any())
                 {
-                    if (Enum.IsDefined(typeof(HQPMults), entity))
+                    if (!contestLog.Entities.Contains(entity))
                     {
-                        if (!contestLog.Entities.Contains(entity))
+                        if (!qso.IsXQSO)
                         {
-                            if (!qso.IsXQSO)
+                            contestLog.Entities.Add(entity);
+                            contestLog.EntitiesList[entity] = contactCallSign + "\t" + entity + " -- " + band + "m " + mode;
+                            // now set the first one as a multiplier
+                            multiList.First().IsMultiplier = true;
+                            // for debugging
+                            if (Enum.IsDefined(typeof(HQPMults), entity))
                             {
-                                // if not in hashset, add it
-                                contestLog.Entities.Add(entity);
-                                // now set the first one as a multiplier
-                                multiList.First().IsMultiplier = true;
-                                // for debugging
                                 contestLog.HQPMultipliers += 1;
                             }
-                        }
-                    }
-                    else
-                    {
-                        if (!contestLog.Entities.Contains(entity))
-                        {
-                            if (!qso.IsXQSO)
+                            else
                             {
-                                // if not in hashset, add it
-                                contestLog.Entities.Add(entity);
-                                // now set the first one as a multiplier
-                                multiList.First().IsMultiplier = true;
-                                // for debugging
                                 contestLog.NonHQPMultipliers += 1;
                             }
                         }
                     }
+                    //if (Enum.IsDefined(typeof(HQPMults), entity))
+                    //{
+                    //    if (!contestLog.Entities.Contains(entity))
+                    //    {
+                    //        if (!qso.IsXQSO)
+                    //        {
+                    //            // if not in hashset, add it
+                    //            contestLog.Entities.Add(contactCallSign + "\t" + entity + " -- " + band + "m " + mode);
+                    //            // now set the first one as a multiplier
+                    //            multiList.First().IsMultiplier = true;
+                    //            // for debugging
+                    //            contestLog.HQPMultipliers += 1;
+                    //        }
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    if (!contestLog.Entities.Contains(entity))
+                    //    {
+                    //        if (!qso.IsXQSO)
+                    //        {
+                    //            contestLog.Entities.Add(contactCallSign + "\t" + entity + " -- " + band + "m " + mode);
+                    //            // now set the first one as a multiplier
+                    //            multiList.First().IsMultiplier = true;
+                    //            // for debugging
+                    //            if (Enum.IsDefined(typeof(HQPMults), entity))
+                    //            {
+                    //                contestLog.HQPMultipliers += 1;
+                    //            } else
+                    //            {
+                    //                contestLog.NonHQPMultipliers += 1;
+                    //            }
+                    //        }
+                    //    }
+                    //}
                 }
             }
 
@@ -157,12 +188,13 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (Enum.IsDefined(typeof(HQPMults), qso.ContactEntity))
                     {
-                        entity = qso.ContactEntity + " - " + qso.Band + "m";
+                        entity = qso.ContactEntity; // + " - " + qso.Band + "m";
 
                         if (!contestLog.Entities.Contains(entity))
                         {
                             // if not in hashset, add it
                             contestLog.Entities.Add(entity);
+                            contestLog.EntitiesList[entity] = entity + " -- " + qso.Band.ToString() + "m ";
                             // now set the first one as a multiplier
                             multiList.First().IsMultiplier = true;
                             // for debugging

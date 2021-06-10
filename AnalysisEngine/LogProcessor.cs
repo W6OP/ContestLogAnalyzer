@@ -1138,6 +1138,9 @@ namespace W6OP.ContestLogAnalyzer
             _PrintManager.PrintInspectionReport(fileName + ".txt", FailReason + Environment.NewLine + " - " + exception);
         }
 
+
+        #region Build Headers
+
         /// <summary>
         /// Check to see if a subset of fields in the header are valid.
         /// </summary>
@@ -1241,27 +1244,6 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Some logs have 5,234 for a score and some have "Not Required"
-        /// when it should be an integer
-        /// </summary>
-        /// <param name="inputString"></param>
-        /// <returns></returns>
-        private int CheckForNumeric(string inputString)
-        {
-            // first get rid of commas ie. 5,234
-            inputString = inputString.Replace(",", "");
-
-            bool result = int.TryParse(inputString, out int i);
-
-            if (!result)
-            {
-                i = 999999;
-            }
-
-            return i;
-        }
-
-        /// <summary>
         /// LINQ SAMPLES
         /// http://code.msdn.microsoft.com/101-LINQ-Samples-3fb9811b
         /// 
@@ -1324,6 +1306,29 @@ namespace W6OP.ContestLogAnalyzer
             return logHeader.FirstOrDefault();
         }
 
+        #endregion
+
+        /// <summary>
+        /// Some logs have 5,234 for a score and some have "Not Required"
+        /// when it should be an integer
+        /// </summary>
+        /// <param name="inputString"></param>
+        /// <returns></returns>
+        private int CheckForNumeric(string inputString)
+        {
+            // first get rid of commas ie. 5,234
+            inputString = inputString.Replace(",", "");
+
+            bool result = int.TryParse(inputString, out int i);
+
+            if (!result)
+            {
+                i = 999999;
+            }
+
+            return i;
+        }
+
         /// <summary>
         /// Handle a null for a header value that is missing.
         /// </summary>
@@ -1378,6 +1383,7 @@ namespace W6OP.ContestLogAnalyzer
                          RawQSO = line,
                          Status = CheckCompleteQSO(split, line),
                          Frequency = CheckFrequency(split[1], line),
+                         OriginalMode = split[2],
                          Mode = NormalizeMode(split[2]),
                          QsoDate = split[3],
                          QsoTime = CheckTime(split[4], line),
@@ -1709,7 +1715,8 @@ namespace W6OP.ContestLogAnalyzer
             switch (session)
             {
                 case Session.Session_1:
-                    if (qsoSessionTime >= 0 && qsoSessionTime <= 359)
+                    if (qsoSessionTime >= 0
+                        && qsoSessionTime <= 359)
                     {
                         isValidSession = true;
                     }

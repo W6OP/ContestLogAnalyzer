@@ -194,6 +194,11 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// Keep the original mode for the multiplier report section.
+        /// </summary>
+        public string OriginalMode { get; set; }
+
         #endregion
 
         #region CWOpen Fields

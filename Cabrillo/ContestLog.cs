@@ -128,6 +128,12 @@ namespace W6OP.ContestLogAnalyzer
 
         private HashSet<string> _Entities = new HashSet<string>();
         public HashSet<string> Entities { get => _Entities; set => _Entities = value; }
-       
+
+        /// <summary>
+        /// For printing multiplier list in reports.
+        /// </summary>
+        private SortedList<string, string> _EntitiesList = new SortedList<string, string>();
+        public SortedList<string, string> EntitiesList { get => _EntitiesList; set => _EntitiesList = value; }
+
     } // end class
 }

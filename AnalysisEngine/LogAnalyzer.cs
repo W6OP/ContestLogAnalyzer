@@ -1050,6 +1050,11 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
+        /// <summary>
+        /// Determine which operator has the mode incorrect.
+        /// </summary>
+        /// <param name="qso">QSO</param>
+        /// <returns>double</returns>
         private double DetermineModeFault(QSO qso)
         {
             ContestLog contestLog = qso.ParentLog;
@@ -2005,17 +2010,17 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="list"></param>
         /// <param name="current"></param>
         /// <returns></returns>
-        private T GetNext<T>(IEnumerable<T> list, T current)
-        {
-            try
-            {
-                return list.SkipWhile(x => !x.Equals(current)).Skip(1).First();
-            }
-            catch
-            {
-                return default;
-            }
-        }
+        //private T GetNext<T>(IEnumerable<T> list, T current)
+        //{
+        //    try
+        //    {
+        //        return list.SkipWhile(x => !x.Equals(current)).Skip(1).First();
+        //    }
+        //    catch
+        //    {
+        //        return default;
+        //    }
+        //}
 
         /// <summary>
         /// Get the previous item in a collection
@@ -2024,17 +2029,17 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="list"></param>
         /// <param name="current"></param>
         /// <returns></returns>
-        private T GetPrevious<T>(IEnumerable<T> list, T current)
-        {
-            try
-            {
-                return list.TakeWhile(x => !x.Equals(current)).Last();
-            }
-            catch
-            {
-                return default;
-            }
-        }
+        //private T GetPrevious<T>(IEnumerable<T> list, T current)
+        //{
+        //    try
+        //    {
+        //        return list.TakeWhile(x => !x.Equals(current)).Last();
+        //    }
+        //    catch
+        //    {
+        //        return default;
+        //    }
+        //}
 
         #endregion
 
