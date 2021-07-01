@@ -186,7 +186,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="assembly">Assembly</param>
         private void LoadULSData(Assembly assembly)
         {
-            Dictionary<string, string> ULSStateData = new Dictionary<string, string>();
+            Dictionary<string, string> ULSStateData = new Dictionary<string, string>(900000);
             string line;
             string[] ulsData = new string[2];
 
@@ -211,7 +211,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="assembly">Assembly</param>
         private void LoadHQPGrids(Assembly assembly)
         {
-            Dictionary<string, List<string>> GridSquares = new Dictionary<string, List<string>>();
+            Dictionary<string, List<string>> GridSquares = new Dictionary<string, List<string>>(1000);
             string[] ulsData = new string[2];
             string[] grids = new string[3];
             string line;
@@ -221,20 +221,20 @@ namespace W6OP.ContestLogAnalyzer
 
             using Stream stream = assembly.GetManifestResourceStream(resourceName);
             using StreamReader reader = new StreamReader(stream);
-            List<string> lineList = new List<string>();
+            List<string> gridList; // = new List<string>();
             string key;
 
             while ((line = reader.ReadLine()) != null)
             {
-                lineList = new List<string>();
+                gridList = new List<string>();
                 grids = line.Split(',');
                 key = grids[0];
 
                 grids = grids.Skip(1).ToArray();
                 grids = grids.Where(x => !string.IsNullOrEmpty(x)).ToArray();
-                lineList = grids.ToList();
+                gridList = grids.ToList();
 
-                GridSquares.Add(key, lineList);
+                GridSquares.Add(key, gridList);
             }
 
             LogProcessor.GridSquares = GridSquares;
@@ -304,7 +304,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void BackgroundWorkerLoadULSResourceFiles_DoWork(object sender, DoWorkEventArgs e)
         {
-            Dictionary<string, string> ULSStateData = new Dictionary<string, string>();
+            Dictionary<string, string> ULSStateData = new Dictionary<string, string>(900000);
             var assembly = Assembly.GetExecutingAssembly();
             string line;
 
@@ -538,7 +538,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         private void LoadLogFiles()
         {
-            ContestLogs = new List<ContestLog>();
+            ContestLogs = new List<ContestLog>(500);
 
             try
             {
@@ -677,8 +677,8 @@ namespace W6OP.ContestLogAnalyzer
             UpdateListViewAnalysis("", "", "", true);
 
             // cleanup for next run
-            LogProcessor.CallDictionary = new Dictionary<string, List<ContestLog>>();
-            LogProcessor.NameDictionary = new Dictionary<string, List<Tuple<string, int>>>();
+            LogProcessor.CallDictionary = new Dictionary<string, List<ContestLog>>(2000);
+            LogProcessor.NameDictionary = new Dictionary<string, List<Tuple<string, int>>>(2000);
 
             ContestLogFileList = ContestLogFileList.OrderBy(x => x.FullName.ToUpper());
 
@@ -979,7 +979,10 @@ namespace W6OP.ContestLogAnalyzer
         {
             if (InvokeRequired)
             {
-                BeginInvoke(new Action<string, string, bool>(this.UpdateListViewLoad), message, status, clear);
+                _ = BeginInvoke(new Action<string, string, bool>(UpdateListViewLoad),
+                                message,
+                                status,
+                                clear);
                 return;
             }
 
@@ -1345,7 +1348,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private ILookup<string, string> LoadFile()
         {
-            List<string> lineList = new List<string>();
+            List<string> lineList = new List<string>(100);
             char[] SpaceDelimiter = new char[] { ' ' };
             char[] commaDelimiter = new char[] { ',' };
             ILookup<string, string> lines = null;
@@ -1577,7 +1580,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="e"></param>
         private void ButtonLogSearch_Click(object sender, EventArgs e)
         {
-            List<QSO> callList = new List<QSO>();
+            List<QSO> callList = new List<QSO>(5000);
             string sourceCall = textBoxLogSearch.Text.Trim();
 
             TabControlMain.SelectTab(TabPageSearchLogs);

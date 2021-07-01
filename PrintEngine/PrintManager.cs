@@ -54,7 +54,7 @@ namespace W6OP.PrintEngine
         public void PrintCWOpenCsvFile(List<ContestLog> contestLogs)
         {
             CWOpenScoreList scoreList;
-            List<CWOpenScoreList> scores = new List<CWOpenScoreList>();
+            List<CWOpenScoreList> scores = new List<CWOpenScoreList>(500);
             ContestLog contestlog;
             List<QSO> validQsoList;
             string assisted = null;
@@ -134,7 +134,7 @@ namespace W6OP.PrintEngine
         public void PrintHQPCSVFileEx(List<ContestLog> contestLogs)
         {
             HQPScoreList scoreList;
-            List<HQPScoreList> scores = new List<HQPScoreList>();
+            List<HQPScoreList> scores = new List<HQPScoreList>(500);
             ContestLog contestlog;
             List<QSO> validQsoList;
             string reportFileName = null;
@@ -767,19 +767,8 @@ namespace W6OP.PrintEngine
                     var list = contestLog.EntitiesList;
                     foreach (var keyValuePair in list)
                     {
-                        //if (contestLog.IsHQPEntity)
-                        //{
-                            sw.WriteLine(keyValuePair.Value);
-                        //}
-                        //else
-                        //{
-                        //    sw.WriteLine(keyValuePair.Key);
-                        //}
+                        sw.WriteLine(keyValuePair.Value);
                     }
-                    //foreach (string entity in contestLog.Entities)
-                    //{
-                    //    sw.WriteLine(entity);
-                    //}
                 }
             }
         }

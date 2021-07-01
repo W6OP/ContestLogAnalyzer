@@ -65,11 +65,11 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public LogProcessor()
         {
-            CallDictionary = new Dictionary<string, List<ContestLog>>();
-            SubmittedLogDictionary = new Dictionary<string, string>();
-            QSOContactDictionary = new Dictionary<string, List<string>>();
-            NameDictionary = new Dictionary<string, List<Tuple<string, int>>>();
-            
+            CallDictionary = new Dictionary<string, List<ContestLog>>(2000);
+            SubmittedLogDictionary = new Dictionary<string, string>(100);
+            QSOContactDictionary = new Dictionary<string, List<string>>(500);
+            NameDictionary = new Dictionary<string, List<Tuple<string, int>>>(500);
+
             FailingLine = "";
             WorkingLine = "";
         }
@@ -227,27 +227,29 @@ namespace W6OP.ContestLogAnalyzer
                         qso.ContactEntity = SubmittedLogDictionary[qso.ContactCall];
                         qso.IsInvalidEntity = false;
                         qso.IncorrectDXEntityMessage = "";
-                    } else
+                    }
+                    else
                     {
-                        // lets see if he was worked multiple times
+                        // no log but he was worked multiple times
                         if (contestLog.QSODictionary.ContainsKey(qso.ContactCall))
                         {
                             entities = QSOContactDictionary[qso.ContactCall];
                             qso.ContactEntity = entities.MostCommon();
                             if (qso.ContactEntity.StartsWith("BL") || qso.ContactEntity.StartsWith("BK"))
                             {
-                                // no log and no non FT8 contacts
+                                // no log and no non FT8 contacts - hmm, I think that would mean it's good - hard to get FT8 wrong
+                                // but how do I know what his correct Hawai'in entity is?
                                 QSOStoInspect.Add(qso.RawQSO);
                                 QSOStoInspect.Add("----------");
                                 Console.WriteLine(qso.ContactCall + " : " + "HI");
-
-                            } else
+                            }
+                            else
                             {
                                 qso.IsInvalidEntity = false;
                                 qso.IncorrectDXEntityMessage = "";
                             }
-                            //Console.WriteLine(qso.ContactCall + " : " + entities.MostCommon());
-                        } else
+                        }
+                        else
                         {
                             QSOStoInspect.Add(qso.RawQSO);
                             QSOStoInspect.Add("----------");
@@ -285,7 +287,7 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    qsos = new List<QSO>
+                    qsos = new List<QSO>(2000)
                     {
                         qso
                     };
@@ -316,8 +318,8 @@ namespace W6OP.ContestLogAnalyzer
                     if (!SubmittedLogDictionary.ContainsKey(qso.OperatorCall))
                     {
                         SubmittedLogDictionary.Add(qso.OperatorCall, qso.OperatorEntity);
-                    } 
-                   
+                    }
+
                     // all who are in any log and the listed entity - updated in ConvertGridToEntity)
                     if (QSOContactDictionary.ContainsKey(qso.ContactCall))
                     {
@@ -814,8 +816,8 @@ namespace W6OP.ContestLogAnalyzer
         /// <returns></returns>
         private string ConvertGridToEntity(string contactGridSquare, string contactFullCall)
         {
-            IEnumerable<CallSignInfo> hitCollection;
-            List<CallSignInfo> hitList;
+            IEnumerable<Hit> hitCollection;
+            List<Hit> hitList;
             string entity = "DX";
 
             // RefineHQPEntities() will fix this
@@ -871,7 +873,7 @@ namespace W6OP.ContestLogAnalyzer
                 // find out if one is a grid?
                 foreach (var (item, index) in entities.WithIndex())
                 {
-                   if (item.Length > 3)
+                    if (item.Length > 3)
                     {
                         entities[index] = entity;
                         break;
@@ -934,8 +936,8 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="contactFullCall"></param>
         private void SetContactEntity(QSO qso, string contactEntity, string contactFullCall)
         {
-            IEnumerable<CallSignInfo> hitCollection;
-            List<CallSignInfo> hitList;
+            IEnumerable<Hit> hitCollection;
+            List<Hit> hitList;
 
             if (qso.ContactEntity == "DX")
             {
@@ -1020,8 +1022,8 @@ namespace W6OP.ContestLogAnalyzer
                 switch (qso.OperatorEntity)
                 {
                     case "DX":
-                        IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.OperatorCall);
-                        List<CallSignInfo> hitList = hitCollection.ToList();
+                        IEnumerable<Hit> hitCollection = CallLookUp.LookUpCall(qso.OperatorCall);
+                        List<Hit> hitList = hitCollection.ToList();
                         if (hitList.Count != 0)
                         {
                             qso.OperatorCountry = hitList[0].Country;
@@ -1070,8 +1072,8 @@ namespace W6OP.ContestLogAnalyzer
             if (qso.ContactEntity == "DX")
             {
                 // this is very rarely hit -  This is only for when the US or Canada entry is input as DX by the operator
-                IEnumerable<CallSignInfo> hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
-                List<CallSignInfo> hitList = hitCollection.ToList();
+                IEnumerable<Hit> hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
+                List<Hit> hitList = hitCollection.ToList();
                 if (hitList.Count != 0)
                 {
                     qso.ContactEntity = hitList[0].Province;

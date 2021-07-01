@@ -14,8 +14,8 @@ namespace W6OP.ContestLogAnalyzer
             HQPMultipliers = 0;
             NonHQPMultipliers = 0;
 
-            QSOCollection = new List<QSO>();
-            QSODictionary = new Dictionary<string, List<QSO>>();
+            QSOCollection = new List<QSO>(2000);
+            QSODictionary = new Dictionary<string, List<QSO>>(2000);
         }
 
         /// <summary>
