@@ -436,6 +436,7 @@ namespace W6OP.ContestLogAnalyzer
             if (ActiveContest == ContestName.HQP)
             {
                 SetupContestProperties();
+                LoadHawaiiCallList();
             }
             else
             {
@@ -1332,7 +1333,7 @@ namespace W6OP.ContestLogAnalyzer
 
             try
             {
-                badCallList = LoadFile();
+                badCallList = LoadBadCallFile();
                 LogAnalyser.BadCallList = badCallList;
                 UpdateListViewLoad("Loaded bad call file.", badCallList.Count.ToString() + " entries.", false);
             }
@@ -1343,17 +1344,36 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
+        /// Load a CSV file with a list of known Hawaiin calls.
+        /// </summary>
+        private void LoadHawaiiCallList()
+        {
+            ILookup<string, string> hawaiiCallList;
+
+            try
+            {
+                hawaiiCallList = LoadHawaiiCallFile();
+                LogProcessor.HawaiiCallList = hawaiiCallList;
+                UpdateListViewLoad("Loaded Hawaii call file.", hawaiiCallList.Count.ToString() + " entries.", false);
+            }
+            catch (Exception ex)
+            {
+                UpdateListViewLoad("Unable to load Hawaii call file.", ex.Message, false);
+            }
+        }
+
+        /// <summary>
         /// Load the bad call list.
         /// </summary>
         /// <returns></returns>
-        private ILookup<string, string> LoadFile()
+        private ILookup<string, string> LoadBadCallFile()
         {
             List<string> lineList = new List<string>(100);
             char[] SpaceDelimiter = new char[] { ' ' };
             char[] commaDelimiter = new char[] { ',' };
             ILookup<string, string> lines = null;
 
-            if (OpenCSVFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (OpenCSVFileDialog.ShowDialog() == DialogResult.OK)
             {
                 if (File.Exists(OpenCSVFileDialog.FileName))
                 {
@@ -1370,6 +1390,44 @@ namespace W6OP.ContestLogAnalyzer
                     if (lineList[0].IndexOf(",") != -1)
                     {
                         lines = File.ReadLines(OpenCSVFileDialog.FileName)
+                      .Select(csvLine => csvLine.Split(commaDelimiter, StringSplitOptions.RemoveEmptyEntries))
+                      .Distinct()
+                      .ToLookup(s => s[0], s => s[1]);
+                    }
+                }
+            }
+
+            return lines;
+        }
+
+        /// <summary>
+        /// Load the bad call list.
+        /// </summary>
+        /// <returns></returns>
+        private ILookup<string, string> LoadHawaiiCallFile()
+        {
+            List<string> lineList = new List<string>(100);
+            char[] SpaceDelimiter = new char[] { ' ' };
+            char[] commaDelimiter = new char[] { ',' };
+            ILookup<string, string> lines = null;
+
+            if (OpenHawaiiCallFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                if (File.Exists(OpenHawaiiCallFileDialog.FileName))
+                {
+                    lineList = File.ReadAllLines(OpenHawaiiCallFileDialog.FileName).Select(i => i.ToString()).ToList();
+
+                    if (lineList[0].IndexOf(",") == -1)
+                    {
+                        lines = File.ReadLines(OpenHawaiiCallFileDialog.FileName)
+                      .Select(csvLine => csvLine.Split(SpaceDelimiter, StringSplitOptions.RemoveEmptyEntries))
+                      .Distinct()
+                      .ToLookup(s => s[0], s => s[1]);
+                    }
+
+                    if (lineList[0].IndexOf(",") != -1)
+                    {
+                        lines = File.ReadLines(OpenHawaiiCallFileDialog.FileName)
                       .Select(csvLine => csvLine.Split(commaDelimiter, StringSplitOptions.RemoveEmptyEntries))
                       .Distinct()
                       .ToLookup(s => s[0], s => s[1]);

@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using W6OP.CallParser;
 using W6OP.PrintEngine;
 
+
 namespace W6OP.ContestLogAnalyzer
 {
     public delegate void ErrorRaised(string error);
@@ -27,7 +28,24 @@ namespace W6OP.ContestLogAnalyzer
     {
         readonly string[] States = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", };
         readonly string[] Provinces = { "NL", "NS", "PE", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU" };
+        readonly string[] HawaiinGrids = { "BK01", "BK02", "BK10", "BK11", "BK09", "BL20", "BL29", "BL28", "BJ91" };
 
+        public ILookup<string, string> HawaiiCallList;
+        // "BJ91" is an uninhabited island except for native Hawaiians.  
+
+        // TODO: Verify Canadian provinces
+        /*
+       Any VE3 QSO without a check log can be assumed to be in "ON"
+       VE1 = MR   also VE0
+       VE2 = QC
+       VE3 = ON
+       VE4 = MB
+       VE5 = AB
+       VE6 = SK
+       VE7 = BC
+       VE8 = NT
+       VYx = NT
+       */
         public delegate void ProgressUpdate(int progress);
         public event ProgressUpdate OnProgressUpdate;
 
@@ -208,7 +226,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Hawaii resides in just two grids so I need to do extra work
+        /// Hawaii resides in several grids so I need to do extra work
         /// to determine their actual Hawaiin entity. I need to wait for the 
         /// Dictionaries to get fully built before I can do this.
         /// </summary>
@@ -219,7 +237,7 @@ namespace W6OP.ContestLogAnalyzer
 
             foreach (QSO qso in contestLog.QSOCollection)
             {
-                if (qso.ContactEntity.Length > 3 && (qso.ContactEntity.StartsWith("BL") || qso.ContactEntity.StartsWith("BK")))
+                if (qso.ContactEntity.Length > 3 && HawaiinGrids.Contains(qso.ContactEntity))
                 {
                     if (SubmittedLogDictionary.ContainsKey(qso.ContactCall))
                     {
@@ -235,7 +253,7 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             entities = QSOContactDictionary[qso.ContactCall];
                             qso.ContactEntity = entities.MostCommon();
-                            if (qso.ContactEntity.StartsWith("BL") || qso.ContactEntity.StartsWith("BK"))
+                            if (HawaiinGrids.Contains(qso.ContactEntity))
                             {
                                 // no log and no non FT8 contacts - hmm, I think that would mean it's good - hard to get FT8 wrong
                                 // but how do I know what his correct Hawai'in entity is?
@@ -668,12 +686,34 @@ namespace W6OP.ContestLogAnalyzer
                     continue;
                 }
 
+                qso.IsHQPEntity = true;
+
+                switch (qso.OperatorEntity.Length)
+                {
+                    case 3:
+                        if (!Enum.IsDefined(typeof(HQPMults), qso.OperatorEntity))
+                        {
+                            qso.IsInvalidEntity = true;
+                            qso.IncorrectDXEntityMessage = $"{qso.OperatorEntity} --> should be a Hawai’i district )";
+                        }
+                        break;
+                    case int n when (n <= 8 && n >= 4):
+                        // 4 characters can be an alternate or a grid
+                        if (ValidateGrid(qso.OperatorEntity))
+                        {
+                            ConvertGridToEntity(qso.OperatorEntity,
+                                               qso.OperatorCall, qso, true);
+                        }
+                        else
+                        {
+                            CheckForAlternateHQPMult(qso, true);
+                        }
+
+                        break;
+                }
+
                 // at this point we have the country info
                 SetContactCountry(qso);
-
-                qso.OperatorCountry = HQPHawaiiLiteral;
-                qso.HQPEntity = qso.OperatorEntity;
-                qso.OperatorIsHQPEntity = true;
 
                 if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
                 {
@@ -701,33 +741,55 @@ namespace W6OP.ContestLogAnalyzer
                     continue;
                 }
 
-                // THIS NEEDS TO BE REFACTORED FOR GRIDS
-                // maybe like SetContactCountry(qso);
-                // check if the contact entity is hawaiin as that is all allowed
-                // that means 3 or 4 characters
-                if (qso.ContactEntity.Length != 3)
+                // did they provide grid or actual state
+                switch (qso.OperatorEntity.Length)
                 {
-                    if (Enum.IsDefined(typeof(ALTHQPMults), qso.ContactEntity))
-                    {
-                        // they just used alternate HPQ Mult entity - correct it for them
-                        var entity = (ALTHQPMults)Enum.Parse(typeof(ALTHQPMults), qso.ContactEntity);
-                        qso.ContactEntity = EnumHelper.GetDescription(entity);
-                    }
-                    else
-                    {
-                        qso.IsInvalidEntity = true;
-                        qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> should be a Hawai’i district )";
-                    }
-
-                    continue;
+                    case 2:
+                        // is state or "DX"
+                        break;
+                    case 4: // grid
+                        if (ValidateGrid(qso.OperatorEntity))
+                        {
+                            ConvertGridToEntity(qso.OperatorEntity,
+                                               qso.OperatorCall, qso, true);
+                        }
+                        break;
                 }
 
-                // at this point we have the country info
-                SetContactCountry(qso);
-
-                if (qso.ContactCountry == HQPHawaiiLiteral)
+                switch (qso.ContactEntity.Length)
                 {
-                    SetNonHQPEntityInfo(qso);
+                    case 3:
+                        // at this point we have the country info
+                        SetContactCountry(qso);
+
+                        if (qso.ContactCountry == HQPHawaiiLiteral)
+                        {
+                            SetNonHQPEntityInfo(qso);
+                        }
+                        break;
+                    case int n when (n <= 8 && n >= 4):
+                        // 4 characters can be an alternate or a grid
+                        // if all chars then may be an alternate - or invalid
+                        if (ValidateGrid(qso.ContactEntity))
+                        {
+                            // this should only be a Hawaii grid
+                            GetHawaiinEntityFromGrid(qso, false);
+                            continue;
+                        }
+
+                        if (!CheckForAlternateHQPMult(qso, false))
+                        {
+                            qso.IsInvalidEntity = true;
+                            qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> should be a Hawai’i district )";
+                        }
+                        break;
+                    default:
+                        if (!CheckForAlternateHQPMult(qso, false))
+                        {
+                            qso.IsInvalidEntity = true;
+                            qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> should be a Hawai’i district )";
+                        }
+                        break;
                 }
             }
 
@@ -736,6 +798,96 @@ namespace W6OP.ContestLogAnalyzer
             {
                 throw new ContestLogException(qsoCollection[0].OperatorCall + ".log");
             }
+        }
+
+        /// <summary>
+        /// Get the Hawaiin entity from the grid square if they submitted a log.
+        /// 
+        /// </summary>
+        /// <param name="qso"></param>
+        private void GetHawaiinEntityFromGrid(QSO qso, bool isOperator)
+        {
+            string entity = qso.ContactEntity;
+            string callSign = qso.ContactCall;
+
+            if (isOperator)
+            {
+                entity = qso.OperatorEntity;
+                callSign = qso.OperatorCall;
+            }
+
+            if (HawaiinGrids.Contains(entity))
+            {
+                var entityList = HawaiiCallList
+                    .Where(item => item.Key == callSign)
+                    .SelectMany(item => item)
+                    .Distinct()
+                    .ToList();
+
+                // never more than one - if 0 then will try to fix later
+                if (entityList.Count > 0)
+                {
+                    entity = entityList[0];
+                }
+                else
+                {
+                    // What now?
+                    // mark QSO for RefineQSO()?
+                }
+            }
+            else
+            {
+                // is it a dx or state grid
+                qso.IsInvalidEntity = true;
+                qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> should be a Hawai’i district )";
+                return;
+            }
+
+            if (isOperator)
+            {
+                qso.OperatorEntity = entity;
+                qso.OperatorCountry = HQPHawaiiLiteral;
+            } 
+            else
+            {
+                qso.ContactEntity = entity;
+                qso.ContactCountry = HQPHawaiiLiteral;
+            }
+        }
+
+        /// <summary>
+        /// They just used alternate HPQ Mult entity - correct it for them - 
+        /// can be 4 or more chars
+        /// </summary>
+        /// <param name="qso"></param>
+        /// <returns></returns>
+        private bool CheckForAlternateHQPMult(QSO qso, bool isOperator)
+        {
+            string entity = qso.ContactEntity;
+
+            if (isOperator)
+            {
+                entity = qso.OperatorEntity;
+            }
+
+            if (Enum.IsDefined(typeof(ALTHQPMults), entity))
+            {
+                var candidate = (ALTHQPMults)Enum.Parse(typeof(ALTHQPMults), entity);
+                if (isOperator)
+                {
+                    qso.OperatorEntity = EnumHelper.GetDescription(candidate);
+                    qso.OperatorCountry = HQPHawaiiLiteral;
+                } 
+                else 
+                {
+                    qso.ContactEntity = EnumHelper.GetDescription(candidate);
+                    qso.ContactCountry = HQPHawaiiLiteral;
+                }
+               
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -763,7 +915,6 @@ namespace W6OP.ContestLogAnalyzer
                 contactFullCall = qso.ContactCall + "/" + qso.ContactSuffix;
             }
 
-
             switch (contactEntity.Length)
             {
                 case 2:
@@ -772,30 +923,25 @@ namespace W6OP.ContestLogAnalyzer
                 case 3:
                     SetHawaiiContactEntity(qso, contactEntity);
                     break;
-                case 4:
+                case int n when (n <= 8 && n >= 4):
+                    // could be grid or alternate HQP mult
                     if (ValidateGrid(contactEntity))
                     {
                         qso.ContactGrid = contactEntity;
-                        qso.ContactEntity = ConvertGridToEntity(contactEntity.Substring(0, 4).ToUpper(), contactFullCall);
+                        ConvertGridToEntity(contactEntity.Substring(0, 4).ToUpper(), contactFullCall, qso, false);
                         SetContactEntity(qso, qso.ContactEntity, contactFullCall);
                     }
                     else
                     {
-                        qso.IsInvalidEntity = true;
-                        qso.IncorrectDXEntityMessage = "The contact entity column is missing or incorrect";
-                    }
-                    break;
-                case 6:
-                    if (ValidateGrid(contactEntity.Substring(0, 4)))
-                    {
-                        qso.ContactGrid = contactEntity.Substring(0, 4);
-                        qso.ContactEntity = ConvertGridToEntity(contactEntity.Substring(0, 4).ToUpper(), contactFullCall);
-                        SetContactEntity(qso, qso.ContactEntity, contactFullCall);
-                    }
-                    else
-                    {
-                        qso.IsInvalidEntity = true;
-                        qso.IncorrectDXEntityMessage = "The contact entity column is missing or incorrect";
+                        if (CheckForAlternateHQPMult(qso, false))
+                        {
+                            SetHawaiiContactEntity(qso, contactEntity);
+                        }
+                        else
+                        {
+                            qso.IsInvalidEntity = true;
+                            qso.IncorrectDXEntityMessage = "The contact entity column is missing or incorrect";
+                        }
                     }
                     break;
                 default:
@@ -811,33 +957,37 @@ namespace W6OP.ContestLogAnalyzer
         /// <summary>
         /// Convert the grid square to an entity we can use.
         /// </summary>
-        /// <param name="contactGridSquare">string</param>
-        /// <param name="contactFullCall">string</param>
+        /// <param name="gridSquare">string</param>
+        /// <param name="fullCall">string</param>
         /// <returns></returns>
-        private string ConvertGridToEntity(string contactGridSquare, string contactFullCall)
+        private void ConvertGridToEntity(string gridSquare, string fullCall, QSO qso, bool isOperator)
         {
             IEnumerable<Hit> hitCollection;
             List<Hit> hitList;
             string entity = "DX";
+            string country = string.Empty;
 
             // RefineHQPEntities() will fix this
-            if (contactGridSquare.StartsWith("BL") || contactGridSquare.StartsWith("BK"))
+            if (HawaiinGrids.Contains(gridSquare))
             {
-                return contactGridSquare;
+                GetHawaiinEntityFromGrid(qso, isOperator);
+                return;
             }
+            
 
-            if (GridSquares.ContainsKey(contactGridSquare))
+            if (GridSquares.ContainsKey(gridSquare))
             {
-                List<string> grids = GridSquares[contactGridSquare];
+                List<string> grids = GridSquares[gridSquare];
                 if (grids.Count > 1)
                 {  // use ULS Data
-                    if (ULSStateData.ContainsKey(contactFullCall))
+                    if (ULSStateData.ContainsKey(fullCall))
                     {
-                        entity = ULSStateData[contactFullCall];
+                        entity = ULSStateData[fullCall];
+                        country = HQPUSALiteral;
                     }
                     else // may be Canada
                     {
-                        hitCollection = CallLookUp.LookUpCall(callSign: contactFullCall);
+                        hitCollection = CallLookUp.LookUpCall(callSign: fullCall);
                         hitList = hitCollection.ToList();
                         if (hitList.Count != 0)
                         {
@@ -845,31 +995,45 @@ namespace W6OP.ContestLogAnalyzer
                             {
                                 // this is province ID
                                 entity = hitList[0].Admin1;
+                                country = HQPCanadaLiteral;
                             }
                         }
                     }
                 }
                 else
                 {
-                    entity = grids[0].Trim();
+                   entity = grids[0].Trim();
+                   if (isOperator)
+                    {
+                        country = HQPUSALiteral;
+                    }
+                   else
+                    {
+                        country = HQPUSALiteral;
+                    }
                 }
             }
             else // could be Canadian
             {
-                hitCollection = CallLookUp.LookUpCall(callSign: contactFullCall);
+                hitCollection = CallLookUp.LookUpCall(callSign: fullCall);
                 hitList = hitCollection.ToList();
                 if (hitList.Count != 0)
                 {
                     if (hitList[0].Country.ToUpper() == HQPCanadaLiteral)
                     {
+                        country = HQPCanadaLiteral;
                         entity = hitList[0].Admin1;
+                    }
+                    else
+                    {
+                        country = hitList[0].Country;
                     }
                 }
             }
 
-            if (QSOContactDictionary.ContainsKey(contactFullCall))
+            if (QSOContactDictionary.ContainsKey(fullCall))
             {
-                List<string> entities = QSOContactDictionary[contactFullCall];
+                List<string> entities = QSOContactDictionary[fullCall];
                 // find out if one is a grid?
                 foreach (var (item, index) in entities.WithIndex())
                 {
@@ -881,7 +1045,16 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
 
-            return entity;
+            if (isOperator)
+            {
+                qso.OperatorCountry = country;
+                qso.OperatorEntity = entity;
+            }
+            else
+            {
+                qso.ContactCountry = country;
+                qso.ContactEntity = entity;
+            }
         }
 
         /// <summary>

@@ -80,6 +80,7 @@
             this.columnHeader25 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader26 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader27 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader28 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ComboBoxSelectSession = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.ButtonLoadBadcalls = new System.Windows.Forms.Button();
@@ -92,7 +93,7 @@
             this.SessionDateTimePicker = new System.Windows.Forms.DateTimePicker();
             this.buttonLogSearch = new System.Windows.Forms.Button();
             this.textBoxLogSearch = new System.Windows.Forms.TextBox();
-            this.columnHeader28 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.OpenHawaiiCallFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.TabControlMain.SuspendLayout();
             this.TabPageLogStatus.SuspendLayout();
             this.TabPageAnalysis.SuspendLayout();
@@ -523,6 +524,11 @@
             this.columnHeader27.Text = "Time";
             this.columnHeader27.Width = 150;
             // 
+            // columnHeader28
+            // 
+            this.columnHeader28.Text = "Raw QSO";
+            this.columnHeader28.Width = 400;
+            // 
             // ComboBoxSelectSession
             // 
             this.ComboBoxSelectSession.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -640,10 +646,11 @@
             this.textBoxLogSearch.Size = new System.Drawing.Size(90, 23);
             this.textBoxLogSearch.TabIndex = 1402;
             // 
-            // columnHeader28
+            // OpenHawaiiCallFileDialog
             // 
-            this.columnHeader28.Text = "Raw QSO";
-            this.columnHeader28.Width = 400;
+            this.OpenHawaiiCallFileDialog.FileName = "HQPCalls.csv";
+            this.OpenHawaiiCallFileDialog.Filter = "CSV File|*.csv";
+            this.OpenHawaiiCallFileDialog.Title = "Load Hawaii Call File";
             // 
             // MainForm
             // 
@@ -757,6 +764,7 @@
         private System.Windows.Forms.ColumnHeader columnHeader26;
         private System.Windows.Forms.ColumnHeader columnHeader27;
         private System.Windows.Forms.ColumnHeader columnHeader28;
+        private System.Windows.Forms.OpenFileDialog OpenHawaiiCallFileDialog;
     }
 }
 

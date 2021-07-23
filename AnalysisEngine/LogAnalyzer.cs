@@ -16,6 +16,7 @@ namespace W6OP.ContestLogAnalyzer
         public ContestName ActiveContest;
         private ILookup<string, string> _BadCallList;
         public ILookup<string, string> BadCallList { set => _BadCallList = value; }
+
         public CallLookUp CallLookUp;
 
         /// <summary>
@@ -982,7 +983,7 @@ namespace W6OP.ContestLogAnalyzer
                             case "Hawaii":
                                 return;
                             default:
-                                if (qso.OperatorIsHQPEntity)
+                                if (qso.IsHQPEntity)
                                 {
                                     entity = "DX";
                                 }

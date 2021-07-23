@@ -436,10 +436,7 @@ namespace W6OP.ContestLogAnalyzer
 
         public int HQPPoints { get; set; }
 
-        public string HQPEntity { get; set; }
-
-        public bool OperatorIsHQPEntity { get; set; }
-        public string OperatorOriginalCall { get; set; }
+        public bool IsHQPEntity { get; set; }
 
         #endregion
 
