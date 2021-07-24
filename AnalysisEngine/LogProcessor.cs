@@ -28,7 +28,7 @@ namespace W6OP.ContestLogAnalyzer
     {
         readonly string[] States = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", };
         readonly string[] Provinces = { "NL", "NS", "PE", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU" };
-        readonly string[] HawaiinGrids = { "BK01", "BK02", "BK10", "BK11", "BK09", "BL20", "BL29", "BL28", "BJ91" };
+        readonly string[] HawaiinGrids = { "AL91", "AL92", "BL01", "BL02", "BL10", "BL11", "BL20", "BK18", "BK19","BK29", "BJ91" };
 
         public ILookup<string, string> HawaiiCallList;
         // "BJ91" is an uninhabited island except for native Hawaiians.  
@@ -204,6 +204,7 @@ namespace W6OP.ContestLogAnalyzer
                         {
                             isHQPEntity = Enum.IsDefined(typeof(ALTHQPMults), contestLog.QSOCollection[0].OperatorEntity);
                         }
+
                         contestLog.IsHQPEntity = isHQPEntity;
                         SetHQPDXCCInformation(contestLog.QSOCollection, isHQPEntity);
                     }
@@ -291,7 +292,6 @@ namespace W6OP.ContestLogAnalyzer
         {
             List<ContestLog> contestLogs;
             List<QSO> qsos;
-            List<string> entities;
             List<Tuple<string, int>> names = new List<Tuple<string, int>>();
 
             foreach (QSO qso in contestLog.QSOCollection)
@@ -330,94 +330,119 @@ namespace W6OP.ContestLogAnalyzer
                     CallDictionary.Add(qso.ContactCall, contestLogs);
                 }
 
+
                 if (ActiveContest == ContestName.HQP)
                 {
-                    // all who submitted a log
-                    if (!SubmittedLogDictionary.ContainsKey(qso.OperatorCall))
-                    {
-                        SubmittedLogDictionary.Add(qso.OperatorCall, qso.OperatorEntity);
-                    }
-
-                    // all who are in any log and the listed entity - updated in ConvertGridToEntity)
-                    if (QSOContactDictionary.ContainsKey(qso.ContactCall))
-                    {
-                        entities = QSOContactDictionary[qso.ContactCall];
-                        entities.Add(qso.ContactEntity);
-                    }
-                    else
-                    {
-                        entities = new List<string>
-                    {
-                        qso.ContactEntity
-                    };
-                        QSOContactDictionary.Add(qso.ContactCall, entities);
-                    }
+                    BuildHQPDictionaries(qso);
                 }
 
                 if (ActiveContest == ContestName.CW_OPEN)
                 {
-                    //names - first all who submitted logs
-                    if (NameDictionary.ContainsKey(qso.OperatorCall))
-                    {
-                        names = NameDictionary[qso.OperatorCall];
-                        var item = names.Where(x => x.Item1 == qso.OperatorName).ToList();
-
-                        if (item.Count == 1)
-                        {
-                            int count = item[0].Item2;
-                            count += 1;
-                            names.Remove(item[0]);
-
-                            var name = new Tuple<string, int>(qso.OperatorName, count);
-                            names.Add(name);
-                        }
-                        else
-                        {
-                            var name = new Tuple<string, int>(qso.OperatorName, 1);
-                            names.Add(name);
-                        }
-                    }
-                    else
-                    {
-                        var name = new Tuple<string, int>(qso.OperatorName, 1);
-                        names = new List<Tuple<string, int>>
-                            {
-                                name
-                            };
-                        NameDictionary[qso.OperatorCall] = names;
-                    }
-
-                    //names - may not have submitted logs
-                    if (NameDictionary.ContainsKey(qso.ContactCall))
-                    {
-                        names = NameDictionary[qso.ContactCall];
-                        var item = names.Where(x => x.Item1 == qso.ContactName).ToList();
-
-                        if (item.Count == 1)
-                        {
-                            int count = item[0].Item2;
-                            count += 1;
-                            names.Remove(item[0]);
-
-                            var name = new Tuple<string, int>(qso.ContactName, count);
-                            names.Add(name);
-                        }
-                        else
-                        {
-                            var name = new Tuple<string, int>(qso.ContactName, 1);
-                            names.Add(name);
-                        }
-                    }
-                    else
-                    {
-                        var name = new Tuple<string, int>(qso.ContactName, 1);
-                        names = new List<Tuple<string, int>>
-                            {
-                                name
-                            };
-                        NameDictionary[qso.ContactCall] = names;
-                    }
+                    BuildCWOpenDictionaries(names, qso);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Contains all participants names keyed by the call sign.
+        /// Some may have used multiple names in the contest and I want to
+        /// determine which one they used the most. It is the one I will use 
+        /// for matching QSOs.
+        /// </summary>
+        /// <param name="names"></param>
+        /// <param name="qso"></param>
+        private void BuildCWOpenDictionaries(List<Tuple<string, int>> names, QSO qso)
+        {
+            //names - first all who submitted logs
+            if (NameDictionary.ContainsKey(qso.OperatorCall))
+            {
+                names = NameDictionary[qso.OperatorCall];
+                var item = names.Where(x => x.Item1 == qso.OperatorName).ToList();
+
+                if (item.Count == 1)
+                {
+                    int count = item[0].Item2;
+                    count += 1;
+                    names.Remove(item[0]);
+
+                    var name = new Tuple<string, int>(qso.OperatorName, count);
+                    names.Add(name);
+                }
+                else
+                {
+                    var name = new Tuple<string, int>(qso.OperatorName, 1);
+                    names.Add(name);
+                }
+            }
+            else
+            {
+                var name = new Tuple<string, int>(qso.OperatorName, 1);
+                names = new List<Tuple<string, int>>
+                            {
+                                name
+                            };
+                NameDictionary[qso.OperatorCall] = names;
+            }
+
+            //names - may not have submitted logs
+            if (NameDictionary.ContainsKey(qso.ContactCall))
+            {
+                names = NameDictionary[qso.ContactCall];
+                var item = names.Where(x => x.Item1 == qso.ContactName).ToList();
+
+                if (item.Count == 1)
+                {
+                    int count = item[0].Item2;
+                    count += 1;
+                    names.Remove(item[0]);
+
+                    var name = new Tuple<string, int>(qso.ContactName, count);
+                    names.Add(name);
+                }
+                else
+                {
+                    var name = new Tuple<string, int>(qso.ContactName, 1);
+                    names.Add(name);
+                }
+            }
+            else
+            {
+                var name = new Tuple<string, int>(qso.ContactName, 1);
+                names = new List<Tuple<string, int>>
+                            {
+                                name
+                            };
+                NameDictionary[qso.ContactCall] = names;
+            }
+        }
+
+        /// <summary>
+        /// All participants most common entity keyed by call sign.
+        /// </summary>
+        /// <param name="qso"></param>
+        private void BuildHQPDictionaries(QSO qso)
+        {
+            List<string> entities;
+
+            // all who submitted a log
+            if (!SubmittedLogDictionary.ContainsKey(qso.OperatorCall))
+            {
+                SubmittedLogDictionary.Add(qso.OperatorCall, qso.OperatorEntity);
+            }
+
+            // all who are in any log and the listed entity - updated in ConvertGridToEntity)
+            if (QSOContactDictionary.ContainsKey(qso.ContactCall))
+            {
+                entities = QSOContactDictionary[qso.ContactCall];
+                entities.Add(qso.ContactEntity);
+            }
+            else
+            {
+                entities = new List<string>
+                    {
+                        qso.ContactEntity
+                    };
+                QSOContactDictionary.Add(qso.ContactCall, entities);
             }
         }
 
@@ -664,6 +689,7 @@ namespace W6OP.ContestLogAnalyzer
             if (isHQPEntity)
             {
                 ProcessHawaiiOperators(qsoCollection);
+                Console.WriteLine(qsoCollection[0].OperatorCall);
             }
             else
             {
@@ -831,7 +857,8 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                    // What now?
+                    // Is an Hawaiin entity but did not submit a log
+                    qso.IsHQPEntity = true;
                     // mark QSO for RefineQSO()?
                 }
             }
@@ -847,7 +874,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 qso.OperatorEntity = entity;
                 qso.OperatorCountry = HQPHawaiiLiteral;
-            } 
+            }
             else
             {
                 qso.ContactEntity = entity;
@@ -877,13 +904,13 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     qso.OperatorEntity = EnumHelper.GetDescription(candidate);
                     qso.OperatorCountry = HQPHawaiiLiteral;
-                } 
-                else 
+                }
+                else
                 {
                     qso.ContactEntity = EnumHelper.GetDescription(candidate);
                     qso.ContactCountry = HQPHawaiiLiteral;
                 }
-               
+
                 return true;
             }
 
@@ -967,13 +994,11 @@ namespace W6OP.ContestLogAnalyzer
             string entity = "DX";
             string country = string.Empty;
 
-            // RefineHQPEntities() will fix this
             if (HawaiinGrids.Contains(gridSquare))
             {
                 GetHawaiinEntityFromGrid(qso, isOperator);
                 return;
             }
-            
 
             if (GridSquares.ContainsKey(gridSquare))
             {
@@ -1002,12 +1027,12 @@ namespace W6OP.ContestLogAnalyzer
                 }
                 else
                 {
-                   entity = grids[0].Trim();
-                   if (isOperator)
+                    entity = grids[0].Trim();
+                    if (isOperator)
                     {
                         country = HQPUSALiteral;
                     }
-                   else
+                    else
                     {
                         country = HQPUSALiteral;
                     }
@@ -1065,6 +1090,11 @@ namespace W6OP.ContestLogAnalyzer
         private bool ValidateGrid(string contactEntity)
         {
             Regex regex = new Regex(@"^[A-Za-z]{2}[0-9]{2}\z", RegexOptions.IgnoreCase);
+
+            if (contactEntity.Length > 4)
+            {
+                contactEntity = contactEntity.Substring(0, 4);
+            }
 
             if (regex.Match(contactEntity).Success)
             {

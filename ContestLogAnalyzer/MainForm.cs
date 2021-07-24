@@ -716,16 +716,16 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                foreach (ContestLog log in ContestLogs)
-                {
-                   LogProcessor.RefineHQPEntities(log);
-                }
+                //foreach (ContestLog log in ContestLogs)
+                //{
+                //   LogProcessor.RefineHQPEntities(log);
+                //}
 
-                List<string> qsosToInspect = LogProcessor.QSOStoInspect;
-                if (qsosToInspect.Count > 0)
-                {
-                    PrintManager.PrintHHawaiiQSOStoInspect(qsosToInspect);
-                }
+                //List<string> qsosToInspect = LogProcessor.QSOStoInspect;
+                //if (qsosToInspect.Count > 0)
+                //{
+                //    PrintManager.PrintHHawaiiQSOStoInspect(qsosToInspect);
+                //}
 
                 UpdateListViewLoad(ContestLogs.Count.ToString() + " logs loaded.", "", false);
                 EnableControl(ButtonPreScoreReports, true);

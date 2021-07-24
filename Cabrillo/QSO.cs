@@ -30,45 +30,32 @@ namespace W6OP.ContestLogAnalyzer
 
         // Indicates a log for this call does not exist
         public bool NoMatchingLog { get; set; }
-
         public bool IsUniqueCall { get; set; }
-
         // Indicates a QSO this operator does not get credit for but others do.
         public bool IsXQSO { get; set; }
-
         // The log reference for a particuler QSO.
         public ContestLog ParentLog { get; set; }
-
         // The reason a qso was rejected.
         public RejectReason ReasonRejected { get; set; }
-
         // The status of the QSO.
         public QSOStatus Status { get; set; }
-
         // The QSO in another log that matches this QSO.
         public QSO MatchingQSO { get; set; }
-
         public QSO FirstMatchingQSO { get; set; }
-
         public List<QSO> NearestMatches { get; set; } = new List<QSO>();
-
         // This means an earlier QSO matched this one.
         public bool HasBeenMatched { get; set; }
-
         // This property allows the rejected qso report to know there are duplicates of this call
         // It will only be true if it is the qso counted as the valid qso not the dupe
         public bool QSOHasDupes { get; set; }
-
         // Indicates this has been printed.
         public bool HasBeenPrinted { get; set; }
-
         // This incorporates two fields, QSO Date and QSO Time
         // CHANGE TO DATE AND TIME LATER
         // ARE THES REALLY NEEDED SINCE WE HAVE COMBINDED DATE/TIME
         // </summary>
         public string QsoDate { get; set; }
         public string QsoTime { get; set; }
-
         // Date/Time of the QSO.
         public DateTime QSODateTime
         {
@@ -152,17 +139,12 @@ namespace W6OP.ContestLogAnalyzer
 
         // Call sign of the operator.
         public string OperatorCall { get; set; }
-
         // Name of the operator.
         public string OperatorName { get; set; }
-        
         // Call sign of the contact.
         public string ContactCall { get; set; }
-
         public string ContactName { get; set; }
-
         public string ContactGrid { get; set; }
-
         // This is the call that he should have copied.
         public string BustedCallGuess { get; set; }
 
@@ -179,7 +161,6 @@ namespace W6OP.ContestLogAnalyzer
 
         // Indicates this QSO is the first one worked in this session and therefore a multiplier.
         public bool IsMultiplier { get; set; }
-
         // Band the QSO was on.
         public int Band { get; set; }
 
@@ -364,23 +345,18 @@ namespace W6OP.ContestLogAnalyzer
         public string ContactSuffix { get; set; }
         public string SentReport { get; set; }
         public string ReceivedReport { get; set; }
-
         // Lists the incorrect entity if available.
         public string IncorrectDXEntityMessage { get; set; }
-
         // Actual country of the operator.
         public string OperatorCountry { get; set; }
-
         // Operator entity as defined by HQP
         // Length is 2 characters for US and Canada
         // or 3 characters if it is a HQP entity
         // This is equivalent to the Operator Name for the CWOpen
         public string OperatorEntity { get; set; }
-
         // The real or top level country of the  contact or DX station
         // This is the long name. Cannot be null!
         public string ContactCountry { get; set; }
-
         // The entity does not match this QSO.
         public bool IsInvalidEntity
         {
@@ -412,7 +388,6 @@ namespace W6OP.ContestLogAnalyzer
         {
             set
             {
-                //invalidSentEntity = value;
                 if (value == true)
                 {
                     ReasonRejected = RejectReason.InvalidSentEntity;
@@ -433,9 +408,7 @@ namespace W6OP.ContestLogAnalyzer
         // or 3 letter HQP entity code
         // This is equivalent to the Contact Name for the CWOpen
         public string ContactEntity { get; set; }
-
         public int HQPPoints { get; set; }
-
         public bool IsHQPEntity { get; set; }
 
         #endregion
