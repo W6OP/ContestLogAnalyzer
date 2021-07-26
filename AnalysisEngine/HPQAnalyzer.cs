@@ -142,7 +142,6 @@ namespace W6OP.ContestLogAnalyzer
 
             // List of List<QSO> from the list of contest logs that match this operator call sign
             SelectQSOs(contestLogs, qso);
-
         }
 
         /// <summary>
@@ -165,7 +164,7 @@ namespace W6OP.ContestLogAnalyzer
             IEnumerable<QSO> qsosFlattened = qsos.SelectMany(x => x.Value).Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall);
 
             // Start the search process
-            enumerable = HQPFullParameterSearch(qsosFlattened, qso);
+            enumerable = logAnalyzer.FullParameterSearch(qsosFlattened, qso);
 
             // if the qso has been matched at any previous level we don't need to continue
             if (qso.HasBeenMatched)
@@ -179,7 +178,7 @@ namespace W6OP.ContestLogAnalyzer
             switch (matches.Count) // && qso.ContactCall == "AH6SZ"
             {
                 case 0:
-                    HQPLastChanceMatch(qso);
+                    logAnalyzer.LastChanceMatch(qso);
                     return;
                 case 1:
                     // for now don't penalize for time mismatch since everything else is correct
@@ -197,110 +196,12 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="qso"></param>
-        private void HQPLastChanceMatch(QSO qso)
-        {
-            List<QSO> matches = new List<QSO>();
-            IEnumerable<ContestLog> contestLogs;
-            IEnumerable<KeyValuePair<string, List<QSO>>> qsos;
-            IEnumerable<QSO> qsosFlattened = null;
-            int timeInterval = 5;
-            int queryLevel = 6;
-
-            if (logAnalyzer.ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() != 0)
-            {
-                contestLogs = logAnalyzer.ContestLogList.Where(b => b.LogOwner == qso.ContactCall);
-
-                if (contestLogs.Count() > 0)
-                {
-                    qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key != qso.ContactCall);
-                    qsosFlattened = qsos.SelectMany(x => x.Value);
-                    matches = RefineHQPMatch(qsosFlattened, qso, timeInterval, queryLevel).ToList(); //SearchForBustedCall(qsosFlattened, qso).ToList();
-
-                    switch (matches.Count)
-                    {
-                        case 0:
-                            //var q = 1;
-                            break;
-                        default:
-                            logAnalyzer.DetermineBustedCallFault(qso, matches);
-                            break;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Search using all parameters. A hit here is exact, though there
-        /// could be dupes.
-        /// </summary>
-        /// <param name="qsos"></param>
-        /// <param name="qso"></param>
-        /// <returns></returns>
-        private List<QSO> HQPFullParameterSearch(IEnumerable<QSO> qsos, QSO qso)
-        {
-            IEnumerable<QSO> enumerable;
-            List<QSO> matches;
-            int timeInterval = 10; // because everything else must match
-            int queryLevel = 1;
-
-            // full search
-            if (EnumHelper.GetDescription(qso.Mode) != "RY")
-            {
-                enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
-            }
-            else
-            {
-                timeInterval = 15;
-                enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
-            }
-
-            matches = enumerable.ToList();
-
-            switch (matches.Count)
-            {
-                case 0:
-                    // match not found so lets widen the search
-                    matches = SearchWithoutEntity(qsos, qso, false);
-                    return matches;
-                case 1:
-                    // found one match so we mark both as matches and add matching QSO
-                    qso.MatchingQSO = matches[0];
-                    matches[0].MatchingQSO = qso;
-
-                    qso.HasBeenMatched = true;
-                    matches[0].HasBeenMatched = true;
-                    return matches;
-                case 2:
-                    // two matches so these are probably dupes
-                    qso.HasBeenMatched = true;
-                    qso.MatchingQSO = matches[0];
-                    qso.QSOHasDupes = true;
-
-                    matches[0].HasBeenMatched = true;
-                    matches[0].MatchingQSO = qso;
-
-                    matches[1].HasBeenMatched = true;
-                    matches[1].MatchingQSO = qso;
-                    matches[1].FirstMatchingQSO = matches[0];
-                    matches[1].IsDuplicateMatch = true;
-                    return matches;
-                default:
-                    // more than two so we have to do more analysis
-                    Console.WriteLine("FindHQPMatches: 1");
-                    return matches;
-            }
-        }
-
-        /// <summary>
         /// Check to see if the Entity is incorrect.
         /// </summary>
         /// <param name="qsos"></param>
         /// <param name="qso"></param>
         /// <returns></returns>
-        private List<QSO> SearchWithoutEntity(IEnumerable<QSO> qsos, QSO qso, bool isOperator)
+        internal List<QSO> SearchWithoutEntity(IEnumerable<QSO> qsos, QSO qso, bool isOperator)
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches;
@@ -321,7 +222,7 @@ namespace W6OP.ContestLogAnalyzer
                 case 0:
                     if (isOperator)
                     {
-                        matches = SearchWithoutBandHQP(qsos, qso);
+                        matches = logAnalyzer.SearchWithoutBand(qsos, qso);
                     }
                     else
                     {
@@ -388,100 +289,13 @@ namespace W6OP.ContestLogAnalyzer
 
         }
 
-        private List<QSO> SearchWithoutBandHQP(IEnumerable<QSO> qsos, QSO qso)
-        {
-            IEnumerable<QSO> enumerable;
-            List<QSO> matches;
-            int timeInterval = 5;
-            int queryLevel = 4;
-            double qsoPoints;
-            double matchQsoPoints;
-
-            enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
-
-            matches = enumerable.ToList();
-
-            // band mismatch
-            switch (matches.Count)
-            {
-                case 0:
-                    matches = SearchWithoutModeHQP(qsos, qso);
-                    return matches;
-                case 1:
-                    qso.MatchingQSO = matches[0];
-                    matches[0].MatchingQSO = qso;
-
-                    qso.HasBeenMatched = true;
-                    matches[0].HasBeenMatched = true;
-
-                    // whos at fault? need to get qsos around contact for each guy
-                    qsoPoints = logAnalyzer.DetermineBandFault(qso);
-                    matchQsoPoints = logAnalyzer.DetermineBandFault(matches[0]);
-
-                    if (qsoPoints.Equals(matchQsoPoints))
-                    {
-                        // can't tell who's at fault so let them both have point
-                        return matches;
-                    }
-
-                    if (qsoPoints > matchQsoPoints)
-                    {
-                        matches[0].IsIncorrectBand = true;
-                        matches[0].IncorrectValueMessage = $"{matches[0].Band} --> {qso.Band}";
-                    }
-                    else
-                    {
-                        qso.IsIncorrectBand = true;
-                        qso.IncorrectValueMessage = $"{qso.Band} --> {matches[0].Band}";
-                    }
-                    return matches;
-                default:
-                    // duplicate incorrect band QSOs
-                    foreach (QSO matchQSO in matches)
-                    {
-                        if (matchQSO.HasBeenMatched == false)
-                        {
-                            // should this be a collection?
-                            qso.MatchingQSO = matchQSO;
-                            qso.HasBeenMatched = true;
-
-                            matchQSO.MatchingQSO = qso;
-                            matchQSO.HasBeenMatched = true;
-
-                            // whos at fault? need to get qsos around contact for each guy
-                            qsoPoints = logAnalyzer.DetermineBandFault(qso);
-                            matchQsoPoints = logAnalyzer.DetermineBandFault(matchQSO);
-
-                            if (qsoPoints.Equals(matchQsoPoints))
-                            {
-                                // can't tell who's at fault so let them both have point
-                                return matches;
-                            }
-
-                            if (qsoPoints > matchQsoPoints)
-                            {
-                                matchQSO.IsIncorrectBand = true;
-                                matchQSO.IncorrectValueMessage = $"{matchQSO.Band} --> {qso.Band}";
-
-                            }
-                            else
-                            {
-                                qso.IsIncorrectBand = true;
-                                qso.IncorrectValueMessage = $"{qso.Band} --> {matchQSO.Band}";
-                            }
-                        }
-                    }
-                    return matches;
-            }
-        }
-
         /// <summary>
         /// Search without useing the mode.
         /// </summary>
         /// <param name="qsos"></param>
         /// <param name="qso"></param>
         /// <returns></returns>
-        private List<QSO> SearchWithoutModeHQP(IEnumerable<QSO> qsos, QSO qso)
+        internal List<QSO> SearchWithoutModeHQP(IEnumerable<QSO> qsos, QSO qso)
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches;
@@ -575,7 +389,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qso"></param>
         /// <param name="timeInterval"></param>
         /// <returns></returns>
-        private IEnumerable<QSO> RefineHQPMatch(IEnumerable<QSO> qsos, QSO qso, int timeInterval, int queryLevel)
+        internal IEnumerable<QSO> RefineHQPMatch(IEnumerable<QSO> qsos, QSO qso, int timeInterval, int queryLevel)
         {
             IEnumerable<QSO> matches;
 

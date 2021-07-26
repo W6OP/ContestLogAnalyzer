@@ -137,7 +137,7 @@ namespace W6OP.ContestLogAnalyzer
             // do these parameters up front and I don't have to do them for every subsequent query
             IEnumerable<QSO> qsosFlattened = qsos.SelectMany(x => x.Value).Where(y => y.ContactCall == qso.OperatorCall && y.OperatorCall == qso.ContactCall);
 
-            enumerable = CWOpenFullParameterSearch(qsosFlattened, qso);
+            enumerable = logAnalyzer.FullParameterSearch(qsosFlattened, qso);
 
             // if the qso has been matched at any previous level we don't need to continue
             if (qso.HasBeenMatched)
@@ -150,7 +150,7 @@ namespace W6OP.ContestLogAnalyzer
             switch (matches.Count)
             {
                 case 0:
-                    CWOpenLastChanceMatch(qso);
+                    logAnalyzer.LastChanceMatch(qso);
                     return;
                 case 1:
                     // for now don't penalize for time mismatch since everything else is correct
@@ -167,93 +167,73 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Try to find busted calls.
-        /// </summary>
-        /// <param name="qso"></param>
-        private void CWOpenLastChanceMatch(QSO qso)
-        {
-            List<QSO> matches = new List<QSO>();
-            IEnumerable<ContestLog> contestLogs;
-            IEnumerable<KeyValuePair<string, List<QSO>>> qsos;
-            IEnumerable<QSO> qsosFlattened = null;
-            int timeInterval = 5;
-            int queryLevel = 6;
-
-            if (logAnalyzer.ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() != 0)
-            {
-                contestLogs = logAnalyzer.ContestLogList.Where(b => b.LogOwner == qso.ContactCall);
-
-                if (contestLogs.Count() > 0)
-                {
-                    qsos = contestLogs.SelectMany(z => z.QSODictionary).Where(x => x.Key != qso.ContactCall);
-                    qsosFlattened = qsos.SelectMany(x => x.Value);
-                    matches = RefineCWOpenMatch(qsosFlattened, qso, timeInterval, queryLevel).ToList();
-
-                    switch (matches.Count)
-                    {
-                        case 0:
-                            //var q = 1;
-                            break;
-                        default:
-                            logAnalyzer.DetermineBustedCallFault(qso, matches);
-                            break;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Complete search looking for an exact match. If this is successful
         /// both QSOs are good.
         /// </summary>
         /// <param name="qsos"></param>
         /// <param name="qso"></param>
         /// <returns></returns>
-        private List<QSO> CWOpenFullParameterSearch(IEnumerable<QSO> qsos, QSO qso)
-        {
-            IEnumerable<QSO> enumerable;
-            List<QSO> matches;
-            int timeInterval = 10; // because everything else must match
-            int searchLevel = 1;
+        //private List<QSO> CWOpenFullParameterSearch(IEnumerable<QSO> qsos, QSO qso)
+        //{
+        //    IEnumerable<QSO> enumerable = null;
+        //    List<QSO> matches;
+        //    int timeInterval = 10; // because everything else must match
+        //    int queryLevel = 1;
 
-            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
+        //    switch (logAnalyzer.ActiveContest)
+        //    {
+        //        case ContestName.CW_OPEN:
+        //            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, queryLevel);
+        //            break;
+        //        case ContestName.HQP:
+        //            if (EnumHelper.GetDescription(qso.Mode) != "RY")
+        //            {
+        //                enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+        //            }
+        //            else
+        //            {
+        //                timeInterval = 15;
+        //                enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+        //            }
+        //            break;
+        //    }
 
-            matches = enumerable.ToList();
+        //    matches = enumerable.ToList();
 
-            switch (matches.Count)
-            {
-                case 0:
-                    // match not found so lets search without serial number
-                    matches = SearchWithoutSerialNumber(qsos, qso);
-                    return matches;
-                case 1:
-                    // found one match so we mark both as matches and add matching QSO
-                    qso.MatchingQSO = matches[0];
-                    matches[0].MatchingQSO = qso;
+        //    switch (matches.Count)
+        //    {
+        //        case 0:
+        //            // match not found so lets search without serial number
+        //            matches = SearchWithoutSerialNumber(qsos, qso);
+        //            return matches;
+        //        case 1:
+        //            // found one match so we mark both as matches and add matching QSO
+        //            qso.MatchingQSO = matches[0];
+        //            matches[0].MatchingQSO = qso;
 
-                    qso.HasBeenMatched = true;
-                    matches[0].HasBeenMatched = true;
-                    return matches;
-                case 2:
-                    // two matches so these are probably dupes
-                    qso.HasBeenMatched = true;
-                    qso.MatchingQSO = matches[0];
-                    qso.QSOHasDupes = true;
+        //            qso.HasBeenMatched = true;
+        //            matches[0].HasBeenMatched = true;
+        //            return matches;
+        //        case 2:
+        //            // two matches so these are probably dupes
+        //            qso.HasBeenMatched = true;
+        //            qso.MatchingQSO = matches[0];
+        //            qso.QSOHasDupes = true;
 
-                    matches[0].HasBeenMatched = true;
-                    matches[0].MatchingQSO = qso;
+        //            matches[0].HasBeenMatched = true;
+        //            matches[0].MatchingQSO = qso;
 
-                    matches[1].HasBeenMatched = true;
-                    matches[1].MatchingQSO = qso;
-                    matches[1].FirstMatchingQSO = matches[0];
-                    matches[1].IsDuplicateMatch = true;
-                    return matches;
-                default:
-                    // more than two so we have to do more analysis
-                    Console.WriteLine("FindCWOpenMatches: 1");
-                    return matches;
-            }
-        }
+        //            matches[1].HasBeenMatched = true;
+        //            matches[1].MatchingQSO = qso;
+        //            matches[1].FirstMatchingQSO = matches[0];
+        //            matches[1].IsDuplicateMatch = true;
+        //            return matches;
+        //        default:
+        //            // more than two so we have to do more analysis
+        //            Console.WriteLine("FindCWOpenMatches: 1");
+        //            return matches;
+        //    }
+        //}
 
         /// <summary>
         /// Remove the serial number check. If we get a hit then one or both
@@ -262,7 +242,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qsos"></param>
         /// <param name="qso"></param>
         /// <returns></returns>
-        private List<QSO> SearchWithoutSerialNumber(IEnumerable<QSO> qsos, QSO qso)
+        internal List<QSO> SearchWithoutSerialNumber(IEnumerable<QSO> qsos, QSO qso)
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches;
@@ -363,7 +343,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 case 0:
                     // search without band
-                    matches = SearchWithoutBandCWOpen(qsos, qso);
+                    matches = logAnalyzer.SearchWithoutBand(qsos, qso);
                     return matches;
                 case 1:
                     qso.MatchingQSO = matches[0];
@@ -400,98 +380,98 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        /// <summary>
-        /// Remove the band component. Sometimes one of them changes band
-        /// but the band is recorded wrong. Especially if not using rig control.
-        /// </summary>
-        /// <param name="qsos"></param>
-        /// <param name="qso"></param>
-        /// <returns></returns>
-        private List<QSO> SearchWithoutBandCWOpen(IEnumerable<QSO> qsos, QSO qso)
-        {
-            IEnumerable<QSO> enumerable;
-            List<QSO> matches;
-            int timeInterval = 5;
-            int searchLevel = 5;
-            double qsoPoints;
-            double matchQsoPoints;
+        ///// <summary>
+        ///// Remove the band component. Sometimes one of them changes band
+        ///// but the band is recorded wrong. Especially if not using rig control.
+        ///// </summary>
+        ///// <param name="qsos"></param>
+        ///// <param name="qso"></param>
+        ///// <returns></returns>
+        //private List<QSO> SearchWithoutBandCWOpen(IEnumerable<QSO> qsos, QSO qso)
+        //{
+        //    IEnumerable<QSO> enumerable;
+        //    List<QSO> matches;
+        //    int timeInterval = 5;
+        //    int searchLevel = 5;
+        //    double qsoPoints;
+        //    double matchQsoPoints;
 
-            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
+        //    enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
 
-            matches = enumerable.ToList();
+        //    matches = enumerable.ToList();
 
-            // band mismatch
-            switch (matches.Count)
-            {
-                case 0:
-                    // search without time
-                    matches = RefineCWOpenMatch(qsos, qso, 5, 5).ToList();
-                    return matches;
-                case 1:
-                    qso.MatchingQSO = matches[0];
-                    matches[0].MatchingQSO = qso;
+        //    // band mismatch
+        //    switch (matches.Count)
+        //    {
+        //        case 0:
+        //            // search without time
+        //            matches = RefineCWOpenMatch(qsos, qso, 5, 5).ToList();
+        //            return matches;
+        //        case 1:
+        //            qso.MatchingQSO = matches[0];
+        //            matches[0].MatchingQSO = qso;
 
-                    qso.HasBeenMatched = true;
-                    matches[0].HasBeenMatched = true;
+        //            qso.HasBeenMatched = true;
+        //            matches[0].HasBeenMatched = true;
 
-                    // whos at fault? need to get qsos around contact for each guy
-                    qsoPoints = logAnalyzer.DetermineBandFault(qso);
-                    matchQsoPoints = logAnalyzer.DetermineBandFault(matches[0]);
+        //            // whos at fault? need to get qsos around contact for each guy
+        //            qsoPoints = logAnalyzer.DetermineBandFault(qso);
+        //            matchQsoPoints = logAnalyzer.DetermineBandFault(matches[0]);
 
-                    if (qsoPoints.Equals(matchQsoPoints))
-                    {
-                        // can't tell who's at fault so let them both have point
-                        return matches;
-                    }
+        //            if (qsoPoints.Equals(matchQsoPoints))
+        //            {
+        //                // can't tell who's at fault so let them both have point
+        //                return matches;
+        //            }
 
-                    if (qsoPoints > matchQsoPoints)
-                    {
-                        matches[0].IsIncorrectBand = true;
-                        matches[0].IncorrectValueMessage = $"{matches[0].Band} --> {qso.Band}";
-                    }
-                    else
-                    {
-                        qso.IsIncorrectBand = true;
-                        qso.IncorrectValueMessage = $"{qso} --> {matches[0].Band}";
-                    }
-                    return matches;
-                default:
-                    // duplicate incorrect QSOs
-                    foreach (QSO matchQSO in matches)
-                    {
-                        if (qso.HasBeenMatched == false)
-                        {
-                            qso.MatchingQSO = matchQSO;
-                            qso.HasBeenMatched = true;
-                        }
+        //            if (qsoPoints > matchQsoPoints)
+        //            {
+        //                matches[0].IsIncorrectBand = true;
+        //                matches[0].IncorrectValueMessage = $"{matches[0].Band} --> {qso.Band}";
+        //            }
+        //            else
+        //            {
+        //                qso.IsIncorrectBand = true;
+        //                qso.IncorrectValueMessage = $"{qso} --> {matches[0].Band}";
+        //            }
+        //            return matches;
+        //        default:
+        //            // duplicate incorrect QSOs
+        //            foreach (QSO matchQSO in matches)
+        //            {
+        //                if (qso.HasBeenMatched == false)
+        //                {
+        //                    qso.MatchingQSO = matchQSO;
+        //                    qso.HasBeenMatched = true;
+        //                }
 
-                        if (matchQSO.HasBeenMatched == false)
-                        {
-                            // whos at fault? need to get qsos around contact for each guy
-                            qsoPoints = logAnalyzer.DetermineBandFault(qso);
-                            matchQsoPoints = logAnalyzer.DetermineBandFault(matchQSO);
+        //                if (matchQSO.HasBeenMatched == false)
+        //                {
+        //                    // whos at fault? need to get qsos around contact for each guy
+        //                    qsoPoints = logAnalyzer.DetermineBandFault(qso);
+        //                    matchQsoPoints = logAnalyzer.DetermineBandFault(matchQSO);
 
-                            if (qsoPoints.Equals(matchQsoPoints))
-                            {
-                                // can't tell who's at fault so let them both have point
-                                return matches;
-                            }
+        //                    if (qsoPoints.Equals(matchQsoPoints))
+        //                    {
+        //                        // can't tell who's at fault so let them both have point
+        //                        return matches;
+        //                    }
 
-                            if (qsoPoints > matchQsoPoints)
-                            {
-                                matchQSO.IsIncorrectBand = true;
-                                matchQSO.IncorrectValueMessage = $"{matchQSO.Band} --> {qso.Band}";
-                            }
-                            else
-                            {
-                                qso.IsIncorrectBand = true;
-                                qso.IncorrectValueMessage = $"{qso} --> {matchQSO.Band}";
-                            }
-                        }
-                    }
-                    return matches;
-            }
-        }
+        //                    if (qsoPoints > matchQsoPoints)
+        //                    {
+        //                        matchQSO.IsIncorrectBand = true;
+        //                        matchQSO.IncorrectValueMessage = $"{matchQSO.Band} --> {qso.Band}";
+        //                    }
+        //                    else
+        //                    {
+        //                        qso.IsIncorrectBand = true;
+        //                        qso.IncorrectValueMessage = $"{qso} --> {matchQSO.Band}";
+        //                    }
+        //                }
+        //            }
+        //            return matches;
+        //    }
+        //}
 
         /// <summary>
         /// Do a search through the qsos collection depending on the parameters sent in.
@@ -501,7 +481,7 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qso"></param>
         /// <param name="timeInterval"></param>
         /// <returns></returns>
-        private IEnumerable<QSO> RefineCWOpenMatch(IEnumerable<QSO> qsos, QSO qso, int timeInterval, int queryLevel)
+        internal IEnumerable<QSO> RefineCWOpenMatch(IEnumerable<QSO> qsos, QSO qso, int timeInterval, int queryLevel)
         {
             IEnumerable<QSO> matches;
 
