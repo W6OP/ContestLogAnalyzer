@@ -848,43 +848,48 @@ namespace W6OP.ContestLogAnalyzer
                 callSign = qso.OperatorCall;
             }
 
-            if (HawaiinGrids.Contains(entity))
+            switch (true)
             {
-                var entityList = HawaiiCallList
-                    .Where(item => item.Key == callSign)
-                    .SelectMany(item => item)
-                    .Distinct()
-                    .ToList();
+                case bool _ when HawaiinGrids.Contains(entity):
 
-                // never more than one - if 0 then will try to fix later
-                if (entityList.Count > 0)
-                {
-                    entity = entityList[0];
-                }
-                else
-                {
-                    // Is an Hawaiin entity but did not submit a log
-                    qso.IsHQPEntity = true;
-                    // mark QSO for RefineQSO()?
-                }
-            }
-            else
-            {
-                // is it a dx or state grid
-                qso.IsInvalidEntity = true;
-                qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> should be a Hawai’i district )";
-                return;
+                    var entityList = HawaiiCallList
+                   .Where(item => item.Key == callSign)
+                   .SelectMany(item => item)
+                   .Distinct()
+                   .ToList();
+
+                    // never more than one - if 0 then will try to fix later
+                    if (entityList.Count > 0)
+                    {
+                        entity = entityList[0];
+                    }
+                    else
+                    {
+                        // Is an Hawaiin entity but did not submit a log
+                        qso.IsHQPEntity = true;
+#if DEBUG
+                        Console.WriteLine("Hawaii but no log: " + qso.ContactCall);
+                        // mark QSO for RefineQSO()?
+#endif
+                    }
+                    break;
+                default:
+                    // is it a dx or state grid
+                    qso.IsInvalidEntity = true;
+                    qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> should be a Hawai’i district )";
+                    return;
             }
 
-            if (isOperator)
+            switch (isOperator)
             {
-                qso.OperatorEntity = entity;
-                qso.OperatorCountry = HQPHawaiiLiteral;
-            }
-            else
-            {
-                qso.ContactEntity = entity;
-                qso.ContactCountry = HQPHawaiiLiteral;
+                case true:
+                    qso.OperatorEntity = entity;
+                    qso.OperatorCountry = HQPHawaiiLiteral;
+                    break;
+                default:
+                    qso.ContactEntity = entity;
+                    qso.ContactCountry = HQPHawaiiLiteral;
+                    break;
             }
         }
 
@@ -906,15 +911,17 @@ namespace W6OP.ContestLogAnalyzer
             if (Enum.IsDefined(typeof(ALTHQPMults), entity))
             {
                 var candidate = (ALTHQPMults)Enum.Parse(typeof(ALTHQPMults), entity);
-                if (isOperator)
+
+                switch (isOperator)
                 {
-                    qso.OperatorEntity = EnumHelper.GetDescription(candidate);
-                    qso.OperatorCountry = HQPHawaiiLiteral;
-                }
-                else
-                {
-                    qso.ContactEntity = EnumHelper.GetDescription(candidate);
-                    qso.ContactCountry = HQPHawaiiLiteral;
+                    case true:
+                        qso.OperatorEntity = EnumHelper.GetDescription(candidate);
+                        qso.OperatorCountry = HQPHawaiiLiteral;
+                        break;
+                    default:
+                        qso.ContactEntity = EnumHelper.GetDescription(candidate);
+                        qso.ContactCountry = HQPHawaiiLiteral;
+                        break;
                 }
 
                 return true;
