@@ -491,7 +491,7 @@ namespace W6OP.ContestLogAnalyzer
                     ComboBoxSelectSession.Enabled = false;
                     Enum.TryParse(ComboBoxSelectSession.SelectedValue.ToString(), out Session);
                     TabControlMain.SelectTab(TabPageLogStatus);
-                    ButtonLoadLogs.Enabled = true;
+                    EnableControl(ButtonLoadLogs, true);
                     Task.Run(() => LoadPrefixList());
                     break;
                 default:
@@ -1353,8 +1353,16 @@ namespace W6OP.ContestLogAnalyzer
             try
             {
                 hawaiiCallList = LoadHawaiiCallFile();
-                LogProcessor.HawaiiCallList = hawaiiCallList;
-                UpdateListViewLoad("Loaded Hawaii call file.", hawaiiCallList.Count.ToString() + " entries.", false);
+               
+                if (hawaiiCallList != null)
+                {
+                    LogProcessor.HawaiiCallList = hawaiiCallList;
+                    UpdateListViewLoad("Loaded Hawaii call file.", hawaiiCallList.Count.ToString() + " entries.", false);
+                } else
+                {
+                    // disable something?
+                    EnableControl(ButtonLoadLogs, false);
+                }
             }
             catch (Exception ex)
             {
@@ -1433,6 +1441,10 @@ namespace W6OP.ContestLogAnalyzer
                       .ToLookup(s => s[0], s => s[1]);
                     }
                 }
+            }
+            else
+            {
+                MessageBox.Show("You must load the list of Hawaii calls to continue.", "Required File", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
             return lines;

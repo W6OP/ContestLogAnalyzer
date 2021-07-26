@@ -28,7 +28,14 @@ namespace W6OP.ContestLogAnalyzer
     {
         readonly string[] States = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", };
         readonly string[] Provinces = { "NL", "NS", "PE", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU" };
-        readonly string[] HawaiinGrids = { "AL91", "AL92", "BL01", "BL02", "BL10", "BL11", "BL20", "BK18", "BK19","BK29", "BJ91" };
+        readonly string[] HawaiinGrids = { "AL91", "AL92", "BL01", "BL02", "BL10", "BL11", "BL20", "BK18", "BK19","BK29", "BJ91","BK01",
+                                        "BK02",
+                                        "BK10",
+                                        "BK11",
+                                        "BK09",
+                                        "BL29",
+                                        "BL28", };
+
 
         public ILookup<string, string> HawaiiCallList;
         // "BJ91" is an uninhabited island except for native Hawaiians.  
@@ -689,7 +696,6 @@ namespace W6OP.ContestLogAnalyzer
             if (isHQPEntity)
             {
                 ProcessHawaiiOperators(qsoCollection);
-                Console.WriteLine(qsoCollection[0].OperatorCall);
             }
             else
             {
@@ -1003,39 +1009,35 @@ namespace W6OP.ContestLogAnalyzer
             if (GridSquares.ContainsKey(gridSquare))
             {
                 List<string> grids = GridSquares[gridSquare];
-                if (grids.Count > 1)
-                {  // use ULS Data
-                    if (ULSStateData.ContainsKey(fullCall))
-                    {
-                        entity = ULSStateData[fullCall];
+
+                switch (grids.Count)
+                {
+                    case 1:
+                        entity = grids[0].Trim();
                         country = HQPUSALiteral;
-                    }
-                    else // may be Canada
-                    {
-                        hitCollection = CallLookUp.LookUpCall(callSign: fullCall);
-                        hitList = hitCollection.ToList();
-                        if (hitList.Count != 0)
+                        break;
+                    default:
+                        // use ULS Data
+                        if (ULSStateData.ContainsKey(fullCall))
                         {
-                            if (hitList[0].Country.ToUpper() == HQPCanadaLiteral)
+                            entity = ULSStateData[fullCall];
+                            country = HQPUSALiteral;
+                        }
+                        else // may be Canada
+                        {
+                            hitCollection = CallLookUp.LookUpCall(callSign: fullCall);
+                            hitList = hitCollection.ToList();
+                            if (hitList.Count != 0)
                             {
-                                // this is province ID
-                                entity = hitList[0].Admin1;
-                                country = HQPCanadaLiteral;
+                                if (hitList[0].Country.ToUpper() == HQPCanadaLiteral)
+                                {
+                                    // this is province ID
+                                    entity = hitList[0].Admin1;
+                                    country = HQPCanadaLiteral;
+                                }
                             }
                         }
-                    }
-                }
-                else
-                {
-                    entity = grids[0].Trim();
-                    if (isOperator)
-                    {
-                        country = HQPUSALiteral;
-                    }
-                    else
-                    {
-                        country = HQPUSALiteral;
-                    }
+                        break;
                 }
             }
             else // could be Canadian
@@ -1044,14 +1046,15 @@ namespace W6OP.ContestLogAnalyzer
                 hitList = hitCollection.ToList();
                 if (hitList.Count != 0)
                 {
-                    if (hitList[0].Country.ToUpper() == HQPCanadaLiteral)
+                    switch (hitList[0].Country.ToUpper())
                     {
-                        country = HQPCanadaLiteral;
-                        entity = hitList[0].Admin1;
-                    }
-                    else
-                    {
-                        country = hitList[0].Country;
+                        case HQPCanadaLiteral:
+                            country = HQPCanadaLiteral;
+                            entity = hitList[0].Admin1;
+                            break;
+                        default:
+                            country = hitList[0].Country;
+                            break;
                     }
                 }
             }
@@ -1070,15 +1073,16 @@ namespace W6OP.ContestLogAnalyzer
                 }
             }
 
-            if (isOperator)
+            switch (isOperator)
             {
-                qso.OperatorCountry = country;
-                qso.OperatorEntity = entity;
-            }
-            else
-            {
-                qso.ContactCountry = country;
-                qso.ContactEntity = entity;
+                case true:
+                    qso.OperatorCountry = country;
+                    qso.OperatorEntity = entity;
+                    break;
+                default:
+                    qso.ContactCountry = country;
+                    qso.ContactEntity = entity;
+                    break;
             }
         }
 
@@ -1159,36 +1163,40 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                if (States.Contains(contactEntity))
+                switch (contactEntity)
                 {
-                    qso.ContactCountry = HQPUSALiteral;
-                }
-                else if (Provinces.Contains(contactEntity))
-                {
-                    qso.ContactCountry = HQPCanadaLiteral;
-                }
-                else
-                {
-                    qso.IsInvalidEntity = true;
+                    case string _ when States.Contains(contactEntity):
+                        qso.ContactCountry = HQPUSALiteral;
+                        break;
+                    case string _ when Provinces.Contains(contactEntity):
+                        qso.ContactCountry = HQPCanadaLiteral;
+                        break;
+                    case string _ when Enum.IsDefined(typeof(HQPMults), contactEntity):
+                        // Hawaiin entity that did not submit log
+                        qso.ContactCountry = HQPHawaiiLiteral;
+                        break;
+                    default:
+                        qso.IsInvalidEntity = true;
 
-                    hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
-                    hitList = hitCollection.ToList();
-                    if (hitList.Count != 0)
-                    {
-                        qso.ContactCountry = hitList[0].Country.ToUpper();
-                        if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
+                        hitCollection = CallLookUp.LookUpCall(qso.ContactCall);
+                        hitList = hitCollection.ToList();
+                        if (hitList.Count != 0)
                         {
-                            qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> {hitList[0].Province}";
+                            qso.ContactCountry = hitList[0].Country.ToUpper();
+                            if (qso.ContactCountry == HQPCanadaLiteral || qso.ContactCountry == HQPUSALiteral)
+                            {
+                                qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> {hitList[0].Province}";
+                            }
+                            else
+                            {
+                                qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> DX ({qso.ContactCountry})";
+                            }
                         }
                         else
                         {
-                            qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> DX ({qso.ContactCountry})";
+                            qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> {qso.ContactCountry}";
                         }
-                    }
-                    else
-                    {
-                        qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> {qso.ContactCountry}";
-                    }
+                        break;
                 }
             }
         }
