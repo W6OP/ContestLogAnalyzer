@@ -67,6 +67,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CWOpenAnalyzer.cs" />
+    <Compile Include="HPQAnalyzer.cs" />
     <Compile Include="LogAnalyzer.cs" />
     <Compile Include="LogProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
