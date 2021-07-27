@@ -125,6 +125,10 @@ namespace W6OP.ContestLogAnalyzer
                         }
 
                         validQsoCount = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
+                        if (contestLog.LogOwner == "AH6KO")
+                        {
+                          var  invalidQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
+                        }
 
                         // ReportProgress with Callsign
                         OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsoCount.ToString(), progress);

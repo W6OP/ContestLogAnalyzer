@@ -206,10 +206,27 @@ namespace W6OP.ContestLogAnalyzer
                     // now add the DXCC information some contests need for multipliers
                     if (ActiveContest == ContestName.HQP)
                     {
-                        bool isHQPEntity = Enum.IsDefined(typeof(HQPMults), contestLog.QSOCollection[0].OperatorEntity);
-                        if (!isHQPEntity)
+
+                        bool isHQPEntity = false;
+                        // need to convert grid to entity
+                        switch (contestLog.QSOCollection[0].OperatorEntity.Length)
                         {
-                            isHQPEntity = Enum.IsDefined(typeof(ALTHQPMults), contestLog.QSOCollection[0].OperatorEntity);
+                            case 3:
+                                isHQPEntity = Enum.IsDefined(typeof(HQPMults), contestLog.QSOCollection[0].OperatorEntity);
+                                break;
+                            case int n when (n <= 8 && n >= 4):
+                                // 4 characters can be an alternate or a grid
+                                if (ValidateGrid(contestLog.QSOCollection[0].OperatorEntity))
+                                {
+                                    ConvertGridToEntity(contestLog.QSOCollection[0].OperatorEntity,
+                                                       contestLog.QSOCollection[0].OperatorCall, contestLog.QSOCollection[0], true);
+                                    isHQPEntity = contestLog.QSOCollection[0].IsHQPEntity;
+                                }
+                                else
+                                {
+                                    isHQPEntity = CheckForAlternateHQPMult(contestLog.QSOCollection[0], true);
+                                }
+                                break;
                         }
 
                         contestLog.IsHQPEntity = isHQPEntity;
@@ -862,6 +879,8 @@ namespace W6OP.ContestLogAnalyzer
                     if (entityList.Count > 0)
                     {
                         entity = entityList[0];
+                        // this is here for when the first entry in a Hawaii log has a grid for the operator entity
+                        qso.IsHQPEntity = true;
                     }
                     else
                     {

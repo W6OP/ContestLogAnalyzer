@@ -16,6 +16,22 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
+        /// Mark all QSOs that don't have the correct name sent as invalid.
+        /// This is very rare.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        /// <param name="name"></param>
+        internal void MarkIncorrectSentName(List<QSO> qsoList, string name)
+        {
+            List<QSO> qsos = qsoList.Where(q => q.OperatorName != name && q.Status == QSOStatus.ValidQSO).ToList();
+
+            if (qsos.Any())
+            {
+                qsos.Select(c => { c.IsIncorrectOperatorName = false; return c; }).ToList();
+            }
+        }
+
+        /// <summary>
         /// CWOpen
         /// See if the contact name is incorrect. Sometimes a person
         /// will send different names on different QSOS. Find out what
@@ -380,99 +396,6 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        ///// <summary>
-        ///// Remove the band component. Sometimes one of them changes band
-        ///// but the band is recorded wrong. Especially if not using rig control.
-        ///// </summary>
-        ///// <param name="qsos"></param>
-        ///// <param name="qso"></param>
-        ///// <returns></returns>
-        //private List<QSO> SearchWithoutBandCWOpen(IEnumerable<QSO> qsos, QSO qso)
-        //{
-        //    IEnumerable<QSO> enumerable;
-        //    List<QSO> matches;
-        //    int timeInterval = 5;
-        //    int searchLevel = 5;
-        //    double qsoPoints;
-        //    double matchQsoPoints;
-
-        //    enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
-
-        //    matches = enumerable.ToList();
-
-        //    // band mismatch
-        //    switch (matches.Count)
-        //    {
-        //        case 0:
-        //            // search without time
-        //            matches = RefineCWOpenMatch(qsos, qso, 5, 5).ToList();
-        //            return matches;
-        //        case 1:
-        //            qso.MatchingQSO = matches[0];
-        //            matches[0].MatchingQSO = qso;
-
-        //            qso.HasBeenMatched = true;
-        //            matches[0].HasBeenMatched = true;
-
-        //            // whos at fault? need to get qsos around contact for each guy
-        //            qsoPoints = logAnalyzer.DetermineBandFault(qso);
-        //            matchQsoPoints = logAnalyzer.DetermineBandFault(matches[0]);
-
-        //            if (qsoPoints.Equals(matchQsoPoints))
-        //            {
-        //                // can't tell who's at fault so let them both have point
-        //                return matches;
-        //            }
-
-        //            if (qsoPoints > matchQsoPoints)
-        //            {
-        //                matches[0].IsIncorrectBand = true;
-        //                matches[0].IncorrectValueMessage = $"{matches[0].Band} --> {qso.Band}";
-        //            }
-        //            else
-        //            {
-        //                qso.IsIncorrectBand = true;
-        //                qso.IncorrectValueMessage = $"{qso} --> {matches[0].Band}";
-        //            }
-        //            return matches;
-        //        default:
-        //            // duplicate incorrect QSOs
-        //            foreach (QSO matchQSO in matches)
-        //            {
-        //                if (qso.HasBeenMatched == false)
-        //                {
-        //                    qso.MatchingQSO = matchQSO;
-        //                    qso.HasBeenMatched = true;
-        //                }
-
-        //                if (matchQSO.HasBeenMatched == false)
-        //                {
-        //                    // whos at fault? need to get qsos around contact for each guy
-        //                    qsoPoints = logAnalyzer.DetermineBandFault(qso);
-        //                    matchQsoPoints = logAnalyzer.DetermineBandFault(matchQSO);
-
-        //                    if (qsoPoints.Equals(matchQsoPoints))
-        //                    {
-        //                        // can't tell who's at fault so let them both have point
-        //                        return matches;
-        //                    }
-
-        //                    if (qsoPoints > matchQsoPoints)
-        //                    {
-        //                        matchQSO.IsIncorrectBand = true;
-        //                        matchQSO.IncorrectValueMessage = $"{matchQSO.Band} --> {qso.Band}";
-        //                    }
-        //                    else
-        //                    {
-        //                        qso.IsIncorrectBand = true;
-        //                        qso.IncorrectValueMessage = $"{qso} --> {matchQSO.Band}";
-        //                    }
-        //                }
-        //            }
-        //            return matches;
-        //    }
-        //}
-
         /// <summary>
         /// Do a search through the qsos collection depending on the parameters sent in.
         /// We already know the operator and contact calls match.
@@ -671,22 +594,6 @@ namespace W6OP.ContestLogAnalyzer
             }
 
             return qsoPoints;
-        }
-
-        /// <summary>
-        /// Mark all QSOs that don't have the correct name sent as invalid.
-        /// This is very rare.
-        /// </summary>
-        /// <param name="qsoList"></param>
-        /// <param name="name"></param>
-        internal void MarkIncorrectSentName(List<QSO> qsoList, string name)
-        {
-            List<QSO> qsos = qsoList.Where(q => q.OperatorName != name && q.Status == QSOStatus.ValidQSO).ToList();
-
-            if (qsos.Any())
-            {
-                qsos.Select(c => { c.IsIncorrectOperatorName = false; return c; }).ToList();
-            }
         }
 
     } // end class

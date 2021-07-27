@@ -40,6 +40,8 @@ namespace W6OP.ContestLogAnalyzer
                         return;
                     case string _ when Enum.IsDefined(typeof(HQPMults), qsoList[0].OperatorEntity):
                         return;
+                    case string _ when Enum.IsDefined(typeof(ALTHQPMults), qsoList[0].OperatorEntity):
+                        return;
                     default:
                         qsoList[0].IsInvalidSentEntity = true;
                         return;
@@ -60,9 +62,136 @@ namespace W6OP.ContestLogAnalyzer
                 _ = qsos.Select(c => { c.IsInvalidSentEntity = true; return c; })
                         .ToList();
             }
-            else
+        }
+
+        /// <summary>
+        /// HQP only
+        /// Is this a Hawai'in station then, state, province or DX are valid.
+        /// Non Hawaiin station then
+        /// if US or Canadian - Hawwai'in entity
+        /// DX then Hawai'in entity
+        /// </summary>
+        /// <param name="qso"></param>
+        /// <param name="contestLogList"></param>
+        /// <returns></returns>
+        internal void MarkIncorrectContactEntities(QSO qso)
+        {
+            int matchCount = 0;
+            List<QSO> matchingQSOSpecific = null;
+            List<QSO> matchingQSOsGeneral = null;
+            string entity = null;
+
+            // using a CallDictionary speeds up from 28 sec to 12 sec
+            List<ContestLog> tempLog = logAnalyzer.CallDictionary[qso.ContactCall];
+
+            // get a list of all QSOs with the same contact callsign and same entity
+            matchingQSOSpecific = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactEntity == qso.ContactEntity).ToList();
+
+            // get a list of all QSOs with the same contact callsign but may have different entity
+            matchingQSOsGeneral = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
+
+            // if the above counts are different then someone is wrong
+            matchCount = matchingQSOsGeneral.Count - matchingQSOSpecific.Count;
+
+            // if no mismatches then assume it is correct
+            if (matchCount == 0)
             {
-                // need to check every entry?
+                return;
+            }
+
+            // need to have more than two QSOs to VOTE on most prevalent contactEntity
+
+            // https://stackoverflow.com/questions/17323804/compare-two-lists-via-one-property-using-linq
+            // if matchingQSOSpecific and matchingQSOsGeneral are not equal this will give a list with the majority of values (inner join)
+            // actually it gives a list of the majority of values that match - so could return only one item
+            IEnumerable<QSO> majorityContactEntities = from firstQSO in matchingQSOSpecific
+                                                       join secondQSO in matchingQSOsGeneral
+                                                       on firstQSO.ContactEntity equals secondQSO.ContactEntity
+                                                       into matches
+                                                       where matches.Any()
+                                                       select firstQSO;
+
+            if (majorityContactEntities.Count() > 1)
+            {
+                QSO firstMatch = majorityContactEntities.FirstOrDefault();
+                entity = firstMatch.ContactEntity;
+            }
+            else // count = 1 so use the items in the larger list
+            {
+                // these must be Lists, not IEnumerable so .Except works - only look at QSOs with valid entities
+                List<QSO> listWithMostEntries = (new List<List<QSO>> { matchingQSOSpecific, matchingQSOsGeneral })
+                   .OrderByDescending(x => x.Count())
+                   .Take(1).FirstOrDefault().Where(q => q.IsInvalidEntity == false).ToList();
+
+                List<QSO> listWithLeastEntries = (new List<List<QSO>> { matchingQSOSpecific, matchingQSOsGeneral })
+                   .OrderBy(x => x.Count())
+                   .Take(1).FirstOrDefault().Where(q => q.IsInvalidEntity == false).ToList();
+
+                // we have enough to vote
+                if (listWithMostEntries.Count() > 2)
+                {
+                    // we want to take the list with the most entries and remove the entries in the least entries list
+                    QSO firstMatch = listWithMostEntries.Except(listWithLeastEntries).FirstOrDefault();
+                    entity = firstMatch.ContactEntity;
+                }
+                else
+                { // two entries, either could be correct
+                    IEnumerable<Hit> hitCollection = logAnalyzer.CallLookUp.LookUpCall(qso.ContactCall);
+                    List<Hit> hitList = hitCollection.ToList();
+                    if (hitList.Count != 0)
+                    {
+                        entity = hitList[0].Country;
+
+                        switch (entity)
+                        {
+                            case "United States of America":
+                                if (qso.ContactEntity.Length > 2)
+                                {
+                                    entity = hitList[0].Province;
+                                }
+                                else if (Provinces.Contains(qso.ContactEntity))
+                                {
+                                    entity = hitList[0].Province;
+                                }
+                                else
+                                {
+                                    if (States.Contains(qso.ContactEntity))
+                                    {
+                                        return;
+                                    }
+                                }
+                                break;
+                            case "Canada":
+                                if (qso.ContactEntity.Length > 2)
+                                {
+                                    entity = hitList[0].Admin1;
+                                }
+                                else
+                                {
+                                    if (Provinces.Contains(qso.ContactEntity))
+                                    {
+                                        return;
+                                    }
+                                }
+                                break;
+                            case "Hawaii":
+                                return;
+                            default:
+                                if (qso.IsHQPEntity)
+                                {
+                                    entity = "DX";
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+
+            // if entity is different
+            if (!entity.Contains(qso.ContactEntity))
+            {
+                qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> {entity}";
+                qso.IsInvalidEntity = true;
             }
         }
 
@@ -286,7 +415,6 @@ namespace W6OP.ContestLogAnalyzer
                     Console.WriteLine("FindHQPMatches: 2");
                     return matches;
             }
-
         }
 
         /// <summary>
@@ -484,137 +612,6 @@ namespace W6OP.ContestLogAnalyzer
                 default:
                     Console.WriteLine("Failed search: " + qso.RawQSO);
                     return new List<QSO>();
-            }
-        }
-
-        /// <summary>
-        /// HQP only
-        /// Is this a Hawai'in station then, state, province or DX are valid.
-        /// Non Hawaiin station then
-        /// if US or Canadian - Hawwai'in entity
-        /// DX then Hawai'in entity
-        /// </summary>
-        /// <param name="qso"></param>
-        /// <param name="contestLogList"></param>
-        /// <returns></returns>
-        internal void MarkIncorrectContactEntities(QSO qso)
-        {
-            int matchCount = 0;
-            List<QSO> matchingQSOSpecific = null;
-            List<QSO> matchingQSOsGeneral = null;
-            string entity = null;
-
-            // using a CallDictionary speeds up from 28 sec to 12 sec
-            List<ContestLog> tempLog = logAnalyzer.CallDictionary[qso.ContactCall];
-
-            // get a list of all QSOs with the same contact callsign and same entity
-            matchingQSOSpecific = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall && q.ContactEntity == qso.ContactEntity).ToList();
-
-            // get a list of all QSOs with the same contact callsign but may have different entity
-            matchingQSOsGeneral = tempLog.SelectMany(z => z.QSOCollection).Where(q => q.ContactCall == qso.ContactCall).ToList();
-
-            // if the above counts are different then someone is wrong
-            matchCount = matchingQSOsGeneral.Count - matchingQSOSpecific.Count;
-
-            // if no mismatches then assume it is correct
-            if (matchCount == 0)
-            {
-                return;
-            }
-
-            // need to have more than two QSOs to VOTE on most prevalent contactEntity
-
-            // https://stackoverflow.com/questions/17323804/compare-two-lists-via-one-property-using-linq
-            // if matchingQSOSpecific and matchingQSOsGeneral are not equal this will give a list with the majority of values (inner join)
-            // actually it gives a list of the majority of values that match - so could return only one item
-            IEnumerable<QSO> majorityContactEntities = from firstQSO in matchingQSOSpecific
-                                                       join secondQSO in matchingQSOsGeneral
-                                                       on firstQSO.ContactEntity equals secondQSO.ContactEntity
-                                                       into matches
-                                                       where matches.Any()
-                                                       select firstQSO;
-
-            if (majorityContactEntities.Count() > 1)
-            {
-                QSO firstMatch = majorityContactEntities.FirstOrDefault();
-                entity = firstMatch.ContactEntity;
-            }
-            else // count = 1 so use the items in the larger list
-            {
-                // these must be Lists, not IEnumerable so .Except works - only look at QSOs with valid entities
-                List<QSO> listWithMostEntries = (new List<List<QSO>> { matchingQSOSpecific, matchingQSOsGeneral })
-                   .OrderByDescending(x => x.Count())
-                   .Take(1).FirstOrDefault().Where(q => q.IsInvalidEntity == false).ToList();
-
-                List<QSO> listWithLeastEntries = (new List<List<QSO>> { matchingQSOSpecific, matchingQSOsGeneral })
-                   .OrderBy(x => x.Count())
-                   .Take(1).FirstOrDefault().Where(q => q.IsInvalidEntity == false).ToList();
-
-                // we have enough to vote
-                if (listWithMostEntries.Count() > 2)
-                {
-                    // we want to take the list with the most entries and remove the entries in the least entries list
-                    QSO firstMatch = listWithMostEntries.Except(listWithLeastEntries).FirstOrDefault();
-                    entity = firstMatch.ContactEntity;
-                }
-                else
-                { // two entries, either could be correct
-                    IEnumerable<Hit> hitCollection = logAnalyzer.CallLookUp.LookUpCall(qso.ContactCall);
-                    List<Hit> hitList = hitCollection.ToList();
-                    if (hitList.Count != 0)
-                    {
-                        entity = hitList[0].Country;
-
-                        switch (entity)
-                        {
-                            case "United States of America":
-                                if (qso.ContactEntity.Length > 2)
-                                {
-                                    entity = hitList[0].Province;
-                                }
-                                else if (Provinces.Contains(qso.ContactEntity))
-                                {
-                                    entity = hitList[0].Province;
-                                }
-                                else
-                                {
-                                    if (States.Contains(qso.ContactEntity))
-                                    {
-                                        return;
-                                    }
-                                }
-                                break;
-                            case "Canada":
-                                if (qso.ContactEntity.Length > 2)
-                                {
-                                    entity = hitList[0].Admin1;
-                                }
-                                else
-                                {
-                                    if (Provinces.Contains(qso.ContactEntity))
-                                    {
-                                        return;
-                                    }
-                                }
-                                break;
-                            case "Hawaii":
-                                return;
-                            default:
-                                if (qso.IsHQPEntity)
-                                {
-                                    entity = "DX";
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-
-            // if entity is different
-            if (!entity.Contains(qso.ContactEntity))
-            {
-                qso.IncorrectDXEntityMessage = $"{qso.ContactEntity} --> {entity}";
-                qso.IsInvalidEntity = true;
             }
         }
 
