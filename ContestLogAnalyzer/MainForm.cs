@@ -33,43 +33,39 @@ namespace W6OP.ContestLogAnalyzer
         private const string LOG_ANALYSER_SCORE_FOLDER_PATH = @"Score";
 
         // set the actual folders to use
-        private string BaseFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_BASE_FOLDER_PATH);
-        private const string BaseWorkingFolder = LOG_ANALYSER_WORKING_FOLDER_PATH;
-        private const string BaseInspectFolder = LOG_ANALYSER_INSPECT_FOLDER_PATH;
-        private const string BaseReportFolder = LOG_ANALYSER_REPORT_FOLDER_PATH;
-        private const string BaseReviewFolder = LOG_ANALYSER_REVIEW_FOLDER_PATH;
-        private const string BaseScoreFolder = LOG_ANALYSER_SCORE_FOLDER_PATH;
+        private readonly string BaseWorkingFolder = LOG_ANALYSER_WORKING_FOLDER_PATH;
+        private readonly string BaseInspectFolder = LOG_ANALYSER_INSPECT_FOLDER_PATH;
+        private readonly string BaseReportFolder = LOG_ANALYSER_REPORT_FOLDER_PATH;
+        private readonly string BaseReviewFolder = LOG_ANALYSER_REVIEW_FOLDER_PATH;
+        private readonly string BaseScoreFolder = LOG_ANALYSER_SCORE_FOLDER_PATH;
 
         private string WorkingFolder = null;
         private string InspectFolder = null;
         private string ReportFolder = null;
         private string ReviewFolder = null;
         private string ScoreFolder = null;
-
-        private List<ContestLog> ContestLogs;
-        private IEnumerable<FileInfo> ContestLogFileList;
-        //private QRZ _QRZ;
+        private string LogSourceFolder = null;
+        private string BaseFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), LOG_ANALYSER_BASE_FOLDER_PATH);
 
         private LogProcessor LogProcessor;
         private LogAnalyzer LogAnalyser;
         private ScoreCWOpen CWOpen;
         private ScoreHQP HQP;
         private PrintManager PrintManager;
+        private PrefixFileParser PrefixFileParser;
+        private CallLookUp CallLookUp;
 
-        private string LogSourceFolder = null;
+        private List<ContestLog> ContestLogs;
+        private IEnumerable<FileInfo> ContestLogFileList;
         private Session Session = Session.Session_0;
-
         private ContestName ActiveContest;
 
         private bool Initialized = false;
 
-        private PrefixFileParser PrefixFileParser;
-        private CallLookUp CallLookUp;
-
         #region Load and Initialize
 
         /// <summary>
-        /// this.BeginInvoke(new Action<string, MessageType>(this.DisplayMessageForm), fullFileName, messageType);
+        /// Constructor.
         /// </summary>
         public MainForm()
         {
@@ -87,7 +83,7 @@ namespace W6OP.ContestLogAnalyzer
             Assembly asm = Assembly.GetExecutingAssembly();
             AssemblyName an = asm.GetName();
             string version = an.Version.Major + "." + an.Version.Minor + "." + an.Version.Build + "." + an.Version.Revision;
-            this.Text = "W6OP Contest Log Analyzer (" + version + ")";
+            Text = "W6OP Contest Log Analyzer (" + version + ")";
 
             UpdateLabel("");
             SessionDateTimePicker.Value = DateTime.Now;
@@ -716,17 +712,6 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-                //foreach (ContestLog log in ContestLogs)
-                //{
-                //   LogProcessor.RefineHQPEntities(log);
-                //}
-
-                //List<string> qsosToInspect = LogProcessor.QSOStoInspect;
-                //if (qsosToInspect.Count > 0)
-                //{
-                //    PrintManager.PrintHHawaiiQSOStoInspect(qsosToInspect);
-                //}
-
                 UpdateListViewLoad(ContestLogs.Count.ToString() + " logs loaded.", "", false);
                 EnableControl(ButtonPreScoreReports, true);
                 Cursor = Cursors.Default;
@@ -1053,10 +1038,17 @@ namespace W6OP.ContestLogAnalyzer
                 item.SubItems.Add(contestLog.Station);
                 item.SubItems.Add(contestLog.QSOCollection.Count.ToString());
                 item.SubItems.Add(validQsoCount.ToString());
-                item.SubItems.Add(contestLog.Multipliers.ToString());
+                switch (ActiveContest)
+                {
+                    case ContestName.CW_OPEN:
+                        item.SubItems.Add(contestLog.CWOpenTotalMultipliers.ToString());
+                        break;
+                    case ContestName.HQP:
+                        item.SubItems.Add(contestLog.HQPTotalMultipliers.ToString());
+                        break;
+                }
                 item.SubItems.Add(contestLog.ClaimedScore.ToString());
                 item.SubItems.Add(contestLog.ActualScore.ToString());
-                //item.SubItems.Add((contestLog.Multipliers * contestLog.TotalPoints).ToString());
                 ListViewScore.Items.Insert(0, item);
             }
         }
@@ -1105,7 +1097,6 @@ namespace W6OP.ContestLogAnalyzer
             }
             else
             {
-
                 ListViewItem item = new ListViewItem(qso.OperatorCall);
                 item.SubItems.Add(qso.ContactCall);
                 item.SubItems.Add(qso.Band.ToString());
@@ -1139,7 +1130,6 @@ namespace W6OP.ContestLogAnalyzer
             {
                 ProgressBarLoad.PerformStep();
             }
-
         }
 
         /// <summary>

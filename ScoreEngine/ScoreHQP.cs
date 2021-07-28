@@ -31,7 +31,7 @@ namespace W6OP.ContestLogAnalyzer
             {
                 // clear so we can run scoring multiple times
                 contestLog.Entities.Clear();
-                contestLog.Multipliers = 0;
+                contestLog.HQPTotalMultipliers = 0;
                 contestLog.HQPMultipliers = 0;
                 contestLog.NonHQPMultipliers = 0;
                 contestLog.TotalPoints = 0;
@@ -115,53 +115,15 @@ namespace W6OP.ContestLogAnalyzer
                             }
                         }
                     }
-                    //if (Enum.IsDefined(typeof(HQPMults), entity))
-                    //{
-                    //    if (!contestLog.Entities.Contains(entity))
-                    //    {
-                    //        if (!qso.IsXQSO)
-                    //        {
-                    //            // if not in hashset, add it
-                    //            contestLog.Entities.Add(contactCallSign + "\t" + entity + " -- " + band + "m " + mode);
-                    //            // now set the first one as a multiplier
-                    //            multiList.First().IsMultiplier = true;
-                    //            // for debugging
-                    //            contestLog.HQPMultipliers += 1;
-                    //        }
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    if (!contestLog.Entities.Contains(entity))
-                    //    {
-                    //        if (!qso.IsXQSO)
-                    //        {
-                    //            contestLog.Entities.Add(contactCallSign + "\t" + entity + " -- " + band + "m " + mode);
-                    //            // now set the first one as a multiplier
-                    //            multiList.First().IsMultiplier = true;
-                    //            // for debugging
-                    //            if (Enum.IsDefined(typeof(HQPMults), entity))
-                    //            {
-                    //                contestLog.HQPMultipliers += 1;
-                    //            } else
-                    //            {
-                    //                contestLog.NonHQPMultipliers += 1;
-                    //            }
-                    //        }
-                    //    }
-                    //}
                 }
             }
 
             // a little bit of a hack - we weren't allowing Hawaii stations to get a multiplier for
-            // the first time they worked a Hawaiin station
+            // the first time they worked a Hawaiin station - this may be accounted for above ???
             if (contestLog.HQPMultipliers > 0)
             {
                 contestLog.HQPMultipliers += 1;
             }
-
-            // need to have ContestLog object manage this
-            contestLog.Multipliers = contestLog.NonHQPMultipliers + contestLog.HQPMultipliers;
         }
 
         /// <summary>
@@ -188,7 +150,7 @@ namespace W6OP.ContestLogAnalyzer
                 {
                     if (Enum.IsDefined(typeof(HQPMults), qso.ContactEntity))
                     {
-                        entity = qso.ContactEntity; // + " - " + qso.Band + "m";
+                        entity = qso.ContactEntity;
 
                         if (!contestLog.Entities.Contains(entity))
                         {
@@ -197,20 +159,16 @@ namespace W6OP.ContestLogAnalyzer
                             contestLog.EntitiesList[entity] = entity + " -- " + qso.Band.ToString() + "m ";
                             // now set the first one as a multiplier
                             multiList.First().IsMultiplier = true;
-                            // for debugging
                             contestLog.HQPMultipliers += 1;
 
                             if (contestLog.HQPMultipliers > 84)
                             {
-                                contestLog.HQPMultipliers = 84;
+                                contestLog.HQPTotalMultipliers = 84;
                             }
                         }
                     }
                 }
             }
-
-            // need to have ContestLog object manage this
-            contestLog.Multipliers = contestLog.HQPMultipliers;
         }
 
         /// <summary>
@@ -223,7 +181,7 @@ namespace W6OP.ContestLogAnalyzer
             int multipliers = contestLog.HQPMultipliers + contestLog.NonHQPMultipliers;
 
             contestLog.TotalPoints = pointTotal;
-            contestLog.Multipliers = multipliers;
+            contestLog.HQPTotalMultipliers = multipliers;
             contestLog.ActualScore = pointTotal * multipliers;
         }
 
@@ -238,7 +196,7 @@ namespace W6OP.ContestLogAnalyzer
         {
             List<QSO> query = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
 
-            // use IEnumerable and get count directlt without ToList()
+            // use IEnumerable and get count directly without ToList()
             List<QSO> phoneTotal = query.Where(q => q.Mode == QSOMode.PH).ToList();
             List<QSO> cwTotal = query.Where(q => q.Mode == QSOMode.CW).ToList();
             List<QSO> digiTotal = query.Where(q => q.Mode == QSOMode.RY).ToList();

@@ -206,7 +206,6 @@ namespace W6OP.ContestLogAnalyzer
                     // now add the DXCC information some contests need for multipliers
                     if (ActiveContest == ContestName.HQP)
                     {
-
                         bool isHQPEntity = false;
                         // need to convert grid to entity
                         switch (contestLog.QSOCollection[0].OperatorEntity.Length)

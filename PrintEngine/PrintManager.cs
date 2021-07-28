@@ -104,7 +104,7 @@ namespace W6OP.PrintEngine
                         Station = contestlog.Station,
                         OperatorName = contestlog.OperatorName,
                         QSOCount = validQsoList.Count.ToString(),
-                        Multipliers = contestlog.Multipliers.ToString(),
+                        Multipliers = contestlog.CWOpenTotalMultipliers.ToString(),
                         ActualScore = contestlog.ActualScore.ToString(),
                         Power = contestlog.LogHeader.Power.ToString(),
                         Assisted = assisted
@@ -182,7 +182,7 @@ namespace W6OP.PrintEngine
                         CW = contestlog.CWTotal.ToString(), // CW total
                         DG = contestlog.DIGITotal.ToString(), // DIGI total
                         QSOs = validQsoList.Count.ToString(),
-                        Mults = contestlog.Multipliers.ToString(),
+                        Mults = contestlog.HQPTotalMultipliers.ToString(),
                         Score = contestlog.ActualScore.ToString(),
                     };
 
@@ -692,7 +692,16 @@ namespace W6OP.PrintEngine
             totalValidCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && EnumHelper.GetDescription(q.Mode) == "CW").ToList().Count();
             totalValidDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && EnumHelper.GetDescription(q.Mode) == "RY").ToList().Count();
 
-            multiplierCount = contestLog.Multipliers;
+            switch (ActiveContest)
+            {
+                case ContestName.CW_OPEN:
+                    multiplierCount = contestLog.CWOpenTotalMultipliers;
+                    break;
+                case ContestName.HQP:
+                    multiplierCount = contestLog.HQPTotalMultipliers;
+                    break;
+            };
+
             totalPoints = contestLog.TotalPoints;
 
             // this should really be in Scoring but it doesn't work there

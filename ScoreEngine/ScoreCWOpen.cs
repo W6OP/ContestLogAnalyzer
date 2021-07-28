@@ -29,9 +29,6 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (!contestLog.IsCheckLog && contestLog.IsValidLog)
                 {
-                   // deprecated
-                   // ValidateDuplicates(contestLog);
-
                     MarkMultipliers(contestLog);
 
                     CalculateScore(contestLog);
@@ -95,7 +92,6 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qsoList"></param>
         private void MarkMultipliers(ContestLog contestLog)
         {
-
             List<QSO> qsoList = contestLog.QSOCollection;
 
             var query = qsoList.GroupBy(x => new { x.ContactCall, x.Status })
@@ -130,7 +126,7 @@ namespace W6OP.ContestLogAnalyzer
             multiplierCount = contestLog.QSOCollection.Where(q => q.IsMultiplier == true && (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO)).ToList().Count();
 
             contestLog.TotalPoints = totalValidQSOs;
-            contestLog.Multipliers = multiplierCount;
+            contestLog.CWOpenTotalMultipliers = multiplierCount;
 
             if (multiplierCount != 0)
             {

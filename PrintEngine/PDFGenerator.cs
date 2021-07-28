@@ -111,7 +111,7 @@ namespace W6OP.PrintEngine
                     table.AddCell(contestlog.Station).SetFontSize(10);
                     table.AddCell(contestlog.OperatorName).SetFontSize(10);
                     table.AddCell(validQsoList.Count.ToString()).SetFontSize(10);
-                    table.AddCell(contestlog.Multipliers.ToString()).SetFontSize(10);
+                    table.AddCell(contestlog.CWOpenTotalMultipliers.ToString()).SetFontSize(10);
                     table.AddCell(contestlog.ActualScore.ToString()).SetFontSize(10);
                     table.AddCell(contestlog.LogHeader.Power.ToString()).SetFontSize(10);
                     table.AddCell(assisted).SetFontSize(10);
@@ -183,7 +183,7 @@ namespace W6OP.PrintEngine
                     table.AddCell(contestlog.Station).SetFontSize(10);
                     table.AddCell(contestlog.QSOCollection[0].OperatorEntity).SetFontSize(10);
                     table.AddCell(validQsoList.Count.ToString()).SetFontSize(10);
-                    table.AddCell(contestlog.Multipliers.ToString()).SetFontSize(10);
+                    table.AddCell(contestlog.HQPTotalMultipliers.ToString()).SetFontSize(10);
                     table.AddCell(contestlog.TotalPoints.ToString()).SetFontSize(10);
                     table.AddCell(contestlog.ActualScore.ToString()).SetFontSize(10);
                 }

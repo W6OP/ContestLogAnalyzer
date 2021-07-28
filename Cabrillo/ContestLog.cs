@@ -45,8 +45,8 @@ namespace W6OP.ContestLogAnalyzer
         public LogHeader LogHeader
         {
             get { return _LogHeader; }
-            set 
-            { 
+            set
+            {
                 _LogHeader = value;
                 LogOwner = _LogHeader.OperatorCallSign;
                 if (_LogHeader.OperatorCategory == CategoryOperator.CheckLog)
@@ -86,7 +86,6 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         //private bool _IsValidLog;
         public bool IsValidLog { get; set; } = true;
-        
 
         /// <summary>
         /// Indicates this is a check log and should not be scored.
@@ -97,10 +96,7 @@ namespace W6OP.ContestLogAnalyzer
         #region Scoring
 
         public int ClaimedScore { get; set; }
-
         public int ActualScore { get; set; }
-        public int Multipliers { get; set; }
-
         public int PhoneTotal { get; set; }
         public int CWTotal { get; set; }
         public int DIGITotal { get; set; }
@@ -109,9 +105,28 @@ namespace W6OP.ContestLogAnalyzer
 
         #region Points and Multipliers
 
-        public int HQPMultipliers { get; set; }
+        // CWOpen
+        public int CWOpenTotalMultipliers { get; set; }
 
-        public int NonHQPMultipliers { get; set; }
+        public int HQPMultipliers
+        {
+            get => hQPMultipliers; set
+            {
+                hQPMultipliers = value;
+                HQPTotalMultipliers = nonHQPMultipliers + hQPMultipliers;
+            }
+        }
+
+        public int NonHQPMultipliers
+        {
+            get => nonHQPMultipliers; set
+            {
+                nonHQPMultipliers = value;
+                HQPTotalMultipliers = nonHQPMultipliers + hQPMultipliers;
+            }
+        }
+
+        public int HQPTotalMultipliers { get; set; }
 
         // used for the HQP
         public int TotalPoints { get; set; }
@@ -119,7 +134,7 @@ namespace W6OP.ContestLogAnalyzer
         #endregion
 
         // for determining multipliers for HQP
-        public bool  IsHQPEntity { get; set; }
+        public bool IsHQPEntity { get; set; }
 
         /// <summary>
         /// Holds the soap box comment the log owner made
@@ -133,6 +148,9 @@ namespace W6OP.ContestLogAnalyzer
         /// For printing multiplier list in reports.
         /// </summary>
         private SortedList<string, string> _EntitiesList = new SortedList<string, string>();
+        private int hQPMultipliers;
+        private int nonHQPMultipliers;
+
         public SortedList<string, string> EntitiesList { get => _EntitiesList; set => _EntitiesList = value; }
 
     } // end class
