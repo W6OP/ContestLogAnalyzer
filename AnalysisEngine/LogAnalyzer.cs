@@ -286,7 +286,6 @@ namespace W6OP.ContestLogAnalyzer
             IEnumerable<ContestLog> contestLogs;
             IEnumerable<KeyValuePair<string, List<QSO>>> qsos;
             IEnumerable<QSO> qsosFlattened = null;
-            int timeInterval = 5;
             int queryLevel = 6;
 
             if (ContestLogList.Where(b => b.LogOwner == qso.ContactCall).Count() != 0)
@@ -299,10 +298,10 @@ namespace W6OP.ContestLogAnalyzer
                     qsosFlattened = qsos.SelectMany(x => x.Value);
                     if (ActiveContest == ContestName.CW_OPEN)
                     {
-                        matches = cwOpenAnalyzer.RefineCWOpenMatch(qsosFlattened, qso, timeInterval, queryLevel).ToList();
+                        matches = cwOpenAnalyzer.RefineCWOpenMatch(qsosFlattened, qso, queryLevel).ToList();
                     } else
                     {
-                        matches = hpqAnalyzer.RefineHQPMatch(qsosFlattened, qso, timeInterval, queryLevel).ToList();
+                        matches = hpqAnalyzer.RefineHQPMatch(qsosFlattened, qso, queryLevel).ToList();
                     }
                    
 
@@ -323,24 +322,24 @@ namespace W6OP.ContestLogAnalyzer
         {
             IEnumerable<QSO> enumerable = null;
             List<QSO> matches;
-            int timeInterval = 10; // because everything else must match
             int queryLevel = 1;
 
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    enumerable = cwOpenAnalyzer.RefineCWOpenMatch(qsos, qso, timeInterval, queryLevel);
+                    enumerable = cwOpenAnalyzer.RefineCWOpenMatch(qsos, qso, queryLevel);
                     break;
                 case ContestName.HQP:
-                    if (EnumHelper.GetDescription(qso.Mode) != "RY")
-                    {
-                        enumerable = hpqAnalyzer.RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
-                    }
-                    else
-                    {
-                        timeInterval = 15;
-                        enumerable = hpqAnalyzer.RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
-                    }
+                    enumerable = hpqAnalyzer.RefineHQPMatch(qsos, qso, queryLevel);
+                    //if (EnumHelper.GetDescription(qso.Mode) != "RY")
+                    //{
+                    //    enumerable = hpqAnalyzer.RefineHQPMatch(qsos, qso, queryLevel);
+                    //}
+                    //else
+                    //{
+                    //    timeInterval = 15;
+                    //    enumerable = hpqAnalyzer.RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+                    //}
                     break;
             }
 
@@ -400,7 +399,6 @@ namespace W6OP.ContestLogAnalyzer
         internal List<QSO> SearchWithoutBand(IEnumerable<QSO> qsos, QSO qso)
         {
             List<QSO> matches;
-            int timeInterval = 5;
             int queryLevel = 4;
             double qsoPoints;
             double matchQsoPoints;
@@ -409,10 +407,10 @@ namespace W6OP.ContestLogAnalyzer
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    enumerable = cwOpenAnalyzer.RefineCWOpenMatch(qsos, qso, timeInterval, queryLevel);
+                    enumerable = cwOpenAnalyzer.RefineCWOpenMatch(qsos, qso, queryLevel);
                     break;
                 default:
-                    enumerable = hpqAnalyzer.RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+                    enumerable = hpqAnalyzer.RefineHQPMatch(qsos, qso, queryLevel);
                     break;
             }
 
@@ -426,7 +424,7 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         case ContestName.CW_OPEN:
                             // search without time now
-                            matches = cwOpenAnalyzer.RefineCWOpenMatch(qsos, qso, 5, 5).ToList();
+                            matches = cwOpenAnalyzer.RefineCWOpenMatch(qsos, qso, 5).ToList();
                             break;
                         case ContestName.HQP:
                             matches = hpqAnalyzer.SearchWithoutModeHQP(qsos, qso);

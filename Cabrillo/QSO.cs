@@ -425,6 +425,7 @@ namespace W6OP.ContestLogAnalyzer
                     QSOMode.CW => 3,
                     QSOMode.RTTY => 3,
                     QSOMode.RY => 3,
+                    QSOMode.DIGI => 3,
                     QSOMode.PH => 2,
                     QSOMode.SSB => 2,
                     _ => 0,

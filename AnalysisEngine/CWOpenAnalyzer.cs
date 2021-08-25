@@ -10,6 +10,8 @@ namespace W6OP.ContestLogAnalyzer
     {
         internal LogAnalyzer logAnalyzer;
 
+        private const int TimeInterval = 10;
+
         internal CWOpenAnalyzer(LogAnalyzer logAnalyzerMain)
         {
             logAnalyzer = logAnalyzerMain;
@@ -182,74 +184,6 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        /// <summary>
-        /// Complete search looking for an exact match. If this is successful
-        /// both QSOs are good.
-        /// </summary>
-        /// <param name="qsos"></param>
-        /// <param name="qso"></param>
-        /// <returns></returns>
-        //private List<QSO> CWOpenFullParameterSearch(IEnumerable<QSO> qsos, QSO qso)
-        //{
-        //    IEnumerable<QSO> enumerable = null;
-        //    List<QSO> matches;
-        //    int timeInterval = 10; // because everything else must match
-        //    int queryLevel = 1;
-
-        //    switch (logAnalyzer.ActiveContest)
-        //    {
-        //        case ContestName.CW_OPEN:
-        //            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, queryLevel);
-        //            break;
-        //        case ContestName.HQP:
-        //            if (EnumHelper.GetDescription(qso.Mode) != "RY")
-        //            {
-        //                enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
-        //            }
-        //            else
-        //            {
-        //                timeInterval = 15;
-        //                enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
-        //            }
-        //            break;
-        //    }
-
-        //    matches = enumerable.ToList();
-
-        //    switch (matches.Count)
-        //    {
-        //        case 0:
-        //            // match not found so lets search without serial number
-        //            matches = SearchWithoutSerialNumber(qsos, qso);
-        //            return matches;
-        //        case 1:
-        //            // found one match so we mark both as matches and add matching QSO
-        //            qso.MatchingQSO = matches[0];
-        //            matches[0].MatchingQSO = qso;
-
-        //            qso.HasBeenMatched = true;
-        //            matches[0].HasBeenMatched = true;
-        //            return matches;
-        //        case 2:
-        //            // two matches so these are probably dupes
-        //            qso.HasBeenMatched = true;
-        //            qso.MatchingQSO = matches[0];
-        //            qso.QSOHasDupes = true;
-
-        //            matches[0].HasBeenMatched = true;
-        //            matches[0].MatchingQSO = qso;
-
-        //            matches[1].HasBeenMatched = true;
-        //            matches[1].MatchingQSO = qso;
-        //            matches[1].FirstMatchingQSO = matches[0];
-        //            matches[1].IsDuplicateMatch = true;
-        //            return matches;
-        //        default:
-        //            // more than two so we have to do more analysis
-        //            Console.WriteLine("FindCWOpenMatches: 1");
-        //            return matches;
-        //    }
-        //}
 
         /// <summary>
         /// Remove the serial number check. If we get a hit then one or both
@@ -262,10 +196,9 @@ namespace W6OP.ContestLogAnalyzer
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches;
-            int timeInterval = 10;
             int searchLevel = 2;
 
-            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel);
+            enumerable = RefineCWOpenMatch(qsos, qso, searchLevel);
 
             matches = enumerable.ToList();
 
@@ -348,10 +281,9 @@ namespace W6OP.ContestLogAnalyzer
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches;
-            int timeInterval = 5;
             int searchLevel = 3;
 
-            enumerable = RefineCWOpenMatch(qsos, qso, timeInterval, searchLevel); //.ToList();
+            enumerable = RefineCWOpenMatch(qsos, qso, searchLevel); //.ToList();
 
             matches = enumerable.ToList();
 
@@ -402,9 +334,8 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="contestLogs"></param>
         /// <param name="qso"></param>
-        /// <param name="timeInterval"></param>
         /// <returns></returns>
-        internal IEnumerable<QSO> RefineCWOpenMatch(IEnumerable<QSO> qsos, QSO qso, int timeInterval, int queryLevel)
+        internal IEnumerable<QSO> RefineCWOpenMatch(IEnumerable<QSO> qsos, QSO qso, int queryLevel)
         {
             IEnumerable<QSO> matches;
 
@@ -416,14 +347,14 @@ namespace W6OP.ContestLogAnalyzer
                    y.SentSerialNumber == qso.ReceivedSerialNumber &&
                    y.ReceivedSerialNumber == qso.SentSerialNumber &&
                    y.Band == qso.Band &&
-                   Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                   Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
                     return matches;
                 case 2:
                     // catch incorrect serial number
                     matches = qsos
                     .Where(y => y.OperatorName == qso.ContactName &&
                     y.Band == qso.Band &&
-                    Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
                     return matches;
                 case 3:
                     // incorrect name
@@ -431,7 +362,7 @@ namespace W6OP.ContestLogAnalyzer
                     .Where(y => y.SentSerialNumber == qso.ReceivedSerialNumber &&
                     y.ReceivedSerialNumber == qso.SentSerialNumber &&
                     y.Band == qso.Band &&
-                    Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
                     return matches;
                 case 4:
                     // incorrect band
@@ -439,7 +370,7 @@ namespace W6OP.ContestLogAnalyzer
                    .Where(y => y.OperatorName == qso.ContactName &&
                    y.SentSerialNumber == qso.ReceivedSerialNumber &&
                    y.ReceivedSerialNumber == qso.SentSerialNumber &&
-                   Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                   Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
                     return matches;
                 case 5:
                     // incorrect time
@@ -455,7 +386,7 @@ namespace W6OP.ContestLogAnalyzer
                     y.SentSerialNumber == qso.ReceivedSerialNumber &&
                     y.ReceivedSerialNumber == qso.SentSerialNumber &&
                     y.Band == qso.Band &&
-                    Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                    Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
                     return matches;
                 default:
                     Console.WriteLine("Failed search: " + qso.RawQSO);

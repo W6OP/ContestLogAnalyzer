@@ -12,6 +12,8 @@ namespace W6OP.ContestLogAnalyzer
         readonly string[] States = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", };
         readonly string[] Provinces = { "NL", "NS", "PE", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU" };
 
+        private const int TimeInterval = 10;
+
         internal HPQAnalyzer(LogAnalyzer logAnalyzerMain)
         {
             logAnalyzer = logAnalyzerMain;
@@ -334,7 +336,6 @@ namespace W6OP.ContestLogAnalyzer
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches;
-            int timeInterval = 10;
             int queryLevel = 2;
 
             if (isOperator)
@@ -342,7 +343,7 @@ namespace W6OP.ContestLogAnalyzer
                 queryLevel = 3;
             }
 
-            enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+            enumerable = RefineHQPMatch(qsos, qso, queryLevel);
             matches = enumerable.ToList();
 
             // this is hit only if previous switch hit case 0: so we up the time interval
@@ -427,12 +428,11 @@ namespace W6OP.ContestLogAnalyzer
         {
             IEnumerable<QSO> enumerable;
             List<QSO> matches;
-            int timeInterval = 5;
             int queryLevel = 5;
             double qsoPoints;
             double matchQsoPoints;
 
-            enumerable = RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
+            enumerable = RefineHQPMatch(qsos, qso, queryLevel);
 
             // don't ToList() unless something returned
             matches = enumerable.ToList();
@@ -515,9 +515,8 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         /// <param name="contestLogs"></param>
         /// <param name="qso"></param>
-        /// <param name="timeInterval"></param>
         /// <returns></returns>
-        internal IEnumerable<QSO> RefineHQPMatch(IEnumerable<QSO> qsos, QSO qso, int timeInterval, int queryLevel)
+        internal IEnumerable<QSO> RefineHQPMatch(IEnumerable<QSO> qsos, QSO qso, int queryLevel)
         {
             IEnumerable<QSO> matches;
 
@@ -531,7 +530,7 @@ namespace W6OP.ContestLogAnalyzer
                                 && y.Mode == qso.Mode
                                 && y.ContactEntity == qso.OperatorEntity
                                 && y.OperatorEntity == qso.ContactEntity
-                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
                     return matches;
                 case 2:
                     // without y.ContactEntity == qso.OperatorEntity - 
@@ -541,7 +540,7 @@ namespace W6OP.ContestLogAnalyzer
                     .Where(y => y.Band == qso.Band
                                 && y.Mode == qso.Mode
                                 && y.OperatorEntity == qso.ContactEntity
-                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
                     return matches;
                 case 3:
                     // without y.OperatorCall == qso.ContactCall -
@@ -551,7 +550,7 @@ namespace W6OP.ContestLogAnalyzer
                     .Where(y => y.Band == qso.Band
                                 && y.Mode == qso.Mode
                                 && y.ContactEntity == qso.OperatorEntity
-                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
                     return matches;
                 case 4:
                     // without y.Band == qso.Band -
@@ -561,7 +560,7 @@ namespace W6OP.ContestLogAnalyzer
                     .Where(y => y.Mode == qso.Mode
                                 && y.ContactEntity == qso.OperatorEntity
                                 && y.OperatorEntity == qso.ContactEntity
-                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
                     return matches;
                 case 5:
                     // general search
@@ -569,7 +568,7 @@ namespace W6OP.ContestLogAnalyzer
                     .Where(y => y.Band == qso.Band
                                 && y.ContactEntity == qso.OperatorEntity
                                 && y.OperatorEntity == qso.ContactEntity
-                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                                && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
                     return matches;
                 case 6:
                     // this is a full search only with mismatching contact and operator calls
@@ -578,17 +577,17 @@ namespace W6OP.ContestLogAnalyzer
                                && y.Mode == qso.Mode
                                && y.ContactEntity == qso.OperatorEntity
                                && y.OperatorEntity == qso.ContactEntity
-                               && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                               && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
 
                     switch (matches.ToList().Count)
                     {
                         case 0:
-                            matches = RefineHQPMatch(qsos, qso, timeInterval, 7);
+                            matches = RefineHQPMatch(qsos, qso, 7);
                             break;
                         case 1:
                             return matches;
                         default:
-                            matches = RefineHQPMatch(qsos, qso, timeInterval, 8);
+                            matches = RefineHQPMatch(qsos, qso, 8);
                             break;
                     }
 
@@ -600,14 +599,14 @@ namespace W6OP.ContestLogAnalyzer
                                && y.Mode == qso.Mode
                                && (y.ContactEntity == qso.OperatorEntity
                                || y.OperatorEntity == qso.ContactEntity)
-                               && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                               && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
                     return matches;
                 case 8:
                     // this is a full search only with mismatching entities
                     matches = qsos
                    .Where(y => y.Band == qso.Band
                                && y.Mode == qso.Mode
-                               && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= timeInterval);
+                               && Math.Abs(y.QSODateTime.Subtract(qso.QSODateTime).TotalMinutes) <= TimeInterval);
                     return matches;
                 default:
                     Console.WriteLine("Failed search: " + qso.RawQSO);
