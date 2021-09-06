@@ -194,6 +194,7 @@ copy "$(TargetDir)/NetworkLookup.pdb" ..\..\..\Deploy
 copy "$(TargetDir)/AnalysisEngine.dll" ..\..\..\Deploy
 copy "$(TargetDir)/AnalysisEngine.pdb" ..\..\..\Deploy
 copy "$(TargetDir)/PrintEngine.dll" ..\..\..\Deploy
+copy "$(TargetDir)/CallParser.dll" ..\..\..\Deploy
 copy "$(TargetDir)/PrintEngine.pdb" ..\..\..\Deploy
 copy "$(TargetDir)/itext.io.dll" ..\..\..\Deploy
 copy "$(TargetDir)/itext.kernel.dll" ..\..\..\Deploy

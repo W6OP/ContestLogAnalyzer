@@ -1663,6 +1663,5 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         #endregion
-
     } // end class
 }

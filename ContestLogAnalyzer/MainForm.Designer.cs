@@ -648,7 +648,6 @@
             // 
             // OpenHawaiiCallFileDialog
             // 
-            this.OpenHawaiiCallFileDialog.FileName = "HQPCalls.csv";
             this.OpenHawaiiCallFileDialog.Filter = "CSV File|*.csv";
             this.OpenHawaiiCallFileDialog.Title = "Load Hawaii Call File";
             // 
