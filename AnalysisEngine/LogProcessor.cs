@@ -485,7 +485,9 @@ namespace W6OP.ContestLogAnalyzer
 
             if (ex.Message.IndexOf("Input string was not in a correct format.") != -1)
             {
-                message += "\r\nThere is probably an alpha character in the header where it should be numeric.";
+                message += "\r\nThere is may be an alpha character in the header or a QSO where it should be numeric.";
+                message += Environment.NewLine;
+                message += FailingLine;
             }
             else if (ex.Message.IndexOf("Object reference not set to an instance of an object.") != -1)
             {
