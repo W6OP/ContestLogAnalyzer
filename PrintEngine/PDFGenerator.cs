@@ -134,6 +134,7 @@ namespace W6OP.PrintEngine
             string session = null;
             string year = DateTime.Now.ToString("yyyy");
             string message = null;
+            int columnFontSize = 9;
             ContestLog contestlog;
             List<QSO> validQsoList;
 
@@ -154,13 +155,13 @@ namespace W6OP.PrintEngine
 
             Paragraph header = new Paragraph(message)
                .SetFont(PdfFontFactory.CreateFont(StandardFonts.HELVETICA))
-               .SetFontSize(14)
+               .SetFontSize(columnFontSize)
                .SetTextAlignment(TextAlignment.CENTER)
                .SetBackgroundColor(ColorConstants.LIGHT_GRAY);
             
             document.Add(header);
 
-            Table table = new Table(UnitValue.CreatePercentArray(8)).UseAllAvailableWidth();
+            Table table = new Table(UnitValue.CreatePercentArray(9)).UseAllAvailableWidth();
 
             table.AddHeaderCell("Call");
             table.AddHeaderCell("Operator");
@@ -170,6 +171,7 @@ namespace W6OP.PrintEngine
             table.AddHeaderCell("Mults");
             table.AddHeaderCell("Points");
             table.AddHeaderCell("Score");
+            table.AddHeaderCell("Category");
 
             for (int i = 0; i < contestLogs.Count; i++)
             {
@@ -178,14 +180,18 @@ namespace W6OP.PrintEngine
                 {
                     // only look at valid QSOs
                     validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
-                    table.AddCell(contestlog.LogOwner).SetFontSize(10);
-                    table.AddCell(contestlog.Operator).SetFontSize(10);
-                    table.AddCell(contestlog.Station).SetFontSize(10);
-                    table.AddCell(contestlog.QSOCollection[0].OperatorEntity).SetFontSize(10);
-                    table.AddCell(validQsoList.Count.ToString()).SetFontSize(10);
-                    table.AddCell(contestlog.HQPTotalMultipliers.ToString()).SetFontSize(10);
-                    table.AddCell(contestlog.TotalPoints.ToString()).SetFontSize(10);
-                    table.AddCell(contestlog.ActualScore.ToString()).SetFontSize(10);
+                    table.AddCell(contestlog.LogOwner).SetFontSize(columnFontSize);
+                    table.AddCell(contestlog.Operator).SetFontSize(columnFontSize);
+                    table.AddCell(contestlog.Station).SetFontSize(columnFontSize);
+                    table.AddCell(contestlog.QSOCollection[0].OperatorEntity).SetFontSize(columnFontSize);
+                    table.AddCell(validQsoList.Count.ToString()).SetFontSize(columnFontSize);
+                    table.AddCell(contestlog.HQPTotalMultipliers.ToString()).SetFontSize(columnFontSize);
+                    table.AddCell(contestlog.TotalPoints.ToString()).SetFontSize(columnFontSize);
+                    table.AddCell(contestlog.ActualScore.ToString()).SetFontSize(columnFontSize);
+
+                    string operatorCategory = Utility.GetDescription(contestlog.LogHeader.OperatorCategory);
+                    string operatorPower = Utility.GetDescription(contestlog.LogHeader.Power);
+                    table.AddCell(operatorCategory + " " + operatorPower).SetFontSize(columnFontSize);
                 }
             }
 

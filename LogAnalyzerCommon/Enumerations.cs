@@ -152,6 +152,34 @@ namespace W6OP.ContestLogAnalyzer
         MIXED
     }
 
+    public enum CategoryTransmitterHQP
+    {
+        [Description("Single Transmitter")]
+        ONE,
+        [Description("Multi Transmitter")]
+        TWO,
+        [Description("Multi Transmitter")]
+        LIMITED,
+        [Description("Multi Transmitter")]
+        UNLIMITED,
+    }
+
+    public enum CategoryTransmitter
+    {
+        [Description("Single Transmitter")]
+        ONE,
+        [Description("Multi Transmitter")]
+        TWO,
+        [Description("Multi Transmitter")]
+        LIMITED,
+        [Description("Multi Transmitter")]
+        UNLIMITED,
+        [Description("None")]
+        SWL,
+        [Description("Unknown")]
+        UNKNOWN
+    }
+
     //SINGLE-OP ALL LOW CW "SINGLE-OP ALL HIGH CW" "SINGLE-OP ALL\tLOW CW" SINGLE-OP LOW
     public enum CategoryOperator
     {
@@ -161,12 +189,24 @@ namespace W6OP.ContestLogAnalyzer
         SingleOpQRP,
         [Description("SINGLE-OP LOW")]
         SingleOpLow,
+        [Description("SINGLE-OP, HIGH")]
+        SingleOpHigh, // (default if header has no such information)
         [Description("SINGLE-OP ALL LOW CW")]
         SingleOpLowCW,
         [Description("SINGLE-OP ALL HIGH CW")]
         SingleOpHighCW,
         [Description("MULTI-OP")]
         MultiOp,
+        [Description("MULTI-SINGLE, QRP")]
+        MultiOpSingleQRP,
+        [Description("MULTI-SINGLE, LOW")]
+        MultiOpSingleLow,
+        [Description("MULTI-SINGLE, HIGH")]
+        MultiOpSingleHigh,
+        [Description("MULTI-MULTI, LOW")]
+        MultiOpMultiLow,
+        [Description("MULTI-MULTI, HIGH")]
+        MultiOpMultiHigh,
         [Description("CHECKLOG")]
         CheckLog,
         [Description("Unable to determine operator category")]
@@ -175,10 +215,12 @@ namespace W6OP.ContestLogAnalyzer
 
     public enum CategoryPower
     {
+        [Description("HIGH")]
         HIGH,
+        [Description("LOW")]
         LOW,
-        QRP,
-        UNKNOWN
+        [Description("QRP")]
+        QRP
     }
 
     public enum CategoryStation
@@ -201,16 +243,6 @@ namespace W6OP.ContestLogAnalyzer
         _12_HOURS,
         [Description("24-HOURS")]
         _24_HOURS
-    }
-
-    public enum CategoryTransmitter
-    {
-        ONE,
-        TWO,
-        LIMITED,
-        UNLIMITED,
-        SWL,
-        UNKNOWN
     }
 
     public enum CategoryOverlay

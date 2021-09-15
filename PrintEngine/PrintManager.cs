@@ -171,6 +171,9 @@ namespace W6OP.PrintEngine
 
                 if (contestlog != null)
                 {
+                    string operatorCategory = Utility.GetDescription(contestlog.LogHeader.OperatorCategory);
+                    string operatorPower = Utility.GetDescription(contestlog.LogHeader.Power);
+
                     // only look at valid QSOs
                     validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
 
@@ -184,6 +187,7 @@ namespace W6OP.PrintEngine
                         QSOs = validQsoList.Count.ToString(),
                         Mults = contestlog.HQPTotalMultipliers.ToString(),
                         Score = contestlog.ActualScore.ToString(),
+                        Category = operatorCategory + " " + operatorPower,
                     };
 
                     scores.Add(scoreList);

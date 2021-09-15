@@ -122,6 +122,176 @@ namespace W6OP.ContestLogAnalyzer
             return fileList.Cast<object>().Count();
         }
 
+
+        #region Build Headers
+
+        /// <summary>
+        /// Check to see if a subset of fields in the header are valid.
+        /// </summary>
+        /// <param name="contestLog"></param>
+        /// <param name="reason"></param>
+        /// <returns></returns>
+        private bool AnalyzeHeader(ContestLog contestLog, out string reason)
+        {
+            bool headerIsValid = true;
+            reason = "Unable to build valid header.";
+
+            if (contestLog.LogHeader.OperatorCallSign == "UNKNOWN")
+            {
+                reason = "Invalid operator callsign";
+                return false;
+            }
+
+            if (contestLog.LogHeader.OperatorCategory == CategoryOperator.Uknown)
+            {
+                reason = "Invalid operator category";
+                return false;
+            }
+
+            if (contestLog.LogHeader.Assisted == CategoryAssisted.Uknown)
+            {
+                reason = "Invalid assisted value";
+                return false;
+            }
+
+            if (contestLog.LogHeader.PrimaryName == "UNKNOWN" || contestLog.LogHeader.PrimaryName == "[BLANK]")
+            {
+                reason = "Invalid primary name";
+                return false;
+            }
+            if (contestLog.LogHeader.NameSent == "UNKNOWN" || contestLog.LogHeader.NameSent == "[BLANK]")
+            {
+                reason = "Invalid name sent";
+                return false;
+            }
+
+            return headerIsValid;
+        }
+
+        /// <summary>
+        /// LINQ SAMPLES
+        /// http://code.msdn.microsoft.com/101-LINQ-Samples-3fb9811b
+        /// 
+        /// THERE ARE SOME ITEMS MISSING
+        /// DATE, TIME
+        /// TIME OFF
+        /// 
+        /// NOTE: CATEGORY defaults to SINGLE-OP instead of UNKNOWN because Alan (for CWOPEN) doesn't care if it is specified wrong. CWOPEN is always SINGLE_OP
+        /// </summary>
+        /// <param name="lineList"></param>
+        /// <param name="match"></param>
+        private LogHeader BuildHeaderV2(List<string> lineList, string logFileName)
+        {
+            IEnumerable<LogHeader> logHeader = null;
+            string prefix = string.Empty;
+            string suffix = string.Empty;
+
+            try
+            {
+                logHeader =
+                    from line in lineList
+                    select new LogHeader()
+                    {
+                        // NEED StringComparer.CurrentCultureIgnoreCase ???
+                        LogFileName = logFileName,
+                        Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
+                        Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: UNKNOWN").First().Substring(9).Trim(),
+                        OperatorCallSign = ParseCallSign(CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN"), out prefix, out suffix).ToUpper(),
+                        OperatorPrefix = prefix,
+                        OperatorSuffix = suffix,
+                        OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY:")).DefaultIfEmpty("CATEGORY: SINGLE-OP").First().Substring(9).Trim().ToUpper()),
+                        // this is for when the CATEGORY-ASSISTED: is missing or has no value
+                        Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: ASSISTED").First(), 18, "ASSISTED")),   //.Substring(18).Trim().ToUpper()),
+                        Band = Utility.GetValueFromDescription<QSOBand>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).DefaultIfEmpty("CATEGORY-BAND: ALL").First(), 14, "ALL")),
+                        Power = Utility.GetValueFromDescription<CategoryPower>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-POWER:")).DefaultIfEmpty("CATEGORY-POWER: HIGH").First(), 15, "HIGH")),
+                        Mode = Utility.GetValueFromDescription<QSOMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
+                        Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
+                        Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
+                        ClaimedScore = Convert.ToInt32(CheckForNumeric(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First(), 14, "0"))),
+                        Club = CheckForNull(lineList.Where(l => l.StartsWith("CLUB:")).DefaultIfEmpty("CLUB: NONE").First(), 5, "NONE"),
+                        Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
+                        CreatedBy = CheckForNull(lineList.Where(l => l.StartsWith("CREATED-BY:")).DefaultIfEmpty("CREATED-BY: NONE").First(), 11, "NONE"),
+                        PrimaryName = CheckForNull(lineList.Where(l => l.StartsWith("NAME:")).DefaultIfEmpty("NAME: NONE").First(), 5, "NONE"),
+                        NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent:")).DefaultIfEmpty("Name Sent: NONE").First(), 10, "NONE"),
+                        // need to work on address
+                        Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
+                        SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX:").First(), 8, ""),
+                    };
+            }
+            catch (Exception ex)
+            {
+                string a = ex.Message;
+                throw;
+            }
+
+            return logHeader.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// LINQ SAMPLES
+        /// http://code.msdn.microsoft.com/101-LINQ-Samples-3fb9811b
+        /// 
+        /// THERE ARE SOME ITEMS MISSING
+        /// DATE, TIME
+        /// TIME OFF
+        /// 
+        /// NOTE: CATEGORY defaults to SINGLE-OP instead of UNKNOWN because Alan (for CWOPEN) doesn't care if it is specified wrong. CWOPEN is always SINGLE_OP
+        /// </summary>
+        /// <param name="lineList"></param>
+        /// <param name="match"></param>
+        private LogHeader BuildHeaderV3(List<string> lineList, string logFileName)
+        {
+            IEnumerable<LogHeader> logHeader = null;
+            string prefix = string.Empty;
+            string suffix = string.Empty;
+
+            try
+            {
+                logHeader =
+                from line in lineList
+                select new LogHeader()
+                {
+                    // NEED StringComparer.CurrentCultureIgnoreCase ???
+                    LogFileName = logFileName,
+                    Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
+                    Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: UNKNOWN").First().Substring(9).Trim(),
+                    QTH = lineList.Where(l => l.StartsWith("ADDRESS-STATE-PROVINCE:")).DefaultIfEmpty("ADDRESS-STATE-PROVINCE: ").First().Substring(23).Trim(),
+                    Country = lineList.Where(l => l.StartsWith("ADDRESS-COUNTRY:")).DefaultIfEmpty("ADDRESS-COUNTRY: ").First().Substring(16).Trim(),
+                    OperatorCallSign = ParseCallSign(CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN"), out prefix, out suffix).ToUpper(),
+                    OperatorPrefix = prefix,
+                    OperatorSuffix = suffix,
+                    OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY-OPERATOR:")).DefaultIfEmpty("CATEGORY-OPERATOR: SINGLE-OP").First().Substring(18).Trim().ToUpper()),
+                    // this is for when the CATEGORY-ASSISTED: is missing or has no value
+                    Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: ASSISTED").First(), 18, "ASSISTED")),
+                    Band = Utility.GetValueFromDescription<QSOBand>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).DefaultIfEmpty("CATEGORY-BAND: ALL").First(), 14, "ALL")),
+                    Power = Utility.GetValueFromDescription<CategoryPower>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-POWER:")).DefaultIfEmpty("CATEGORY-POWER: HIGH").First(), 15, "HIGH")),
+                    Mode = Utility.GetValueFromDescription<QSOMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
+                    Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
+                    Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
+                    ClaimedScore = Convert.ToInt32(CheckForNumeric(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First().Replace(",", ""), 14, "0"))), // some guys do score as 52,000
+                    Club = CheckForNull(lineList.Where(l => l.StartsWith("CLUB:")).DefaultIfEmpty("CLUB: NONE").First(), 5, "NONE"),
+                    Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
+                    CreatedBy = CheckForNull(lineList.Where(l => l.StartsWith("CREATED-BY:")).DefaultIfEmpty("CREATED-BY: NONE").First(), 11, "NONE"),
+                    PrimaryName = CheckForNull(lineList.Where(l => l.StartsWith("NAME:")).DefaultIfEmpty("NAME: NONE").First(), 5, "NONE"),
+                    // NameSent will always be NONE
+                    NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent:")).DefaultIfEmpty("Name Sent: NONE").First(), 10, "NONE"),
+                    // need to work on address
+                    Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
+                    SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX:").First(), 8, ""),
+                };
+
+            }
+            catch (Exception ex)
+            {
+                string a = ex.Message;
+                throw;
+            }
+
+            return logHeader.FirstOrDefault();
+        }
+
+        #endregion
+
         #region Load and Pre Process Logs
 
         /// <summary>
@@ -1173,6 +1343,12 @@ namespace W6OP.ContestLogAnalyzer
             IEnumerable<Hit> hitCollection;
             List<Hit> hitList;
 
+            if (qso.ContactGrid == "ZZ00")
+            {
+                qso.IsInvalidEntity = true;
+                qso.IncorrectDXEntityMessage = $"{qso.ContactGrid} --> DX or State or Province";
+            }
+
             if (qso.ContactEntity == "DX")
             {
                 // need to look it up
@@ -1377,176 +1553,6 @@ namespace W6OP.ContestLogAnalyzer
 
             _PrintManager.PrintInspectionReport(fileName + ".txt", FailReason + Environment.NewLine + " - " + exception);
         }
-
-
-        #region Build Headers
-
-        /// <summary>
-        /// Check to see if a subset of fields in the header are valid.
-        /// </summary>
-        /// <param name="contestLog"></param>
-        /// <param name="reason"></param>
-        /// <returns></returns>
-        private bool AnalyzeHeader(ContestLog contestLog, out string reason)
-        {
-            bool headerIsValid = true;
-            reason = "Unable to build valid header.";
-
-            if (contestLog.LogHeader.OperatorCallSign == "UNKNOWN")
-            {
-                reason = "Invalid operator callsign";
-                return false;
-            }
-
-            if (contestLog.LogHeader.OperatorCategory == CategoryOperator.Uknown)
-            {
-                reason = "Invalid operator category";
-                return false;
-            }
-
-            if (contestLog.LogHeader.Assisted == CategoryAssisted.Uknown)
-            {
-                reason = "Invalid assisted value";
-                return false;
-            }
-
-            if (contestLog.LogHeader.PrimaryName == "UNKNOWN" || contestLog.LogHeader.PrimaryName == "[BLANK]")
-            {
-                reason = "Invalid primary name";
-                return false;
-            }
-            if (contestLog.LogHeader.NameSent == "UNKNOWN" || contestLog.LogHeader.NameSent == "[BLANK]")
-            {
-                reason = "Invalid name sent";
-                return false;
-            }
-
-            return headerIsValid;
-        }
-
-        /// <summary>
-        /// LINQ SAMPLES
-        /// http://code.msdn.microsoft.com/101-LINQ-Samples-3fb9811b
-        /// 
-        /// THERE ARE SOME ITEMS MISSING
-        /// DATE, TIME
-        /// TIME OFF
-        /// 
-        /// NOTE: CATEGORY defaults to SINGLE-OP instead of UNKNOWN because Alan (for CWOPEN) doesn't care if it is specified wrong. CWOPEN is always SINGLE_OP
-        /// </summary>
-        /// <param name="lineList"></param>
-        /// <param name="match"></param>
-        private LogHeader BuildHeaderV2(List<string> lineList, string logFileName)
-        {
-            IEnumerable<LogHeader> logHeader = null;
-            string prefix = string.Empty;
-            string suffix = string.Empty;
-
-            try
-            {
-                logHeader =
-                    from line in lineList
-                    select new LogHeader()
-                    {
-                        // NEED StringComparer.CurrentCultureIgnoreCase ???
-                        LogFileName = logFileName,
-                        Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
-                        Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: UNKNOWN").First().Substring(9).Trim(),
-                        OperatorCallSign = ParseCallSign(CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN"), out prefix, out suffix).ToUpper(),
-                        OperatorPrefix = prefix,
-                        OperatorSuffix = suffix,
-                        OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY:")).DefaultIfEmpty("CATEGORY: SINGLE-OP").First().Substring(9).Trim().ToUpper()),
-                        // this is for when the CATEGORY-ASSISTED: is missing or has no value
-                        Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: ASSISTED").First(), 18, "ASSISTED")),   //.Substring(18).Trim().ToUpper()),
-                        Band = Utility.GetValueFromDescription<QSOBand>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).DefaultIfEmpty("CATEGORY-BAND: ALL").First(), 14, "ALL")),
-                        Power = Utility.GetValueFromDescription<CategoryPower>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-POWER:")).DefaultIfEmpty("CATEGORY-POWER: HIGH").First(), 15, "HIGH")),
-                        Mode = Utility.GetValueFromDescription<QSOMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
-                        Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
-                        Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
-                        ClaimedScore = Convert.ToInt32(CheckForNumeric(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First(), 14, "0"))),
-                        Club = CheckForNull(lineList.Where(l => l.StartsWith("CLUB:")).DefaultIfEmpty("CLUB: NONE").First(), 5, "NONE"),
-                        Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
-                        CreatedBy = CheckForNull(lineList.Where(l => l.StartsWith("CREATED-BY:")).DefaultIfEmpty("CREATED-BY: NONE").First(), 11, "NONE"),
-                        PrimaryName = CheckForNull(lineList.Where(l => l.StartsWith("NAME:")).DefaultIfEmpty("NAME: NONE").First(), 5, "NONE"),
-                        NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent:")).DefaultIfEmpty("Name Sent: NONE").First(), 10, "NONE"),
-                        // need to work on address
-                        Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
-                        SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX:").First(), 8, ""),
-                    };
-            }
-            catch (Exception ex)
-            {
-                string a = ex.Message;
-                throw;
-            }
-
-            return logHeader.FirstOrDefault();
-        }
-
-        /// <summary>
-        /// LINQ SAMPLES
-        /// http://code.msdn.microsoft.com/101-LINQ-Samples-3fb9811b
-        /// 
-        /// THERE ARE SOME ITEMS MISSING
-        /// DATE, TIME
-        /// TIME OFF
-        /// 
-        /// NOTE: CATEGORY defaults to SINGLE-OP instead of UNKNOWN because Alan (for CWOPEN) doesn't care if it is specified wrong. CWOPEN is always SINGLE_OP
-        /// </summary>
-        /// <param name="lineList"></param>
-        /// <param name="match"></param>
-        private LogHeader BuildHeaderV3(List<string> lineList, string logFileName)
-        {
-            IEnumerable<LogHeader> logHeader = null;
-            string prefix = string.Empty;
-            string suffix = string.Empty;
-
-            try
-            {
-                logHeader =
-                from line in lineList
-                select new LogHeader()
-                {
-                    // NEED StringComparer.CurrentCultureIgnoreCase ???
-                    LogFileName = logFileName,
-                    Version = lineList.Where(l => l.StartsWith("START-OF-LOG:")).FirstOrDefault().Substring(13).Trim(),
-                    Location = lineList.Where(l => l.StartsWith("LOCATION:")).DefaultIfEmpty("LOCATION: UNKNOWN").First().Substring(9).Trim(),
-                    QTH = lineList.Where(l => l.StartsWith("ADDRESS-STATE-PROVINCE:")).DefaultIfEmpty("ADDRESS-STATE-PROVINCE: ").First().Substring(23).Trim(),
-                    Country = lineList.Where(l => l.StartsWith("ADDRESS-COUNTRY:")).DefaultIfEmpty("ADDRESS-COUNTRY: ").First().Substring(16).Trim(),
-                    OperatorCallSign = ParseCallSign(CheckForNull(lineList.Where(l => l.StartsWith("CALLSIGN:")).DefaultIfEmpty("CALLSIGN: UNKNOWN").First(), 9, "UNKNOWN"), out prefix, out suffix).ToUpper(),
-                    OperatorPrefix = prefix,
-                    OperatorSuffix = suffix,
-                    OperatorCategory = Utility.GetValueFromDescription<CategoryOperator>(lineList.Where(l => l.StartsWith("CATEGORY-OPERATOR:")).DefaultIfEmpty("CATEGORY-OPERATOR: SINGLE-OP").First().Substring(18).Trim().ToUpper()),
-                    // this is for when the CATEGORY-ASSISTED: is missing or has no value
-                    Assisted = Utility.GetValueFromDescription<CategoryAssisted>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-ASSISTED:")).DefaultIfEmpty("CATEGORY-ASSISTED: ASSISTED").First(), 18, "ASSISTED")),
-                    Band = Utility.GetValueFromDescription<QSOBand>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-BAND:")).DefaultIfEmpty("CATEGORY-BAND: ALL").First(), 14, "ALL")),
-                    Power = Utility.GetValueFromDescription<CategoryPower>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-POWER:")).DefaultIfEmpty("CATEGORY-POWER: HIGH").First(), 15, "HIGH")),
-                    Mode = Utility.GetValueFromDescription<QSOMode>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-MODE:")).DefaultIfEmpty("CATEGORY-MODE: MIXED").First(), 14, "MIXED")),
-                    Station = Utility.GetValueFromDescription<CategoryStation>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-STATION:")).DefaultIfEmpty("CATEGORY-STATION: UNKNOWN").First(), 17, "UNKNOWN")),
-                    Transmitter = Utility.GetValueFromDescription<CategoryTransmitter>(CheckForNull(lineList.Where(l => l.StartsWith("CATEGORY-TRANSMITTER:")).DefaultIfEmpty("CATEGORY-TRANSMITTER: UNKNOWN").First(), 21, "UNKNOWN")),
-                    ClaimedScore = Convert.ToInt32(CheckForNumeric(CheckForNull(lineList.Where(l => l.StartsWith("CLAIMED-SCORE:")).DefaultIfEmpty("CLAIMED-SCORE: 0").First().Replace(",", ""), 14, "0"))), // some guys do score as 52,000
-                    Club = CheckForNull(lineList.Where(l => l.StartsWith("CLUB:")).DefaultIfEmpty("CLUB: NONE").First(), 5, "NONE"),
-                    Contest = Utility.GetValueFromDescription<ContestName>(lineList.Where(l => l.StartsWith("CONTEST:")).FirstOrDefault().Substring(9).Trim().ToUpper()),
-                    CreatedBy = CheckForNull(lineList.Where(l => l.StartsWith("CREATED-BY:")).DefaultIfEmpty("CREATED-BY: NONE").First(), 11, "NONE"),
-                    PrimaryName = CheckForNull(lineList.Where(l => l.StartsWith("NAME:")).DefaultIfEmpty("NAME: NONE").First(), 5, "NONE"),
-                    // NameSent will always be NONE
-                    NameSent = CheckForNull(lineList.Where(l => l.StartsWith("Name Sent:")).DefaultIfEmpty("Name Sent: NONE").First(), 10, "NONE"),
-                    // need to work on address
-                    Operators = lineList.Where(l => l.StartsWith("OPERATORS:")).ToList(),
-                    SoapBox = CheckForNull(lineList.Where(l => l.StartsWith("SOAPBOX:")).DefaultIfEmpty("SOAPBOX:").First(), 8, ""),
-                };
-
-            }
-            catch (Exception ex)
-            {
-                string a = ex.Message;
-                throw;
-            }
-
-            return logHeader.FirstOrDefault();
-        }
-
-        #endregion
 
         /// <summary>
         /// Some logs have 5,234 for a score and some have "Not Required"

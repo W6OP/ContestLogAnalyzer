@@ -45,16 +45,7 @@ namespace W6OP.PrintEngine
         public string DG { get; internal set; }
         public string QSOs { get; internal set; }
         public string Mults { get; internal set; }
-
-       
-        //public string LogOwner { get; internal set; }
-       // public string Operator { get; internal set; }
-        //public string Station { get; internal set; }
-       
-       // public string Entity { get; internal set; }
-       // public string QSOCount { get; internal set; }
-        //public string Multipliers { get; internal set; }
-        //public string Points { get; internal set; }
         public string Score { get; internal set; }
+        public string Category { get; internal set; }
     } // end class
 }
