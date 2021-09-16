@@ -198,6 +198,43 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
+        /// Find duplicate QSOs.
+        /// Do a Select for call, mode and band.
+        /// </summary>
+        /// <param name="qsoList"></param>
+        internal void MarkDuplicates(List<QSO> qsoList)
+        {
+            IEnumerable<QSO> matches;
+
+            foreach (QSO qso in qsoList)
+            {
+                matches = qsoList
+                      .Where(y => y.Band == qso.Band
+                                  && y.Mode == qso.Mode
+                                  && y.ContactCall == qso.ContactCall);
+
+                if (matches.ToList().Count > 1)
+                {
+                    List<QSO> matchList = matches.ToList();
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matchList[0];
+                    qso.QSOHasDupes = true;
+
+                    matchList[0].HasBeenMatched = true;
+                    matchList[0].MatchingQSO = qso;
+
+                    foreach (QSO dupe in matchList.Skip(1))
+                    {
+                        dupe.HasBeenMatched = true;
+                        dupe.MatchingQSO = qso;
+                        dupe.FirstMatchingQSO = matchList[0];
+                        dupe.IsDuplicateMatch = true;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Need to look through every log and find the match for this QSO.
         /// If there are no matches either the call is busted or it is a unique
         /// call. If the QSO has a time match but the calls don't match we need
@@ -276,7 +313,7 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Get a list of all logs from the CallDictionary that have this call sign in it.
+        /// We have a list of all logs from the CallDictionary that have this call sign in it.
         /// Now we can query the QSODictionary for each QSO that may match.
         /// We can also flag some duplicates here.
         /// </summary>
@@ -296,6 +333,13 @@ namespace W6OP.ContestLogAnalyzer
 
             // Start the search process
             enumerable = logAnalyzer.FullParameterSearch(qsosFlattened, qso);
+
+#if DEBUG
+            if (qso.ParentLog.LogOwner == "AH6KO")
+            {
+                var invalidQsos = qso.ParentLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
+            }
+#endif
 
             // if the qso has been matched at any previous level we don't need to continue
             if (qso.HasBeenMatched)

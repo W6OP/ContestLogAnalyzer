@@ -98,6 +98,7 @@ namespace W6OP.ContestLogAnalyzer
                                 break;
                             case ContestName.HQP:
                                 hpqAnalyzer.MarkIncorrectSentEntity(qsoList);
+                                hpqAnalyzer.MarkDuplicates(qsoList);
                                 break;
                         }
 
@@ -125,10 +126,13 @@ namespace W6OP.ContestLogAnalyzer
                         }
 
                         validQsoCount = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO).Count();
+
+#if DEBUG
                         if (contestLog.LogOwner == "AH6KO")
                         {
                           var  invalidQsos = contestLog.QSOCollection.Where(q => q.Status == QSOStatus.InvalidQSO).ToList();
                         }
+#endif
 
                         // ReportProgress with Callsign
                         OnProgressUpdate?.Invoke(call, contestLog.QSOCollection.Count.ToString(), validQsoCount.ToString(), progress);
@@ -304,7 +308,6 @@ namespace W6OP.ContestLogAnalyzer
                         matches = hpqAnalyzer.RefineHQPMatch(qsosFlattened, qso, queryLevel).ToList();
                     }
                    
-
                     switch (matches.Count)
                     {
                         case 0:
@@ -331,15 +334,6 @@ namespace W6OP.ContestLogAnalyzer
                     break;
                 case ContestName.HQP:
                     enumerable = hpqAnalyzer.RefineHQPMatch(qsos, qso, queryLevel);
-                    //if (EnumHelper.GetDescription(qso.Mode) != "RY")
-                    //{
-                    //    enumerable = hpqAnalyzer.RefineHQPMatch(qsos, qso, queryLevel);
-                    //}
-                    //else
-                    //{
-                    //    timeInterval = 15;
-                    //    enumerable = hpqAnalyzer.RefineHQPMatch(qsos, qso, timeInterval, queryLevel);
-                    //}
                     break;
             }
 
@@ -385,6 +379,25 @@ namespace W6OP.ContestLogAnalyzer
                     return matches;
                 default:
                     // more than two so we have to do more analysis
+                    qso.HasBeenMatched = true;
+                    qso.MatchingQSO = matches[0];
+                    qso.QSOHasDupes = true;
+
+                    matches[0].HasBeenMatched = true;
+                    matches[0].MatchingQSO = qso;
+
+                    matches[1].HasBeenMatched = true;
+                    matches[1].MatchingQSO = qso;
+                    matches[1].FirstMatchingQSO = matches[0];
+                    matches[1].IsDuplicateMatch = true;
+
+                    foreach (QSO dupe in matches.Skip(1))
+                    {
+                        dupe.HasBeenMatched = true;
+                        dupe.MatchingQSO = qso;
+                        dupe.FirstMatchingQSO = matches[0];
+                        dupe.IsDuplicateMatch = true;
+                    }
                     return matches;
             }
         }
