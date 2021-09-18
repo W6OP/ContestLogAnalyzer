@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace W6OP.ContestLogAnalyzer
 {
@@ -15,6 +11,7 @@ namespace W6OP.ContestLogAnalyzer
         /// </summary>
         public QSO()
         {
+            QsoID = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         }
 
         #region Common Fields
@@ -27,7 +24,7 @@ namespace W6OP.ContestLogAnalyzer
         #endregion
 
         #region Common Properties
-
+        public string QsoID { get; set; }
         // Indicates a log for this call does not exist
         public bool NoMatchingLog { get; set; }
         public bool IsUniqueCall { get; set; }
@@ -77,8 +74,10 @@ namespace W6OP.ContestLogAnalyzer
             }
             set
             {
-                if (value == true)
+                // don't override other reject reasons
+                if (value == true && Status == QSOStatus.ValidQSO)
                 {
+                    // .Where(q => q.IsDuplicateMatch == true).ToList()
                     qsoIsDupe = true;
                     ReasonRejected = RejectReason.DuplicateQSO;
                     Status = QSOStatus.InvalidQSO;     

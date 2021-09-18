@@ -204,34 +204,46 @@ namespace W6OP.ContestLogAnalyzer
         /// <param name="qsoList"></param>
         internal void MarkDuplicates(List<QSO> qsoList)
         {
-            IEnumerable<QSO> matches;
+            List<QSO> matchList;
+            //int count = 0;
 
+            //Console.WriteLine("Dupe list:" + qsoList[0].OperatorCall);
             foreach (QSO qso in qsoList)
             {
-                matches = qsoList
-                      .Where(y => y.Band == qso.Band
-                                  && y.Mode == qso.Mode
-                                  && y.ContactCall == qso.ContactCall);
+                matchList = qsoList
+                      .Where(y => 
+                      y.Status == QSOStatus.ValidQSO &&
+                      y.Band == qso.Band && 
+                      y.Mode == qso.Mode && 
+                      y.ContactCall == qso.ContactCall).ToList();
 
-                if (matches.ToList().Count > 1)
+                if (matchList.Count > 1)
                 {
-                    List<QSO> matchList = matches.ToList();
-                    qso.HasBeenMatched = true;
-                    qso.MatchingQSO = matchList[0];
-                    qso.QSOHasDupes = true;
-
-                    matchList[0].HasBeenMatched = true;
-                    matchList[0].MatchingQSO = qso;
-
-                    foreach (QSO dupe in matchList.Skip(1))
+                    if (qso.Status == QSOStatus.ValidQSO)
                     {
-                        dupe.HasBeenMatched = true;
-                        dupe.MatchingQSO = qso;
-                        dupe.FirstMatchingQSO = matchList[0];
-                        dupe.IsDuplicateMatch = true;
+                        qso.HasBeenMatched = true;
+                        qso.MatchingQSO = matchList[0];
+                        qso.QSOHasDupes = true;
+
+                        matchList[0].HasBeenMatched = true;
+                        matchList[0].MatchingQSO = qso;
+
+                       // Console.WriteLine("Match: " + matchList[0].ContactCall + " " + matchList[0].Band + " " + matchList[0].Mode + " " + matchList[0].QsoID);
+
+                        foreach (QSO dupe in matchList.Skip(1))
+                        {
+                            //count++;
+                            //Console.WriteLine("Dupe: " + dupe.ContactCall + " " + dupe.Band + " " + dupe.Mode + " " + dupe.QsoID);
+                            dupe.HasBeenMatched = true;
+                            dupe.MatchingQSO = qso;
+                            dupe.FirstMatchingQSO = matchList[0];
+                            dupe.IsDuplicateMatch = true;
+                        }
                     }
                 }
             }
+            //Console.WriteLine("Number of dupes: " + count.ToString());
+            //var a = 1;
         }
 
         /// <summary>

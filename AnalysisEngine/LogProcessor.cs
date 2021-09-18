@@ -313,7 +313,7 @@ namespace W6OP.ContestLogAnalyzer
 
             FailReason = reason;
             FailingLine = "";
-
+            //Console.WriteLine(fileName);
             try
             {
                 if (File.Exists(fileInfo.FullName))
@@ -1058,8 +1058,7 @@ namespace W6OP.ContestLogAnalyzer
                         // Is an Hawaiin entity but did not submit a log
                         qso.IsHQPEntity = true;
 #if DEBUG
-                        Console.WriteLine("Hawaii but no log: " + qso.ContactCall);
-                        // mark QSO for RefineQSO()?
+                        //Console.WriteLine("Hawaii but no log: " + qso.ContactCall);
 #endif
                     }
                     break;
@@ -1663,7 +1662,7 @@ namespace W6OP.ContestLogAnalyzer
                     {
                         FailingLine += Environment.NewLine + WorkingLine + " --- " + Environment.NewLine + ex.Message;
                         FailingLine += Environment.NewLine;
-                        Console.WriteLine("CollectQSOS()");
+                       // Console.WriteLine("CollectQSOS()");
                     }
                 }
                 else

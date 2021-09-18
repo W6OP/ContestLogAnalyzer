@@ -323,82 +323,75 @@ namespace W6OP.ContestLogAnalyzer
 
         internal List<QSO> FullParameterSearch(IEnumerable<QSO> qsos, QSO qso)
         {
-            IEnumerable<QSO> enumerable = null;
-            List<QSO> matches;
+            IEnumerable<QSO> matches = null;
+            List<QSO> matchList;
             int queryLevel = 1;
+            //int count = 0;
 
             switch (ActiveContest)
             {
                 case ContestName.CW_OPEN:
-                    enumerable = cwOpenAnalyzer.RefineCWOpenMatch(qsos, qso, queryLevel);
+                    matches = cwOpenAnalyzer.RefineCWOpenMatch(qsos, qso, queryLevel);
                     break;
                 case ContestName.HQP:
-                    enumerable = hpqAnalyzer.RefineHQPMatch(qsos, qso, queryLevel);
+                    matches = hpqAnalyzer.RefineHQPMatch(qsos, qso, queryLevel);
                     break;
             }
 
-            matches = enumerable.ToList();
+            matchList = matches.ToList();
 
-            switch (matches.Count)
+            switch (matchList.Count)
             {
                 case 0:
                     switch (ActiveContest)
                     {
                         case ContestName.CW_OPEN:
                             // match not found so lets search without serial number
-                            matches = cwOpenAnalyzer.SearchWithoutSerialNumber(qsos, qso);
+                            matchList = cwOpenAnalyzer.SearchWithoutSerialNumber(qsos, qso);
                             break;
                         default:
                             // match not found so lets widen the search
-                            matches = hpqAnalyzer.SearchWithoutEntity(qsos, qso, false);
+                            matchList = hpqAnalyzer.SearchWithoutEntity(qsos, qso, false);
                             break;
                     }
                            
-                    return matches;
+                    return matchList;
                 case 1:
                     // found one match so we mark both as matches and add matching QSO
-                    qso.MatchingQSO = matches[0];
-                    matches[0].MatchingQSO = qso;
+                    qso.MatchingQSO = matchList[0];
+                    matchList[0].MatchingQSO = qso;
 
                     qso.HasBeenMatched = true;
-                    matches[0].HasBeenMatched = true;
-                    return matches;
-                case 2:
-                    // two matches so these are probably dupes
-                    qso.HasBeenMatched = true;
-                    qso.MatchingQSO = matches[0];
-                    qso.QSOHasDupes = true;
-
-                    matches[0].HasBeenMatched = true;
-                    matches[0].MatchingQSO = qso;
-
-                    matches[1].HasBeenMatched = true;
-                    matches[1].MatchingQSO = qso;
-                    matches[1].FirstMatchingQSO = matches[0];
-                    matches[1].IsDuplicateMatch = true;
-                    return matches;
+                    matchList[0].HasBeenMatched = true;
+                    return matchList;
                 default:
-                    // more than two so we have to do more analysis
-                    qso.HasBeenMatched = true;
-                    qso.MatchingQSO = matches[0];
-                    qso.QSOHasDupes = true;
-
-                    matches[0].HasBeenMatched = true;
-                    matches[0].MatchingQSO = qso;
-
-                    matches[1].HasBeenMatched = true;
-                    matches[1].MatchingQSO = qso;
-                    matches[1].FirstMatchingQSO = matches[0];
-                    matches[1].IsDuplicateMatch = true;
-
-                    foreach (QSO dupe in matches.Skip(1))
+                    //Console.WriteLine("Dupe list - 1:" + qso.OperatorCall);
+                    // more than one so these are probably dupes
+                    if (qso.Status == QSOStatus.ValidQSO)
                     {
-                        dupe.HasBeenMatched = true;
-                        dupe.MatchingQSO = qso;
-                        dupe.FirstMatchingQSO = matches[0];
-                        dupe.IsDuplicateMatch = true;
+                        qso.HasBeenMatched = true;
+                        qso.MatchingQSO = matchList[0];
+                       // qso.QSOHasDupes = true;
+
+                        matchList[0].HasBeenMatched = true;
+                        matchList[0].MatchingQSO = qso;
+
+                       // Console.WriteLine("Match - 1: " + matchList[0].ContactCall + " " + matchList[0].Band + " " + matchList[0].Mode + " " + matchList[0].QsoID);
+
+                        //foreach (QSO dupe in matchList.Skip(1))
+                        //{
+                        //    count++;
+                        //    Console.WriteLine("Dupe - 1: " + dupe.ContactCall + " " + dupe.Band + " " + dupe.Mode + " " + dupe.QsoID);
+                        //    dupe.HasBeenMatched = true;
+                        //    dupe.MatchingQSO = qso;
+                        //    dupe.FirstMatchingQSO = matchList[0];
+                        //    dupe.IsDuplicateMatch = true;
+                        //}
                     }
-                    return matches;
+
+                   // Console.WriteLine("Number of dupes-1: " + count.ToString());
+
+                    return matchList;
             }
         }
 

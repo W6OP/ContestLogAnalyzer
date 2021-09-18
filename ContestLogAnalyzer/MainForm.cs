@@ -593,12 +593,12 @@ namespace W6OP.ContestLogAnalyzer
         }
 
         /// <summary>
-        /// Create all the folders necessary to run prograsm.
+        /// Create all the folders necessary to run program.
         /// </summary>
         private void CreateFolders()
         {
             // create folders if necessary
-            // always clean the working folder
+            // always clean the old folders
             if (!Directory.Exists(WorkingFolder))
             {
                 Directory.CreateDirectory(WorkingFolder);
@@ -613,9 +613,19 @@ namespace W6OP.ContestLogAnalyzer
             {
                 Directory.CreateDirectory(InspectFolder);
             }
+            else
+            {
+                Directory.Delete(InspectFolder, true);
+                Directory.CreateDirectory(InspectFolder);
+            }
 
             if (!Directory.Exists(ReportFolder))
             {
+                Directory.CreateDirectory(ReportFolder);
+            }
+            else
+            {
+                Directory.Delete(ReportFolder, true);
                 Directory.CreateDirectory(ReportFolder);
             }
 
@@ -623,9 +633,19 @@ namespace W6OP.ContestLogAnalyzer
             {
                 Directory.CreateDirectory(ReviewFolder);
             }
+            else
+            {
+                Directory.Delete(ReviewFolder, true);
+                Directory.CreateDirectory(ReviewFolder);
+            }
 
             if (!Directory.Exists(ScoreFolder))
             {
+                Directory.CreateDirectory(ScoreFolder);
+            }
+            else
+            {
+                Directory.Delete(ScoreFolder, true);
                 Directory.CreateDirectory(ScoreFolder);
             }
         }
