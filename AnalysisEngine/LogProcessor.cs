@@ -1745,15 +1745,15 @@ namespace W6OP.ContestLogAnalyzer
                 case QSOMode.CW:
                     return QSOMode.CW;
                 case QSOMode.RTTY:
-                    return QSOMode.RY;
+                    return QSOMode.DG;
                 case QSOMode.RY:
-                    return QSOMode.RY;
+                    return QSOMode.DG;
                 case QSOMode.FT8:
-                    return QSOMode.RY;
+                    return QSOMode.DG;
                 case QSOMode.DG:
-                    return QSOMode.RY;
+                    return QSOMode.DG;
                 case QSOMode.DIGI:
-                    return QSOMode.RY;
+                    return QSOMode.DG;
                 case QSOMode.PH:
                     return QSOMode.PH;
                 case QSOMode.SSB:

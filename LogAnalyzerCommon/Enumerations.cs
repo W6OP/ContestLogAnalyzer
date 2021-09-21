@@ -136,17 +136,17 @@ namespace W6OP.ContestLogAnalyzer
         USB,
         [Description("CW")]
         CW,
-        [Description("RY")]
+        [Description("DG")]
         DIGI,
-        [Description("RY")]
+        [Description("DG")]
         DG,
         [Description("PH")]
         PH,
-        [Description("RY")]
+        [Description("DG")]
         RTTY,
-        [Description("RY")]
+        [Description("DG")]
         RY,
-        [Description("RY")]
+        [Description("DG")]
         FT8,
         [Description("MIXED")]
         MIXED

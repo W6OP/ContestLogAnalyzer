@@ -691,11 +691,11 @@ namespace W6OP.PrintEngine
 
             totalPhoneQSOS = contestLog.QSOCollection.Where(q => EnumHelper.GetDescription(q.Mode) == "PH").ToList().Count();
             totalCWQSOs = contestLog.QSOCollection.Where(q => EnumHelper.GetDescription(q.Mode) == "CW").ToList().Count();
-            totalDigiQSOS = contestLog.QSOCollection.Where(q => EnumHelper.GetDescription(q.Mode) == "RY").ToList().Count();
+            totalDigiQSOS = contestLog.QSOCollection.Where(q => EnumHelper.GetDescription(q.Mode) == "DG").ToList().Count();
 
             totalValidPhoneQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && EnumHelper.GetDescription(q.Mode) == "PH").ToList().Count();
             totalValidCWQSOs = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && EnumHelper.GetDescription(q.Mode) == "CW").ToList().Count();
-            totalValidDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && EnumHelper.GetDescription(q.Mode) == "RY").ToList().Count();
+            totalValidDigiQSOS = contestLog.QSOCollection.Where(q => (q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO) && EnumHelper.GetDescription(q.Mode) == "DG").ToList().Count();
 
             switch (ActiveContest)
             {
@@ -732,7 +732,7 @@ namespace W6OP.PrintEngine
                             totalQSOs.ToString(), totalValidQSOs.ToString(), totalInvalidQSOs.ToString(), totalDupeQSOs.ToString());
                         sw.WriteLine(message);
 
-                        message = string.Format(" Valid PH: {0}({1})  Valid CW: {2}({3})   Valid RY: {4}({5})", totalValidPhoneQSOS.ToString(), totalPhoneQSOS.ToString(), totalValidCWQSOs.ToString(), totalCWQSOs.ToString(), totalValidDigiQSOS.ToString(), totalDigiQSOS.ToString());
+                        message = string.Format(" Valid PH: {0}({1})  Valid CW: {2}({3})   Valid DG: {4}({5})", totalValidPhoneQSOS.ToString(), totalPhoneQSOS.ToString(), totalValidCWQSOs.ToString(), totalCWQSOs.ToString(), totalValidDigiQSOS.ToString(), totalDigiQSOS.ToString());
                         sw.WriteLine(message);
 
                         message = string.Format(" HQP Mults: {0}   NonHQP Mults: {1}   Total Mults: {2}", contestLog.HQPMultipliers.ToString(), contestLog.NonHQPMultipliers.ToString(), multiplierCount.ToString());
@@ -747,7 +747,7 @@ namespace W6OP.PrintEngine
                             totalValidQSOs.ToString(), totalInvalidQSOs.ToString(), totalDupeQSOs.ToString());
                         sw.WriteLine(message);
 
-                        message = string.Format(" Valid PH: {0}({1})  Valid CW: {2}({3})   Valid RY: {4}({5})", totalValidPhoneQSOS.ToString(), totalPhoneQSOS.ToString(), totalValidCWQSOs.ToString(), totalCWQSOs.ToString(), totalValidDigiQSOS.ToString(), totalDigiQSOS.ToString());
+                        message = string.Format(" Valid PH: {0}({1})  Valid CW: {2}({3})   Valid DG: {4}({5})", totalValidPhoneQSOS.ToString(), totalPhoneQSOS.ToString(), totalValidCWQSOs.ToString(), totalCWQSOs.ToString(), totalValidDigiQSOS.ToString(), totalDigiQSOS.ToString());
                         sw.WriteLine(message);
 
                         message = string.Format(" HQP Mults: {0} Total Mults: {1}", contestLog.HQPMultipliers.ToString(), multiplierCount.ToString());

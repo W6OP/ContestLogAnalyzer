@@ -31,14 +31,19 @@ namespace W6OP.ContestLogAnalyzer
         // Indicates a QSO this operator does not get credit for but others do.
         public bool IsXQSO { get; set; }
         // The log reference for a particuler QSO.
+        // TODO: could use the parent log ID instead of a pointer to the log - what would I gain?
         public ContestLog ParentLog { get; set; }
         // The reason a qso was rejected.
+        // TODO: change to a collection as there could be multiple reasons
         public RejectReason ReasonRejected { get; set; }
         // The status of the QSO.
         public QSOStatus Status { get; set; }
         // The QSO in another log that matches this QSO.
+        // TODO: this could be just the QSOID or the string of the actual QSO text instead
         public QSO MatchingQSO { get; set; }
+        // TODO: this could be just the QSOID or the string of the actual QSO text instead (RawQSO)
         public QSO FirstMatchingQSO { get; set; }
+        // TODO: should this just be a list of ID's?
         public List<QSO> NearestMatches { get; set; } = new List<QSO>();
         // This means an earlier QSO matched this one.
         public bool HasBeenMatched { get; set; }
@@ -46,10 +51,11 @@ namespace W6OP.ContestLogAnalyzer
         // It will only be true if it is the qso counted as the valid qso not the dupe
         public bool QSOHasDupes { get; set; }
         // Indicates this has been printed.
+        // TODO: why is this important?
         public bool HasBeenPrinted { get; set; }
         // This incorporates two fields, QSO Date and QSO Time
         // CHANGE TO DATE AND TIME LATER
-        // ARE THES REALLY NEEDED SINCE WE HAVE COMBINDED DATE/TIME
+        // ARE THESE REALLY NEEDED SINCE WE HAVE COMBINDED DATE/TIME
         // </summary>
         public string QsoDate { get; set; }
         public string QsoTime { get; set; }
@@ -115,7 +121,7 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-        // The calsign does not match the call sign in the other log
+        // The call does not match the call sign in the other log
         public bool CallIsBusted
         {
             set
@@ -147,6 +153,8 @@ namespace W6OP.ContestLogAnalyzer
         // This is the call that he should have copied.
         public string BustedCallGuess { get; set; }
 
+        // Band the QSO was on.
+        public int Band { get; set; }
         // Frequency of the exchange - may only need band.
         public string Frequency
         {
@@ -160,10 +168,10 @@ namespace W6OP.ContestLogAnalyzer
 
         // Indicates this QSO is the first one worked in this session and therefore a multiplier.
         public bool IsMultiplier { get; set; }
-        // Band the QSO was on.
-        public int Band { get; set; }
+       
 
         // Mode used for the QSO.
+        // Move Mode setting logic here
         public QSOMode Mode
         {
             get { return mode; }
@@ -425,6 +433,7 @@ namespace W6OP.ContestLogAnalyzer
                     QSOMode.RTTY => 3,
                     QSOMode.RY => 3,
                     QSOMode.DIGI => 3,
+                    QSOMode.DG => 3,
                     QSOMode.PH => 2,
                     QSOMode.SSB => 2,
                     _ => 0,
