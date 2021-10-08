@@ -137,7 +137,7 @@ namespace W6OP.ContestLogAnalyzer
             List<QSO> multiList;
             string entity;
 
-            var query = qsoList.GroupBy(x => new { x.ContactEntity, x.Status, x.Band })
+            var query = qsoList.GroupBy(x => new { x.ContactEntity, x.Status, x.Band, x.OperatorCall })
              .Where(g => g.Count() >= 1)
              .Select(y => y.Key).Where(item => (item.Status == QSOStatus.ValidQSO || item.Status == QSOStatus.ReviewQSO))
              .ToList();
@@ -148,15 +148,16 @@ namespace W6OP.ContestLogAnalyzer
 
                 if (multiList.Any())
                 {
+                   // Console.WriteLine(qso.OperatorCall + " " + qso.ContactEntity);
                     if (Enum.IsDefined(typeof(HQPMults), qso.ContactEntity))
                     {
                         entity = qso.ContactEntity;
 
-                        if (!contestLog.Entities.Contains(entity))
+                        if (!contestLog.Entities.Contains(entity + qso.Band))
                         {
                             // if not in hashset, add it
-                            contestLog.Entities.Add(entity);
-                            contestLog.EntitiesList[entity] = entity + " -- " + qso.Band.ToString() + "m ";
+                            contestLog.Entities.Add(entity + qso.Band);
+                            contestLog.EntitiesList[entity + qso.Band] = entity + " -- " + qso.Band.ToString() + "m ";
                             // now set the first one as a multiplier
                             multiList.First().IsMultiplier = true;
                             contestLog.HQPMultipliers += 1;

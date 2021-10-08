@@ -1765,8 +1765,6 @@ namespace W6OP.ContestLogAnalyzer
             }
         }
 
-
-
         /// <summary>
         /// Remove the prefix or suffix from call signs so they can be compared.
         /// Sometimes it is KH6/N6JI and sometimes N6JI/KH6.
