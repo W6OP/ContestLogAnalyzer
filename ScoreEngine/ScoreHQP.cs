@@ -200,7 +200,7 @@ namespace W6OP.ContestLogAnalyzer
             // use IEnumerable and get count directly without ToList()
             List<QSO> phoneTotal = query.Where(q => q.Mode == QSOMode.PH).ToList();
             List<QSO> cwTotal = query.Where(q => q.Mode == QSOMode.CW).ToList();
-            List<QSO> digiTotal = query.Where(q => q.Mode == QSOMode.RY).ToList();
+            List<QSO> digiTotal = query.Where(q => q.Mode == QSOMode.DG).ToList();
 
             contestLog.PhoneTotal = phoneTotal.Count;
             contestLog.CWTotal = cwTotal.Count;

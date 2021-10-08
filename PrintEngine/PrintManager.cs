@@ -177,6 +177,10 @@ namespace W6OP.PrintEngine
                     // only look at valid QSOs
                     validQsoList = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
 
+                    //List<QSO> query = contestlog.QSOCollection.Where(q => q.Status == QSOStatus.ValidQSO || q.Status == QSOStatus.ReviewQSO).ToList();
+                    //List<QSO> digiTotal = query.Where(q => q.Mode == QSOMode.DG).ToList();
+                    //contestlog.DIGITotal = digiTotal.Count;
+
                     scoreList = new HQPScoreList
                     {
                         Call = contestlog.LogOwner,
